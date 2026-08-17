@@ -14,6 +14,13 @@ auto-reload-config = true
 # Commands to run after AeroSpace starts
 after-startup-command = []
 
+# Notify SketchyBar whenever the focused workspace changes
+exec-on-workspace-change = [
+    '/bin/bash',
+    '-c',
+    'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
+]
+
 # ---------------------------------------------------------
 # Window behaviour
 # ---------------------------------------------------------
@@ -34,16 +41,19 @@ key-mapping.preset = 'qwerty'
 # ---------------------------------------------------------
 # Gaps
 # ---------------------------------------------------------
-# Zero for now.
-# We'll configure these properly when styling the desktop.
 
-gaps.inner.horizontal = 10
-gaps.inner.vertical = 10
+gaps.inner.horizontal = 14
+gaps.inner.vertical = 14
 
-gaps.outer.left = 10
-gaps.outer.bottom = 10
-gaps.outer.top = 10
-gaps.outer.right = 10
+gaps.outer.left = 14
+gaps.outer.bottom = 14
+
+# Temporary larger top gap while SketchyBar is being built.
+# We'll reduce this once the stock macOS menu bar / SketchyBar
+# layout is fully settled.
+gaps.outer.top = 52
+
+gaps.outer.right = 14
 
 # ---------------------------------------------------------
 # MAIN MODE
@@ -90,7 +100,7 @@ cmd-ctrl-down  = 'resize height +50'
 # ---------------------------------------------------------
 # Floating / Tiling
 #
-# CMD + V is reserved for macOS Paste, so we use:
+# CMD + V is reserved for Paste, so:
 # CMD + OPTION + V
 # ---------------------------------------------------------
 
@@ -99,7 +109,7 @@ cmd-alt-v = 'layout floating tiling'
 # ---------------------------------------------------------
 # Fullscreen
 #
-# CMD + F is reserved for macOS Find, so we use:
+# CMD + F is reserved for Find, so:
 # CMD + OPTION + F
 # ---------------------------------------------------------
 
@@ -116,8 +126,7 @@ cmd-alt-t = 'layout tiles accordion'
 # ---------------------------------------------------------
 # Workspaces
 #
-# Hyprland: SUPER + Number
-# macOS:    CMD   + Number
+# CMD + Number
 # ---------------------------------------------------------
 
 cmd-1 = 'workspace 1'
@@ -133,8 +142,7 @@ cmd-9 = 'workspace 9'
 # ---------------------------------------------------------
 # Move window to workspace
 #
-# Hyprland: SUPER + SHIFT + Number
-# macOS:    CMD   + SHIFT + Number
+# CMD + SHIFT + Number
 # ---------------------------------------------------------
 
 cmd-shift-1 = 'move-node-to-workspace 1'
