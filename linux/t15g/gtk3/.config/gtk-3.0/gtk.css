@@ -1,0 +1,36 @@
+/* --------------------------------------------------
+   Thunar - T15G
+   Catppuccin Mocha / Lavender polish
+   -------------------------------------------------- */
+
+/* GTK selection colours */
+@define-color theme_selected_bg_color #313244;
+@define-color theme_selected_fg_color #cdd6f4;
+
+/* Main file view */
+.thunar .standard-view .view {
+    background-color: #1e1e2e;
+    color: #cdd6f4;
+}
+
+/* Sidebar */
+.thunar treeview.view {
+    background-color: #181825;
+    color: #cdd6f4;
+}
+
+/* Selected sidebar / list rows */
+.thunar treeview.view:selected {
+    background-color: #45475a;
+    color: #cdd6f4;
+}
+
+/* Hovered rows */
+.thunar treeview.view:hover {
+    background-color: #313244;
+}
+
+/* Separators */
+.thunar separator {
+    background-color: #313244;
+}
