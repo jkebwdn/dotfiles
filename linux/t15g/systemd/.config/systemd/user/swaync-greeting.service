@@ -1,0 +1,7 @@
+[Unit]
+Description=Update SwayNC Greeting (name/date/weather)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.config/swaync/scripts/swaync-greeting.sh
+

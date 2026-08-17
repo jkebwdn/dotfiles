@@ -1,0 +1,95 @@
+{
+  "position": "top-right",
+  "control-center-position": "top-right",
+  "layer": "overlay",
+  "control-center-layer": "top",
+  "css": "~/.config/swaync/style.css",
+  "control-center-width": 420,
+  "fit-to-screen": true,
+  "control-center-margin-top": 18,
+  "control-center-margin-bottom": 18,
+  "control-center-margin-right": 18,
+  "control-center-margin-left": 0,
+  "timeout": 5000,
+  "notification-window-width": 420,
+  "widgets": [
+    "title#Greeting",
+    "buttons-grid#QuickSettings",
+    "volume",
+    "backlight",
+    "title#Notifications",
+    "notifications",
+    "mpris"
+  ],
+  "widget-config": {
+    "title#Greeting": {
+      "text": "Good Afternoon, jkebwdn\nMonday 17 August\nWeather: Blizzard",
+      "use-markup": false
+    },
+    "buttons-grid#QuickSettings": {
+      "buttons-per-row": 4,
+      "actions": [
+        {
+          "label": "",
+          "command": "~/.config/swaync/scripts/toggle-wifi.sh",
+          "type": "toggle"
+        },
+        {
+          "label": "",
+          "command": "hyprctl keyword decoration:screen_shader ~/.config/hypr/shaders/night.glsl || hyprctl keyword decoration:screen_shader ''",
+          "type": "normal"
+        },
+        {
+          "label": "",
+          "command": "swaync-client --toggle-dnd",
+          "type": "toggle"
+        },
+        {
+          "label": "",
+          "command": "hyprshot -m region",
+          "type": "normal"
+        },
+        {
+          "label": "",
+          "command": "~/.config/swaync/scripts/toggle-bluetooth.sh",
+          "type": "toggle"
+        },
+        {
+          "label": "",
+          "command": "systemctl suspend",
+          "type": "normal"
+        },
+        {
+          "label": "",
+          "command": "systemctl hibernate",
+          "type": "normal"
+        },
+        {
+          "label": "",
+          "command": "systemctl poweroff",
+          "type": "normal"
+        }
+      ]
+    },
+    "volume": {
+      "label": "Volume",
+      "show-per-app": false
+    },
+    "backlight": {
+      "label": "Brightness"
+    },
+    "title#Notifications": {
+      "text": "Notifications",
+      "clear-all-button": true,
+      "button-text": "Clear All",
+      "use-markup": false
+    },
+    "notifications": {
+      "vexpand": true
+    },
+    "mpris": {
+      "autohide": false,
+      "show-album-art": "when-available"
+    }
+  }
+}

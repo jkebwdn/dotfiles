@@ -1,0 +1,665 @@
+#!/usr/bin/env bash
+set -u
+
+tput civis
+trap 'tput cnorm; clear' EXIT
+
+ASCII_DIR="$HOME/.local/bin/mftrunk-assets"
+ASCII_DELAY="0.25"
+
+# ─────────────────────────────────────────────
+# MFTrunk v0.3
+# Wi-Fi / Bluetooth / Audio / Battery / VPN / Diagnostics / Power
+# ─────────────────────────────────────────────
+
+VERSION="v0.3"
+
+choose() {
+  local prompt="$1"
+
+  clear
+
+  fzf \
+    --prompt="$prompt > " \
+    --height=100% \
+    --layout=reverse \
+    --border=rounded \
+    --info=inline \
+    --no-multi \
+    --header="MFTrunk / $prompt"
+}
+
+notify() {
+  notify-send "MFTrunk" "$1" 2>/dev/null || true
+}
+
+pause() {
+  echo
+  read -rp "Press Enter to continue..."
+}
+
+wifi_dev() {
+  nmcli -t -f DEVICE,TYPE dev status 2>/dev/null | awk -F: '$2=="wifi"{print $1; exit}'
+}
+
+ethernet_dev() {
+  nmcli -t -f DEVICE,TYPE dev status 2>/dev/null | awk -F: '$2=="ethernet"{print $1; exit}'
+}
+
+clean_nm_state() {
+  case "$1" in
+    connected*) echo "Connected" ;;
+    disconnected*) echo "Disconnected" ;;
+    unavailable*) echo "Disconnected" ;;
+    unmanaged*) echo "Unmanaged" ;;
+    *) echo "${1:-none}" ;;
+  esac
+}
+
+wifi_summary() {
+  local dev radio ssid signal ip
+
+  dev="$(wifi_dev)"
+  radio="$(nmcli -t -f WIFI radio 2>/dev/null | head -n1)"
+  ssid="$(nmcli -t -f active,ssid dev wifi 2>/dev/null | awk -F: '$1=="yes"{print $2; exit}')"
+  signal="$(nmcli -t -f IN-USE,SIGNAL dev wifi 2>/dev/null | awk -F: '$1=="*"{print $2; exit}')"
+  ip="$(ip -4 addr show "$dev" 2>/dev/null | awk '/inet /{print $2; exit}' | cut -d/ -f1)"
+
+  echo "Wi-Fi:      ${radio:-unknown}"
+  echo "SSID:       ${ssid:-none}"
+  echo "Signal:     ${signal:-0}%"
+  echo "IP:         ${ip:-none}"
+}
+
+ethernet_summary() {
+  local dev state ip
+
+  dev="$(ethernet_dev)"
+  state="$(nmcli -t -f DEVICE,STATE dev status 2>/dev/null | awk -F: -v d="$dev" '$1==d{print $2; exit}')"
+  ip="$(ip -4 addr show "$dev" 2>/dev/null | awk '/inet /{print $2; exit}' | cut -d/ -f1)"
+
+  echo "Ethernet:   $(clean_nm_state "$state")"
+  echo "Eth IP:     ${ip:-none}"
+}
+
+vpn_summary() {
+  local active
+
+  active="$(nmcli -t -f NAME,TYPE connection show --active 2>/dev/null | awk -F: '$2=="vpn"{print $1; exit}')"
+
+  if [ -n "$active" ]; then
+    echo "VPN:        $active"
+  else
+    echo "VPN:        Disconnected"
+  fi
+}
+
+uptime_summary() {
+  echo "Uptime:     $(uptime -p | sed 's/^up //')"
+}
+
+bt_summary() {
+  local powered connected
+
+  powered="$(bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/{print $2; exit}')"
+  connected="$(bluetoothctl devices Connected 2>/dev/null | sed 's/^Device [^ ]* //' | paste -sd ', ' -)"
+
+  case "$powered" in
+    yes) powered="Enabled" ;;
+    no)  powered="Disabled" ;;
+    *)   powered="${powered:-unknown}" ;;
+  esac
+
+  echo "Bluetooth: ${powered}"
+  echo "Connected: ${connected:-none}"
+}
+
+audio_friendly_name() {
+  local desc="$1"
+
+  case "$desc" in
+    *WF-C500*) echo "WF-C500" ;;
+    *Speaker*) echo "Laptop Speakers" ;;
+    *HDMI*|*DisplayPort*) echo "HDMI Monitor" ;;
+    *) echo "$desc" ;;
+  esac
+}
+
+audio_summary() {
+  local sink desc friendly
+
+  sink="$(pactl get-default-sink 2>/dev/null || true)"
+
+  desc="$(
+    pactl list sinks 2>/dev/null | awk -v target="$sink" '
+      $1=="Name:" {name=$2}
+      $1=="Description:" && name==target {
+        sub(/^[ \t]*Description:[ \t]*/, "")
+        print
+        exit
+      }
+    '
+  )"
+
+  friendly="$(audio_friendly_name "${desc:-$sink}")"
+  echo "Audio:      ${friendly:-unknown}"
+}
+
+battery_summary() {
+  local bat cap status
+
+  bat="$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -n1)"
+
+  if [ -z "${bat:-}" ]; then
+    echo "Battery:    none"
+    return
+  fi
+
+  cap="$(cat "$bat/capacity" 2>/dev/null || echo unknown)"
+  status="$(cat "$bat/status" 2>/dev/null || echo unknown)"
+
+  echo "Battery:    ${cap}% ${status}"
+}
+
+dashboard() {
+  tput civis  
+  clear
+  printf '\033]0;MFTrunk\007'
+
+  local wifi_state ssid signal ip
+  local eth_state vpn
+  local bt_state bt_device audio battery
+
+  wifi_state="$(wifi_summary | sed -n '1p' | sed 's/^Wi-Fi:[[:space:]]*//')"
+  ssid="$(wifi_summary | sed -n '2p' | sed 's/^SSID:[[:space:]]*//')"
+  signal="$(wifi_summary | sed -n '3p' | sed 's/^Signal:[[:space:]]*//')"
+  ip="$(wifi_summary | sed -n '4p' | sed 's/^IP:[[:space:]]*//')"
+
+  if [ "$ssid" != "none" ] && [ -n "$ssid" ]; then
+  wifi_state="Connected"
+else
+  wifi_state="Disconnected"
+fi
+
+  eth_state="$(ethernet_summary | sed -n '1p' | sed 's/^Ethernet:[[:space:]]*//')"
+  vpn="$(vpn_summary | sed 's/^VPN:[[:space:]]*//')"
+
+  bt_state="$(bt_summary | sed -n '1p' | sed 's/^Bluetooth:[[:space:]]*//')"
+  bt_device="$(bt_summary | sed -n '2p' | sed 's/^Connected:[[:space:]]*//')"
+  audio="$(audio_summary | sed 's/^Audio:[[:space:]]*//')"
+  battery="$(battery_summary | sed 's/^Battery:[[:space:]]*//')"
+
+  local mauve blue text dim reset
+  mauve=$'\033[38;2;203;166;247m'
+  blue=$'\033[38;2;137;180;250m'
+  text=$'\033[38;2;205;214;244m'
+  dim=$'\033[38;2;166;173;200m'
+  reset=$'\033[0m'
+
+printf "\n"
+printf "  ${mauve}MFTrunk ${VERSION}${reset}\n"
+printf "  ${dim}──────────────────────────────────────────────────────────────────${reset}\n\n"
+
+printf "  ${mauve}NET${reset}\n"
+printf "  ${dim}├${reset} Wi-Fi      ${blue}%-24s${reset}\n" "$wifi_state"
+printf "  ${dim}├${reset} SSID       ${blue}%-24s${reset}\n" "$ssid"
+printf "  ${dim}├${reset} Signal     ${blue}%-24s${reset}\n" "$signal"
+printf "  ${dim}├${reset} IP         ${blue}%-24s${reset}\n" "$ip"
+printf "  ${dim}├${reset} Ethernet   ${blue}%-24s${reset}\n" "$eth_state"
+printf "  ${dim}└${reset} VPN        ${blue}%-24s${reset}\n\n" "$vpn"
+
+printf "  ${mauve}DEVICES${reset}\n"
+printf "  ${dim}├${reset} Bluetooth  ${blue}%-24s${reset}\n" "$bt_state"
+printf "  ${dim}├${reset} Connected  ${blue}%-24s${reset}\n" "$bt_device"
+printf "  ${dim}├${reset} Audio      ${blue}%-24s${reset}\n" "$audio"
+printf "  ${dim}└${reset} Battery    ${blue}%-24s${reset}\n\n" "$battery"
+
+printf "  ${dim}──────────────────────────────────────────────────────────────────${reset}\n\n"
+printf "  ${mauve}W${reset} Wi-Fi  |  ${mauve}B${reset} Bluetooth  |  ${mauve}A${reset} Audio  |  ${mauve}V${reset} VPN  |  ${mauve}D${reset} Diagnostics\n"
+printf "  ${mauve}C${reset} Copy IP |  ${mauve}X${reset} Quick Actions |  ${mauve}P${reset} Power |  ${mauve}R${reset} Refresh |  ${mauve}Q${reset} Quit\n\n"
+}
+
+wifi_connect() {
+  local choice ssid
+
+  nmcli dev wifi rescan >/dev/null 2>&1 || true
+
+  choice="$(
+    nmcli -t -f IN-USE,SSID,SECURITY,SIGNAL dev wifi list |
+      awk -F: '$2 != "" {
+        mark=($1=="*" ? "✓" : " ");
+        printf "%s\t%s\t%s\t%s\n", mark, $2, $3, $4
+      }' |
+      sort -u -t $'\t' -k2,2 |
+      fzf \
+        --prompt="Wi-Fi network > " \
+        --height=100% \
+        --layout=reverse \
+        --border=rounded \
+        --delimiter=$'\t' \
+        --with-nth=1,2,3,4 \
+        --header="MFTrunk / Wi-Fi Networks"
+  )" || return
+
+  [ -z "$choice" ] && return
+  ssid="$(printf "%s" "$choice" | cut -f2)"
+
+  nmcli dev wifi connect "$ssid" && notify "Connected to $ssid" || {
+    echo
+    echo "Failed to connect to: $ssid"
+    pause
+  }
+}
+
+wifi_disconnect() {
+  local dev
+  dev="$(wifi_dev)"
+
+  if [ -z "$dev" ]; then
+    echo "No Wi-Fi device found."
+    pause
+    return
+  fi
+
+  nmcli dev disconnect "$dev" && notify "Wi-Fi disconnected"
+}
+
+wifi_toggle() {
+  local state
+
+  state="$(nmcli -t -f WIFI radio | head -n1)"
+
+  if [ "$state" = "enabled" ]; then
+    nmcli radio wifi off && notify "Wi-Fi disabled"
+  else
+    nmcli radio wifi on && notify "Wi-Fi enabled"
+  fi
+}
+
+wifi_menu() {
+  local action
+
+  while true; do
+    action="$(
+      printf "%s\n" \
+        "Connect / switch network" \
+        "Disconnect" \
+        "Toggle Wi-Fi radio" \
+        "Rescan" \
+        "Open nmtui" \
+        "Back" |
+      choose "Wi-Fi"
+    )" || return
+
+    case "$action" in
+  *Connect*) wifi_connect ;;
+  *Disconnect*) wifi_disconnect ;;
+  *Toggle*) wifi_toggle ;;
+  *Rescan*) nmcli dev wifi rescan && notify "Wi-Fi rescan complete" ;;
+  *nmtui*) nmtui ;;
+  *Back*|"") return ;;
+esac
+  done
+}
+
+vpn_menu() {
+  local action choice name
+
+  while true; do
+    action="$(
+      printf "%s\n" \
+        "Connect VPN" \
+        "Disconnect VPN" \
+        "Back" |
+      choose "VPN"
+    )" || return
+
+case "$action" in
+  *Connect*) 
+    choice="$(
+      nmcli -t -f NAME,TYPE connection show |
+        awk -F: '$2=="vpn"{print $1}' |
+        choose "Connect VPN"
+    )" || return
+
+    [ -z "$choice" ] && continue
+    nmcli connection up "$choice" && notify "VPN connected: $choice" || pause
+    ;;
+  *Disconnect*)
+    name="$(nmcli -t -f NAME,TYPE connection show --active | awk -F: '$2=="vpn"{print $1; exit}')"
+    if [ -z "$name" ]; then
+      notify "No active VPN"
+    else
+      nmcli connection down "$name" && notify "VPN disconnected: $name"
+    fi
+    ;;
+  *Back*|"") return ;;
+esac
+done
+}
+
+bt_toggle() {
+  local powered
+
+  powered="$(bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/{print $2; exit}')"
+
+  if [ "$powered" = "yes" ]; then
+    bluetoothctl power off >/dev/null && notify "Bluetooth disabled"
+  else
+    bluetoothctl power on >/dev/null && notify "Bluetooth enabled"
+  fi
+}
+
+bt_scan() {
+  clear
+  echo "Scanning for Bluetooth devices for 10 seconds..."
+  echo
+  bluetoothctl --timeout 10 scan on
+  pause
+}
+
+bt_connect() {
+  local choice mac name
+
+  choice="$(bluetoothctl devices | sed 's/^Device //' | choose "Connect Bluetooth")" || return
+  [ -z "$choice" ] && return
+
+  mac="$(printf "%s" "$choice" | awk '{print $1}')"
+  name="$(printf "%s" "$choice" | cut -d' ' -f2-)"
+
+  bluetoothctl connect "$mac" && notify "Connected: $name" || {
+    echo
+    echo "Failed to connect: $name"
+    pause
+  }
+}
+
+bt_disconnect() {
+  local choice mac name
+
+  choice="$(bluetoothctl devices Connected | sed 's/^Device //' | choose "Disconnect Bluetooth")" || return
+  [ -z "$choice" ] && return
+
+  mac="$(printf "%s" "$choice" | awk '{print $1}')"
+  name="$(printf "%s" "$choice" | cut -d' ' -f2-)"
+
+  bluetoothctl disconnect "$mac" && notify "Disconnected: $name"
+}
+
+bt_menu() {
+  local action
+
+  while true; do
+    action="$(
+      printf "%s\n" \
+        "Toggle Bluetooth power" \
+        "Scan for devices" \
+        "Connect device" \
+        "Disconnect device" \
+        "Back" |
+      choose "Bluetooth"
+    )" || return
+
+case "$action" in
+  *Toggle*) bt_toggle ;;
+  *Scan*) bt_scan ;;
+  *Connect*) bt_connect ;;
+  *Disconnect*) bt_disconnect ;;
+  *Back*|"") return ;;
+esac
+done
+}
+
+audio_switch_output() {
+  local choice name desc sinks
+
+  sinks="$(
+    pactl list sinks | awk '
+      function trim(s){ sub(/^[ \t\r\n]+/, "", s); sub(/[ \t\r\n]+$/, "", s); return s }
+
+      /^Sink #[0-9]+/ {
+        if (name != "") {
+          desc=trim(desc)
+          name=trim(name)
+          if (desc=="") desc=name
+          print desc "\t" name
+        }
+        name=""
+        desc=""
+      }
+
+      $1=="Name:" { name=trim($2) }
+
+      $1=="Description:" {
+        desc=trim(substr($0, length("Description:")+1))
+      }
+
+      END {
+        if (name != "") {
+          desc=trim(desc)
+          name=trim(name)
+          if (desc=="") desc=name
+          print desc "\t" name
+        }
+      }
+    '
+  )"
+
+  choice="$(
+    printf "%s\n" "$sinks" |
+      awk -F'\t' '{
+        pretty=$1
+        if (pretty ~ /WF-C500/) pretty="WF-C500"
+        else if (pretty ~ /Speaker/) pretty="Laptop Speakers"
+        else if (pretty ~ /HDMI|DisplayPort/) pretty="HDMI Monitor"
+        print pretty "\t" $1 "\t" $2
+      }' |
+      fzf \
+        --prompt="Audio output > " \
+        --height=100% \
+        --layout=reverse \
+        --border=rounded \
+        --delimiter=$'\t' \
+        --with-nth=1,2 \
+        --header="MFTrunk / Audio Output"
+  )" || return
+
+  [ -z "$choice" ] && return
+
+  desc="$(printf "%s" "$choice" | cut -f2)"
+  name="$(printf "%s" "$choice" | cut -f3)"
+
+  pactl set-default-sink "$name"
+
+  while read -r input_id _; do
+    pactl move-sink-input "$input_id" "$name" >/dev/null 2>&1 || true
+  done < <(pactl list short sink-inputs)
+
+  notify "Audio output: $(audio_friendly_name "$desc")"
+}
+
+audio_menu() {
+  local action
+
+  while true; do
+    action="$(
+      printf "%s\n" \
+        "Switch output" \
+        "Back" |
+      choose "Audio"
+    )" || return
+
+case "$action" in
+  *Switch*) audio_switch_output ;;
+  *Back*|"") return ;;
+esac
+done
+}
+
+copy_ip() {
+  local dev ip
+
+  dev="$(wifi_dev)"
+  ip="$(ip -4 addr show "$dev" 2>/dev/null | awk '/inet /{print $2; exit}' | cut -d/ -f1)"
+
+  if [ -z "$ip" ]; then
+    dev="$(ethernet_dev)"
+    ip="$(ip -4 addr show "$dev" 2>/dev/null | awk '/inet /{print $2; exit}' | cut -d/ -f1)"
+  fi
+
+  if [ -n "$ip" ]; then
+    printf "%s" "$ip" | wl-copy
+    notify "Copied IP: $ip"
+  else
+    notify "No IP address found"
+  fi
+}
+
+check_line() {
+  local label="$1"
+  shift
+
+  if "$@" >/dev/null 2>&1; then
+    printf "✓ %s\n" "$label"
+  else
+    printf "✗ %s\n" "$label"
+  fi
+}
+
+diagnostics() {
+  clear
+
+  local gateway
+  gateway="$(ip route | awk '/default/{print $3; exit}')"
+
+  echo "MFTrunk Diagnostics"
+  echo "───────────────────"
+  echo
+
+  check_line "NetworkManager running" systemctl is-active --quiet NetworkManager
+  check_line "Bluetooth service running" systemctl is-active --quiet bluetooth
+  check_line "PipeWire user service running" systemctl --user is-active --quiet pipewire
+  check_line "WirePlumber user service running" systemctl --user is-active --quiet wireplumber
+  echo
+
+  if [ -n "$gateway" ]; then
+    check_line "Gateway reachable ($gateway)" ping -c 1 -W 1 "$gateway"
+  else
+    echo "✗ Gateway found"
+  fi
+
+  check_line "Internet IP reachable (1.1.1.1)" ping -c 1 -W 1 1.1.1.1
+  check_line "DNS resolving (archlinux.org)" getent hosts archlinux.org
+  echo
+
+  echo "Active connections:"
+  nmcli connection show --active 2>/dev/null || true
+  echo
+
+  pause
+}
+
+quick_actions() {
+  local action
+
+  while true; do
+    action="$(
+      printf "%s\n" \
+        "Reload Hyprland" \
+        "Restart Waybar" \
+        "Restart SwayNC" \
+        "Restart Hyprpaper" \
+        "Restart Elephant" \
+        "Back" |
+      choose "Quick Actions"
+    )" || return
+
+case "$action" in
+  *Hyprland*) hyprctl reload && notify "Hyprland reloaded" ;;
+  *Waybar*)
+    pkill waybar 2>/dev/null || true
+    waybar >/dev/null 2>&1 &
+    notify "Waybar restarted"
+    ;;
+  *SwayNC*)
+    pkill swaync 2>/dev/null || true
+    swaync >/dev/null 2>&1 &
+    notify "SwayNC restarted"
+    ;;
+  *Hyprpaper*)
+    pkill hyprpaper 2>/dev/null || true
+    hyprpaper >/dev/null 2>&1 &
+    notify "Hyprpaper restarted"
+    ;;
+  *Elephant*) systemctl --user restart elephant.service && notify "Elephant restarted" ;;
+  *Back*|"") return ;;
+esac
+done
+}
+
+power_menu() {
+  local action
+
+  while true; do
+    action="$(
+      printf "%s\n" \
+        "Suspend" \
+        "Hibernate" \
+        "Reboot" \
+        "Power off" \
+        "Back" |
+      choose "Power"
+    )" || return
+
+case "$action" in
+  *Suspend*) systemctl suspend ;;
+  *Hibernate*) systemctl hibernate ;;
+  *Reboot*) systemctl reboot ;;
+  *Power*) systemctl poweroff ;;
+  *Back*|"") return ;;
+esac
+done
+}
+
+play_ascii() {
+    tput civis
+    trap 'tput cnorm; clear; return 0 2>/dev/null || exit 0' INT TERM EXIT
+
+    while true; do
+        for f in "$ASCII_DIR"/frame-*.txt; do
+            clear
+            cat "$f"
+            sleep "$ASCII_DELAY"
+        done
+    done
+}
+
+main() {
+  local key
+
+while true; do
+  tput civis
+  dashboard
+
+  IFS= read -rsn1 key
+  tput civis
+  printf '\r'
+
+    case "$key" in
+      w|W) wifi_menu ;;
+      b|B) bt_menu ;;
+      a|A) audio_menu ;;
+      v|V) vpn_menu ;;
+      d|D) diagnostics ;;
+      c|C) copy_ip ;;
+      x|X) quick_actions ;;
+      p|P) power_menu ;;
+      l|L) play_ascii ;;
+      r|R) continue ;;
+      q|Q) exit 0 ;;
+      $'\e') exit 0 ;;
+    esac
+  done
+}
+
+main

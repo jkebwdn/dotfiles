@@ -1,0 +1,37 @@
+{
+  "name": "Norm t15g Screen",
+  "monitors": [
+    {
+      "Name": "eDP-1",
+      "PxW": 3840,
+      "PxH": 2160,
+      "Hz": 60,
+      "Scale": 2,
+      "X": 0,
+      "Y": 0,
+      "Active": true,
+      "EDIDName": "California Institute of Technology 0x1500",
+      "Modes": [
+        {
+          "W": 3840,
+          "H": 2160,
+          "Hz": 60
+        }
+      ],
+      "BitDepth": 0,
+      "ColorMode": "",
+      "SDRBrightness": 0,
+      "SDRSaturation": 0,
+      "VRR": 0,
+      "Transform": 0,
+      "IsMirrored": false,
+      "MirrorSource": "",
+      "MirrorTargets": [],
+      "Dragging": false,
+      "DragOffX": 0,
+      "DragOffY": 0
+    }
+  ],
+  "created_at": "2026-01-24T18:08:21.365807952Z",
+  "updated_at": "2026-01-24T18:08:21.365808138Z"
+}
