@@ -71,7 +71,7 @@ stow ghostty
 
 This keeps the live configuration in the expected locations while the actual files remain inside the Git repository.
 
-** MFTrunk **
+# MFTrunk
 
 MFTrunk is a custom terminal-based system control utility currently providing functionality for:
 
@@ -85,7 +85,7 @@ MFTrunk is a custom terminal-based system control utility currently providing fu
 
 MFTrunk is being developed as a lightweight, terminal-native control centre for the system.
 
-** Notes **
+# Notes
 
 This repository is a work in progress.
 
