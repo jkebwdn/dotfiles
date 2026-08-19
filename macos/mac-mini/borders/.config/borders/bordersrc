@@ -1,11 +1,20 @@
 #!/bin/bash
 
+# =========================================================
+# JankyBorders
+# Mac mini — Everforest Dark Hard
+# =========================================================
+
 options=(
     style=round
     width=5.0
     hidpi=on
-    active_color=0xffcba6f7
-    inactive_color=0xff45475a
+
+    # Everforest foreground
+    active_color=0xffd3c6aa
+
+    # Everforest Dark Hard bg3
+    inactive_color=0xff414b50
 )
 
 borders "${options[@]}"

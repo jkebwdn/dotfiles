@@ -2,25 +2,38 @@
 
 # =========================================================
 # SketchyBar
-# Mac mini — Forest / Viridian
+# Mac mini — Everforest Dark Hard
+# Floating Pill Layout
 # =========================================================
 
 
 # ---------------------------------------------------------
-# Colours
+# Everforest Dark Hard Palette
 # ---------------------------------------------------------
 
+BG_DIM=0xff1e2326
+BG0=0xff272e33
+BG1=0xff2e383c
+BG2=0xff374145
+BG3=0xff414b50
+BG4=0xff495156
+BG5=0xff4f5b58
+
+FG=0xffd3c6aa
+
+GREY0=0xff7a8478
+GREY1=0xff859289
+GREY2=0xff9da9a0
+
+RED=0xffe67e80
+ORANGE=0xffe69875
+YELLOW=0xffdbbc7f
+GREEN=0xffa7c080
+AQUA=0xff83c092
+BLUE=0xff7fbbb3
+PURPLE=0xffd699b6
+
 TRANSPARENT=0x00000000
-
-# Dark forest surface, slightly transparent
-SURFACE=0xe6172421
-
-TEXT=0xffd8e2dc
-MUTED=0xff82968e
-
-GREEN=0xff65a77b
-TEAL=0xff54b6a5
-ACCENT=0xff8fcf9b
 
 
 # ---------------------------------------------------------
@@ -29,9 +42,10 @@ ACCENT=0xff8fcf9b
 
 sketchybar --bar \
     position=top \
-    height=36 \
+    height=38 \
     sticky=on \
     margin=8 \
+    y_offset=6 \
     padding_left=8 \
     padding_right=8 \
     color=$TRANSPARENT \
@@ -44,9 +58,9 @@ sketchybar --bar \
 
 sketchybar --default \
     icon.font="Hack Nerd Font:Regular:14.0" \
-    icon.color=$TEXT \
+    icon.color=$FG \
     label.font="SF Pro:Medium:12.0" \
-    label.color=$TEXT \
+    label.color=$FG \
     padding_left=7 \
     padding_right=7
 
@@ -60,23 +74,24 @@ sketchybar --add event aerospace_workspace_change
 
 # =========================================================
 # LEFT
-# Date / Time
+# Time • Date
 # =========================================================
 
 sketchybar --add item clock left \
            --set clock \
                  icon.drawing=off \
                  update_freq=30 \
-                 padding_left=12 \
-                 padding_right=12 \
-                 script='sketchybar --set clock label="$(date "+%a %d %b  %H:%M")"'
+                 padding_left=14 \
+                 padding_right=14 \
+                 label.color=$FG \
+                 script='sketchybar --set clock label="$(date "+%H:%M  •  %a %d %b")"'
 
 
-# Left floating island
+# Left pill
 sketchybar --add bracket left_group clock \
            --set left_group \
-                 background.color=$SURFACE \
-                 background.corner_radius=9 \
+                 background.color=$BG_DIM \
+                 background.corner_radius=10 \
                  background.height=28 \
                  background.drawing=on
 
@@ -96,9 +111,10 @@ for sid in 1 2 3 4; do
                      label.font="SF Pro:Semibold:12.0" \
                      label.padding_left=9 \
                      label.padding_right=9 \
+                     label.color=$GREY1 \
                      background.height=22 \
                      background.corner_radius=6 \
-                     background.color=$TEAL \
+                     background.color=$FG \
                      background.drawing=off \
                      click_script="aerospace workspace $sid" \
                      script="$HOME/.config/sketchybar/plugins/aerospace.sh $sid"
@@ -106,36 +122,19 @@ for sid in 1 2 3 4; do
 done
 
 
-# Centre floating island
+# Centre pill
 sketchybar --add bracket workspace_group '/space\..*/' \
            --set workspace_group \
-                 background.color=$SURFACE \
-                 background.corner_radius=9 \
+                 background.color=$BG_DIM \
+                 background.corner_radius=10 \
                  background.height=28 \
                  background.drawing=on
 
 
 # =========================================================
 # RIGHT
-# Wi-Fi + Interactive Volume
+# Volume + Wi-Fi
 # =========================================================
-
-
-# ---------------------------------------------------------
-# Wi-Fi
-# ---------------------------------------------------------
-
-sketchybar --add item wifi right \
-           --subscribe wifi wifi_change system_woke \
-           --set wifi \
-                 icon="󰖩" \
-                 icon.font="Hack Nerd Font:Regular:15.0" \
-                 icon.color=$TEAL \
-                 label.drawing=off \
-                 padding_left=10 \
-                 padding_right=7 \
-                 update_freq=10 \
-                 script="$HOME/.config/sketchybar/plugins/wifi.sh"
 
 
 # ---------------------------------------------------------
@@ -147,10 +146,10 @@ sketchybar --add item volume right \
            --set volume \
                  icon="󰕾" \
                  icon.font="Hack Nerd Font:Regular:16.0" \
-                 icon.color=$GREEN \
+                 icon.color=$FG \
                  label.drawing=off \
-                 padding_left=7 \
-                 padding_right=10 \
+                 padding_left=12 \
+                 padding_right=8 \
                  script="$HOME/.config/sketchybar/plugins/volume.sh" \
                  click_script='sketchybar --set volume.slider drawing=toggle'
 
@@ -163,22 +162,39 @@ sketchybar --add slider volume.slider right 100 \
            --subscribe volume.slider mouse.clicked volume_change \
            --set volume.slider \
                  drawing=off \
-                 slider.width=100 \
-                 slider.highlight_color=$TEAL \
-                 slider.background.color=$SURFACE \
-                 slider.background.height=6 \
+                 slider.width=95 \
+                 slider.highlight_color=$FG \
+                 slider.background.color=$BG2 \
+                 slider.background.height=5 \
                  slider.background.corner_radius=3 \
                  slider.knob="●" \
-                 slider.knob.font="Hack Nerd Font:Regular:10.0" \
-                 slider.knob.color=$TEXT \
+                 slider.knob.font="Hack Nerd Font:Regular:9.0" \
+                 slider.knob.color=$FG \
                  script="$HOME/.config/sketchybar/plugins/volume_slider.sh"
 
 
-# Right floating island
-sketchybar --add bracket right_group wifi volume volume.slider \
+# ---------------------------------------------------------
+# Wi-Fi
+# ---------------------------------------------------------
+
+sketchybar --add item wifi right \
+           --subscribe wifi wifi_change system_woke \
+           --set wifi \
+                 icon="󰖩" \
+                 icon.font="Hack Nerd Font:Regular:15.0" \
+                 icon.color=$FG \
+                 label.drawing=off \
+                 padding_left=8 \
+                 padding_right=12 \
+                 update_freq=10 \
+                 script="$HOME/.config/sketchybar/plugins/wifi.sh"
+
+
+# Right pill
+sketchybar --add bracket right_group volume volume.slider wifi \
            --set right_group \
-                 background.color=$SURFACE \
-                 background.corner_radius=9 \
+                 background.color=$BG_DIM \
+                 background.corner_radius=10 \
                  background.height=28 \
                  background.drawing=on
 

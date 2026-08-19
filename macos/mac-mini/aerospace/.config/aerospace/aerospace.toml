@@ -5,10 +5,10 @@
 
 config-version = 2
 
-# Start AeroSpace automatically when logging into macOS
+# Start AeroSpace automatically at login
 start-at-login = true
 
-# Automatically reload this file whenever it is saved
+# Automatically reload config changes
 auto-reload-config = true
 
 # Commands to run after AeroSpace starts
@@ -28,32 +28,29 @@ exec-on-workspace-change = [
 enable-normalization-flatten-containers = true
 enable-normalization-opposite-orientation-for-nested-containers = true
 
-# Default tiling behaviour
 default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
 
-# Don't change focus just because the mouse moves
 focus-follows-mouse.enabled = false
 
-# Standard keyboard layout
 key-mapping.preset = 'qwerty'
 
 # ---------------------------------------------------------
 # Gaps
 # ---------------------------------------------------------
 
-gaps.inner.horizontal = 14
-gaps.inner.vertical = 14
+gaps.inner.horizontal = 16
+gaps.inner.vertical = 16
 
-gaps.outer.left = 14
-gaps.outer.bottom = 14
+gaps.outer.left = 16
+gaps.outer.right = 16
+gaps.outer.bottom = 16
 
-# Temporary larger top gap while SketchyBar is being built.
-# We'll reduce this once the stock macOS menu bar / SketchyBar
-# layout is fully settled.
-gaps.outer.top = 52
-
-gaps.outer.right = 14
+# SketchyBar:
+# 38 px bar area
+# 8 px top inset
+# ~10 px breathing room
+gaps.outer.top = 56
 
 # ---------------------------------------------------------
 # MAIN MODE
@@ -61,74 +58,34 @@ gaps.outer.right = 14
 
 [mode.main.binding]
 
-# ---------------------------------------------------------
 # Focus windows
-#
-# Hyprland: SUPER + Arrow
-# macOS:    CMD   + Arrow
-# ---------------------------------------------------------
-
 cmd-left  = 'focus left'
 cmd-down  = 'focus down'
 cmd-up    = 'focus up'
 cmd-right = 'focus right'
 
-# ---------------------------------------------------------
 # Move windows
-#
-# Hyprland: SUPER + SHIFT + Arrow
-# macOS:    CMD   + SHIFT + Arrow
-# ---------------------------------------------------------
-
 cmd-shift-left  = 'move left'
 cmd-shift-down  = 'move down'
 cmd-shift-up    = 'move up'
 cmd-shift-right = 'move right'
 
-# ---------------------------------------------------------
 # Resize windows
-#
-# Hyprland: SUPER + CTRL + Arrow
-# macOS:    CMD   + CTRL + Arrow
-# ---------------------------------------------------------
-
 cmd-ctrl-left  = 'resize width -50'
 cmd-ctrl-right = 'resize width +50'
 cmd-ctrl-up    = 'resize height -50'
 cmd-ctrl-down  = 'resize height +50'
 
-# ---------------------------------------------------------
-# Floating / Tiling
-#
-# CMD + V is reserved for Paste, so:
-# CMD + OPTION + V
-# ---------------------------------------------------------
-
+# Floating / tiling
 cmd-alt-v = 'layout floating tiling'
 
-# ---------------------------------------------------------
 # Fullscreen
-#
-# CMD + F is reserved for Find, so:
-# CMD + OPTION + F
-# ---------------------------------------------------------
-
 cmd-alt-f = 'fullscreen'
 
-# ---------------------------------------------------------
 # Layout
-#
-# Toggle between tiled and accordion layouts
-# ---------------------------------------------------------
-
 cmd-alt-t = 'layout tiles accordion'
 
-# ---------------------------------------------------------
 # Workspaces
-#
-# CMD + Number
-# ---------------------------------------------------------
-
 cmd-1 = 'workspace 1'
 cmd-2 = 'workspace 2'
 cmd-3 = 'workspace 3'
@@ -139,12 +96,7 @@ cmd-7 = 'workspace 7'
 cmd-8 = 'workspace 8'
 cmd-9 = 'workspace 9'
 
-# ---------------------------------------------------------
 # Move window to workspace
-#
-# CMD + SHIFT + Number
-# ---------------------------------------------------------
-
 cmd-shift-1 = 'move-node-to-workspace 1'
 cmd-shift-2 = 'move-node-to-workspace 2'
 cmd-shift-3 = 'move-node-to-workspace 3'
