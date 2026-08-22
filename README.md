@@ -2,15 +2,15 @@
 
 Personal dotfiles and system configuration for my Linux, macOS, and Windows machines.
 
-The repository is structured by operating system and machine, allowing each system to maintain its own configuration while keeping everything under a single version-controlled repository.
+The repository is organised by operating system and machine, allowing each system to maintain its own configuration while keeping everything together in a single version-controlled repository.
 
-Configurations are managed using Stow.
+Configurations are primarily managed using Stow.
 
-** Systems **
+---
 
-# Linux
+## Systems
 
-## T15G
+### Linux — ThinkPad T15g
 
 Arch Linux workstation running Hyprland.
 
@@ -18,24 +18,48 @@ Current configuration includes:
 
 - Hyprland
 - Waybar
-- Rofi
 - Ghostty
 - Neovim
 - SwayNC
+- Yazi
+  - Yatline
+  - Custom theme
+- btop
 - Hyprmon
 - MFTrunk
 - systemd user services
 
-# macOS
+This is currently the most complete configuration in the repository.
 
-Planned.
+### macOS
 
-# Windows
+macOS configurations are maintained separately from Linux rather than attempting to keep identical configurations across platforms.
 
-Planned.
+Current tooling includes:
 
-Structure:
+- AeroSpace
+- SketchyBar
+- JankyBorders
+- Ghostty
+- Neovim
 
+The setup follows the same general keyboard-driven workflow as the Linux environment while remaining native to macOS.
+
+### Windows
+
+Windows configuration is currently focused around a keyboard-driven tiling workflow using:
+
+- Komorebi
+- Komorebi Bar
+- whkd
+
+Further configuration will be migrated into the repository over time.
+
+---
+
+## Repository Structure
+
+```text
 dotfiles/
 ├── linux/
 │   └── t15g/
@@ -47,33 +71,52 @@ dotfiles/
 │       ├── rofi/
 │       ├── swaync/
 │       ├── systemd/
-│       └── waybar/
+│       ├── waybar/
+│       └── yazi/
 ├── macos/
 └── windows/
+```
 
-Each package mirrors its destination relative to the home directory so it can be managed independently with Stow.
+Each package mirrors its destination relative to the home directory so it can be managed independently using GNU Stow.
 
 For example:
 
-linux/t15g/hypr/.config/hypr/ is linked to ~/.config/hypr/
+```text
+linux/t15g/hypr/.config/hypr/
+```
 
-** GNU Stow **
+is linked to:
 
-Packages can be linked individually from the machine directory:
+```text
+~/.config/hypr/
+```
 
-bash
+---
+
+## GNU Stow
+
+Packages can be linked individually from the relevant machine directory.
+
+For example:
+
+```bash
 cd ~/dotfiles/linux/t15g
 
 stow hypr
 stow waybar
-stow rofi
 stow ghostty
+stow yazi
+```
 
-This keeps the live configuration in the expected locations while the actual files remain inside the Git repository.
+This keeps configuration files inside the Git repository while exposing them at the locations expected by each application.
 
-# MFTrunk
+---
 
-MFTrunk is a custom terminal-based system control utility currently providing functionality for:
+## MFTrunk
+
+MFTrunk is a custom terminal-based system control utility developed for the Linux configuration.
+
+It currently provides controls and information for:
 
 - Wi-Fi
 - Bluetooth
@@ -81,12 +124,14 @@ MFTrunk is a custom terminal-based system control utility currently providing fu
 - Battery
 - VPN
 - Diagnostics
-- Power controls
+- Power
 
-MFTrunk is being developed as a lightweight, terminal-native control centre for the system.
+The aim is to provide a lightweight, terminal-native control centre that integrates naturally with the rest of the desktop environment.
 
-# Notes
+---
 
-This repository is a work in progress.
+## Notes
 
-The current T15G configuration is the first system being migrated into the new structure. macOS and Windows configurations will be added as their setups are consolidated.
+This repository is continuously evolving as the configurations for each machine are refined and migrated.
+
+The Linux T15g configuration is currently the most complete, with the macOS and Windows environments being progressively consolidated into the same repository structure.
