@@ -1,0 +1,107 @@
+# =========================================================
+# Ghostty
+# Mac mini — Everforest Dark Hard
+# =========================================================
+
+
+# ---------------------------------------------------------
+# Font
+# ---------------------------------------------------------
+
+font-family = "Berkeley Mono Variable"
+font-family-bold = "Berkeley Mono Variable"
+font-family-italic = "Maple Mono"
+font-family-bold-italic = "Maple Mono"
+
+font-variation = wght=300
+font-variation-bold = wght=800
+font-variation-italic = wght=200
+font-variation-bold-italic = wght=800
+
+font-size = 14
+
+
+# ---------------------------------------------------------
+# Everforest Dark Hard
+# ---------------------------------------------------------
+
+background = 1e2326
+foreground = d3c6aa
+
+cursor-color = d3c6aa
+cursor-text = 1e2326
+
+selection-background = 3c4841
+selection-foreground = d3c6aa
+
+
+# ---------------------------------------------------------
+# ANSI Palette
+# ---------------------------------------------------------
+
+palette = 0=#4b565c
+palette = 1=#e67e80
+palette = 2=#a7c080
+palette = 3=#dbbc7f
+palette = 4=#7fbbb3
+palette = 5=#d699b6
+palette = 6=#83c092
+palette = 7=#d3c6aa
+
+palette = 8=#5c6a72
+palette = 9=#e67e80
+palette = 10=#a7c080
+palette = 11=#dbbc7f
+palette = 12=#7fbbb3
+palette = 13=#d699b6
+palette = 14=#83c092
+palette = 15=#d3c6aa
+
+
+# ---------------------------------------------------------
+# Window
+# ---------------------------------------------------------
+
+window-padding-x = 14
+window-padding-y = 12
+window-padding-balance = true
+
+window-title-font-family = "Berkeley Mono Variable"
+
+background-opacity = 1.0
+
+macos-titlebar-style = tabs
+macos-titlebar-proxy-icon = hidden
+macos-option-as-alt = true
+
+
+# ---------------------------------------------------------
+# Behaviour
+# ---------------------------------------------------------
+
+mouse-hide-while-typing = true
+
+working-directory = home
+window-inherit-working-directory = false
+
+
+# ---------------------------------------------------------
+# Keybinds
+# ---------------------------------------------------------
+
+keybind = global:cmd+`=toggle_quick_terminal
+
+keybind = shift+ctrl+left_bracket=previous_tab
+keybind = shift+ctrl+right_bracket=next_tab
+
+keybind = shift+ctrl+,=move_tab:-1
+keybind = shift+ctrl+.=move_tab:1
+
+
+# ---------------------------------------------------------
+# Rendering
+# ---------------------------------------------------------
+
+alpha-blending = linear-corrected
+
+custom-shader-animation = false
