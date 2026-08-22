@@ -1,0 +1,90 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": {
+    "type": "small",
+    "source": "arch",
+    "padding": {
+      "top": 1,
+      "right": 4
+    }
+  },
+
+  "display": {
+    "separator": "  ",
+    "key": {
+      "width": 18
+    }
+  },
+
+  "modules": [
+    {
+      "type": "custom",
+      "key": "  󰌢  Host",
+      "format": "ThinkPad T15g",
+      "keyColor": "green"
+    },
+    {
+      "type": "custom",
+      "key": "    CPU",
+      "format": "Intel Core i7-11800H",
+      "keyColor": "green"
+    },
+    {
+      "type": "custom",
+      "key": "  󰢮  GPU",
+      "format": "NVIDIA GeForce RTX 3070",
+      "keyColor": "green"
+    },
+    {
+      "type": "memory",
+      "key": "    Memory",
+      "keyColor": "green",
+      "format": "{1} / {2}"
+    },
+    {
+      "type": "disk",
+      "folders": "/",
+      "key": "  󰋊  Storage",
+      "keyColor": "green",
+      "format": "{1} / {2}"
+    },
+
+    "break",
+
+    {
+      "type": "os",
+      "key": "    OS",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "wm",
+      "key": "    WM",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "terminal",
+      "key": "    Terminal",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "shell",
+      "key": "    Shell",
+      "keyColor": "yellow"
+    },
+    {
+      "type": "custom",
+      "key": "    Editor",
+      "format": "Neovim",
+      "keyColor": "yellow"
+    },
+
+    "break",
+
+    {
+      "type": "colors",
+      "symbol": "circle",
+      "paddingLeft": 2
+    }
+  ]
+}
