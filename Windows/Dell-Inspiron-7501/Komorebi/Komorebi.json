@@ -1,0 +1,71 @@
+{
+  "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
+
+  "window_hiding_behaviour": "Cloak",
+  "cross_monitor_move_behaviour": "Insert",
+
+  "default_workspace_padding": 6,
+  "default_container_padding": 6,
+
+  "border": true,
+  "border_width": 4,
+  "border_offset": -1,
+
+  "border_colours": {
+    "single": "#A26862",
+    "stack": "#A26862",
+    "monocle": "#A26862",
+    "unfocused": "#262220"
+  },
+
+  "monitors": [
+    {
+      "workspaces": [
+        {
+          "name": "1",
+          "layout": "BSP"
+        },
+        {
+          "name": "2",
+          "layout": "BSP"
+        },
+        {
+          "name": "3",
+          "layout": "BSP"
+        },
+        {
+          "name": "4",
+          "layout": "BSP"
+        }
+      ]
+    }
+  ],
+
+  "float_rules": [
+    {
+      "kind": "Title",
+      "id": "Microsoft Teams",
+      "matching_strategy": "Contains"
+    },
+    {
+      "kind": "Title",
+      "id": "Meeting",
+      "matching_strategy": "Contains"
+    },
+    {
+      "kind": "Title",
+      "id": "Call",
+      "matching_strategy": "Contains"
+    },
+    {
+      "kind": "Title",
+      "id": "Reminder",
+      "matching_strategy": "Contains"
+    },
+    {
+      "kind": "Title",
+      "id": "Calculator",
+      "matching_strategy": "Contains"
+    }
+  ]
+}
