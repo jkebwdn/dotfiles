@@ -1,0 +1,72 @@
+{
+  "font_family": "JetBrains Mono",
+  "font_size": 12.5,
+  "height": 36,
+  "widget_spacing": 10,
+
+  "theme": {
+    "palette": "Base16",
+    "name": "BlackMetalKhold"
+  },
+
+  "left_widgets": [
+    {
+      "Date": {
+        "enable": true,
+        "format": "DayDateMonthYear",
+        "label_prefix": "Icon"
+      }
+    },
+    {
+      "Time": {
+        "enable": true,
+        "format": "TwentyFourHour",
+        "label_prefix": "Icon"
+      }
+    }
+  ],
+
+  "center_widgets": [
+    {
+      "Komorebi": {
+        "workspaces": {
+          "enable": true,
+          "hide_empty_workspaces": false,
+          "display": "Text"
+        },
+        "layout": {
+          "enable": false
+        },
+        "focused_window": {
+          "enable": false,
+          "show_icon": false
+        }
+      }
+    }
+  ],
+
+  "right_widgets": [
+    {
+      "Network": {
+        "enable": true,
+        "show_activity": false,
+        "show_total_activity": false,
+        "show_default_interface": true,
+        "label_prefix": "Icon"
+      }
+    },
+    {
+      "Battery": {
+        "enable": true,
+        "label_prefix": "Icon",
+        "hide_on_full_charge": false
+      }
+    }
+  ],
+
+  "mouse": {
+    "on_middle_click": "start ms-settings:network-wifi",
+    "on_secondary_click": "start ms-settings:bluetooth",
+    "on_primary_double_click": "start ms-settings:"
+  }
+}
