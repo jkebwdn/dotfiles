@@ -1,0 +1,84 @@
+.shell powershell
+
+# =========================
+# RELOAD / RESTART
+# =========================
+
+lwin + shift + r : komorebic reload-configuration
+lwin + shift + e : komorebic stop; komorebic start --whkd --bar
+
+# =========================
+# APPS
+# =========================
+
+lwin + return : wt
+lwin + d : explorer.exe
+lwin + q : komorebic close
+lwin + m : komorebic minimize
+
+# =========================
+# FOCUS WINDOWS
+# =========================
+
+lwin + left : komorebic focus left
+lwin + down : komorebic focus down
+lwin + up : komorebic focus up
+lwin + right : komorebic focus right
+
+# =========================
+# MOVE WINDOWS
+# =========================
+
+lwin + shift + left : komorebic move left
+lwin + shift + down : komorebic move down
+lwin + shift + up : komorebic move up
+lwin + shift + right : komorebic move right
+
+# =========================
+# RESIZE WINDOWS
+# =========================
+
+lwin + ctrl + left : komorebic resize-axis horizontal decrease
+lwin + ctrl + right : komorebic resize-axis horizontal increase
+lwin + ctrl + up : komorebic resize-axis vertical decrease
+lwin + ctrl + down : komorebic resize-axis vertical increase
+
+# =========================
+# FLOATING
+# =========================
+
+lwin + f : komorebic toggle-float
+
+# =========================
+# LAYOUTS
+# =========================
+
+lwin + b : komorebic flip-layout horizontal
+lwin + v : komorebic flip-layout vertical
+
+# =========================
+# WORKSPACES
+# =========================
+
+lwin + 1 : komorebic focus-workspace 0
+lwin + 2 : komorebic focus-workspace 1
+lwin + 3 : komorebic focus-workspace 2
+lwin + 4 : komorebic focus-workspace 3
+
+# =========================
+# MOVE WINDOW TO WORKSPACE
+# =========================
+
+lwin + shift + 1 : komorebic move-to-workspace 0
+lwin + shift + 2 : komorebic move-to-workspace 1
+lwin + shift + 3 : komorebic move-to-workspace 2
+lwin + shift + 4 : komorebic move-to-workspace 3
+
+# =========================
+# MOVE + FOLLOW
+# =========================
+
+lwin + ctrl + 1 : komorebic move-to-workspace 0; komorebic focus-workspace 0
+lwin + ctrl + 2 : komorebic move-to-workspace 1; komorebic focus-workspace 1
+lwin + ctrl + 3 : komorebic move-to-workspace 2; komorebic focus-workspace 2
+lwin + ctrl + 4 : komorebic move-to-workspace 3; komorebic focus-workspace 3
