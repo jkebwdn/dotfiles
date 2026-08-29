@@ -1,0 +1,55 @@
+# ---------------------------------------------------------
+# ble.sh — T15G
+# Catppuccin Mocha / lavender-blue
+# ---------------------------------------------------------
+
+# Autosuggestion ghost text
+ble-face auto_complete='fg=#6c7086,italic'
+
+# Invalid syntax / commands
+ble-face syntax_error='fg=#f38ba8,bold'
+
+# General syntax
+ble-face syntax_default='fg=#cdd6f4'
+ble-face syntax_command='fg=#89b4fa,bold'
+ble-face syntax_quoted='fg=#a6e3a1'
+ble-face syntax_quotation='fg=#a6e3a1'
+ble-face syntax_comment='fg=#6c7086,italic'
+ble-face syntax_varname='fg=#f9e2af'
+ble-face syntax_param_expansion='fg=#cba6f7'
+ble-face syntax_glob='fg=#f5c2e7'
+ble-face syntax_brace='fg=#94e2d5'
+ble-face syntax_tilde='fg=#b4befe'
+
+# Commands
+ble-face command_file='fg=#89b4fa,bold'
+ble-face command_builtin='fg=#b4befe'
+ble-face command_alias='fg=#94e2d5'
+ble-face command_function='fg=#cba6f7'
+ble-face command_keyword='fg=#89b4fa'
+ble-face command_directory='fg=#89b4fa,underline'
+
+# Filenames
+ble-face filename_directory='fg=#89b4fa'
+ble-face filename_link='fg=#89dceb'
+ble-face filename_executable='fg=#a6e3a1'
+ble-face filename_orphan='fg=#f38ba8'
+ble-face filename_warning='fg=#f38ba8'
+ble-face filename_other='fg=#cdd6f4'
+
+# Selection / completion menus
+ble-face region='bg=#313244,fg=#cdd6f4'
+ble-face menu_complete_match='fg=#b4befe,bold'
+ble-face menu_complete_selected='bg=#313244,fg=#cdd6f4'
+ble-face menu_filter_fixed='fg=#b4befe,bold'
+ble-face menu_filter_input='bg=#313244,fg=#cdd6f4'
+
+# Give suggestions a tiny delay so they feel less twitchy
+bleopt complete_auto_delay=150
+
+# Always execute with Enter instead of entering multiline mode
+bleopt accept_line_threshold=-1
+
+# Keep normal Enter behaviour explicit
+ble-bind -m emacs -f 'RET' accept-line
+ble-bind -m emacs -f 'C-m' accept-line
