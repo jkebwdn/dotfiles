@@ -1,0 +1,7 @@
+
+{
+  "palette": "catppuccin",
+  "barLeftPlugins": ["clock", "date"],
+  "barCenterPlugins": ["workspaces"],
+  "barRightPlugins": ["wifi"]
+}
