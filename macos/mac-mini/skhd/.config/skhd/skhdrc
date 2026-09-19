@@ -44,3 +44,29 @@ cmd + shift - 1 : yabai -m window --space 1
 cmd + shift - 2 : yabai -m window --space 2
 cmd + shift - 3 : yabai -m window --space 3
 cmd + shift - 4 : yabai -m window --space 4
+
+# =========================================================
+# Additional window management
+# =========================================================
+
+# Launch Ghostty
+cmd - return : open -a Ghostty
+
+# Toggle floating for the focused window
+cmd + shift - f : yabai -m window --toggle float
+
+# Balance the current BSP layout
+cmd + shift - b : yabai -m space --balance
+
+# Rotate the current BSP layout 90 degrees
+cmd + shift - r : yabai -m space --rotate 90
+
+
+# =========================================================
+# Move window to Space and follow
+# =========================================================
+
+cmd + ctrl - 1 : yabai -m window --space 1 && yabai -m space --focus 1
+cmd + ctrl - 2 : yabai -m window --space 2 && yabai -m space --focus 2
+cmd + ctrl - 3 : yabai -m window --space 3 && yabai -m space --focus 3
+cmd + ctrl - 4 : yabai -m window --space 4 && yabai -m space --focus 4

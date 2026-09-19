@@ -1,10 +1,10 @@
+
 #!/bin/bash
 
 # =========================================================
 # SketchyBar
 # Mac mini — Everforest Dark Hard
 # =========================================================
-
 
 # ---------------------------------------------------------
 # Everforest Dark Hard Palette
@@ -35,9 +35,9 @@ BLUE=0xff7fbbb3
 PURPLE=0xffd699b6
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Bar
-# ---------------------------------------------------------
+# =========================================================
 
 sketchybar --bar \
     position=top \
@@ -51,9 +51,9 @@ sketchybar --bar \
     shadow=off
 
 
-# ---------------------------------------------------------
+# =========================================================
 # Defaults
-# ---------------------------------------------------------
+# =========================================================
 
 sketchybar --default \
     icon.font="Hack Nerd Font:Regular:14.0" \
@@ -63,9 +63,104 @@ sketchybar --default \
     padding_left=6 \
     padding_right=6
 
+
 # =========================================================
-# LEFT
-# Time • Date
+# LEFT — Apple Menu
+# =========================================================
+
+sketchybar --add item apple.menu left \
+           --set apple.menu \
+                 icon="􀣺" \
+                 icon.font="SF Pro:Regular:16.0" \
+                 icon.color=$FG \
+                 icon.padding_left=12 \
+                 icon.padding_right=12 \
+                 label.drawing=off \
+                 padding_left=0 \
+                 padding_right=0 \
+                 popup.drawing=off \
+                 popup.align=left \
+                 popup.background.color=$BG_DIM \
+                 popup.background.corner_radius=12 \
+                 popup.background.border_width=1 \
+                 popup.background.border_color=$BG3 \
+                 popup.background.shadow.drawing=off \
+                 click_script="sketchybar --set apple.menu popup.drawing=toggle"
+
+sketchybar --add bracket apple_group apple.menu \
+           --set apple_group \
+                 background.drawing=on \
+                 background.color=$BG_DIM \
+                 background.height=32 \
+                 background.corner_radius=12 \
+                 background.border_width=1 \
+                 background.border_color=$BG3
+
+
+# ---------------------------------------------------------
+# Apple Popup Items
+# ---------------------------------------------------------
+
+sketchybar --add item apple.settings popup.apple.menu \
+           --set apple.settings \
+                 icon="󰒓" \
+                 label="System Settings" \
+                 click_script="$HOME/.config/sketchybar/plugins/apple_menu.sh settings"
+
+sketchybar --add item apple.lock popup.apple.menu \
+           --set apple.lock \
+                 icon="󰌾" \
+                 label="Lock Screen" \
+                 click_script="$HOME/.config/sketchybar/plugins/apple_menu.sh lock"
+
+sketchybar --add item apple.sleep popup.apple.menu \
+           --set apple.sleep \
+                 icon="󰒲" \
+                 label="Sleep" \
+                 click_script="$HOME/.config/sketchybar/plugins/apple_menu.sh sleep"
+
+sketchybar --add item apple.restart popup.apple.menu \
+           --set apple.restart \
+                 icon="󰜉" \
+                 label="Restart…" \
+                 click_script="$HOME/.config/sketchybar/plugins/apple_menu.sh restart"
+
+sketchybar --add item apple.shutdown popup.apple.menu \
+           --set apple.shutdown \
+                 icon="󰐥" \
+                 label="Shut Down…" \
+                 click_script="$HOME/.config/sketchybar/plugins/apple_menu.sh shutdown"
+
+
+# ---------------------------------------------------------
+# Apple Popup Styling
+# ---------------------------------------------------------
+
+for item in \
+    apple.settings \
+    apple.lock \
+    apple.sleep \
+    apple.restart \
+    apple.shutdown
+do
+    sketchybar --set "$item" \
+        icon.font="Hack Nerd Font:Regular:14.0" \
+        icon.color=$AQUA \
+        icon.padding_left=12 \
+        icon.padding_right=10 \
+        label.font="SF Pro:Medium:12.0" \
+        label.color=$FG \
+        label.padding_left=0 \
+        label.padding_right=16 \
+        padding_left=5 \
+        padding_right=5 \
+        background.height=28 \
+        background.corner_radius=7
+done
+
+
+# =========================================================
+# LEFT — Time • Date
 # =========================================================
 
 sketchybar --add item clock left \
@@ -78,7 +173,6 @@ sketchybar --add item clock left \
                  label.font="SF Pro:Medium:12.0" \
                  script='sketchybar --set clock label="$(date "+%H:%M  •  %d/%m/%y")"'
 
-
 sketchybar --add bracket left_group clock \
            --set left_group \
                  background.drawing=on \
@@ -90,8 +184,7 @@ sketchybar --add bracket left_group clock \
 
 
 # =========================================================
-# CENTRE
-# Yabai / native macOS Spaces
+# CENTRE — Yabai / Native macOS Spaces
 # =========================================================
 
 for sid in 1 2 3 4; do
@@ -105,8 +198,8 @@ for sid in 1 2 3 4; do
                      label.color=$GREY1 \
                      label.padding_left=9 \
                      label.padding_right=9 \
-                     padding_left=2 \
-                     padding_right=2 \
+                     padding_left=5 \
+                     padding_right=5 \
                      background.drawing=off \
                      background.height=20 \
                      background.corner_radius=7 \
@@ -115,6 +208,10 @@ for sid in 1 2 3 4; do
                      script="$HOME/.config/sketchybar/plugins/yabai.sh $sid"
 
 done
+
+# Extra clearance at the outside edges of the pill
+sketchybar --set space.1 padding_left=9
+sketchybar --set space.4 padding_right=9
 
 sketchybar --add bracket workspace_group '/space\..*/' \
            --set workspace_group \
@@ -127,35 +224,15 @@ sketchybar --add bracket workspace_group '/space\..*/' \
 
 
 # =========================================================
-# RIGHT
-# Wi-Fi + Speed + Volume + Percentage
+# RIGHT — Wi-Fi + Volume
 # =========================================================
 
-#
-# NOTE:
-# SketchyBar items added on the right are visually reversed,
-# so these are intentionally declared in reverse order.
-#
+# Right-side items are visually reversed.
+# Declare volume before Wi-Fi to display Wi-Fi first.
 
 
 # ---------------------------------------------------------
-# Volume Percentage
-# ---------------------------------------------------------
-
-sketchybar --add item volume.percent right \
-           --subscribe volume.percent volume_change \
-           --set volume.percent \
-                 icon.drawing=off \
-                 label="--%" \
-                 label.font="SF Pro:Medium:11.0" \
-                 label.color=$FG \
-                 padding_left=4 \
-                 padding_right=10 \
-                 script="$HOME/.config/sketchybar/plugins/volume.sh"
-
-
-# ---------------------------------------------------------
-# Volume Icon Block
+# Volume Icon
 # ---------------------------------------------------------
 
 sketchybar --add item volume.icon right \
@@ -178,23 +255,7 @@ sketchybar --add item volume.icon right \
 
 
 # ---------------------------------------------------------
-# Network Speed
-# ---------------------------------------------------------
-
-sketchybar --add item wifi.speed right \
-           --set wifi.speed \
-                 icon.drawing=off \
-                 label="-- KB/s" \
-                 label.font="SF Pro:Medium:11.0" \
-                 label.color=$FG \
-                 padding_left=4 \
-                 padding_right=10 \
-                 update_freq=2 \
-                 script="$HOME/.config/sketchybar/plugins/wifi.sh"
-
-
-# ---------------------------------------------------------
-# Wi-Fi Icon Block
+# Wi-Fi Icon
 # ---------------------------------------------------------
 
 sketchybar --add item wifi.icon right \
@@ -210,7 +271,9 @@ sketchybar --add item wifi.icon right \
                  background.drawing=on \
                  background.color=$AQUA \
                  background.height=24 \
-                 background.corner_radius=8
+                 background.corner_radius=8 \
+                 update_freq=5 \
+                 script="$HOME/.config/sketchybar/plugins/wifi.sh"
 
 
 # ---------------------------------------------------------
@@ -240,9 +303,7 @@ sketchybar --add slider volume.slider right 100 \
 
 sketchybar --add bracket right_group \
            wifi.icon \
-           wifi.speed \
            volume.icon \
-           volume.percent \
            volume.slider \
            --set right_group \
                  background.drawing=on \
@@ -262,8 +323,9 @@ for sid in 1 2 3 4; do
         script="$HOME/.config/sketchybar/plugins/yabai.sh $sid"
 done
 
-# ---------------------------------------------------------
+
+# =========================================================
 # Initial Update
-# ---------------------------------------------------------
+# =========================================================
 
 sketchybar --update
