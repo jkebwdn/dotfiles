@@ -35,3 +35,12 @@ cmd - 1 : skhd -k "ctrl - 1"
 cmd - 2 : skhd -k "ctrl - 2"
 cmd - 3 : skhd -k "ctrl - 3"
 cmd - 4 : skhd -k "ctrl - 4"
+
+# ---------------------------------------------------------
+# Move focused window to another Space
+# ---------------------------------------------------------
+
+cmd + shift - 1 : yabai -m window --space 1
+cmd + shift - 2 : yabai -m window --space 2
+cmd + shift - 3 : yabai -m window --space 3
+cmd + shift - 4 : yabai -m window --space 4

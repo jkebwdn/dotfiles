@@ -254,14 +254,13 @@ sketchybar --add bracket right_group \
 
 
 # =========================================================
-# Initial AeroSpace State
+# Initial Yabai Workspace State
 # =========================================================
-#
-#
-FOCUSED_WORKSPACE="$(aerospace list-workspaces --focused)"
 
-sketchybar --trigger aerospace_workspace_change \
-           FOCUSED_WORKSPACE="$FOCUSED_WORKSPACE"
+for sid in 1 2 3 4; do
+    sketchybar --set space.$sid \
+        script="$HOME/.config/sketchybar/plugins/yabai.sh $sid"
+done
 
 # ---------------------------------------------------------
 # Initial Update

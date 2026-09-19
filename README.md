@@ -37,7 +37,8 @@ macOS configurations are maintained separately from Linux rather than attempting
 
 Current tooling includes:
 
-- AeroSpace
+- Yabai
+- Skhd
 - SketchyBar
 - JankyBorders
 - Ghostty

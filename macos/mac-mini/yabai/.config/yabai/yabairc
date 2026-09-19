@@ -6,6 +6,13 @@
 # Initial configuration: SIP fully enabled
 # ---------------------------------------------------------
 
+# ---------------------------------------------------------
+# Scripting addition
+# ---------------------------------------------------------
+
+sudo -n /opt/homebrew/bin/yabai --load-sa
+
+
 # Layout
 yabai -m config layout bsp
 yabai -m config auto_balance off
@@ -30,3 +37,7 @@ yabai -m config top_padding 56
 yabai -m config mouse_modifier fn
 yabai -m config mouse_action1 move
 yabai -m config mouse_action2 resize
+
+# Refresh SketchyBar when the focused Space changes
+yabai -m signal --add event=space_changed \
+    action="sketchybar --update"

@@ -1,20 +1,12 @@
 #!/bin/bash
 
-# =========================================================
-# SketchyBar — Yabai / native macOS Spaces
-# =========================================================
-
-WORKSPACE="$1"
-
+# Everforest Dark Hard
 FG=0xffd3c6aa
 BG_DIM=0xff1e2326
 GREY1=0xff859289
 
-# Get the currently focused native Space
-FOCUSED_WORKSPACE="$(
-    yabai -m query --spaces --space |
-    /usr/bin/plutil -extract index raw -o - -
-)"
+WORKSPACE="$1"
+FOCUSED_WORKSPACE="$(yabai -m query --spaces --space 2>/dev/null | jq -r '.index // empty')"
 
 if [ "$WORKSPACE" = "$FOCUSED_WORKSPACE" ]; then
     sketchybar --set "$NAME" \
