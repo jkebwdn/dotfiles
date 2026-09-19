@@ -1,0 +1,37 @@
+# ---------------------------------------------------------
+# skhd
+# Mac mini — Yabai keyboard shortcuts
+# ---------------------------------------------------------
+
+# Focus windows
+cmd - left  : yabai -m window --focus west
+cmd - down  : yabai -m window --focus south
+cmd - up    : yabai -m window --focus north
+cmd - right : yabai -m window --focus east
+
+# Swap windows
+cmd + shift - left  : yabai -m window --swap west
+cmd + shift - down  : yabai -m window --swap south
+cmd + shift - up    : yabai -m window --swap north
+cmd + shift - right : yabai -m window --swap east
+
+# Resize windows
+cmd + ctrl - left  : yabai -m window --resize left:-50:0
+cmd + ctrl - right : yabai -m window --resize right:50:0
+cmd + ctrl - up    : yabai -m window --resize top:0:-50
+cmd + ctrl - down  : yabai -m window --resize bottom:0:50
+
+# Toggle floating / tiling
+cmd + alt - v : yabai -m window --toggle float
+
+# Toggle native fullscreen
+cmd + alt - f : yabai -m window --toggle native-fullscreen
+
+# Rotate layout
+cmd + alt - t : yabai -m space --rotate 90
+
+# Switch workspaces using macOS Mission Control shortcuts
+cmd - 1 : skhd -k "ctrl - 1"
+cmd - 2 : skhd -k "ctrl - 2"
+cmd - 3 : skhd -k "ctrl - 3"
+cmd - 4 : skhd -k "ctrl - 4"

@@ -63,14 +63,6 @@ sketchybar --default \
     padding_left=6 \
     padding_right=6
 
-
-# ---------------------------------------------------------
-# AeroSpace Event
-# ---------------------------------------------------------
-
-sketchybar --add event aerospace_workspace_change
-
-
 # =========================================================
 # LEFT
 # Time • Date
@@ -99,13 +91,13 @@ sketchybar --add bracket left_group clock \
 
 # =========================================================
 # CENTRE
-# AeroSpace Workspaces
+# Yabai / native macOS Spaces
 # =========================================================
 
 for sid in 1 2 3 4; do
 
     sketchybar --add item space.$sid center \
-               --subscribe space.$sid aerospace_workspace_change \
+               --subscribe space.$sid space_change \
                --set space.$sid \
                      icon.drawing=off \
                      label="$sid" \
@@ -119,11 +111,10 @@ for sid in 1 2 3 4; do
                      background.height=20 \
                      background.corner_radius=7 \
                      background.color=$FG \
-                     click_script="aerospace workspace $sid" \
-                     script="$HOME/.config/sketchybar/plugins/aerospace.sh $sid"
+                     click_script="skhd -k 'ctrl - $sid'" \
+                     script="$HOME/.config/sketchybar/plugins/yabai.sh $sid"
 
 done
-
 
 sketchybar --add bracket workspace_group '/space\..*/' \
            --set workspace_group \
@@ -265,12 +256,12 @@ sketchybar --add bracket right_group \
 # =========================================================
 # Initial AeroSpace State
 # =========================================================
-
+#
+#
 FOCUSED_WORKSPACE="$(aerospace list-workspaces --focused)"
 
 sketchybar --trigger aerospace_workspace_change \
            FOCUSED_WORKSPACE="$FOCUSED_WORKSPACE"
-
 
 # ---------------------------------------------------------
 # Initial Update
