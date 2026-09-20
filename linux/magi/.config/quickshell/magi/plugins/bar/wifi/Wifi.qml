@@ -11,6 +11,11 @@ Rectangle {
     id: root
 
     property bool menuOpen: false
+    property var selectedNetwork: null
+    property var pendingNetwork: null
+    property string connectionError: ""
+
+    readonly property bool connecting: pendingNetwork !== null
 
     implicitWidth: 26
     implicitHeight: 26
@@ -32,6 +37,76 @@ Rectangle {
             return "󰤢"
 
         return "󰤟"
+    }
+
+    function clearSelection() {
+        passwordInput.text = ""
+        selectedNetwork = null
+    }
+
+    function selectNetwork(network) {
+        if (network === null || network.connected || connecting)
+            return
+
+        connectionError = ""
+        clearSelection()
+
+        if (network.known) {
+            pendingNetwork = network
+            MagiServices.Network.connectKnown(network)
+            return
+        }
+
+        if (network.security === WifiSecurityType.Open) {
+            pendingNetwork = network
+            MagiServices.Network.connectOpen(network)
+            return
+        }
+
+        // A secured network needs keyboard input.
+        // Close the browsing popup and open the focusable window.
+        selectedNetwork = network
+        menuOpen = false
+    }
+
+    function submitPassword() {
+        if (selectedNetwork === null
+                || passwordInput.text.length === 0
+                || connecting) {
+            return
+        }
+
+        const network = selectedNetwork
+        const password = passwordInput.text
+
+        connectionError = ""
+        pendingNetwork = network
+
+        MagiServices.Network.connectWithPassword(
+            network,
+            password
+        )
+
+        clearSelection()
+        menuOpen = true
+    }
+
+    function connectionSucceeded(network) {
+        if (pendingNetwork !== network)
+            return
+
+        pendingNetwork = null
+        connectionError = ""
+        clearSelection()
+    }
+
+    function connectionFailed(network) {
+        if (pendingNetwork !== network)
+            return
+
+        pendingNetwork = null
+        connectionError =
+            "Connection failed. Check the password or try again."
     }
 
     // Bar icon
@@ -56,7 +131,12 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
 
-        onClicked: root.menuOpen = !root.menuOpen
+        onClicked: {
+            if (root.selectedNetwork !== null)
+                root.clearSelection()
+            else
+                root.menuOpen = !root.menuOpen
+        }
     }
 
     // Hover tooltip
@@ -71,7 +151,10 @@ Rectangle {
         implicitWidth: tooltipText.implicitWidth + 20
         implicitHeight: 28
 
-        visible: mouseArea.containsMouse && !root.menuOpen
+        visible: mouseArea.containsMouse
+            && !root.menuOpen
+            && root.selectedNetwork === null
+
         color: "transparent"
 
         Rectangle {
@@ -94,7 +177,7 @@ Rectangle {
         }
     }
 
-    // Network selector
+    // Network selector: browsing only, no keyboard input required.
 
     PopupWindow {
         id: wifiMenu
@@ -110,7 +193,12 @@ Rectangle {
         color: "transparent"
 
         onVisibleChanged: {
-            MagiServices.Network.setScanning(visible)
+            MagiServices.Network.setScanning(
+                visible || root.selectedNetwork !== null
+            )
+
+            if (!visible && root.selectedNetwork === null)
+                root.connectionError = ""
         }
 
         Rectangle {
@@ -143,8 +231,6 @@ Rectangle {
                     }
 
                     Rectangle {
-                        id: wifiToggle
-
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
 
@@ -152,10 +238,7 @@ Rectangle {
                         height: 24
 
                         radius: MagiTheme.Theme.radiusSmall
-
-                        color: toggleMouse.containsMouse
-                            ? MagiTheme.Theme.surface
-                            : MagiTheme.Theme.surface
+                        color: MagiTheme.Theme.surface
 
                         Text {
                             anchors.centerIn: parent
@@ -170,16 +253,16 @@ Rectangle {
                         }
 
                         MouseArea {
-                            id: toggleMouse
-
                             anchors.fill: parent
-                            hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
 
                             onClicked: {
                                 MagiServices.Network.setWifiEnabled(
                                     !MagiServices.Network.wifiEnabled
                                 )
+
+                                root.clearSelection()
+                                root.connectionError = ""
                             }
                         }
                     }
@@ -190,9 +273,11 @@ Rectangle {
                 Text {
                     width: parent.width
 
-                    text: MagiServices.Network.connected
-                        ? "Connected: " + MagiServices.Network.ssid
-                        : "Not connected"
+                    text: !MagiServices.Network.wifiEnabled
+                        ? "Wi-Fi is off"
+                        : MagiServices.Network.connected
+                            ? "Connected: " + MagiServices.Network.ssid
+                            : "Not connected"
 
                     color: MagiTheme.Theme.text
                     font.family: MagiTheme.Theme.fontFamily
@@ -209,6 +294,8 @@ Rectangle {
                 }
 
                 Text {
+                    visible: MagiServices.Network.wifiEnabled
+
                     text: "Available networks"
 
                     color: MagiTheme.Theme.muted
@@ -221,6 +308,8 @@ Rectangle {
                 Flickable {
                     width: parent.width
                     height: 225
+
+                    visible: MagiServices.Network.wifiEnabled
 
                     contentWidth: width
                     contentHeight: networkColumn.implicitHeight
@@ -235,7 +324,9 @@ Rectangle {
                         spacing: 4
 
                         Repeater {
-                            model: MagiServices.Network.availableNetworks
+                            model: MagiServices.Network.wifiEnabled
+                                ? MagiServices.Network.availableNetworks
+                                : null
 
                             delegate: Rectangle {
                                 id: networkRow
@@ -254,7 +345,23 @@ Rectangle {
                                     ? MagiTheme.Theme.surface
                                     : "transparent"
 
-                                // Signal icon
+                                Connections {
+                                    target: networkRow.modelData
+
+                                    function onConnectedChanged() {
+                                        if (networkRow.modelData.connected) {
+                                            root.connectionSucceeded(
+                                                networkRow.modelData
+                                            )
+                                        }
+                                    }
+
+                                    function onConnectionFailed(reason) {
+                                        root.connectionFailed(
+                                            networkRow.modelData
+                                        )
+                                    }
+                                }
 
                                 Text {
                                     id: networkIcon
@@ -269,8 +376,6 @@ Rectangle {
                                     font.family: MagiTheme.Theme.fontFamily
                                     font.pixelSize: 14
                                 }
-
-                                // Network name
 
                                 Text {
                                     anchors.left: networkIcon.right
@@ -287,8 +392,6 @@ Rectangle {
 
                                     elide: Text.ElideRight
                                 }
-
-                                // Signal percentage / connected indicator
 
                                 Text {
                                     id: networkStrength
@@ -315,8 +418,202 @@ Rectangle {
                                     anchors.fill: parent
                                     hoverEnabled: true
 
-                                    // Connection actions come next.
+                                    cursorShape: networkRow.modelData.connected
+                                        || root.connecting
+                                        ? Qt.ArrowCursor
+                                        : Qt.PointingHandCursor
+
+                                    onClicked: {
+                                        root.selectNetwork(
+                                            networkRow.modelData
+                                        )
+                                    }
                                 }
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    width: parent.width
+
+                    visible: !MagiServices.Network.wifiEnabled
+
+                    text: "Turn on Wi-Fi to see nearby networks."
+
+                    color: MagiTheme.Theme.muted
+                    font.family: MagiTheme.Theme.fontFamily
+                    font.pixelSize: 12
+
+                    wrapMode: Text.WordWrap
+                }
+
+                // Connection feedback
+
+                Text {
+                    width: parent.width
+
+                    visible: root.connectionError !== ""
+                        || root.connecting
+
+                    text: root.connectionError !== ""
+                        ? root.connectionError
+                        : "Connecting…"
+
+                    color: root.connectionError !== ""
+                        ? MagiTheme.Theme.muted
+                        : MagiTheme.Theme.text
+
+                    font.family: MagiTheme.Theme.fontFamily
+                    font.pixelSize: 11
+
+                    wrapMode: Text.WordWrap
+                }
+            }
+        }
+    }
+
+    // Separate layer-shell window for password entry.
+    // OnDemand allows it to receive keyboard focus.
+
+    PanelWindow {
+        id: passwordWindow
+
+        anchors {
+            top: true
+            right: true
+        }
+
+        margins {
+            top: 48
+            right: 16
+        }
+
+        implicitWidth: 300
+        implicitHeight: 150
+
+        exclusionMode: ExclusionMode.Ignore
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+
+        visible: root.selectedNetwork !== null
+        color: "transparent"
+
+        onVisibleChanged: {
+            MagiServices.Network.setScanning(
+                visible || root.menuOpen
+            )
+
+            if (visible)
+                passwordInput.forceActiveFocus()
+        }
+
+        Rectangle {
+            anchors.fill: parent
+
+            radius: MagiTheme.Theme.radiusMedium
+            color: MagiTheme.Theme.elevated
+
+            Column {
+                anchors.fill: parent
+                anchors.margins: 12
+                spacing: 10
+
+                Text {
+                    width: parent.width
+
+                    text: root.selectedNetwork !== null
+                        ? "Connect to " + root.selectedNetwork.name
+                        : ""
+
+                    color: MagiTheme.Theme.text
+                    font.family: MagiTheme.Theme.fontFamily
+                    font.pixelSize: 13
+                    font.bold: true
+
+                    elide: Text.ElideRight
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 32
+
+                    radius: MagiTheme.Theme.radiusSmall
+                    color: MagiTheme.Theme.surface
+
+                    TextInput {
+                        id: passwordInput
+
+                        anchors.fill: parent
+                        anchors.leftMargin: 8
+                        anchors.rightMargin: 8
+
+                        activeFocusOnTab: true
+                        verticalAlignment: TextInput.AlignVCenter
+                        echoMode: TextInput.Password
+
+                        color: MagiTheme.Theme.text
+                        font.family: MagiTheme.Theme.fontFamily
+                        font.pixelSize: 12
+
+                        selectByMouse: true
+
+                        onAccepted: root.submitPassword()
+                    }
+                }
+
+                Row {
+                    spacing: 8
+
+                    Rectangle {
+                        width: 80
+                        height: 26
+
+                        radius: MagiTheme.Theme.radiusSmall
+                        color: MagiTheme.Theme.surface
+
+                        Text {
+                            anchors.centerIn: parent
+
+                            text: "Connect"
+
+                            color: MagiTheme.Theme.text
+                            font.family: MagiTheme.Theme.fontFamily
+                            font.pixelSize: 11
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: root.submitPassword()
+                        }
+                    }
+
+                    Rectangle {
+                        width: 70
+                        height: 26
+
+                        radius: MagiTheme.Theme.radiusSmall
+                        color: MagiTheme.Theme.surface
+
+                        Text {
+                            anchors.centerIn: parent
+
+                            text: "Cancel"
+
+                            color: MagiTheme.Theme.text
+                            font.family: MagiTheme.Theme.fontFamily
+                            font.pixelSize: 11
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: {
+                                root.clearSelection()
+                                root.connectionError = ""
+                                root.menuOpen = true
                             }
                         }
                     }
