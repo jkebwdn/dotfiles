@@ -8,6 +8,8 @@ import "../../plugins/bar/clock" as ClockPlugin
 import "../../plugins/bar/date" as DatePlugin
 import "../../plugins/bar/workspaces" as WorkspacePlugin
 import "../../plugins/bar/wifi" as WifiPlugin
+import "../../plugins/bar/volume" as VolumePlugin
+import "../../plugins/bar/battery" as BatteryPlugin
 import "../../services" as MagiServices
 
 PanelWindow {
@@ -35,7 +37,9 @@ PanelWindow {
         "clock": clockComponent,
         "date": dateComponent,
         "workspaces": workspacesComponent,
-        "wifi": wifiComponent
+        "wifi": wifiComponent,
+        "volume": volumeComponent,
+        "battery": batteryComponent
     })
 
     Component {
@@ -60,6 +64,18 @@ PanelWindow {
     id: wifiComponent
 
     WifiPlugin.Wifi {}
+    }
+
+    Component {
+    id: volumeComponent
+
+    VolumePlugin.Volume {}
+    }
+
+    Component {
+    id: batteryComponent
+
+    BatteryPlugin.Battery {}
     }
 
     Row {

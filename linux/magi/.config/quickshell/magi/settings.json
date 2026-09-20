@@ -3,5 +3,5 @@
   "palette": "catppuccin",
   "barLeftPlugins": ["clock", "date"],
   "barCenterPlugins": ["workspaces"],
-  "barRightPlugins": ["wifi"]
+  "barRightPlugins": ["wifi", "volume", "battery"]
 }

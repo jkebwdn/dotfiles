@@ -8,8 +8,13 @@ import Quickshell.Networking
 QtObject {
     id: root
 
-    readonly property bool wifiEnabled: Networking.wifiEnabled
-    readonly property bool wifiHardwareEnabled: Networking.wifiHardwareEnabled
+    // Wi-Fi state
+
+    readonly property bool wifiEnabled:
+        Networking.wifiEnabled
+
+    readonly property bool wifiHardwareEnabled:
+        Networking.wifiHardwareEnabled
 
     property var wifiDevice: null
     property var activeNetwork: null
@@ -20,14 +25,18 @@ QtObject {
     readonly property string ssid:
         connected ? activeNetwork.name : ""
 
+    // Quickshell reports signal strength as a fraction (0.0–1.0).
+
     readonly property int signalStrength:
-        connected ? activeNetwork.signalStrength : 0
+        connected ? Math.round(activeNetwork.signalStrength * 100) : 0
 
     readonly property string statusText:
         !wifiHardwareEnabled ? "Wi-Fi unavailable"
         : !wifiEnabled ? "Wi-Fi disabled"
         : connected ? ssid + " (" + signalStrength + "%)"
         : "Wi-Fi disconnected"
+
+    // Wi-Fi icon
 
     readonly property string icon:
         !wifiHardwareEnabled || !wifiEnabled ? "󰤭"
@@ -37,13 +46,30 @@ QtObject {
         : signalStrength >= 25 ? "󰤢"
         : "󰤟"
 
+    // Available networks for the Wi-Fi menu
+
+    readonly property var availableNetworks:
+        wifiDevice !== null ? wifiDevice.networks : null
+
+    // Wi-Fi controls
+
+    function setWifiEnabled(enabled) {
+        Networking.wifiEnabled = enabled
+    }
+
+    function setScanning(enabled) {
+        if (wifiDevice !== null)
+            wifiDevice.scannerEnabled = enabled
+    }
+
+    // Find the first available Wi-Fi device
+
     property Instantiator deviceObserver: Instantiator {
         model: Networking.devices
 
         delegate: QtObject {
             required property var modelData
 
-            // Keep track of the first available Wi-Fi device.
             Component.onCompleted: {
                 if (modelData.type === DeviceType.Wifi
                         && root.wifiDevice === null) {
@@ -60,10 +86,10 @@ QtObject {
         }
     }
 
+    // Track the connected network
+
     property Instantiator networkObserver: Instantiator {
-        model: root.wifiDevice !== null
-            ? root.wifiDevice.networks
-            : null
+        model: root.availableNetworks
 
         delegate: QtObject {
             required property var modelData
@@ -83,14 +109,11 @@ QtObject {
                     root.activeNetwork = null
             }
 
-           
             property Connections connectionObserver: Connections {
-            target: modelData
+                target: modelData
 
-            function onConnectedChanged() {
-            updateActiveNetwork()
-            
-
+                function onConnectedChanged() {
+                    updateActiveNetwork()
                 }
             }
         }
