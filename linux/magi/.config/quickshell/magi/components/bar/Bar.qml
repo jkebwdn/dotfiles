@@ -15,6 +15,9 @@ import "../../services" as MagiServices
 PanelWindow {
     id: bar
 
+    exclusionMode: ExclusionMode.Auto
+    WlrLayershell.layer: WlrLayer.Top
+
     anchors {
         top: true
         left: true
@@ -22,17 +25,21 @@ PanelWindow {
     }
 
     implicitHeight: 48
-
     color: "transparent"
-    exclusionMode: ExclusionMode.Ignore
 
     // Enabled plugins and their positions.
 
-    readonly property var leftPlugins: MagiServices.Settings.barLeftPlugins
-    readonly property var centerPlugins: MagiServices.Settings.barCenterPlugins
-    readonly property var rightPlugins: MagiServices.Settings.barRightPlugins
+    readonly property var leftPlugins:
+        MagiServices.Settings.barLeftPlugins
+
+    readonly property var centerPlugins:
+        MagiServices.Settings.barCenterPlugins
+
+    readonly property var rightPlugins:
+        MagiServices.Settings.barRightPlugins
 
     // Map each plugin name to its QML component.
+
     readonly property var pluginComponents: ({
         "clock": clockComponent,
         "date": dateComponent,
@@ -55,28 +62,32 @@ PanelWindow {
     }
 
     Component {
-    id: workspacesComponent
+        id: workspacesComponent
 
-    WorkspacePlugin.Workspaces {}
+        WorkspacePlugin.Workspaces {}
     }
 
     Component {
-    id: wifiComponent
+        id: wifiComponent
 
-    WifiPlugin.Wifi {}
+        WifiPlugin.Wifi {}
     }
 
     Component {
-    id: volumeComponent
+        id: volumeComponent
 
-    VolumePlugin.Volume {}
+        VolumePlugin.Volume {}
     }
 
     Component {
-    id: batteryComponent
+        id: batteryComponent
 
-    BatteryPlugin.Battery {}
+        BatteryPlugin.Battery {}
     }
+
+    // ---------------------------------------------------------
+    // Left section
+    // ---------------------------------------------------------
 
     Row {
         id: leftSection
@@ -100,6 +111,10 @@ PanelWindow {
         }
     }
 
+    // ---------------------------------------------------------
+    // Centre section
+    // ---------------------------------------------------------
+
     Row {
         id: centerSection
 
@@ -118,6 +133,10 @@ PanelWindow {
         }
     }
 
+    // ---------------------------------------------------------
+    // Right section
+    // ---------------------------------------------------------
+
     Row {
         id: rightSection
 
@@ -128,6 +147,17 @@ PanelWindow {
         }
 
         spacing: 8
+
+        // Shared expandable plugin test.
+        // The component owns the pill and its anchored menu.
+
+        ExpandablePlugin {
+            menuId: "test"
+            icon: "󰒓"
+            title: "MAGI · Test menu"
+        }
+
+        // Existing right-hand plugins.
 
         Repeater {
             model: bar.rightPlugins

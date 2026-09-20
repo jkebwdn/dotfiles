@@ -40,15 +40,12 @@ hl.config({
 ----------------------------------------------------------------
 
 hl.on("hyprland.start", function()
+    hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
     hl.exec_cmd('bash -c "wl-paste --watch cliphist store &"')
-
-    -- If you later enable hyprpolkitagent as a systemd user service,
-    -- this can be removed.
-    hl.exec_cmd("/usr/bin/hyprpolkitagent")
-
     hl.exec_cmd("hyprpaper")
+    hl.exec_cmd("hypridle")
     hl.exec_cmd("hyprmon")
-    hl.exec_cmd("waybar")
+    hl.exec_cmd("quickshell -c magi")
     hl.exec_cmd("swaync")
     hl.exec_cmd("~/.config/swaync/scripts/swaync-greeting.sh")
 end)
@@ -61,7 +58,12 @@ end)
 hl.config({
     general = {
         gaps_in     = 8,
-        gaps_out    = 20,
+        gaps_out = {
+                        top = 6,
+                        right = 18,
+                        bottom = 20,
+                        left = 18,
+                    },
         border_size = 2,
 
         col = {

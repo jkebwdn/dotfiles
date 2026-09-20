@@ -62,6 +62,35 @@ QtObject {
             wifiDevice.scannerEnabled = enabled
     }
 
+    // Connection controls
+
+    // Connect using an existing NetworkManager profile.
+
+    function connectKnown(network) {
+        if (network === null || network.connected || !network.known)
+            return
+
+        network.connect()
+    }
+
+    // Connect to a new password-protected network.
+
+    function connectWithPassword(network, password) {
+        if (network === null || network.connected || password.length === 0)
+            return
+
+        network.connectWithPsk(password)
+    }
+
+    // Connect to an open network.
+
+    function connectOpen(network) {
+        if (network === null || network.connected)
+            return
+
+        network.connect()
+    }
+
     // Find the first available Wi-Fi device
 
     property Instantiator deviceObserver: Instantiator {

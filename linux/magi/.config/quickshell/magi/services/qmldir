@@ -3,3 +3,4 @@ singleton Network 1.0 Network.qml
 singleton Settings 1.0 Settings.qml
 singleton Audio 1.0 Audio.qml
 singleton Battery 1.0 Battery.qml
+singleton MenuController 1.0 MenuController.qml
