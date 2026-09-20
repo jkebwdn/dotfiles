@@ -152,10 +152,12 @@ PanelWindow {
 
         spacing: 8
 
-        // Temporary expandable menu tests.
+        // -----------------------------------------------------
+        // Temporary expandable menu tests
         //
-        // Both receive the actual bar window so their popup
-        // coordinates can be calculated relative to it.
+        // Each menu supplies its own content while the shared
+        // component handles expansion, positioning and animation.
+        // -----------------------------------------------------
 
         ExpandablePlugin {
             barWindow: bar
@@ -163,6 +165,39 @@ PanelWindow {
             menuId: "test-settings"
             icon: "󰒓"
             title: "MAGI · Settings"
+
+            menuContent: Component {
+                Column {
+                    width: parent ? parent.width : 0
+                    spacing: 12
+
+                    Text {
+                        text: "Settings"
+
+                        color: "#d3c6aa"
+                        font.pixelSize: 13
+                        font.bold: true
+                    }
+
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+
+                        color: "#d3c6aa"
+                        opacity: 0.2
+                    }
+
+                    Text {
+                        width: parent.width
+
+                        text: "This content belongs to the Settings plugin."
+
+                        color: "#d3c6aa"
+                        font.pixelSize: 12
+                        wrapMode: Text.WordWrap
+                    }
+                }
+            }
         }
 
         ExpandablePlugin {
@@ -171,10 +206,46 @@ PanelWindow {
             menuId: "test-controls"
             icon: "󰍛"
             title: "MAGI · Controls"
+
+            menuContent: Component {
+                Column {
+                    width: parent ? parent.width : 0
+                    spacing: 12
+
+                    Text {
+                        text: "Controls"
+
+                        color: "#d3c6aa"
+                        font.pixelSize: 13
+                        font.bold: true
+                    }
+
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+
+                        color: "#d3c6aa"
+                        opacity: 0.2
+                    }
+
+                    Text {
+                        width: parent.width
+
+                        text: "This content belongs to the Controls plugin."
+
+                        color: "#d3c6aa"
+                        font.pixelSize: 12
+                        wrapMode: Text.WordWrap
+                    }
+                }
+            }
         }
 
-        // Existing right-hand plugins.
+        // -----------------------------------------------------
+        // Existing right-hand plugins
+        //
         // Wi-Fi, Volume and Battery remain unchanged.
+        // -----------------------------------------------------
 
         Repeater {
             model: bar.rightPlugins
