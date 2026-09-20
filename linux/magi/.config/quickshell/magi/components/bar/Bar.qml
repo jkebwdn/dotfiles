@@ -27,7 +27,9 @@ PanelWindow {
     implicitHeight: 48
     color: "transparent"
 
-    // Enabled plugins and their positions.
+    // ---------------------------------------------------------
+    // Enabled plugins and positions
+    // ---------------------------------------------------------
 
     readonly property var leftPlugins:
         MagiServices.Settings.barLeftPlugins
@@ -38,7 +40,9 @@ PanelWindow {
     readonly property var rightPlugins:
         MagiServices.Settings.barRightPlugins
 
-    // Map each plugin name to its QML component.
+    // ---------------------------------------------------------
+    // Plugin components
+    // ---------------------------------------------------------
 
     readonly property var pluginComponents: ({
         "clock": clockComponent,
@@ -148,16 +152,29 @@ PanelWindow {
 
         spacing: 8
 
-        // Shared expandable plugin test.
-        // The component owns the pill and its anchored menu.
+        // Temporary expandable menu tests.
+        //
+        // Both receive the actual bar window so their popup
+        // coordinates can be calculated relative to it.
 
         ExpandablePlugin {
-            menuId: "test"
+            barWindow: bar
+
+            menuId: "test-settings"
             icon: "󰒓"
-            title: "MAGI · Test menu"
+            title: "MAGI · Settings"
+        }
+
+        ExpandablePlugin {
+            barWindow: bar
+
+            menuId: "test-controls"
+            icon: "󰍛"
+            title: "MAGI · Controls"
         }
 
         // Existing right-hand plugins.
+        // Wi-Fi, Volume and Battery remain unchanged.
 
         Repeater {
             model: bar.rightPlugins
