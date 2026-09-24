@@ -77,34 +77,49 @@ version output. Package revisions and upstream version numbers differ.
 - Required tests: startup/default timing, invalid JSON, external reload,
   invalid plugin IDs, and persistence if a save mechanism is later approved.
 
-## Source observations awaiting deeper API research
+## Phase 1 — Windows, animation, input and lifecycle
 
-These are verified local declarations, not newly validated runtime contracts:
+Research completed 2026-09-24; no runtime tests performed. See the
+[detailed report](research/quickshell-windows-and-lifecycle.md) for evidence,
+compatibility limits, test matrix T01–T08 and the unimplemented design.
+Current MAGI HEAD is `7c79b1e85623bf4ccff9c5d2d7c62e703fe3a848`; its QML is
+unchanged from the initial audit. Package versions above were rechecked.
 
-- `components/bar/Bar.qml:18`: Auto exclusion and a 48px implicit height.
-- `components/bar/ExpandablePlugin.qml:77`: explicit animation stopping and
-  phase-dependent restart; see [D004](decisions.md#d004--retain-the-current-animation-baseline).
-- `components/bar/ExpandablePlugin.qml:397`: Loader with no explicit
-  close-time deactivation; lifetime and focus semantics need investigation.
-- `plugins/bar/wifi/Wifi.qml:495`: Ignore exclusion, OnDemand focus and
-  forceActiveFocus() on showing the password window.
-- `services/Network.qml:69`: connect()/connectWithPsk() routing; network
-  lifetime, authentication coverage and failure delivery need verification.
+Upstream v0.3.1 resolves to commit
+`1a4716cde794a59928d9d9fc15f2afc7a95de360`; this is the researched source
+release, not a verified Arch build hash. Qt pages displayed 6.11.2 when read.
 
-Official pages opened during the audit, retained as starting points rather
-than a completed analysis of every API:
-[PopupWindow](https://quickshell.org/docs/v0.3.1/types/Quickshell/PopupWindow/),
-[PanelWindow](https://quickshell.org/docs/v0.3.1/types/Quickshell/PanelWindow/),
-[WlrLayershell](https://quickshell.org/docs/v0.3.1/types/Quickshell.Wayland/WlrLayershell/),
-[WifiNetwork](https://quickshell.org/docs/v0.3.1/types/Quickshell.Networking/WifiNetwork/).
-All were inspected on 2026-09-24; deeper findings remain pending.
+| Finding | Concise result and primary source | Detail / local test |
+| --- | --- | --- |
+| W01 | [Auto exclusion](https://quickshell.org/docs/v0.3.1/types/Quickshell/ExclusionMode/) attempts reservation from dimensions/anchors; Ignore does not reserve or respect other exclusion zones. | W01; T01/T07 |
+| W02 | [PopupWindow](https://quickshell.org/docs/v0.3.1/types/Quickshell/PopupWindow/) requires a valid anchor. Source confirms screen assignment belongs to its parent despite conflicting documentation prose. | W02; T04/T07 |
+| W03–W04 | Preserve window-relative watcher mapping. [Adjustment](https://quickshell.org/docs/v0.3.1/types/Quickshell/PopupAdjustment/) applies Flip, Slide, then Resize; enabling it changes the seam policy. | W03–W04; T01 |
+| W05–W06 | [Animation](https://doc.qt.io/qt-6/qml-qtquick-animation.html) natural completion differs from cancellation. Existing standalone handlers cannot be copied unchanged into grouped transitions. | W05–W06; T02 |
+| W07 | [Item opacity](https://doc.qt.io/qt-6/qml-qtquick-item.html#opacity-prop) does not disable actions; clip and surface input mask are separate concerns. | W07; T03 |
+| W08 | [OnDemand](https://quickshell.org/docs/v0.3.1/types/Quickshell.Wayland/WlrKeyboardFocus/) is compositor-mediated; item focus alone does not establish window keyboard eligibility. | W08; T04 |
+| W09 | [HyprlandFocusGrab](https://quickshell.org/docs/v0.3.1/types/Quickshell.Hyprland/HyprlandFocusGrab/) can notify dismissal without hiding; native popup grabFocus may bypass the close animation. | W09; T03/T04/T06 |
+| W10 | [Keys](https://doc.qt.io/qt-6/qml-qtquick-keys.html) supports explicit Escape routing for delivered events; no global Escape guarantee follows. | W10; T04 |
+| W11 | [Loader](https://doc.qt.io/qt-6/qml-qtquick-loader.html) owns loaded content; deactivation releases it. Hiding a window is a separate lifecycle operation. | W11; T05 |
+| W12 | [Tagged source](https://raw.githubusercontent.com/quickshell-mirror/quickshell/v0.3.1/src/window/proxywindow.cpp) preserves content while deleting hidden popup/layer-shell backing windows. | W12; T05/T06 |
+| W13 | [LazyLoader](https://quickshell.org/docs/v0.3.1/types/Quickshell/LazyLoader/) is optional for whole windows; accessing a loading item can block. | W13; T05 |
+| W14 | [ShellScreen](https://quickshell.org/docs/v0.3.1/types/Quickshell/ShellScreen/) references do not revive after reconnect. Keep geometry in logical pixels and choose an explicit host screen. | W14; T07 |
 
-## Next research and recording requirements
+The report distinguishes API contracts, tagged implementation observations,
+MAGI source, historical user tests and proposals. The preferred first test
+keeps the current animation/geometry and evaluates a Hyprland dismissal
+adapter. Keyboard delivery remains unresolved; preserve Wi-Fi's separate
+password panel. No design implementation has been approved or performed.
 
-Prioritize windows/geometry, focus/dismissal, Qt animation interruption and
-Loader lifetime, then networking migration requirements. Later topics:
-Bluetooth, media, service boundaries, plugin registration and nested pages.
-For each finding record source URL and date, documentation version or
-repository commit, exact component/function, demonstrated behavior, MAGI
-relevance, compatibility and required tests. Clearly label official API
-contracts, source observations, historical reports, new tests and proposals.
+## Remaining research and recording requirements
+
+Review the phase-1 design and isolated test plan before proceeding. Networking
+object lifetime/authentication/failure handling, Bluetooth, media and external
+reference-project investigations remain separate future work. The
+[WifiNetwork v0.3.1 page](https://quickshell.org/docs/v0.3.1/types/Quickshell.Networking/WifiNetwork/)
+remains the networking starting point inspected during the initial audit. No conclusions
+about their implementations are established here.
+
+For each finding record source URL and inspection date, documentation version
+or repository commit, exact component/function, demonstrated behavior, MAGI
+relevance, compatibility and required tests. Keep actual test outcomes distinct
+from suggested acceptance criteria.
