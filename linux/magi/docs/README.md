@@ -57,24 +57,35 @@ and Hyprland environment.
 - [Quickshell reference](quickshell-reference.md): version-specific evidence.
 - [Decisions](decisions.md): implementation history and preservation rules.
 - [Local audit](research/local-audit.md): findings and unanswered questions.
-- [Research index](research/README.md): planned external investigations.
+- [Research index](research/README.md): completed and planned investigations.
+- [Quickshell windows/lifecycle](research/quickshell-windows-and-lifecycle.md):
+  phase-1 API research, proposed lifecycle and pending tests.
+- [K4](research/k4.md) and [Serpantinum](research/serpantinum.md): phase-2A
+  pinned source investigations, including a neutral surface comparison.
 - `design/`: intended location for annotated renders and specifications.
 - `tasks/`: intended location for bounded research and implementation tasks.
 
-## Proposed research order
+## Research checkpoint and next steps
 
-1. Official Quickshell 0.3.1 windows, anchors, TransformWatcher, exclusion,
-   screen behavior, focus and dismissal; Qt animation interruption and
-   Loader lifecycle. Preserve the current positioning baseline.
-2. Networking object lifetime, scanning ownership and failure handling;
-   define Wi-Fi migration acceptance tests before proposing a migration.
-3. Source investigations into K4, Noctalia **v4**, Lucid, Caelestia and
-   Serpantinum, following the [research index](research/README.md).
-4. Review a menu/content/service contract and test plan with the user.
-5. Implement approved annotated designs incrementally.
+As of **2026-09-24**, phase 1 (official Quickshell windows/lifecycle) and
+phase 2A (K4 and Serpantinum source investigations) are documented. Phase 2A
+used MAGI HEAD `04b5e4b9556624f7a365524bebc8869d05f6cc21` as its local
+comparison point. No runtime experiments or live implementation changes
+were made during these research phases.
 
-External-project investigations have not begun and require the user's next
-approval. Record URLs, inspection dates, pinned versions/commits, source
+1. Review the lifecycle proposal and the
+   [A/B/C technical comparison](research/serpantinum.md#technical-comparison-for-magi).
+   Agree on focus, dismissal, content retention and screen ownership.
+2. If approved, run bounded isolated tests with MAGI's current animation and
+   positioning as the control; compare alternative hosts using identical
+   content. Preserve the working shell and Wi-Fi flow.
+3. Continue Noctalia **v4**, Lucid and Caelestia investigations after approval.
+4. Research networking object lifetime, scanning ownership and failure
+   handling before any Wi-Fi migration; review its acceptance tests first.
+5. Implement only the separately approved contract/design increments.
+
+Further research and implementation require the user's next approval.
+Record URLs, inspection dates, pinned versions/commits, source
 components, demonstrated behavior, compatibility and outstanding tests.
 Check licenses before reusing code or assets. Keep proposals separate from
 verified implementation and historical user reports.

@@ -1,29 +1,40 @@
 # MAGI research index
 
-Status: **2026-09-24**. The [local codebase audit](local-audit.md) is complete.
-Documentation reconciliation is approved; external-project research has
-not begun and awaits the user's next approval. No individual external
-project reports exist yet, and no architecture or license findings are
-claimed for the projects below.
+Status: **2026-09-24**. The [local codebase audit](local-audit.md), documentation
+reconciliation and [phase-1 Quickshell research](quickshell-windows-and-lifecycle.md)
+are complete. Phase 2A now documents [K4](k4.md) and [Serpantinum](serpantinum.md),
+including a separately pinned historical imperative-dots comparison.
+These are source investigations, not local runtime test results.
+
+| Completed investigation | Pinned source |
+| --- | --- |
+| K4, main | `5b1406c2267440c97c4c9986a9fa19c7424094c0` |
+| Serpantinum, master; version.txt 2.1.9 | `9f0e36bd9199c1d379701d052b884762b0de008b` |
+| Historical imperative-dots, master | `705501e29f8e3f2d3f29a8c185c6f845e30426d1` |
+
+Reports record licenses, source paths, ownership, motion, input, lifetime,
+compatibility questions and proposed tests. No external code was reused.
+See the [neutral A/B/C comparison](serpantinum.md#technical-comparison-for-magi)
+before selecting a host architecture. Further research/tests/implementation
+await approval.
 
 ## Proposed order
 
-First deepen the [official Quickshell 0.3.1 research](../quickshell-reference.md):
-windows/anchors/exclusion, TransformWatcher, focus/dismissal, Qt animation
-interruption and Loader lifetime. Then verify networking object lifetime,
-scanning and failure handling before designing a Wi-Fi migration.
+First review phase-1 T01–T07 and phase-2A's isolated comparison experiments.
+Keep MAGI's current popup geometry/animation as the control. Remaining
+external-project research can proceed in the order below after approval.
+Verify networking object lifetime, scanning and failure handling before
+designing a Wi-Fi migration.
 
-The following repositories were supplied by the project's original README.
-Their contents, supported versions and licenses remain to be inspected.
+The following remaining repositories were supplied by the original README.
+Their contents, supported versions and licenses remain uninspected.
 Questions in this table are investigation goals, not implementation claims.
 
 | Order | Project / source URL | Proposed investigation | Planned report |
 | --- | --- | --- | --- |
-| 1 | [K4](https://github.com/k4ditano/k4) | Bar/menu composition, positioning, animation ownership and interruption handling. | `k4.md` |
-| 2 | [Noctalia v4](https://github.com/noctalia-dev/noctalia-shell) | Identify and pin an actual v4 tag/commit; plugin interfaces, settings and menu/service lifecycle. Do not substitute current main for v4. | `noctalia-v4.md` |
-| 3 | [Lucid](https://github.com/Sn3akyy1/lucid) | Content hosting, transitions, focus and dismissal. | `lucid.md` |
-| 4 | [Caelestia](https://github.com/caelestia-dots/shell) | Window/focus coordination, service separation and screen handling. | `caelestia.md` |
-| 5 | [Serpantinum](https://github.com/ilyamiro/serpantinum) | Menu navigation, geometry and reusable content patterns. | `serpantinum.md` |
+| 1 | [Noctalia v4](https://github.com/noctalia-dev/noctalia-shell) | Identify and pin an actual v4 tag/commit; plugin interfaces, settings and menu/service lifecycle. Do not substitute current main for v4. | `noctalia-v4.md` |
+| 2 | [Lucid](https://github.com/Sn3akyy1/lucid) | Content hosting, transitions, focus and dismissal. | `lucid.md` |
+| 3 | [Caelestia](https://github.com/caelestia-dots/shell) | Window/focus coordination, service separation and screen handling. | `caelestia.md` |
 
 ## Required evidence for each investigation
 
