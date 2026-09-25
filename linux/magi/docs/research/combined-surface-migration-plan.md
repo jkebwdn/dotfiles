@@ -261,6 +261,15 @@ editing them. **Rollback:** documentation only.
 switching and interruption checks match the control. **Rollback:** restore the
 inline block in ExpandablePlugin.
 
+**Accepted 2026-09-25:** M1 is behavior-equivalent to the pre-extraction
+anchored implementation. Static validation passed, the normal MAGI shell
+loaded without QML/runtime errors, and Hyprland continued to report one
+1920x48 MAGI layer with exactly 48 logical pixels reserved. The operator
+confirmed normal Settings and Controls open/close, Settings -> Controls ->
+Settings switching, rapid interruption, moving-pill popup alignment, unchanged
+animation sequence/timing and unchanged Wi-Fi open/close behavior. No visible
+regression was observed. This acceptance covers M1 only; M2 has not begun.
+
 ### M2 — Generalize the pill contract under anchored fallback
 
 - Replace the hardcoded pill Text with plugin-supplied compact/header content

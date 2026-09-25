@@ -1,8 +1,8 @@
 
 import QtQuick
-import Quickshell
 
 import "../../services" as MagiServices
+import "menu" as MenuHosts
 
 Rectangle {
     id: root
@@ -324,91 +324,22 @@ Rectangle {
     }
 
     // ---------------------------------------------------------
-    // Popup position tracking
-    // ---------------------------------------------------------
-
-    TransformWatcher {
-        id: popupPositionWatcher
-
-        a: root.barWindow ? root.barWindow.contentItem : null
-        b: root
-    }
-
-    // ---------------------------------------------------------
     // Expanded panel
     // ---------------------------------------------------------
 
-    PopupWindow {
+    MenuHosts.AnchoredPopupHost {
         id: menuPopup
 
-        // Position relative to the actual bar window.
+        barWindow: root.barWindow
+        anchorItem: root
 
-        anchor.window: root.barWindow
+        menuWidth: root.width
+        revealedHeight: root.revealedHeight
+        menuHeight: root.menuHeight
+        contentOpacity: root.contentOpacity
 
-        anchor.rect.x: {
-            const transform = popupPositionWatcher.transform
-
-            if (!root.barWindow)
-                return 0
-
-            return Math.round(
-                root.barWindow.contentItem.mapFromItem(
-                    root, 0, root.height
-                ).x
-            )
-        }
-
-        anchor.rect.y: {
-            const transform = popupPositionWatcher.transform
-
-            if (!root.barWindow)
-                return 0
-
-            return Math.round(
-                root.barWindow.contentItem.mapFromItem(
-                    root, 0, root.height
-                ).y
-            )
-        }
-
-        anchor.adjustment: PopupAdjustment.None
-
-        implicitWidth: root.width
-        implicitHeight: Math.max(1, root.revealedHeight)
-
-        visible: root.revealedHeight > 0
-        color: "transparent"
-
-        Rectangle {
-            anchors.fill: parent
-
-            color: root.color
-            clip: true
-
-            topLeftRadius: 0
-            topRightRadius: 0
-
-            bottomLeftRadius: Math.min(8, height / 2)
-            bottomRightRadius: Math.min(8, height / 2)
-
-            // The host controls geometry and opacity.
-            // The loaded component controls its own contents.
-
-            Loader {
-                id: menuContentLoader
-
-                x: 12
-                y: 12
-
-                width: Math.max(0, parent.width - 24)
-                height: Math.max(0, root.menuHeight - 24)
-
-                sourceComponent: root.menuContent
-                    ? root.menuContent
-                    : fallbackMenuContent
-
-                opacity: root.contentOpacity
-            }
-        }
+        menuColor: root.color
+        menuContent: root.menuContent
+        fallbackContent: fallbackMenuContent
     }
 }
