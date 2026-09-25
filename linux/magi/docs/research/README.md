@@ -1,10 +1,17 @@
 # MAGI research index
 
-Status: **2026-09-24**. The [local codebase audit](local-audit.md), documentation
+Status: **2026-09-25**. The [local codebase audit](local-audit.md), documentation
 reconciliation and [phase-1 Quickshell research](quickshell-windows-and-lifecycle.md)
 are complete. Phase 2A now documents [K4](k4.md) and [Serpantinum](serpantinum.md),
 including a separately pinned historical imperative-dots comparison.
 These are source investigations, not local runtime test results.
+
+The isolated [combined-surface experiment](architecture-experiment.md) has also
+completed its required host validation on the recorded local runtime. Its
+results now inform the proposed
+[production migration plan](combined-surface-migration-plan.md), reconciled
+with the [current render requirements](../design/render-architecture-requirements.md).
+Neither document represents a live-shell implementation.
 
 | Completed investigation | Pinned source |
 | --- | --- |
@@ -15,8 +22,8 @@ These are source investigations, not local runtime test results.
 Reports record licenses, source paths, ownership, motion, input, lifetime,
 compatibility questions and proposed tests. No external code was reused.
 See the [neutral A/B/C comparison](serpantinum.md#technical-comparison-for-magi)
-before selecting a host architecture. Further research/tests/implementation
-await approval.
+and measured experiment before implementation. Further external research and
+live implementation await approval.
 
 ## Proposed order
 

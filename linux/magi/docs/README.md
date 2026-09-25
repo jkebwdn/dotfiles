@@ -62,23 +62,30 @@ and Hyprland environment.
   phase-1 API research, proposed lifecycle and pending tests.
 - [K4](research/k4.md) and [Serpantinum](research/serpantinum.md): phase-2A
   pinned source investigations, including a neutral surface comparison.
-- `design/`: intended location for annotated renders and specifications.
+- [Combined-surface experiment](research/architecture-experiment.md): isolated
+  fixture design, measurements and completed host-validation results.
+- [Render architecture requirements](design/render-architecture-requirements.md):
+  architecture-relevant visual and interaction direction from the current
+  MAGI render; it is not a styling specification.
+- [Combined-surface migration plan](research/combined-surface-migration-plan.md):
+  production invariants, ownership, staged checkpoints and rollback paths.
 - `tasks/`: intended location for bounded research and implementation tasks.
 
 ## Research checkpoint and next steps
 
-As of **2026-09-24**, phase 1 (official Quickshell windows/lifecycle) and
-phase 2A (K4 and Serpantinum source investigations) are documented. Phase 2A
-used MAGI HEAD `04b5e4b9556624f7a365524bebc8869d05f6cc21` as its local
-comparison point. No runtime experiments or live implementation changes
-were made during these research phases.
+As of **2026-09-25**, phase 1 (official Quickshell windows/lifecycle), phase
+2A (K4 and Serpantinum source investigations), and the isolated combined-host
+experiment are documented. Phase 2A used MAGI HEAD
+`04b5e4b9556624f7a365524bebc8869d05f6cc21` as its local comparison point.
+The fixture passed the required geometry, animation interruption, Region,
+OnDemand focus, consumed dismissal, fullscreen restoration and fixed-reservation
+checks on the recorded single-output scale-2 session. Live MAGI QML was not
+changed by the experiment or subsequent planning.
 
-1. Review the lifecycle proposal and the
-   [A/B/C technical comparison](research/serpantinum.md#technical-comparison-for-magi).
-   Agree on focus, dismissal, content retention and screen ownership.
-2. If approved, run bounded isolated tests with MAGI's current animation and
-   positioning as the control; compare alternative hosts using identical
-   content. Preserve the working shell and Wi-Fi flow.
+1. Review the [production migration plan](research/combined-surface-migration-plan.md)
+   and its render-derived invariants before authorizing any live-QML change.
+2. Begin only the smallest approved migration checkpoint, retaining the
+   anchored TransformWatcher host as the rollback/control.
 3. Continue Noctalia **v4**, Lucid and Caelestia investigations after approval.
 4. Research networking object lifetime, scanning ownership and failure
    handling before any Wi-Fi migration; review its acceptance tests first.
