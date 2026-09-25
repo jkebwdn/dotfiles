@@ -4,7 +4,7 @@ Prepared **2026-09-24**. Runtime record updated **2026-09-25** against the
 working tree based on MAGI HEAD
 `6aac5747e1332fe75755e2c899ac95dc265b5d84`. The isolated fixture now exists
 under `experiments/bar-surface/`; the completed measurements and the remaining
-unexecuted test are separated below from the earlier design proposal.
+unexecuted tests are separated below from the earlier design proposal.
 
 The agreed constraint is that MAGI keeps compositor-aware desktop reservation.
 The experiment therefore compares:
@@ -60,11 +60,11 @@ The window's mask will normally combine only:
 
 1. the 48px bar strip;
 2. each currently revealed menu rectangle; and
-3. an optional full-output dismissal catcher while a menu is open.
+3. a full-output dismissal catcher while a transient menu is open.
 
 The large native surface must not imply a full-screen input region. The
-catcher is a separately selected policy and must never be enabled merely
-because the combined surface exists.
+The catcher must be enabled only while a transient menu is open and must never
+be enabled merely because the combined surface exists.
 
 Each expandable plugin remains an Item in its configured Row. Its compact
 height remains 28px; its animated width continues to affect Row layout and
@@ -185,7 +185,7 @@ geometry, phase order and alignment. Normal open/close cycles and
 menu-one → menu-two → menu-one switching produced no blank frames, clipping,
 detachment or runtime error.
 
-The implementation under test keeps bar, active menu and optional catcher as
+The implementation under test keeps bar, active menu and configurable catcher as
 explicit mask regions (`experiments/bar-surface/ExperimentWindow.qml:26–36`,
 `:192–216`), while both hosts use the same animation and menu-content inputs
 (`experiments/bar-surface/ExpandablePill.qml:17–37`, `:280–315`).
@@ -249,17 +249,39 @@ part of either shell.
 These results verify the basic anchored control, combined geometry, explicit
 mask pass-through, OnDemand focus and fixed reservation on the installed
 single-output scale-2 runtime. They do not select the combined architecture by
-themselves. Fullscreen behavior, the consuming catcher, broader placement,
-multiple outputs, fractional scale and phase-by-phase interruption remain
-open.
+themselves. The bounded fullscreen-hiding result is recorded below. Additional
+outputs and fractional scale remain open.
 
-## Final bounded host test — prepared, not run
+## Fullscreen product policy
 
-Nothing in this section is a test result. Run it only after separate approval,
-using the existing isolated fixture. Do not edit live MAGI QML, add Hyprland
-rules or restart either shell.
+MAGI's intended compositor-fullscreen behavior is to hide the bar and expanded
+menus. A layer surface reporting `alpha: 0` in this state is therefore expected
+and is not a failure by itself. The acceptance criteria are:
 
-### Fixed setup
+- entering compositor fullscreen hides the bar and menu cleanly;
+- the fullscreen client remains fully interactive, with no invisible shell
+  region taking pointer or keyboard input;
+- menu state may persist internally while its surface is hidden;
+- leaving fullscreen restores a coherent bar/menu state with correct geometry,
+  focus and input routing;
+- menu open, close and switching continue to work after leaving fullscreen;
+- the reservation remains constant during the run; and
+- fixture cleanup restores the original reservation and removes its process,
+  layer, IPC target and keyboard eligibility.
+
+Transient MAGI menus, including Control Centre, Wi-Fi, Bluetooth and Volume,
+are intended to dismiss when the user clicks outside them. That outside click
+must be consumed by the shell: it must close the menu without also focusing,
+activating, scrolling or otherwise interacting with the application beneath
+the menu. Consuming outside-click dismissal is therefore a product requirement
+and its catcher behavior is a required host validation, not an optional policy.
+
+This policy supersedes the earlier proposal to treat bar/menu visibility above
+a fullscreen client as an undecided stacking choice.
+
+## Final bounded host tests — completed runtime results, 2026-09-25
+
+### Fixed setup used
 
 1. Record live MAGI's PID/layer, `hyprctl monitors -j`, `hyprctl layers -j`
    and the chosen client's normal tiled geometry.
@@ -277,71 +299,166 @@ rules or restart either shell.
 4. Use an existing noncritical client and its normal fullscreen action. Do not
    issue `hyprctl keyword`, edit Hyprland configuration or add window rules.
 
-The live-session reservation is expected to measure 96px because both MAGI
-and the fixture reserve the same edge. Record that known double-reservation
-constraint rather than treating it as standalone production geometry.
+The live-session reservation measured 96px because both MAGI and the fixture
+reserved the same edge. This known double-reservation constraint is not the
+combined host's standalone production geometry.
 
-### A. Fullscreen stacking and mask-only dismissal
+### Mask-only fullscreen hiding — pass
 
-1. With the client tiled, record fixture-closed, menu-one-open and closed-again
-   layer geometry and reservation.
-2. Make the client compositor-fullscreen and record whether the live bar,
-   experiment bar and expanded menu are visible, occluded or placed above the
-   client. This is an observation; either stacking policy may require a later
-   product decision.
-3. Open menu one. Click and scroll in the fullscreen client outside the bar and
-   menu. **Expected mask-only behavior:** the client receives input and the
-   menu remains open because no outside-dismissal region is active.
-4. Close by Escape, content Close and the active pill in separate cycles.
-   Confirm focus returns to the fullscreen client and the reservation remains
-   constant.
+The run used combined mode with its explicit 48px reservation, OnDemand
+keyboard focus and mask-only dismissal. Before fullscreen, menu one opened at
+window-local geometry `x=1596, y=38, 220×180`, reached phase 3 and accepted
+focus. The total top reservation stayed at 96px.
 
-Stop immediately if an invisible part of the full-height surface blocks the
-client, the menu traps keyboard focus after closing, or fullscreen changes the
-exclusive zone.
+In compositor fullscreen, `hyprctl layers -j` reported `alpha: 0` for both the
+live MAGI layer and the experiment layer. Screenshots showed the client without
+either bar or the expanded menu. This is a **pass** under the product policy:
+the shell surfaces hid cleanly rather than stacking above the fullscreen
+client. Fixture IPC and logs showed that menu one could remain internally open
+at phase 3 with its prior geometry while hidden.
 
-### B. Switching between pills while open
+The operator confirmed that the fullscreen client remained fully interactive
+for clicking, scrolling and normal use, with no invisible input blocker or
+focus trap. Menu one persisted coherently through entering and leaving
+fullscreen. After leaving fullscreen, it could open and close normally; Escape,
+the content Close control and the active pill all closed it, and keyboard input
+returned to the selected application after each close. The reservation stayed
+at 96px throughout the fixture run and did not vary with fullscreen or menu
+state. No QML, binding-loop, focus or surface error appeared.
 
-In tiled and fullscreen states, run menu-one → menu-two → menu-one using the
-bar pills. Record request generation, phase changes, focus changes and final
-geometry. Verify that the outgoing content loses focus, the incoming content
-accepts focus, exactly one menu remains interactive, the active Region follows
-the new menu, and no blank frame, clipped content or detached geometry appears.
+The original run stopped when `alpha: 0` was mistakenly treated as a failure,
+so it did not execute the requested menu-one → menu-two → menu-one sequence in
+the fullscreen state or immediately after returning to tiled mode. Under the
+clarified policy, switching pills while the bar is hidden is not a meaningful
+user interaction. The useful remaining check is a complete switch sequence
+after leaving fullscreen, verifying the active Region, content focus and sole
+interactive menu.
 
-### C. Optional consuming catcher
+### Cleanup — pass
 
-Only after mask-only passes, use the existing IPC method to set
-`dismissal consume`; do not change QML. Test this as a separate policy:
+The hidden menu was closed through IPC and the fixture was stopped with
+`Ctrl-C`. Its process and layer disappeared, the top reservation returned from
+96px to the original 48px, and only live MAGI PID 1552 remained. The fullscreen
+client remained fullscreen and accepted input. The consuming catcher was never
+enabled, so no catcher result can be inferred from this run.
 
-1. Open each menu and click once in the client outside the bar/menu. The
-   catcher should consume that click and close exactly once; the client must
-   not also act on it.
-2. Reopen a menu and click the sibling pill. Because the bar is above the
-   catcher in the fixture
-   (`experiments/bar-surface/ExperimentWindow.qml:254–262`), record whether
-   the click switches directly, closes without switching, or is incorrectly
-   consumed. Do not infer the outcome in advance.
-3. Repeat the outside-click and pill-switch checks over the fullscreen client.
-   Reject this policy if it creates an invisible blocker, ambiguous double
-   activation or a focus trap.
-4. Restore `dismissal mask-only` through IPC before cleanup.
+### Required mask-only validation — pass
 
-### D. Cleanup and evidence
+The follow-up run used the same combined host, explicit 48px fixture
+reservation, OnDemand focus and mask-only dismissal. It completed the recovery,
+placement and interruption checks that remained open above.
 
-Exit fullscreen, close the menu and stop the fixture with `Ctrl-C`. Confirm
-that the experiment process, namespace, IPC target, keyboard eligibility and
-extra 48px reservation disappear; the client returns to its baseline vertical
-geometry; and live MAGI remains responsive. Preserve fixture status records,
-relevant lifecycle logs and read-only compositor snapshots. Report operator
-observations separately from command-measured geometry.
+With menu one open at phase 3, entering compositor fullscreen hid both shell
+layers at `alpha: 0` while the fixture retained menu one's
+`x=1596, y=38, 220×180` state. The live-session reservation stayed at 96px.
+Exiting fullscreen restored both layers at `alpha: 1` and restored menu one
+with the same geometry. An immediate menu-one → menu-two → menu-one sequence
+then passed: the outgoing content logged `active: false`, incoming content
+accepted focus, and each settled snapshot contained exactly one requested
+phase-3 menu. Menu two settled at `x=1632, y=38, 220×260`; the final menu-one
+state returned to `x=1596, y=38, 220×180`.
+
+The active native Region is not exposed through fixture IPC. Region tracking
+was therefore verified through the source binding from `activeMenu` to
+`activePill.combinedMenuRegion`
+(`experiments/bar-surface/ExperimentWindow.qml:20–27`), the runtime requested
+menu and geometry snapshots, and the previously completed manual pointer-mask
+test. No state showed two requested or interactive menus.
+
+All configurable placement presets kept both expanded menus within the
+1920×1080 logical surface:
+
+| Preset | Menu one, 220×180 | Menu two, 220×260 |
+| --- | --- | --- |
+| `menus-left` | `x=16, y=38` | `x=52, y=38` |
+| `menus-center` | `x=806, y=38` | `x=842, y=38` |
+| `split` | `x=16, y=38` | `x=1632, y=38` |
+| `default` | `x=1596, y=38` | `x=1632, y=38` |
+
+Each placement settled with the requested menu at phase 3, the other menu at
+phase 0, correct focus ownership and no clipping or detached geometry.
+
+Timed IPC requests then exercised every animation phase. The log's
+`animations-interrupted` records show retargeting from current values:
+
+| Phase | Interrupted state | Request and settled result |
+| ---: | --- | --- |
+| 1 — widening | width `202.504` | sibling request; menu two opened normally |
+| 2 — revealing | height `167.852`, opacity `0.9995` | sibling request; menu two opened normally |
+| 3 — open | menu one `220×180`, opacity `1` | sibling switch; menu two opened normally |
+| 4 — fading | opacity `0.148` | menu one reopened from current opacity |
+| 5 — retracting | height `16.403` | menu one reopened from current height |
+| 6 — narrowing | width `65.704` | menu one reopened from current width |
+
+In every case the latest request won, final dimensions and opacity were exact,
+focus settled on the requested content, and no stale completion, blank final
+state, orphaned interactive menu, QML error or binding loop appeared. The
+reservation measured 96px before fullscreen, during fullscreen, after recovery,
+after all placement checks and after all interruption checks.
+
+The fixture was closed in mask-only/default state and stopped with `Ctrl-C`.
+Its process, layer namespace and IPC instance disappeared; the tiled client
+returned from `y=104, height=954` to `y=56, height=1002`; the reservation
+returned from 96px to the original 48px; and live MAGI PID 1552 remained the
+only Quickshell process.
+
+### Required consuming-catcher validation — pass
+
+The final run used the combined host, explicit 48px fixture reservation,
+OnDemand focus and `dismissal consume`. The catcher filled the host below the
+bar (`ExperimentWindow.qml:254–275`) and was added to the native Region only
+while a menu was requested (`ExperimentWindow.qml:204–216`). Results that
+depend on where a physical click was delivered are **operator-observed**;
+lifecycle, focus and request sequencing are corroborated by fixture logs.
+
+The operator confirmed that every outside click closed the open menu without
+focusing, activating, scrolling or otherwise interacting with the client
+beneath it. Logs contained four separate `menu-closed` records with reason
+`outside-catcher`; each click produced one request-generation increment and one
+close record. No duplicate close or underlying-client action was observed.
+
+Clicking menu two's sibling pill while menu one was open switched directly
+rather than being swallowed by the catcher. The log recorded `pill-clicked`
+for menu two, changed the sole requested menu from menu one to menu two, removed
+focus from menu one and accepted focus in menu two at phase 3. Menu two settled
+at `x=1632, y=38, 220×260`. This is consistent with the bar's `z: 10` above the
+catcher's `z: 0`; the active Region binding followed the newly requested pill,
+and no state contained two interactive menus.
+
+With menu two open, entering compositor fullscreen hid both shell surfaces as
+required. The operator confirmed normal clicking, scrolling and typing in the
+fullscreen client: the hidden full-output catcher did not consume input. The
+fixture retained generation 8 and menu two as its sole requested menu while the
+content focus log changed from `active: true` to `false`. On leaving fullscreen,
+the same generation and menu regained focus without a close request, stale
+geometry or input trap. The operator then confirmed that consumed outside-click
+dismissal and direct sibling-pill switching continued to work after recovery;
+the final outside close is log-correlated as generation 9.
+
+The live-session reservation remained 96px while the fixture was present. It
+was 96px after fullscreen recovery and after the final catcher close; menu and
+dismissal state did not alter the fixture's reported 48px contribution. No QML,
+binding-loop, focus or surface error appeared.
+
+Before cleanup, dismissal was restored to `mask-only` through IPC and both
+menus were confirmed at phase 0. `Ctrl-C` removed experiment PID 59430, its
+layer namespace and IPC instance. The tiled client returned from
+`y=104, height=954` to `y=56, height=1002`, the top reservation returned from
+96px to the original 48px, and live MAGI PID 1552 remained the only Quickshell
+process.
+
+The placement, phase-interruption and rapid-switching gates are now covered for
+the tested single-output scale-2 session. A second output and fractional scale
+should be tested when such an output is available; until then they remain
+explicit compatibility risks rather than claims supported by this run.
 
 ## Original test matrix
 
 This matrix remains as the broader experiment backlog. The default-placement
-parts of sections 1–2, the normal switching path in section 3, mask-only input
-in section 4, section 5 and section 6 have the measured coverage recorded
-above. Catcher and fullscreen coverage is limited to the prepared final host
-test. Broader placement, interruption, monitor and scale cases remain unrun.
+parts of sections 1–2, the phase and switching paths in section 3, mask-only and
+consuming input in section 4, section 5, section 6 and fullscreen
+hiding/recovery in section 7 have the measured coverage recorded above.
+Additional-output and fractional-scale cases remain unrun.
 
 Run A first as the control, then B with the same screen, placement preset,
 content and input policy. Do not change animation parameters between runs.
@@ -446,12 +563,13 @@ Do not install a nested compositor for this test.
 With no Hyprland rule changes, open a client in compositor fullscreen and
 repeat closed/open/close for B in mask-only and catcher modes.
 
-**Pass:** no invisible part of the screen-sized surface captures input;
-reservation returns unchanged after leaving fullscreen; observed bar/menu
-visibility and stacking are recorded. Whether the bar should appear above a
-fullscreen client is a product decision after this test, not an assumed pass
-condition. The consuming catcher must not be accepted if it makes fullscreen
-interaction ambiguous or traps focus.
+**Pass:** the bar and menu hide cleanly; no invisible part of the screen-sized
+surface captures pointer or keyboard input; internal menu state may persist;
+leaving fullscreen restores coherent geometry, focus and input routing; menus
+work normally after restoration; and the reservation stays constant during
+the run and returns to baseline after fixture exit. A consuming catcher must
+also become non-interactive while hidden and must not make the fullscreen
+client ambiguous or trap focus.
 
 ### 8. Cleanup and comparison
 
@@ -467,7 +585,7 @@ Compare A and B using event logs and geometry under identical scenarios:
 | Motion | Existing phase sequence and interruption behavior. | Same sequence/timings with no new jump or blank frame. |
 | Reservation | Bar reserves 48px independently of popup height. | Explicit 48px contribution remains constant for every menu phase. |
 | Input | Separate popup and bar regions. | Full-height surface is harmless outside the explicit mask. |
-| Focus/dismissal | Generic policy remains unresolved. | OnDemand/Escape passed; mask-only pass-through passed; consuming catcher remains untested. |
+| Focus/dismissal | Existing plugin-specific behavior is the migration baseline. | OnDemand/Escape, mask-only pass-through, consuming outside dismissal and fullscreen hiding/restoration passed. |
 | Maintenance | Per-plugin windows retain proven geometry. | One host can retain registry, placement and Component interface without plugin-specific window logic. |
 
 B is a viable architecture candidate only if it passes the geometry,
@@ -486,18 +604,25 @@ Resolved on the tested Hyprland 0.56.2 session:
   Escape handling and returned input to the prior application after closure.
 - The zero-reservation screen-height surface did not block pointer interaction
   outside its mask.
+- Compositor fullscreen hid the live and experiment layers cleanly, left the
+  client interactive, preserved internal menu state, restored coherent menu
+  behavior on exit and did not change the reservation.
+- Post-fullscreen menu-one → menu-two → menu-one switching transferred focus
+  and state cleanly with one interactive menu.
+- All four placement presets remained within the output at their measured
+  left, centre and right-edge positions.
+- Every animation phase accepted a bounded interruption and retargeted from its
+  current width, height or opacity to the latest request.
+- Consuming outside clicks closed once without acting on the client beneath;
+  sibling pills retained priority; the catcher became non-interactive while
+  fullscreen hid the shell; and dismissal and switching survived recovery.
 
 Still open or only partially covered:
 
 - No blank frame, clipping or detachment was observed in normal A/B cycles,
   but the experiment did not quantify whether B improves seam or frame
   continuity over A.
-- Fullscreen stacking, visibility and input routing await the prepared final
-  host test.
-- The optional consuming catcher and its interaction with sibling pills await
-  the prepared final host test.
-- Fractional-scale rounding, additional outputs, all placement presets and
-  interruption during every animation phase remain untested.
+- Fractional-scale rounding and additional outputs remain untested.
 
 Wi-Fi, real services, dynamic plugin discovery, content unloading, per-output
 menu arbitration and alternative animation curves are explicitly outside this
