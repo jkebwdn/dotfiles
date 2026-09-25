@@ -1,8 +1,10 @@
 # MAGI anchored-popup versus combined-surface experiment
 
-Prepared **2026-09-24** against MAGI HEAD
-`2d3efb26a57652ef0cad98a791ab39875228658b`. This is an implementation and
-runtime-test plan. No fixture has been created or run.
+Prepared **2026-09-24**. Runtime record updated **2026-09-25** against the
+working tree based on MAGI HEAD
+`6aac5747e1332fe75755e2c899ac95dc265b5d84`. The isolated fixture now exists
+under `experiments/bar-surface/`; the completed measurements and the remaining
+unexecuted test are separated below from the earlier design proposal.
 
 The agreed constraint is that MAGI keeps compositor-aware desktop reservation.
 The experiment therefore compares:
@@ -46,7 +48,7 @@ but are not the source of MAGI's bar reservation.
 These are source/API findings. They do not prove that B behaves correctly on
 the installed Quickshell 0.3.1 and Hyprland 0.56.2.
 
-### Proposed design under test
+### Historical design proposal
 
 Approach B will use a top/left/right-anchored PanelWindow whose requested
 height covers its selected output. It will set `exclusiveZone: 48` explicitly;
@@ -82,13 +84,14 @@ model. Two fake expandable plugins and three inert status plugins are enough
 to exercise left/centre/right placement, sibling displacement and switching.
 No real MAGI service or Wi-Fi component is imported.
 
-All statements in this section are proposals until the fixture exists and
-the tests below pass.
+This section records the proposal used to construct the fixture. It is not
+runtime evidence. The verified subset and its limits are recorded under
+**Measured runtime results**.
 
 ## Minimum isolated fixture
 
-Create this only after separate implementation approval, outside the live
-`.config/quickshell/magi/` tree:
+The approved fixture was created outside the live `.config/quickshell/magi/`
+tree:
 
 ```text
 experiments/bar-surface/
@@ -137,7 +140,208 @@ full expansion, after closing and after fixture exit. Capture the selected
 output's work area and layer surface geometry. A screen recording can support
 visual review, but timestamps and geometry are the acceptance evidence.
 
-## Test sequence
+## Measured runtime results — 2026-09-25
+
+These results apply to **Quickshell 0.3.1** (Arch Linux package) and
+**Hyprland 0.56.2**, commit
+`efb50993780079460b0cbed1363e2166a2de1d9f`. The tested output was `eDP-1` at
+3840×2160 physical pixels, 1920×1080 logical pixels and scale 2. Live MAGI was
+left running as `quickshell -c magi` throughout.
+
+The geometry, process, layer and reservation values below were measured from
+fixture IPC snapshots, terminal event logs, `pgrep` and read-only `hyprctl`
+queries. Pointer and keyboard behavior explicitly marked **operator-observed**
+was manually tested by the user. No result in this section is inferred from a
+screenshot.
+
+### Anchored control — pass
+
+The control used `MAGI_EXPERIMENT_MODE=anchored` and
+`MAGI_EXPERIMENT_RESERVE=0`, with keyboard focus disabled and mask-only input.
+The experiment created its own
+`magi-bar-surface-experiment-anchored` layer at logical `y=48`, width 1920 and
+height 48. Hyprland's existing top reservation remained 48 pixels, and the
+live MAGI PID and layer remained present and responsive.
+
+Menu one settled at window-local geometry `x=1596, y=38, 220×180`; menu two
+settled at `x=1632, y=38, 220×260`. Each completed widen → reveal/fade → open
+and fade → retract → narrow. Switching menu-one → menu-two → menu-one left one
+correctly aligned active popup, with no blank frame, clipping or detached
+geometry observed. Runtime output contained no QML, binding-loop, anchor,
+surface or focus error. `Ctrl-C` removed only the fixture process and layer;
+the work area remained at its 48-pixel baseline.
+
+This verifies the basic default-placement control. It does not cover all
+placement presets, rapid interruption in every animation phase, fractional
+scale or multiple outputs.
+
+### Combined surface with zero additional reservation — pass
+
+The combined run used `MAGI_EXPERIMENT_MODE=combined` and
+`MAGI_EXPERIMENT_RESERVE=0`. Hyprland reported a 1920×1080 experiment layer at
+logical `y=48`, while its top reservation remained `[0, 48, 0, 0]`. Menu one
+and menu two preserved the anchored control's 220×180 and 220×260 expanded
+geometry, phase order and alignment. Normal open/close cycles and
+menu-one → menu-two → menu-one switching produced no blank frames, clipping,
+detachment or runtime error.
+
+The implementation under test keeps bar, active menu and optional catcher as
+explicit mask regions (`experiments/bar-surface/ExperimentWindow.qml:26–36`,
+`:192–216`), while both hosts use the same animation and menu-content inputs
+(`experiments/bar-surface/ExpandablePill.qml:17–37`, `:280–315`).
+
+### Pointer mask pass-through — operator-observed pass
+
+With the screen-height combined surface open and dismissal set to mask-only,
+the user manually changed workspaces; clicked, focused, typed and scrolled in
+unrelated Ghostty, Yazi and ChatGPT regions; launched applications; moved
+between applications; used both pills; switched menus; and used the Count and
+Close controls. Normal pointer interaction outside the explicit Region mask
+was not blocked.
+
+With keyboard focus deliberately disabled, clicking the menu TextInput left
+keystrokes routed to the underlying application. That was the expected
+pre-focus-test condition, not a combined-surface failure.
+
+### OnDemand keyboard focus — operator-observed pass
+
+The existing IPC flag enabled `WlrKeyboardFocus.OnDemand` only while a menu
+was active (`experiments/bar-surface/ExperimentWindow.qml:198–202`,
+`:226–251`). No focus architecture was changed. The user confirmed:
+
+- TextInput received typed input;
+- text persisted while switching between menus;
+- Escape with text present cleared the field and kept the menu open;
+- Escape with an empty field closed the menu;
+- Enter was handled by menu content; and
+- after menu closure, keyboard input returned to the previously selected
+  application.
+
+Logs recorded accepted initial-focus requests, active-focus changes during
+switching, `content-enter` events and focus loss on closure. The content-first
+Enter/Escape behavior exercised here is implemented in
+`experiments/bar-surface/TestMenuContent.qml:20–31`, `:52–77`. No QML,
+binding-loop, surface or focus error was observed.
+
+### Explicit 48px reservation — measured pass
+
+The final completed run used combined mode, OnDemand keyboard focus,
+mask-only dismissal and `MAGI_EXPERIMENT_RESERVE=1`. Because live MAGI already
+reserved 48 pixels, the fixture was expected to add a temporary second
+reservation. Measurements were:
+
+| State | Hyprland top reservation | Tiled Ghostty vertical geometry |
+| --- | ---: | --- |
+| Before fixture | 48px | `y=56`, height `1002` |
+| Fixture open, menus closed | 96px | `y=104`, height `954` |
+| Menu one open, 220×180 | 96px | `y=104`, height `954` |
+| Menu two open, 220×260 | 96px | `y=104`, height `954` |
+| Menus closed again | 96px | `y=104`, height `954` |
+| After `Ctrl-C` | 48px | `y=56`, height `1002` |
+
+The fixture therefore contributed exactly 48 logical pixels, and neither menu
+height nor animation phase changed the exclusive zone. After exit, its PID,
+namespace and IPC target disappeared; live MAGI remained the only Quickshell
+process and its original layer and reservation were unchanged. The independent
+SwayNC notification layer was present during some cleanup snapshots and is not
+part of either shell.
+
+These results verify the basic anchored control, combined geometry, explicit
+mask pass-through, OnDemand focus and fixed reservation on the installed
+single-output scale-2 runtime. They do not select the combined architecture by
+themselves. Fullscreen behavior, the consuming catcher, broader placement,
+multiple outputs, fractional scale and phase-by-phase interruption remain
+open.
+
+## Final bounded host test — prepared, not run
+
+Nothing in this section is a test result. Run it only after separate approval,
+using the existing isolated fixture. Do not edit live MAGI QML, add Hyprland
+rules or restart either shell.
+
+### Fixed setup
+
+1. Record live MAGI's PID/layer, `hyprctl monitors -j`, `hyprctl layers -j`
+   and the chosen client's normal tiled geometry.
+2. Start only:
+
+   ```bash
+   MAGI_EXPERIMENT_MODE=combined MAGI_EXPERIMENT_RESERVE=1 \
+     quickshell -p /home/jkebwdn/dotfiles/linux/magi/experiments/bar-surface/shell.qml
+   ```
+
+3. Enable the fixture's existing OnDemand flag through its IPC `keyboard true`
+   method and explicitly retain `dismissal mask-only`. Confirm the snapshot
+   reports combined host, reservation 48, keyboard enabled and mask-only
+   dismissal.
+4. Use an existing noncritical client and its normal fullscreen action. Do not
+   issue `hyprctl keyword`, edit Hyprland configuration or add window rules.
+
+The live-session reservation is expected to measure 96px because both MAGI
+and the fixture reserve the same edge. Record that known double-reservation
+constraint rather than treating it as standalone production geometry.
+
+### A. Fullscreen stacking and mask-only dismissal
+
+1. With the client tiled, record fixture-closed, menu-one-open and closed-again
+   layer geometry and reservation.
+2. Make the client compositor-fullscreen and record whether the live bar,
+   experiment bar and expanded menu are visible, occluded or placed above the
+   client. This is an observation; either stacking policy may require a later
+   product decision.
+3. Open menu one. Click and scroll in the fullscreen client outside the bar and
+   menu. **Expected mask-only behavior:** the client receives input and the
+   menu remains open because no outside-dismissal region is active.
+4. Close by Escape, content Close and the active pill in separate cycles.
+   Confirm focus returns to the fullscreen client and the reservation remains
+   constant.
+
+Stop immediately if an invisible part of the full-height surface blocks the
+client, the menu traps keyboard focus after closing, or fullscreen changes the
+exclusive zone.
+
+### B. Switching between pills while open
+
+In tiled and fullscreen states, run menu-one → menu-two → menu-one using the
+bar pills. Record request generation, phase changes, focus changes and final
+geometry. Verify that the outgoing content loses focus, the incoming content
+accepts focus, exactly one menu remains interactive, the active Region follows
+the new menu, and no blank frame, clipped content or detached geometry appears.
+
+### C. Optional consuming catcher
+
+Only after mask-only passes, use the existing IPC method to set
+`dismissal consume`; do not change QML. Test this as a separate policy:
+
+1. Open each menu and click once in the client outside the bar/menu. The
+   catcher should consume that click and close exactly once; the client must
+   not also act on it.
+2. Reopen a menu and click the sibling pill. Because the bar is above the
+   catcher in the fixture
+   (`experiments/bar-surface/ExperimentWindow.qml:254–262`), record whether
+   the click switches directly, closes without switching, or is incorrectly
+   consumed. Do not infer the outcome in advance.
+3. Repeat the outside-click and pill-switch checks over the fullscreen client.
+   Reject this policy if it creates an invisible blocker, ambiguous double
+   activation or a focus trap.
+4. Restore `dismissal mask-only` through IPC before cleanup.
+
+### D. Cleanup and evidence
+
+Exit fullscreen, close the menu and stop the fixture with `Ctrl-C`. Confirm
+that the experiment process, namespace, IPC target, keyboard eligibility and
+extra 48px reservation disappear; the client returns to its baseline vertical
+geometry; and live MAGI remains responsive. Preserve fixture status records,
+relevant lifecycle logs and read-only compositor snapshots. Report operator
+observations separately from command-measured geometry.
+
+## Original test matrix
+
+This matrix remains as the broader experiment backlog. The default-placement
+parts of sections 1–2, the normal switching path in section 3, mask-only input
+in section 4, section 5 and section 6 have the measured coverage recorded
+above. Catcher and fullscreen coverage is limited to the prepared final host
+test. Broader placement, interruption, monitor and scale cases remain unrun.
 
 Run A first as the control, then B with the same screen, placement preset,
 content and input policy. Do not change animation parameters between runs.
@@ -263,7 +467,7 @@ Compare A and B using event logs and geometry under identical scenarios:
 | Motion | Existing phase sequence and interruption behavior. | Same sequence/timings with no new jump or blank frame. |
 | Reservation | Bar reserves 48px independently of popup height. | Explicit 48px contribution remains constant for every menu phase. |
 | Input | Separate popup and bar regions. | Full-height surface is harmless outside the explicit mask. |
-| Focus/dismissal | Generic policy remains unresolved. | OnDemand/Escape and chosen dismissal mode have recorded, acceptable behavior. |
+| Focus/dismissal | Generic policy remains unresolved. | OnDemand/Escape passed; mask-only pass-through passed; consuming catcher remains untested. |
 | Maintenance | Per-plugin windows retain proven geometry. | One host can retain registry, placement and Component interface without plugin-specific window logic. |
 
 B is a viable architecture candidate only if it passes the geometry,
@@ -272,20 +476,28 @@ justify one further isolated variant, but they must not be papered over with
 live compositor rules. The experiment does not select B automatically; A
 remains the working fallback and comparison control.
 
-## Questions that only runtime testing can answer
+## Runtime questions and current status
 
-- Does a screen-height top/left/right PanelWindow with `exclusiveZone: 48`
-  produce the expected fixed reservation on Hyprland 0.56.2 while its mask is
-  smaller than the surface?
-- Does the same-surface menu eliminate a visible seam or frame discontinuity
-  under the installed Qt/Quickshell rendering path, and is any difference
-  measurable against A?
-- Can OnDemand reliably deliver focus for IPC-opened content and restore it
-  after dismissal without a separate focus-grab mechanism?
-- How does Hyprland stack and route input to this top-layer surface over a
-  fullscreen client?
-- At fractional scale, are logical-coordinate rounding and input-mask edges
-  acceptable for the connected pill/menu shape?
+Resolved on the tested Hyprland 0.56.2 session:
+
+- A screen-height top/left/right PanelWindow with `exclusiveZone: 48`
+  contributed exactly 48 logical pixels while using a smaller explicit mask.
+- OnDemand delivered focus to the dummy TextInput, supported content-first
+  Escape handling and returned input to the prior application after closure.
+- The zero-reservation screen-height surface did not block pointer interaction
+  outside its mask.
+
+Still open or only partially covered:
+
+- No blank frame, clipping or detachment was observed in normal A/B cycles,
+  but the experiment did not quantify whether B improves seam or frame
+  continuity over A.
+- Fullscreen stacking, visibility and input routing await the prepared final
+  host test.
+- The optional consuming catcher and its interaction with sibling pills await
+  the prepared final host test.
+- Fractional-scale rounding, additional outputs, all placement presets and
+  interruption during every animation phase remain untested.
 
 Wi-Fi, real services, dynamic plugin discovery, content unloading, per-output
 menu arbitration and alternative animation curves are explicitly outside this
