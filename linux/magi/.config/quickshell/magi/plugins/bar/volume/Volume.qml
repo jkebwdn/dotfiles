@@ -1,11 +1,13 @@
+pragma ComponentBehavior: Bound
 
 import QtQuick
-import Quickshell
-import Quickshell.Wayland
+
+import "../../../components/bar" as MagiBar
+import "../../../components/controls" as MagiControls
 import "../../../services" as MagiServices
 import "../../../theme" as MagiTheme
 
-Rectangle {
+MagiBar.ExpandablePlugin {
     id: root
 
     readonly property int volume: MagiServices.Audio.volumePercent
@@ -13,100 +15,132 @@ Rectangle {
     readonly property bool available: MagiServices.Audio.available
 
     readonly property string volumeIcon: {
-        if (!available)
+        if (!available || muted || volume === 0)
             return "󰖁"
-
-        if (muted || volume === 0)
-            return "󰖁"
-
         if (volume < 34)
             return "󰕿"
-
         if (volume < 67)
             return "󰖀"
-
         return "󰕾"
     }
 
-    implicitWidth: 28
-    implicitHeight: 28
+    menuId: "volume"
+    icon: volumeIcon
+    title: "Volume"
+    collapsedWidth: 30
+    expandedWidth: 280
+    menuHeight: 100
+    color: sharedSurface
+        ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion)
+        : MagiTheme.Theme.surface
 
-    radius: MagiTheme.Theme.radiusSmall
-    color: MagiTheme.Theme.surface
-
-    // Volume icon
-
-    Text {
-        anchors.centerIn: parent
-
-        text: root.volumeIcon
-
-        color: root.available && !root.muted
-               ? MagiTheme.Theme.text
-               : MagiTheme.Theme.muted
-
-        font.family: MagiTheme.Theme.fontFamily
-        font.pixelSize: 15
-    }
-
-    // Mouse controls
-
-    MouseArea {
-        id: volumeMouse
-
-        anchors.fill: parent
-
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-
-        onClicked: MagiServices.Audio.toggleMute()
-
-        onWheel: wheel => {
-            const steps = wheel.angleDelta.y / 120
-
-            if (steps !== 0)
-                MagiServices.Audio.adjustVolume(steps)
-
-            wheel.accepted = true
+    pillContent: Component {
+        MagiControls.MorphingPillContent {
+            pill: parent
+            icon: root.volumeIcon
+            collapsedText: ""
+            expandedTitle: "Volume"
+            expandedStatus: root.muted ? "Muted" : root.volume + "%"
+            iconColor: root.muted
+                ? MagiTheme.Theme.warning
+                : MagiTheme.Theme.text
+            statusColor: root.muted
+                ? MagiTheme.Theme.warning
+                : MagiTheme.Theme.muted
         }
     }
 
-    // Hover tooltip — separate surface to avoid bar clipping
+    menuContent: Component {
+        Column {
+            width: parent ? parent.width : 0
+            spacing: 8
 
-    PopupWindow {
-        id: volumePopup
+            Item {
+                width: parent.width
+                height: 26
 
-        anchor.item: root
-        anchor.rect.x: root.width / 2 - width / 2
-        anchor.rect.y: root.height + 6
+                Text {
+                    anchors {
+                        left: parent.left
+                        verticalCenter: parent.verticalCenter
+                    }
+                    text: root.available
+                        ? root.muted ? "Output muted" : "Default output"
+                        : "Audio unavailable"
+                    color: root.muted
+                        ? MagiTheme.Theme.warning
+                        : MagiTheme.Theme.muted
+                    font.family: MagiTheme.Theme.fontFamily
+                    font.pixelSize: 9
+                }
 
-        implicitWidth: tooltipText.implicitWidth + 20
-        implicitHeight: 28
+                MagiControls.ActionChip {
+                    id: muteButton
 
-        visible: volumeMouse.containsMouse
-        color: "transparent"
+                    anchors {
+                        right: parent.right
+                        verticalCenter: parent.verticalCenter
+                    }
+                    width: 30
+                    icon: root.muted ? "󰝟" : "󰕾"
+                    active: root.muted
+                    activeColor: MagiTheme.Theme.warning
+                    available: root.available
+                    onTriggered: MagiServices.Audio.toggleMute()
+                }
+            }
 
-        Rectangle {
-            anchors.fill: parent
+            Rectangle {
+                width: parent.width
+                height: 48
+                radius: MagiTheme.Theme.radiusMedium
+                color: MagiTheme.Theme.background
 
-            radius: MagiTheme.Theme.radiusSmall
-            color: MagiTheme.Theme.elevated
+                Text {
+                    id: lowVolumeIcon
 
-            Text {
-                id: tooltipText
+                    anchors {
+                        left: parent.left
+                        leftMargin: 12
+                        verticalCenter: parent.verticalCenter
+                    }
+                    text: "󰕿"
+                    color: MagiTheme.Theme.muted
+                    font.family: MagiTheme.Theme.fontFamily
+                    font.pixelSize: 12
+                }
 
-                anchors.centerIn: parent
+                MagiControls.ValueSlider {
+                    anchors {
+                        left: lowVolumeIcon.right
+                        leftMargin: 10
+                        right: highVolumeIcon.left
+                        rightMargin: 10
+                        verticalCenter: parent.verticalCenter
+                    }
+                    value: MagiServices.Audio.volume
+                    interactive: root.available
+                    fillColor: root.muted
+                        ? MagiTheme.Theme.muted
+                        : MagiTheme.Theme.accent
+                    trackColor: MagiTheme.Theme.elevated
+                    onValueMoved: value =>
+                        MagiServices.Audio.setVolume(value)
+                }
 
-                text: !root.available
-                      ? "Audio unavailable"
-                      : root.muted
-                        ? "Muted · " + root.volume + "%"
-                        : "Volume · " + root.volume + "%"
+                Text {
+                    id: highVolumeIcon
 
-                color: MagiTheme.Theme.text
-
-                font.family: MagiTheme.Theme.fontFamily
-                font.pixelSize: 12
+                    anchors {
+                        right: parent.right
+                        rightMargin: 12
+                        verticalCenter: parent.verticalCenter
+                    }
+                    text: "󰕾"
+                    color: MagiTheme.Theme.muted
+                    font.family: MagiTheme.Theme.fontFamily
+                    font.pixelSize: 12
+                }
             }
         }
     }

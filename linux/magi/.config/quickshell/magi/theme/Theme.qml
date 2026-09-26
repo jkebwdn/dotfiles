@@ -49,6 +49,15 @@ QtObject {
     readonly property int radiusMedium: 10
     readonly property int radiusLarge: 14
 
+    // Bar and transient-menu geometry
+    readonly property int barPillHeight: 28
+    readonly property int barPillRadius: 8
+    readonly property int barSectionSpacing: 6
+    readonly property int barEdgeMargin: 14
+    readonly property int menuPadding: 12
+    readonly property int menuTopPadding: 6
+    readonly property int menuBottomPadding: 12
+
     // Spacing
     readonly property int spacingSmall: 6
     readonly property int spacingMedium: 12

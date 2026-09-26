@@ -1,5 +1,7 @@
 import QtQuick
 
+import "../../../theme" as MagiTheme
+
 Item {
     id: root
 
@@ -48,17 +50,27 @@ Item {
         topLeftRadius: 0
         topRightRadius: 0
 
-        bottomLeftRadius: Math.min(8, height / 2)
-        bottomRightRadius: Math.min(8, height / 2)
+        bottomLeftRadius: Math.min(
+            MagiTheme.Theme.radiusMedium, height / 2
+        )
+        bottomRightRadius: Math.min(
+            MagiTheme.Theme.radiusMedium, height / 2
+        )
 
         Loader {
             id: menuContentLoader
 
-            x: 12
-            y: 12
+            x: MagiTheme.Theme.menuPadding
+            y: MagiTheme.Theme.menuTopPadding
 
-            width: Math.max(0, parent.width - 24)
-            height: Math.max(0, root.menuHeight - 24)
+            width: Math.max(
+                0, parent.width - MagiTheme.Theme.menuPadding * 2
+            )
+            height: Math.max(
+                0, root.menuHeight
+                    - MagiTheme.Theme.menuTopPadding
+                    - MagiTheme.Theme.menuBottomPadding
+            )
 
             sourceComponent: root.menuContent
                 ? root.menuContent

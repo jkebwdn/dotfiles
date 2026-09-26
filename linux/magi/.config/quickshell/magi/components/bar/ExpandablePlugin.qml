@@ -1,7 +1,10 @@
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 
 import "../../services" as MagiServices
+import "../../theme" as MagiTheme
 import "menu" as MenuHosts
 
 Rectangle {
@@ -14,16 +17,26 @@ Rectangle {
     // Supplied by Bar.qml.
     property var barWindow: null
     property var menuCoordinator: null
+    // Combined production delegates presentation to the whole status cluster.
+    property var sharedSurface: null
     property string hostMode: "anchored"
     property bool menuKeyboardFocus: true
+    property bool barVisible: true
 
     property string menuId: ""
     property string icon: "󰒓"
-    property string title: "MAGI · Test menu"
+    property string title: "MAGI"
 
     property int collapsedWidth: 28
     property int expandedWidth: 220
     property int menuHeight: 180
+
+    // Optional per-view presentation, independent of the shared host lifecycle.
+    property real viewPadding: MagiTheme.Theme.menuPadding
+    property real viewTopPadding: MagiTheme.Theme.menuTopPadding
+    property real viewBottomPadding: MagiTheme.Theme.menuBottomPadding
+    property real viewRadius: MagiTheme.Theme.radiusMedium
+    property color viewSurfaceColor: MagiTheme.Theme.surface
 
     // Plugin-owned visual shared by the compact and widened pill states.
     // If omitted, the current icon/title presentation is used.
@@ -57,7 +70,7 @@ Rectangle {
     // 6 = narrowing
     // ---------------------------------------------------------
 
-    property int phase: 0
+    property int phase: sharedSurface ? sharedSurface.phase : 0
 
     readonly property bool requestedOpen:
         menuId !== ""
@@ -72,17 +85,21 @@ Rectangle {
     property real contentOpacity: 0
 
     implicitWidth: animatedWidth
-    implicitHeight: 28
+    implicitHeight: MagiTheme.Theme.barPillHeight
     z: hostMode === "combined"
         ? (phase === 0 ? 1 : 50)
         : 0
 
-    radius: 8
+    radius: MagiTheme.Theme.barPillRadius
 
-    bottomLeftRadius: revealedHeight > 0 ? 0 : 8
-    bottomRightRadius: revealedHeight > 0 ? 0 : 8
+    bottomLeftRadius: revealedHeight > 0
+        ? 0
+        : MagiTheme.Theme.barPillRadius
+    bottomRightRadius: revealedHeight > 0
+        ? 0
+        : MagiTheme.Theme.barPillRadius
 
-    color: "#374145"
+    color: MagiTheme.Theme.surface
 
     // ---------------------------------------------------------
     // Animation coordination
@@ -95,6 +112,8 @@ Rectangle {
     }
 
     function syncRequestedState() {
+        if (sharedSurface)
+            return
         if (requestedOpen) {
             if (phase === 0 || phase === 4
                     || phase === 5 || phase === 6) {
@@ -108,6 +127,10 @@ Rectangle {
     }
 
     function syncCollapsedWidth() {
+        if (sharedSurface) {
+            animatedWidth = collapsedWidth
+            return
+        }
         if (phase === 0) {
             animatedWidth = collapsedWidth
             return
@@ -296,7 +319,8 @@ Rectangle {
                 ? pill.icon
                 : pill ? pill.title : ""
 
-            color: "#d3c6aa"
+            color: MagiTheme.Theme.text
+            font.family: MagiTheme.Theme.fontFamily
             font.pixelSize: 12
 
             width: pill
@@ -309,7 +333,10 @@ Rectangle {
     }
 
     Loader {
-        anchors.centerIn: parent
+        // Give plugin-owned pill content the pill's real animated bounds.
+        // Morphing content uses this coordinate space to move its persistent
+        // icon from the compact group into the expanded header.
+        anchors.fill: parent
 
         readonly property real availableWidth: parent.width
         readonly property real availableHeight: parent.height
@@ -356,9 +383,10 @@ Rectangle {
             spacing: 12
 
             Text {
-                text: "Expandable menu test"
+                text: root.title
 
-                color: "#d3c6aa"
+                color: MagiTheme.Theme.text
+                font.family: MagiTheme.Theme.fontFamily
                 font.pixelSize: 13
                 font.bold: true
             }
@@ -367,24 +395,26 @@ Rectangle {
                 width: parent.width
                 height: 1
 
-                color: "#d3c6aa"
+                color: MagiTheme.Theme.border
                 opacity: 0.2
             }
 
             Text {
                 width: parent.width
 
-                text: "This panel extends below MAGI without moving your tiled windows."
+                text: "No menu content is configured for this plugin."
 
-                color: "#d3c6aa"
+                color: MagiTheme.Theme.text
+                font.family: MagiTheme.Theme.fontFamily
                 font.pixelSize: 12
                 wrapMode: Text.WordWrap
             }
 
             Text {
-                text: "Wi-Fi · Volume · Battery"
+                text: root.menuId
 
-                color: "#9da9a0"
+                color: MagiTheme.Theme.muted
+                font.family: MagiTheme.Theme.fontFamily
                 font.pixelSize: 11
             }
         }
@@ -397,6 +427,7 @@ Rectangle {
     MenuHosts.MenuHostSelector {
         id: menuHost
 
+        hostingEnabled: !root.sharedSurface
         hostMode: root.hostMode
         barWindow: root.barWindow
         anchorItem: root

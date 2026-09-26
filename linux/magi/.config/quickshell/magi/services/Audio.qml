@@ -35,18 +35,19 @@ Singleton {
         sink.audio.muted = !sink.audio.muted
     }
 
-    
+    function setVolume(value) {
+        if (!available)
+            return
+
+        const nextVolume = Math.max(0, Math.min(1, value))
+        sink.audio.volume = Math.round(nextVolume * 100) / 100
+    }
+
     function adjustVolume(steps) {
         if (!available)
             return
 
         const step = 0.05
-        const nextVolume = Math.max(
-            0,
-            Math.min(1, volume + steps * step)
-    )
-
-    sink.audio.volume = Math.round(nextVolume * 100) / 100
+        setVolume(volume + steps * step)
     }
-
 }

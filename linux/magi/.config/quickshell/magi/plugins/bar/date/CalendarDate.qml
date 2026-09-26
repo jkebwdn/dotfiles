@@ -6,9 +6,9 @@ Rectangle {
     id: root
 
     implicitWidth: label.implicitWidth + 14
-    implicitHeight: 26
+    implicitHeight: MagiTheme.Theme.barPillHeight
 
-    radius: MagiTheme.Theme.radiusMedium
+    radius: MagiTheme.Theme.barPillRadius
     color: MagiTheme.Theme.surface
 
     function updateDate() {

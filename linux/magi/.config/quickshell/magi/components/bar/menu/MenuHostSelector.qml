@@ -5,6 +5,7 @@ import QtQuick
 Item {
     id: root
 
+    property bool hostingEnabled: true
     property string hostMode: "anchored"
     property var barWindow: null
     property Item anchorItem: null
@@ -46,6 +47,7 @@ Item {
         width: root.combined ? Math.max(1, root.menuWidth) : 0
         height: root.combined ? Math.max(0, root.revealedHeight) : 0
 
+        active: root.hostingEnabled
         sourceComponent: root.combined
             ? combinedHostComponent
             : anchoredHostComponent

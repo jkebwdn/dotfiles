@@ -424,6 +424,16 @@ remain open risks rather than claimed results.
   restore all pass. **Rollback:** remove that registry entry/menu binding while
   leaving other combined-host users intact.
 
+**Accepted 2026-09-26:** Volume, Bluetooth and Control Centre use the
+settings-driven production registry and combined host. Volume passed live
+PipeWire percentage, external update, slider and mute checks. Bluetooth passed
+real adapter control, discovery, paired-device connect/disconnect, conditional
+width, bounded list, dismissal and switching. Control Centre passed shared
+Wi-Fi/Bluetooth state, Volume/mute, brightnessctl-backed brightness, Battery,
+large-menu geometry and detail switching. The connected Bluetooth device name
+was not visibly shown in the widened pill, and battery was not exposed by the
+tested device/backend; both remain conditional presentation work.
+
 ### M6 — Migrate only the Wi-Fi selector content
 
 - Separate the current selector body from Wifi.qml without changing Network
@@ -439,6 +449,11 @@ remain open risks rather than claimed results.
   selector PopupWindow while retaining the combined host for already-migrated
   plugins.
 
+**Accepted 2026-09-26:** the combined browser passed scanning, radio state,
+bounded scrolling, known/open/PSK selection, password-window handoff, masked
+input, Enter/Connect/Cancel, incorrect-password feedback, retry, successful
+connection and scanning continuity. Network.qml semantics were unchanged.
+
 ### M7 — Confirm combined mode as the post-migration default
 
 - The stabilization shell currently selects combined mode for the accepted
@@ -453,6 +468,13 @@ remain open risks rather than claimed results.
   output changes available on the machine, Wi-Fi, and cleanup all pass.
   **Rollback:** one configuration change returns the complete bar to the
   anchored adapter and native 48px geometry.
+
+**Accepted for the available session 2026-09-26:** production placement is
+Volume, Wi-Fi, conditional Bluetooth, Battery and Control Centre. Temporary
+Settings/Controls entries are removed. Real-plugin switching, consumed
+dismissal, fullscreen hide/recovery, conditional Bluetooth insertion/removal
+and one-menu interactivity passed. The final process exposed one logical
+1920x1080 layer at `(0,0)` with reservation `[0,48,0,0]`.
 
 ### M8 — Retire fallback only by a later decision
 
@@ -490,11 +512,12 @@ its demonstrated ownership rules, not import its components or test controls.
 - Host selection currently uses the source-level `expandableHostMode` value in
   `shell.qml`. Decide later whether stabilization needs a private runtime
   setting; no public setting is required by the accepted host architecture.
-- Should a changed Bluetooth collapsed width snap or animate while its menu is
-  closed? The architecture supports either; the render does not decide it.
-- Which content state belongs in long-lived services versus retained menu
-  objects for Control Centre and future Bluetooth? Wi-Fi connection observers
-  are the highest-risk case.
+- The current Bluetooth collapsed width snaps when connection state changes
+  while closed and becomes the normal narrowing target after close. Final
+  render work may refine that motion without changing host ownership.
+- Durable Network, Audio, Bluetooth, Brightness and Battery state now lives in
+  services. Wi-Fi selection/pending/error state remains in its retained plugin
+  content; future unloading would require a new lifecycle decision.
 - How should one Bar instance be created and associated per output if MAGI
   adopts multi-monitor support? Current MAGI creates one unassigned Bar, and
   the combined fixture was validated on one output only.
@@ -502,7 +525,6 @@ its demonstrated ownership rules, not import its components or test controls.
   geometry at runtime? Bounded lists are required, but edge/scale policy still
   needs tests on additional output configurations.
 
-These questions do not invalidate the single-output M1-M4 acceptance.
+These questions do not invalidate the single-output M1-M7 acceptance.
 Multi-output ownership and fractional-scale geometry must be tested before
-claiming broader compatibility, and Wi-Fi state ownership must be decided
-before M6.
+claiming broader compatibility.

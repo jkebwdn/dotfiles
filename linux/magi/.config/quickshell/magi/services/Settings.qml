@@ -30,7 +30,8 @@ Singleton {
 
             property var barLeftPlugins: ["clock", "date"]
             property var barCenterPlugins: []
-            property var barRightPlugins: []
+            property var barRightPlugins:
+                ["volume", "wifi", "bluetooth", "battery", "controlcentre"]
         }
     }
 }

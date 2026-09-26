@@ -2,15 +2,16 @@
 
 ## Evidence baseline
 
-Inspected on **2026-09-24**. Local source snapshot:
-`e375e5ee95e82f5609c2aeb4b880b21eb38b1086`. Source paths below are relative
-to `.config/quickshell/magi/`. Official findings below use the **v0.3.1**
-documentation, not an unversioned/latest API assumption.
+Initially inspected **2026-09-24** and updated **2026-09-26**. The current
+uncommitted implementation builds on repository HEAD
+`35c282012f2d749081a3f8b1821f01bf0b8aa6ea`. Source paths below are relative
+to `.config/quickshell/magi/`. Official findings use the **v0.3.1**
+documentation and installed 0.3.1 QML type metadata.
 
-The audit read source and ran version queries. It did not launch/restart
-Quickshell, exercise menus, change radio state or test connections. Earlier
-user reports are historical evidence only. API documentation establishes
-contracts; it does not prove MAGI's live behavior under every compositor.
+The initial findings remain documentation evidence. Later sections identify
+runtime behavior tested during the combined-host and production-plugin
+checkpoints. Those tests cover one Hyprland output at integer scale 2, not
+every compositor, output topology or scale.
 
 ## Installed environment
 
@@ -21,9 +22,36 @@ contracts; it does not prove MAGI's live behavior under every compositor.
 | Qt base | `pacman -Q qt6-base`: 6.11.2-3 |
 | Qt declarative | `pacman -Q qt6-declarative`: 6.11.2-2 |
 
-Installed versions were verified, but versions loaded by existing processes
-were not. Quickshell's exact upstream build commit was not supplied by its
+The production-plugin checkpoint launched the same installed Quickshell
+binary. Quickshell's exact upstream build commit is still not supplied by its
 version output. Package revisions and upstream version numbers differ.
+
+## F004 — Bluetooth adapter and device capabilities
+
+- Sources: [Bluetooth v0.3.1](https://quickshell.org/docs/v0.3.1/types/Quickshell.Bluetooth/Bluetooth/),
+  [BluetoothAdapter v0.3.1](https://quickshell.org/docs/v0.3.1/types/Quickshell.Bluetooth/BluetoothAdapter/)
+  and [BluetoothDevice v0.3.1](https://quickshell.org/docs/v0.3.1/types/Quickshell.Bluetooth/BluetoothDevice/),
+  inspected 2026-09-26. Installed metadata:
+  `/usr/lib/qt6/qml/Quickshell/Bluetooth/quickshell-bluetooth.qmltypes`.
+- Documented behavior: Bluetooth exposes a default adapter and device models;
+  adapter `enabled` and `discovering` are writable. Devices expose
+  connected/paired/bonded state, names, connection state, connect/disconnect
+  methods and optional battery data. `battery` is valid only when
+  `batteryAvailable` is true.
+- Local source: `services/Bluetooth.qml` wraps the default adapter, tracks
+  connected devices and exposes real optional battery. The production plugin
+  limits connection attempts to already paired/bonded devices and does not
+  claim a pairing-agent flow.
+- Locally tested behavior: real adapter enable/disable, discovery, known-device
+  listing, paired-device connect/disconnect, live state, bounded scrolling and
+  conditional pill width passed. The tested widened pill did not visibly show
+  the device name, and the device/backend did not expose visible battery data.
+- Compatibility: qmllint 0.3.1 reports the installed `BluetoothAdapter`
+  return type as unresolved even though the runtime module loads and the
+  tested operations work. Treat this as incomplete installed tooling metadata,
+  not broader-version proof.
+- Remaining tests: multiple adapters, adapter removal/hotplug, pairing-agent
+  prompts, devices that expose battery, and connected name/header rendering.
 
 ## F001 — Window-relative popup anchors
 
@@ -123,3 +151,43 @@ For each finding record source URL and inspection date, documentation version
 or repository commit, exact component/function, demonstrated behavior, MAGI
 relevance, compatibility and required tests. Keep actual test outcomes distinct
 from suggested acceptance criteria.
+
+
+## Shared status-surface presentation checkpoint — 2026-09-26
+
+`components/bar/SharedStatusSurface.qml` reuses the existing QtQuick
+NumberAnimation, Loader and Item patterns; no new Quickshell window API is
+introduced. All module body Loaders stay instantiated, and hidden/outgoing
+bodies are explicitly disabled (W07/W11). Individual host Loaders are inactive
+in shared mode. Bar retains its PanelWindow/Region/OnDemand contract.
+
+Local startup evidence: Quickshell 0.3.1, PID 171817, one logical 1920×1080
+layer at (0,0), scale 2 and monitor reservation [0,48,0,0]. Fresh log contained
+normal configuration-loaded messages only. Shared navigation/interruption,
+focus/password handoff and fullscreen interaction are pending operator tests;
+previous per-plugin acceptance must not be reported as testing this refactor.
+
+
+Local follow-up: the shared-surface lifecycle test reproduced a dependent-binding
+ordering failure in synchronous property-change handlers. Scheduling selection
+and compact-width synchronization with the existing `Qt.callLater` pattern
+passes 41 windowless regression steps on installed Quickshell 0.3.1/Qt 6.11.2.
+This is local test evidence, not a universal binding-notification order claim.
+See `tests/shared-status-surface/README.md` and the design checkpoint for details.
+
+
+Operator follow-up accepted complete collapse, reliable repeated/rapid Control
+Centre reopening and in-surface Bluetooth detail/Back navigation after the
+binding-order fix. Correlated live logs remain clean. This bounded result does
+not establish full focus/password/fullscreen or compatibility validation.
+
+
+The subsequent literal-render CC pass changes presentation only. The existing
+module width/height targets still animate in place; body-specific insets and
+outer color/radius now have default-preserving overrides. The expanded
+windowless regression passes 44 steps, including returning from taller details
+to CC 244L/Volume 136L total height. No new Quickshell native API was introduced.
+The subsequent operator screenshot shows the reference presentation, and the
+operator confirms compact-height restoration on return from Wi-Fi/Bluetooth.
+This establishes the bounded geometry recheck, not new API or full regression
+guarantees.

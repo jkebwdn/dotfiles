@@ -1,33 +1,37 @@
 
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
 import "../../../theme" as MagiTheme
 import "../../../services" as MagiServices
 
 Rectangle {
     id: root
 
-    implicitWidth: 28
-    implicitHeight: 28
+    property real sharedExpansion: 0
 
-    radius: MagiTheme.Theme.radiusSmall
+    implicitWidth: batteryLabel.implicitWidth + 18
+    implicitHeight: MagiTheme.Theme.barPillHeight
+
+    radius: MagiTheme.Theme.barPillRadius
 
     color: batteryMouse.containsMouse
         ? MagiTheme.Theme.elevated
-        : MagiTheme.Theme.surface
+        : Qt.alpha(MagiTheme.Theme.surface, 1 - sharedExpansion)
 
     Text {
+        id: batteryLabel
         anchors.centerIn: parent
 
         text: MagiServices.Battery.icon
+            + (MagiServices.Battery.available
+                ? " " + MagiServices.Battery.percentage + "%" : "")
 
         color: !MagiServices.Battery.available
             ? MagiTheme.Theme.muted
             : MagiTheme.Theme.text
 
         font.family: MagiTheme.Theme.fontFamily
-        font.pixelSize: 15
+        font.pixelSize: 11
     }
 
     MouseArea {

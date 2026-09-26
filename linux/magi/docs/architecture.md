@@ -1,140 +1,201 @@
 # MAGI — Architecture
 
-Source-audited on 2026-09-24 at `e375e5ee95e82f5609c2aeb4b880b21eb38b1086`.
-This describes source behavior, not a newly exercised running session.
-Paths in this document are relative to `.config/quickshell/magi/`.
+Updated **2026-09-26** for the shared status-surface structural review.
+The bounded shared-composition checkpoint is operator-accepted: full collapse,
+reliable repeated/rapid reopening and Control Centre → Bluetooth → Back.
+Broader focus/fullscreen/password regression remains unverified for this refactor. Repository HEAD was
+`35c282012f2d749081a3f8b1821f01bf0b8aa6ea`; the changes described here are
+still an uncommitted working tree. Paths are relative to
+`.config/quickshell/magi/`.
 
-## Runtime and bar
+## Runtime surface and reservation
 
-`shell.qml:6` creates one `Bar.Bar` inside ShellRoot. There is no per-screen
-instantiation or explicit screen assignment. `components/bar/Bar.qml:15`
-creates a transparent top-layer PanelWindow anchored top/left/right, with
-`implicitHeight: 48` and `exclusionMode: ExclusionMode.Auto`. Menu height
-does not change bar height: expanded content uses separate windows.
+`shell.qml` selects `expandableHostMode: "combined"`. `Bar.qml:19-104`
+creates one top-layer PanelWindow at output-local `(0,0)`. In combined mode
+it spans the logical output height but uses an explicit
+`exclusiveZone: 48`; only the transparent 48px `barStrip` represents the
+reserved bar.
 
-`Bar.qml:47` (under `components/bar/`) explicitly maps six IDs to Components:
-clock, date, workspaces, wifi, volume and battery. Repeaters and Loaders at
-lines 107, 129 and 250 instantiate Settings' placement lists. This is a
-fixed registry with configurable placement, not runtime plugin discovery.
-There is no custom handling for unknown or duplicate IDs. Left/right rows
-have 16px outer margins; all rows use 8px spacing. The centre row is centred
-independently, without collision handling.
+Bar owns the expandable-pill registry, resolves MenuController's semantic ID
+to one registered pill, and builds the native input Region from:
 
-`settings.json:3` configures clock/date left, workspaces centre and
-Wi-Fi/volume/battery right. Settings and Controls at `Bar.qml:162` and
-`:203` are always-created inline test menus before the right plugin list.
-They are not registered plugins or settings-driven entries.
+1. the fixed bar strip;
+2. the shared status-surface Item while revealed; and
+3. the full-surface consuming catcher while a registered menu is requested.
 
-## Services, settings and theme
+The catcher is below bar pills, so a sibling click switches menus directly.
+The bar requests `WlrKeyboardFocus.OnDemand` only while the selected plugin
+is registered and keyboard-eligible. Fullscreen visibility remains
+compositor-controlled; tested Hyprland fullscreen changed layer alpha without
+changing reservation or leaving an interactive hidden Region.
 
-`services/qmldir:1` registers five singletons:
+The accepted single-output scale-2 runtime reported one logical 1920x1080
+MAGI layer at `(0,0)` and monitor reservation `[0,48,0,0]`. Multi-output
+association and fractional scaling are not validated.
 
-| Service | Current responsibility and source |
+## Registry and configurable composition
+
+`Bar.qml:123` explicitly maps IDs to Components; there is no filesystem
+discovery. The current IDs are clock, date, workspaces, volume, Wi-Fi,
+Bluetooth, battery and Control Centre. Each Settings-driven Row uses a Repeater/Loader path; the right Row now
+lives inside `SharedStatusSurface.qml`. Expandable Component wrappers pass
+the same `barWindow`, `menuCoordinator`, `hostMode` and `sharedSurface` contract.
+
+`settings.json` currently selects:
+
+- left: clock, date;
+- centre: workspaces;
+- right: volume, Wi-Fi, Bluetooth, battery, Control Centre.
+
+Bluetooth uses `ExpandablePlugin.barVisible` to remove its pill when no
+device is connected. In combined mode, Control Centre detail navigation does not reveal a
+disconnected Bluetooth pill: the registered body is selected directly. The registry remains
+configurable; the order is data, not a hard-coded Row sequence.
+
+Unknown and duplicate IDs are still not validated. The centre Row is centred
+independently and has no collision policy.
+
+## Shared composition and module lifecycle
+
+`SharedStatusSurface.qml` owns the combined production silhouette and animation.
+Its right Row contains the actual compact plugin visuals throughout opening,
+view changes and closure. The Row moves inward/downward into the header while
+individual backgrounds blend into the common surface. Volume is icon-only;
+Battery displays percentage. Connected Bluetooth retains variable width.
+
+`ExpandablePlugin.qml` still supplies compact visuals, body Component and size
+requirements. When `sharedSurface` is supplied, its individual animation driver
+is bypassed and `MenuHostSelector.hostingEnabled` is false: no per-plugin adapter
+or content Loader is instantiated. Plugin `phase` mirrors the common surface,
+which preserves Wi-Fi's wait-until-closed password handoff.
+
+The shared opening sequence remains widen 180ms, reveal 140ms with a concurrent
+90ms fade; closure remains fade 70ms, retract 120ms, narrow 160ms, all OutCubic.
+Changing module while open fades out the outgoing body for 70ms, selects the
+latest requested ID, retargets width/height from current values and fades in the
+incoming body. It does not retract to zero or return to the compact bar. Only
+the selected, fully revealed body is interactive. Repeated requests interrupt
+from current animated values. Selection and compact-width handlers are deferred
+with `Qt.callLater` so derived open/target-size bindings settle first; otherwise
+synchronous handlers can act on the prior selection and stall after fade-out.
+The windowless lifecycle regression is `tests/shared-status-surface/run.py`
+(relative to the repository root); pointer/focus acceptance remains separate.
+
+Body Loaders remain alive while their registered plugins exist, even when not
+selected. This retains body state and Wi-Fi network-result Connections. The
+surface grows to at least its compact status-row width plus navigation/insets;
+individual body widths/heights remain plugin-provided.
+
+MenuController owns only a requested semantic ID and an ID history. `navigate`
+pushes a detail destination, `back` returns, and direct `open`/`toggle` clears
+history. No Item/window references enter that singleton. Control Centre's
+secondary Wi-Fi/Bluetooth tile actions use `navigate` within the same surface.
+
+Anchored rollback still selects the existing per-plugin animation and
+PopupWindow adapter, including TransformWatcher, rounded window-relative
+`mapFromItem()`, `anchor.window` and `PopupAdjustment.None`. Its geometry and
+host code were not changed by this structural pass. `CombinedMenuHost.qml`
+remains available for the earlier per-plugin implementation but is not loaded
+by the production shared status group.
+
+The default right-group composition is the current visual target. Configured
+left/centre modules still trigger the same surface, but coordinated migration
+across sections, collisions, multi-output and fractional scaling remain
+unverified. See [the structural checkpoint](design/shared-status-surface.md).
+
+## View-specific reference presentation
+
+The accepted state machine, timings and native host are frozen for the literal
+render pass. `ExpandablePlugin` adds optional presentation-only `viewPadding`,
+`viewTopPadding`, `viewBottomPadding`, `viewRadius` and `viewSurfaceColor`.
+SharedStatusSurface reads each body's own insets and the displayed view's outer
+color/radius; defaults preserve the other views. Existing expandedWidth and
+menuHeight remain the geometry targets, including shrinking when navigating.
+
+CC alone adopts `theme/RenderTokens.qml`: nominal width 320, body 208, total 244
+logical pixels with the existing 36px expanded header. The compact cluster width
+floor still applies. Its muted palette is scoped and does not change the global
+Theme or detail-view colors. Anchored geometry/adapter is unchanged and retains
+its prior host insets. See [the visual specification](design/render-visual-specification.md)
+for measurements, deliberate omissions and pending visual acceptance.
+
+## Services
+
+| Service | Responsibility |
 | --- | --- |
-| Settings | `services/Settings.qml:17`: FileView/JsonAdapter reads and watches settings.json; reloads on change; exposes palette and placement aliases. Defaults: Catppuccin, clock/date left, empty centre/right. No explicit save path, schema validation or custom error UI. |
-| Network | `services/Network.qml:13`: radio/hardware state, first Wi-Fi device, available networks, active network, icons/status, scan switch and connection methods. |
-| Audio | `services/Audio.qml:11`: default PipeWire sink and PwObjectTracker, mute and 5% volume steps clamped to 0–100%. |
-| Battery | `services/Battery.qml:10`: UPower display-device availability, percentage, charging and remaining-time status. |
-| MenuController | `services/MenuController.qml:10`: requested active menu string plus toggle/open/close/isOpen. |
+| Settings | Watches settings.json and exposes palette and placement arrays. Runtime writes are still not persisted explicitly. |
+| Network | Owns Quickshell Networking device/radio/scan/active-network access and known/open/PSK connection calls. Its semantics were unchanged during migration. |
+| Audio | Tracks the default PipeWire sink and exposes live volume, mute, absolute volume setting and stepped adjustment. |
+| Bluetooth | Wraps Quickshell 0.3.1 Bluetooth/BlueZ adapter and device objects, tracks connected devices, exposes real optional battery data, and limits connect actions to paired/bonded devices. |
+| Brightness | Polls the installed `brightnessctl` backend, debounces slider writes and exposes live percentage. It currently assumes a working brightnessctl-compatible backlight. |
+| Battery | Exposes UPower display-device percentage, charge state and remaining time. |
+| MenuController | Owns semantic selected-view ID, ID history, open/toggle/close and navigate/back operations. |
 
-System functionality is only partly centralized. Wi-Fi's selected/pending
-network and result handling live in its UI. `plugins/bar/workspaces/Workspaces.qml:16`
-refreshes and consumes Hyprland directly; its line 83 handler dispatches
-`hl.dsp.focus(...)`. Clock and date use local timers (1s and 60s respectively).
-Volume clicks toggle mute and wheel input adjusts volume; battery is a
-status display. Both use separate hover PopupWindows.
+Wi-Fi selection, pending connection and error state remain plugin-owned
+because they are view-session state. Durable radio/device/audio/power state
+is shared through services and reused by Control Centre.
 
-`theme/Theme.qml:10` selects Catppuccin Mocha or Everforest Dark Hard and
-exposes semantic colors, typography and spacing. Its persistence comment
-must not be treated as implemented disk saving: Settings has no write call.
-ExpandablePlugin and inline test content use hardcoded colors instead of
-Theme. A service-owned system layer remains a design direction, not a
-complete description of current ownership.
+## Production expandable plugins
 
-## Expandable menu state and content
+### Volume
 
-`components/bar/ExpandablePlugin.qml:15` exposes barWindow, menuId, icon,
-title, collapsedWidth (28), expandedWidth (220), menuHeight (180) and
-menuContent (Component). The pill has a 28px implicit height.
+`plugins/bar/volume/Volume.qml` is a 64px collapsed status pill with live
+percentage and mute-aware icon. Its 260x126 menu uses the shared PipeWire
+service, a reusable `components/controls/ValueSlider.qml`, and an explicit
+mute toggle. External mixer/media-key changes update the pill and slider.
 
-At line 55, requestedOpen compares menuId to MenuController.activeMenu.
-The controller does not wait for closure before requesting another menu.
-Each instance owns its seven animation phases and interruption handling.
-See [D004](decisions.md#d004--retain-the-current-animation-baseline) for timings.
-One requested menu therefore does not imply one visible surface throughout
-a transition. Wi-Fi's menuOpen is independent of this controller.
+### Bluetooth
 
-The Loader at line 397 uses menuContent or a fallback test Component. Its
-host assigns 12px padding, width minus 24px, menuHeight minus 24px, opacity
-and clipping. The source does not deactivate/unload content on closure or
-provide explicit open/close callbacks, focus delegation, content-driven
-sizing or navigation. Treat content lifetime as distinct from popup
-visibility; actual lifecycle behavior still needs a dedicated test.
+`plugins/bar/bluetooth/Bluetooth.qml` requests a 320x350 menu with a bounded
+device Flickable, adapter and discovery controls, live device state, optional
+backend battery and paired-device connect/disconnect. Its connected state
+widens the collapsed pill. Runtime function passed, but the connected device
+name was not visibly presented in the tested widened pill; final header/name
+styling remains follow-up work. Battery is shown only when BlueZ exposes it.
+New-device pairing and device-specific listening modes are not implemented.
 
-## Window-relative positioning
+### Control Centre
 
-`components/bar/ExpandablePlugin.qml:330` implements the preserved baseline:
+`plugins/bar/controlcentre/ControlCentre.qml` is a 380x380 menu on the same
+host lifecycle. It contains live Wi-Fi and Bluetooth tiles, shared Volume and
+Brightness sliders, mute, and Battery status. `ControlTile.qml` separates
+primary and secondary triggers so future detail/long-press behavior does not
+require a host rewrite. Secondary Bluetooth and Wi-Fi actions route through
+MenuController to their registered detail plugins.
 
-1. Bar passes its PanelWindow through barWindow.
-2. TransformWatcher watches barWindow.contentItem (`a`) and the pill (`b`).
-3. Both anchor coordinate bindings read watcher.transform, intentionally
-   creating a reactive dependency.
-4. `barWindow.contentItem.mapFromItem(root, 0, root.height)` maps the pill's
-   bottom-left into the bar window, with coordinates rounded to integers.
-5. PopupWindow uses anchor.window and PopupAdjustment.None. Its width is
-   the pill width, height is max(1, revealedHeight), and visibility is
-   revealedHeight > 0. The interior rectangle clips the reveal.
+### Wi-Fi
 
-The popup attaches below the pill, not explicitly below the 48px bar edge.
-Automatic edge adjustment is disabled. The mapping also tracks movement
-caused by neighbouring pills in the Row. Version-specific documentation
-supports this dependency pattern; historical user testing is recorded in
-[decisions](decisions.md), not reproduced here.
+`plugins/bar/wifi/Wifi.qml` owns the browser session state and routes the
+same Network service calls as before. `WifiMenuContent.qml` supplies the
+320x400 combined menu with a bounded network Flickable. It retains radio,
+scan, known/open/PSK selection, pending/error and retry behavior.
 
-## Wi-Fi: preservation boundary
+`WifiPasswordWindow.qml` remains a separate 300x150 top/right PanelWindow
+with Ignore exclusion, OnDemand keyboard focus, masked TextInput, Enter,
+Connect, Cancel and Escape. Selecting a secured network closes the semantic
+combined browser and waits until its animation reaches phase 0 before showing
+and focusing the password window. A candidate keeps scanning active during
+that handoff. Cancel or submission reopens the browser.
 
-`plugins/bar/wifi/Wifi.qml:13` owns menuOpen, selectedNetwork, pendingNetwork
-and connectionError. `selectNetwork()` at line 47 routes known profiles to
-connectKnown(), open networks to connectOpen(), and other networks to a
-password prompt. `submitPassword()` at line 72 invokes connectWithPassword(),
-clears input/selection and reopens browsing. `services/Network.qml:69`
-implements these through connect() and connectWithPsk().
+The operator passed scanning, known/open/PSK connection, incorrect-password
+feedback, retry, successful connection, input masking, Enter/Connect/Cancel
+and scanning-handoff equivalence on 2026-09-26. `Network.qml` was not
+modified.
 
-The selector at `Wifi.qml:182` is a 300×350 item-anchored PopupWindow.
-The password PanelWindow at line 479 is 300×150, top/right anchored with
-48px/16px margins, ExclusionMode.Ignore and OnDemand keyboard focus. Its
-visibility handler requests input focus. TextInput masks passwords and
-submits on Enter; Connect and Cancel are explicit controls.
+## Remaining risks and planned work
 
-Preserve scanning across both windows (visibility handlers at lines 195
-and 501), radio control, known/open/PSK connections, duplicate-attempt
-guards, list scrolling, signal/connected indicators, pending/error feedback,
-input clearing, cancellation and keyboard entry. Result Connections are
-inside network-row delegates at line 348. Wi-Fi has not migrated to
-ExpandablePlugin; do not remove this flow before equivalent tests pass.
-
-## Outstanding concerns and proposed work
-
-These are source-derived risks requiring tests, not observed regressions:
-
-- Rapid switching/reversal, overlapping outgoing/incoming surfaces,
-  menu-ID validation and cleanup when an instance is destroyed.
-- No explicit shared-menu Escape, click-away or keyboard-focus policy.
-- No explicit per-screen architecture; password-window screen association
-  and hardcoded margins need testing.
-- No bar-row collision handling; disabled popup adjustment requires
-  narrow-screen, scaling and oversized-content tests.
-- Legacy Wi-Fi/tooltip item anchors may become stale when neighbours move.
-- Wi-Fi result observation depends on delegate lifetime and has no explicit
-  timeout; disabling Wi-Fi or losing a network mid-attempt may strand state.
-- Removing the chosen adapter clears it, without explicitly selecting an
-  already-existing second adapter (`services/Network.qml:96`).
-- Unknown non-open networks all use the PSK prompt; enterprise and other
-  authentication modes are not demonstrated.
-- Define content lifetime, dimensions, focus and service ownership before
-  migrating plugins; do not infer these from the dummy text menus.
-
-Design direction remains left time/date, centred workspaces, right status,
-a main Control Centre and Bluetooth device/detail menus. Render concepts
-are not implemented specifications. Research and user review precede any
-replacement of the expansion system or Wi-Fi migration.
+- Test explicit output association, multiple monitors, hotplug and fractional
+  scaling before claiming compatibility beyond the accepted eDP-1 scale-2
+  session.
+- Refine the connected Bluetooth pill so the real device name is visibly
+  represented; show battery only when supplied by BlueZ.
+- Pairing new Bluetooth devices requires an explicit agent/prompt design.
+- Classify enterprise and other non-open Wi-Fi security modes; current
+  behavior, preserved from the original implementation, routes unknown
+  secured networks through PSK.
+- Add timeout/cancellation policy for Wi-Fi connection attempts and adapter
+  failover only as separately tested Network-service work.
+- Replace the temporary styling with the render's final spacing, typography,
+  tile states and icon/header motion without changing the accepted lifecycle.
+- Decide when the anchored fallback can be retired. It remains a rollback
+  path and is not the target for new plugins.

@@ -8,10 +8,10 @@ Rectangle {
 
     // One continuous workspace chip, styled by MAGI's active palette.
     color: MagiTheme.Theme.surface
-    radius: MagiTheme.Theme.radiusMedium
+    radius: MagiTheme.Theme.barPillRadius
 
     implicitWidth: workspaceRow.implicitWidth
-    implicitHeight: 26
+    implicitHeight: MagiTheme.Theme.barPillHeight
 
     Component.onCompleted: Hyprland.refreshWorkspaces()
 
@@ -40,7 +40,7 @@ Rectangle {
                 visible: isVisible
 
                 implicitWidth: isVisible ? 28 : 0
-                implicitHeight: 26
+                implicitHeight: MagiTheme.Theme.barPillHeight
 
                 radius: MagiTheme.Theme.radiusSmall
 

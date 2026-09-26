@@ -1,4 +1,6 @@
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 
 import Quickshell
@@ -10,7 +12,10 @@ import "../../plugins/bar/workspaces" as WorkspacePlugin
 import "../../plugins/bar/wifi" as WifiPlugin
 import "../../plugins/bar/volume" as VolumePlugin
 import "../../plugins/bar/battery" as BatteryPlugin
+import "../../plugins/bar/bluetooth" as BluetoothPlugin
+import "../../plugins/bar/controlcentre" as ControlCentrePlugin
 import "../../services" as MagiServices
+import "../../theme" as MagiTheme
 
 PanelWindow {
     id: bar
@@ -34,9 +39,7 @@ PanelWindow {
         activeExpandablePill !== null
         && activeExpandablePill.hostMode === "combined"
     readonly property Item activeCombinedRegion:
-        combinedMenuActive && activeExpandablePill.revealedHeight > 0
-            ? activeExpandablePill.combinedMenuRegion
-            : null
+        combinedMode && statusSurface.revealedHeight > 0 ? statusSurface : null
     readonly property bool catcherEnabled: combinedMenuActive
     readonly property bool combinedKeyboardEnabled:
         combinedMenuActive && activeExpandablePill.menuKeyboardFocus
@@ -120,9 +123,11 @@ PanelWindow {
         "clock": clockComponent,
         "date": dateComponent,
         "workspaces": workspacesComponent,
-        "wifi": wifiComponent,
         "volume": volumeComponent,
-        "battery": batteryComponent
+        "wifi": wifiComponent,
+        "bluetooth": bluetoothComponent,
+        "battery": batteryComponent,
+        "controlcentre": controlCentreComponent
     })
 
     Component {
@@ -146,19 +151,53 @@ PanelWindow {
     Component {
         id: wifiComponent
 
-        WifiPlugin.Wifi {}
+        WifiPlugin.Wifi {
+            barWindow: bar
+            menuCoordinator: bar
+            hostMode: bar.expandableHostMode
+            sharedSurface: bar.combinedMode ? statusSurface : null
+        }
     }
 
     Component {
         id: volumeComponent
 
-        VolumePlugin.Volume {}
+        VolumePlugin.Volume {
+            barWindow: bar
+            menuCoordinator: bar
+            hostMode: bar.expandableHostMode
+            sharedSurface: bar.combinedMode ? statusSurface : null
+        }
     }
 
     Component {
         id: batteryComponent
 
-        BatteryPlugin.Battery {}
+        BatteryPlugin.Battery {
+            sharedExpansion: bar.combinedMode ? statusSurface.expansion : 0
+        }
+    }
+
+    Component {
+        id: bluetoothComponent
+
+        BluetoothPlugin.Bluetooth {
+            barWindow: bar
+            menuCoordinator: bar
+            hostMode: bar.expandableHostMode
+            sharedSurface: bar.combinedMode ? statusSurface : null
+        }
+    }
+
+    Component {
+        id: controlCentreComponent
+
+        ControlCentrePlugin.ControlCentre {
+            barWindow: bar
+            menuCoordinator: bar
+            hostMode: bar.expandableHostMode
+            sharedSurface: bar.combinedMode ? statusSurface : null
+        }
     }
 
     Item {
@@ -199,11 +238,11 @@ PanelWindow {
 
         anchors {
             left: barStrip.left
-            leftMargin: 16
+            leftMargin: MagiTheme.Theme.barEdgeMargin
             verticalCenter: barStrip.verticalCenter
         }
 
-        spacing: 8
+        spacing: MagiTheme.Theme.barSectionSpacing
         z: 10
 
         Repeater {
@@ -211,8 +250,13 @@ PanelWindow {
 
             Loader {
                 required property string modelData
+                readonly property var pluginItem: item
 
                 sourceComponent: bar.pluginComponents[modelData]
+                visible: !pluginItem
+                        || pluginItem["barVisible"] === undefined
+                    ? true
+                    : pluginItem["barVisible"]
             }
         }
     }
@@ -226,7 +270,7 @@ PanelWindow {
 
         anchors.centerIn: barStrip
 
-        spacing: 8
+        spacing: MagiTheme.Theme.barSectionSpacing
         z: 10
 
         Repeater {
@@ -234,8 +278,13 @@ PanelWindow {
 
             Loader {
                 required property string modelData
+                readonly property var pluginItem: item
 
                 sourceComponent: bar.pluginComponents[modelData]
+                visible: !pluginItem
+                        || pluginItem["barVisible"] === undefined
+                    ? true
+                    : pluginItem["barVisible"]
             }
         }
     }
@@ -244,164 +293,29 @@ PanelWindow {
     // Right section
     // ---------------------------------------------------------
 
-    Row {
-        id: rightSection
-
-        anchors {
-            right: barStrip.right
-            rightMargin: 16
-            verticalCenter: barStrip.verticalCenter
-        }
-
-        spacing: 8
+    SharedStatusSurface {
+        id: statusSurface
+        x: bar.width - MagiTheme.Theme.barEdgeMargin - width
+        y: (48 - MagiTheme.Theme.barPillHeight) / 2
         z: 10
+        combined: bar.combinedMode
+        requestedModule: bar.activeExpandablePill
+        modules: Object.values(bar.expandablePillRegistry)
 
-        // -----------------------------------------------------
-        // Temporary expandable menu tests
-        //
-        // Each menu supplies its own content while the shared
-        // component handles expansion, positioning and animation.
-        // -----------------------------------------------------
-
-        ExpandablePlugin {
-            barWindow: bar
-            menuCoordinator: bar
-            hostMode: bar.expandableHostMode
-
-            menuId: "test-settings"
-            icon: "󰒓"
-            title: "MAGI · Settings"
-
-            menuContent: Component {
-                Column {
-                    width: parent ? parent.width : 0
-                    spacing: 12
-
-                    Text {
-                        text: "Settings"
-
-                        color: "#d3c6aa"
-                        font.pixelSize: 13
-                        font.bold: true
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: 1
-
-                        color: "#d3c6aa"
-                        opacity: 0.2
-                    }
-
-                    Text {
-                        width: parent.width
-
-                        text: "This content belongs to the Settings plugin."
-
-                        color: "#d3c6aa"
-                        font.pixelSize: 12
-                        wrapMode: Text.WordWrap
+        statusContent: Component {
+            Row {
+                spacing: MagiTheme.Theme.barSectionSpacing
+                Repeater {
+                    model: bar.rightPlugins
+                    Loader {
+                        required property string modelData
+                        readonly property var pluginItem: item
+                        sourceComponent: bar.pluginComponents[modelData]
+                        visible: !pluginItem
+                                || pluginItem["barVisible"] === undefined
+                            ? true : pluginItem["barVisible"]
                     }
                 }
-            }
-        }
-
-        ExpandablePlugin {
-            id: controlsMenu
-
-            barWindow: bar
-            menuCoordinator: bar
-            hostMode: bar.expandableHostMode
-
-            menuId: "test-controls"
-            icon: "󰍛"
-            title: "MAGI · Controls"
-
-            // M2 API demo: right-click the closed pill to switch between
-            // its original icon-only width and a richer compact state.
-            property bool wideCollapsed: false
-
-            collapsedWidth: wideCollapsed ? 104 : 28
-
-            pillContent: Component {
-                Text {
-                    readonly property var pill: parent
-
-                    anchors.centerIn: parent
-
-                    text: pill && pill.phase === 0
-                        ? (pill.collapsedWidth > 28
-                            ? "󰍛  Controls"
-                            : pill.icon)
-                        : pill ? pill.title : ""
-
-                    color: "#d3c6aa"
-                    font.pixelSize: 12
-
-                    width: pill
-                        ? Math.max(0, pill.availableWidth - 12)
-                        : 0
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                    clip: true
-                }
-            }
-
-            TapHandler {
-                acceptedButtons: Qt.RightButton
-                enabled: controlsMenu.phase === 0
-
-                onTapped: controlsMenu.wideCollapsed =
-                    !controlsMenu.wideCollapsed
-            }
-
-            menuContent: Component {
-                Column {
-                    width: parent ? parent.width : 0
-                    spacing: 12
-
-                    Text {
-                        text: "Controls"
-
-                        color: "#d3c6aa"
-                        font.pixelSize: 13
-                        font.bold: true
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: 1
-
-                        color: "#d3c6aa"
-                        opacity: 0.2
-                    }
-
-                    Text {
-                        width: parent.width
-
-                        text: "This content belongs to the Controls plugin."
-
-                        color: "#d3c6aa"
-                        font.pixelSize: 12
-                        wrapMode: Text.WordWrap
-                    }
-                }
-            }
-        }
-
-        // -----------------------------------------------------
-        // Existing right-hand plugins
-        //
-        // Wi-Fi, Volume and Battery remain unchanged.
-        // -----------------------------------------------------
-
-        Repeater {
-            model: bar.rightPlugins
-
-            Loader {
-                required property string modelData
-
-                sourceComponent: bar.pluginComponents[modelData]
             }
         }
     }

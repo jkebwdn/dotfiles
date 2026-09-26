@@ -3,36 +3,73 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
-## Audited development checkpoint
+## Literal-render reference checkpoint — 2026-09-26
 
-Read-only source audit: **2026-09-24**, repository HEAD
-`e375e5ee95e82f5609c2aeb4b880b21eb38b1086`. Source references below describe
-that snapshot; no interactive UI or connection tests were performed.
+The accepted shared-surface architecture is frozen. The
+[measured visual specification](design/render-visual-specification.md) records
+source-image dimensions/colors, explicit logical-pixel adaptations and exact
+pre-pass mismatches. Control Centre now implements the supported reference
+subset using scoped RenderTokens, icon-only colored tiles, dark icon-on-slider
+controls and an unboxed power summary. Other detail views retain their styling.
 
-- `shell.qml:6` creates one bar. `components/bar/Bar.qml:15` defines a
-  top-layer, top/left/right-anchored PanelWindow with a 48px implicit height
-  and automatic exclusion. Expanded menus use separate windows.
-- `Bar.qml:47` explicitly registers clock, date, workspaces, Wi-Fi, volume
-  and battery. Repeaters/Loaders instantiate configured left/centre/right
-  lists; there is no filesystem plugin discovery.
-- `settings.json:3` selects Catppuccin, clock/date left, workspaces centre,
-  and Wi-Fi/volume/battery right. `services/Settings.qml:17` watches and
-  reloads JSON; it has no explicit save path or plugin-ID validation.
-- Settings and Controls are unconditional inline test menus in
-  `Bar.qml:162` and `Bar.qml:203`, outside the configurable registry.
-- `ExpandablePlugin.qml` supplies staged width/reveal/fade animations,
-  window-relative popup positioning, and Component/Loader content hosting.
-  `services/MenuController.qml:10` stores the requested menu ID, not the
-  completion state of animations or the Wi-Fi menu state.
-- Wi-Fi retains its own selector, scanning and connection flow, plus a
-  separate password PanelWindow. Volume and battery retain their tooltips.
-  None has migrated to the shared expandable content interface.
-- Earlier sessions reported working Wi-Fi and stress-tested two-menu
-  positioning. These are historical reports, not new audit test results.
+Static checks and the expanded 44-step lifecycle/geometry regression pass;
+startup retains one layer and 48px reservation with clean logs. The supplied
+CC screenshot shows the reference tile/slider treatment, and the operator
+confirmed compact-height restoration after Wi-Fi/Bluetooth detail navigation.
+This is bounded geometry confirmation, not blanket visual approval. Missing custom icon assets and
+unimplemented profile/media/action modules prevent full literal reproduction;
+no empty placeholders or new services were added.
 
-All QML paths above are relative to `.config/quickshell/magi/`; bar component
-names without a directory are under `components/bar/`. See the
-[source-referenced audit](research/local-audit.md) for details and risks.
+## Shared composition review — 2026-09-26
+
+The right status cluster now expands as one `SharedStatusSurface`, with
+persistent plugin-owned status visuals and body Components. Internal view
+navigation replaces per-plugin collapse/reopen in combined mode. Volume is
+icon-only; Battery carries percentage; Control Centre sliders place icons over
+the tracks. The anchored fallback remains selectable.
+
+The operator confirmed the shared-cluster visual model, then reported a
+collapse/reopen stall. Its binding-order fix passes a 41-step offscreen
+real-component regression. The operator subsequently passed full collapse,
+repeated/rapid Control Centre reopening, and Control Centre → Bluetooth detail
+→ Back without surface collapse. This **bounded structural checkpoint is accepted**;
+full focus/fullscreen/password-flow regression remains separate.
+Startup, logs and the one-layer/48px compositor baseline passed; those checks
+are not proof of transition, focus or network-flow equivalence. See
+[the design correction and checkpoint](design/shared-status-surface.md).
+
+## Prior accepted production checkpoint
+
+Updated **2026-09-26** from repository HEAD
+`35c282012f2d749081a3f8b1821f01bf0b8aa6ea` plus the current uncommitted
+integration work.
+
+- The combined same-surface host is selected in `shell.qml`. MAGI owns one
+  output-local full-height top-layer surface and reserves exactly 48 logical
+  pixels. Bar, selected menu and consuming dismissal catcher share one native
+  input Region.
+- The anchored PopupWindow/TransformWatcher implementation remains selectable
+  as rollback. It is not the design target for new plugins.
+- Volume, Wi-Fi, Bluetooth and Control Centre are real configurable
+  ExpandablePlugin entries. The former inline Settings/Controls demonstrations
+  are removed from production placement.
+- The right-side order is Volume, Wi-Fi, conditional Bluetooth, Battery and
+  Control Centre. Bluetooth hides while disconnected but remains reachable
+  through Control Centre.
+- Shared services now cover Network, PipeWire audio, BlueZ Bluetooth,
+  brightnessctl-backed brightness, UPower battery, Settings and semantic menu
+  selection.
+- Wi-Fi browsing uses the combined host while password entry remains a
+  separate OnDemand PanelWindow. The operator passed scanning, radio,
+  known/open/PSK connections, masked entry, Enter/Connect/Cancel, error/retry,
+  successful connection and scanning handoff.
+- On the tested eDP-1 scale-2 session, every checkpoint retained one
+  1920x1080 combined MAGI layer at `(0,0)` and reservation
+  `[0,48,0,0]`. Multi-output and fractional-scale behavior remain untested.
+
+See [Architecture](architecture.md) for current ownership and
+[the migration record](research/combined-surface-migration-plan.md) for
+checkpoint evidence.
 
 ## Verified installed environment
 
@@ -71,31 +108,21 @@ and Hyprland environment.
   production invariants, ownership, staged checkpoints and rollback paths.
 - `tasks/`: intended location for bounded research and implementation tasks.
 
-## Research checkpoint and next steps
+## Next steps
 
-As of **2026-09-25**, phase 1 (official Quickshell windows/lifecycle), phase
-2A (K4 and Serpantinum source investigations), and the isolated combined-host
-experiment are documented. Phase 2A used MAGI HEAD
-`04b5e4b9556624f7a365524bebc8869d05f6cc21` as its local comparison point.
-The fixture passed the required geometry, animation interruption, Region,
-OnDemand focus, consumed dismissal, fullscreen restoration and fixed-reservation
-checks on the recorded single-output scale-2 session. Live MAGI QML was not
-changed by the experiment or subsequent planning.
+1. Refine render-driven production presentation, especially connected
+   Bluetooth name/header continuity, tile styling and menu spacing.
+2. Validate multi-output association, hotplug and fractional scaling.
+3. Add explicit Bluetooth pairing-agent UX only after its prompt/security
+   lifecycle is designed.
+4. Consider Wi-Fi timeout, enterprise-security and adapter-failover work as
+   separate Network-service changes with real connection tests.
+5. Continue Noctalia **v4**, Lucid and Caelestia investigations when external
+   research resumes.
 
-1. Review the [production migration plan](research/combined-surface-migration-plan.md)
-   and its render-derived invariants before authorizing any live-QML change.
-2. Begin only the smallest approved migration checkpoint, retaining the
-   anchored TransformWatcher host as the rollback/control.
-3. Continue Noctalia **v4**, Lucid and Caelestia investigations after approval.
-4. Research networking object lifetime, scanning ownership and failure
-   handling before any Wi-Fi migration; review its acceptance tests first.
-5. Implement only the separately approved contract/design increments.
-
-Further research and implementation require the user's next approval.
-Record URLs, inspection dates, pinned versions/commits, source
-components, demonstrated behavior, compatibility and outstanding tests.
-Check licenses before reusing code or assets. Keep proposals separate from
-verified implementation and historical user reports.
+The initial audit and external-project reports remain historical evidence.
+Record new source/API findings, runtime measurements and compatibility limits
+without rewriting historical results.
 
 Supplementary references retained for later evaluation:
 [Quickshell Book](https://github.com/programmersd21/the_quickshell_book) and

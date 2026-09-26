@@ -26,36 +26,32 @@ production migration proposal is in
 - The bar reserves a fixed 48 logical pixels. A pill may change its horizontal
   size, but an expanded menu must not increase the desktop reservation.
 
-## Expansion and visual continuity
+## Shared expansion and internal navigation
 
-- An expanded menu visually originates from the pill that opened it. Its
-  horizontal origin follows the pill, including when configured placement or
-  neighbouring pill widths move that pill.
-- The collapsed pill and the expanded menu read as one transition. The plugin
-  icon or header remains visually continuous while the pill widens and the
-  menu reveals below it; the host must not replace it with an unrelated,
-  host-owned header.
-- Different plugins may request different collapsed widths, expanded widths
-  and menu heights while using the same transition and host lifecycle.
-- The established motion order remains widen, reveal with content fade, then
-  open; closure remains content fade, vertical retract, then horizontal
-  narrowing. Styling work may refine presentation later without changing this
-  lifecycle implicitly.
+Clarified by the operator on 2026-09-26 after re-inspecting the original render:
+independent compact status items form the collapsed state of **one** shared
+expanded surface. Earlier per-pill expansion interpretations are superseded.
 
-## Menu families and content
+- The right status cluster becomes the surface's header/status composition;
+  it must not remain untouched above a duplicate set of controls.
+- Volume is icon-only in the bar. Battery carries the percentage. Bluetooth
+  can show its connected name at a wider collapsed width; no fake battery.
+- Wi-Fi, Bluetooth, Volume and Control Centre are internal views of this
+  surface. Selecting another view keeps the surface open and transforms its
+  dimensions/content. Control Centre detail navigation does not return to the
+  bar or locate another pill. Back navigation should return within the surface.
+- Prefer actual persistent plugin visuals. Coordinated equivalent visuals are
+  acceptable only without visible duplication or jumps.
+- Opening widens then reveals/fades; closing fades, retracts, narrows. Internal
+  view changes have their own interruption-safe fade/reflow without collapse.
+- Bodies remain plugin-owned with content-specific dimensions and bounded
+  Wi-Fi/Bluetooth lists. Control Centre is a modular view of the same surface.
+- Control Centre Volume/Brightness controls use integrated icons on sliders,
+  without textual Volume/Light headers. Fewer labels and softly grouped
+  surfaces should follow the render's spatial hierarchy.
 
-- Wi-Fi, Bluetooth and Volume use dedicated transient menus opened from their
-  respective status pills.
-- Control Centre is a larger modular composition, but it uses the same menu
-  request, geometry, focus, dismissal and host contract as the smaller
-  transient menus. Its internal grid/modules do not justify a second window
-  architecture.
-- Wi-Fi and Bluetooth network/device lists have bounded menu heights and
-  scroll within that bound. List growth must not grow the native window or
-  exclusive zone without limit.
-- Menu content remains plugin-owned. The common host supplies geometry,
-  clipping, lifecycle, focus routing and dismissal, while each plugin supplies
-  its header/content and its own size requirements.
+See [shared-status-surface.md](shared-status-surface.md) for the current
+implementation proposal/checkpoint and its unverified cases.
 
 ## Window, input and fullscreen behavior
 
@@ -77,9 +73,8 @@ The production design therefore needs all of the following:
 
 1. one top-edge surface that owns the bar's exact 48px reservation;
 2. plugin-configurable placement and collapsed/expanded dimensions;
-3. one selected menu host and one interactive menu at a time;
-4. a plugin-owned pill/header visual that can remain above the shared menu
-   reveal rather than being duplicated by a generic frame;
+3. one shared expanded composition and one interactive body at a time;
+4. persistent plugin-owned status visuals recomposed into the shared header;
 5. a native input Region that follows the bar, selected menu and consuming
    catcher state; and
 6. bounded content scrolling inside the plugin, independent of exclusive-zone

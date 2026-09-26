@@ -1,2 +1,3 @@
 module Magi.Theme
 singleton Theme 1.0 Theme.qml
+singleton RenderTokens 1.0 RenderTokens.qml
