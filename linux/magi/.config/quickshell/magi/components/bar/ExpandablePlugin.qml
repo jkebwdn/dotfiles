@@ -13,6 +13,9 @@ Rectangle {
 
     // Supplied by Bar.qml.
     property var barWindow: null
+    property var menuCoordinator: null
+    property string hostMode: "anchored"
+    property bool menuKeyboardFocus: true
 
     property string menuId: ""
     property string icon: "󰒓"
@@ -21,6 +24,10 @@ Rectangle {
     property int collapsedWidth: 28
     property int expandedWidth: 220
     property int menuHeight: 180
+
+    // Plugin-owned visual shared by the compact and widened pill states.
+    // If omitted, the current icon/title presentation is used.
+    property Component pillContent: null
 
     // Plugin-specific expanded content.
     // If omitted, the component displays its test content.
@@ -55,6 +62,10 @@ Rectangle {
     readonly property bool requestedOpen:
         menuId !== ""
         && MagiServices.MenuController.activeMenu === menuId
+    readonly property bool contentInteractive:
+        hostMode === "combined" && requestedOpen && phase === 3
+    readonly property var combinedMenuRegion:
+        menuHost.combinedRegion
 
     property real animatedWidth: collapsedWidth
     property real revealedHeight: 0
@@ -62,6 +73,9 @@ Rectangle {
 
     implicitWidth: animatedWidth
     implicitHeight: 28
+    z: hostMode === "combined"
+        ? (phase === 0 ? 1 : 50)
+        : 0
 
     radius: 8
 
@@ -90,6 +104,22 @@ Rectangle {
             if (phase === 1 || phase === 2 || phase === 3) {
                 beginClosing()
             }
+        }
+    }
+
+    function syncCollapsedWidth() {
+        if (phase === 0) {
+            animatedWidth = collapsedWidth
+            return
+        }
+
+        if (phase === 6) {
+            horizontalAnimation.stop()
+
+            horizontalAnimation.from = animatedWidth
+            horizontalAnimation.to = collapsedWidth
+            horizontalAnimation.duration = contractDuration
+            horizontalAnimation.start()
         }
     }
 
@@ -162,6 +192,7 @@ Rectangle {
     }
 
     onRequestedOpenChanged: syncRequestedState()
+    onCollapsedWidthChanged: syncCollapsedWidth()
 
     // ---------------------------------------------------------
     // Horizontal animation
@@ -209,6 +240,9 @@ Rectangle {
             if (root.phase === 2) {
                 root.phase = 3
 
+                if (root.requestedOpen)
+                    menuHost.requestInitialFocus()
+
                 if (!root.requestedOpen)
                     root.beginClosing()
 
@@ -250,22 +284,45 @@ Rectangle {
     // Pill content
     // ---------------------------------------------------------
 
-    Text {
-        id: pillLabel
+    Component {
+        id: fallbackPillContent
 
+        Text {
+            readonly property var pill: parent
+
+            anchors.centerIn: parent
+
+            text: pill && pill.phase === 0
+                ? pill.icon
+                : pill ? pill.title : ""
+
+            color: "#d3c6aa"
+            font.pixelSize: 12
+
+            width: pill
+                ? Math.max(0, pill.availableWidth - 12)
+                : 0
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
+            clip: true
+        }
+    }
+
+    Loader {
         anchors.centerIn: parent
 
-        text: root.phase === 0
-            ? root.icon
-            : root.title
+        readonly property real availableWidth: parent.width
+        readonly property real availableHeight: parent.height
+        readonly property int phase: root.phase
+        readonly property int collapsedWidth: root.collapsedWidth
+        readonly property int expandedWidth: root.expandedWidth
+        readonly property real animatedWidth: root.animatedWidth
+        readonly property string icon: root.icon
+        readonly property string title: root.title
 
-        color: "#d3c6aa"
-        font.pixelSize: 12
-
-        width: Math.max(0, parent.width - 12)
-        horizontalAlignment: Text.AlignHCenter
-        elide: Text.ElideRight
-        clip: true
+        sourceComponent: root.pillContent
+            ? root.pillContent
+            : fallbackPillContent
     }
 
     MouseArea {
@@ -273,6 +330,16 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
 
         onClicked: MagiServices.MenuController.toggle(root.menuId)
+    }
+
+    Component.onCompleted: {
+        if (menuCoordinator)
+            menuCoordinator.registerExpandablePill(menuId, root)
+    }
+
+    Component.onDestruction: {
+        if (menuCoordinator)
+            menuCoordinator.unregisterExpandablePill(menuId, root)
     }
 
     // ---------------------------------------------------------
@@ -327,9 +394,10 @@ Rectangle {
     // Expanded panel
     // ---------------------------------------------------------
 
-    MenuHosts.AnchoredPopupHost {
-        id: menuPopup
+    MenuHosts.MenuHostSelector {
+        id: menuHost
 
+        hostMode: root.hostMode
         barWindow: root.barWindow
         anchorItem: root
 
@@ -337,9 +405,15 @@ Rectangle {
         revealedHeight: root.revealedHeight
         menuHeight: root.menuHeight
         contentOpacity: root.contentOpacity
+        contentInteractive: root.contentInteractive
 
         menuColor: root.color
         menuContent: root.menuContent
         fallbackContent: fallbackMenuContent
+
+        onCloseRequested: function(reason) {
+            if (root.requestedOpen)
+                MagiServices.MenuController.close()
+        }
     }
 }

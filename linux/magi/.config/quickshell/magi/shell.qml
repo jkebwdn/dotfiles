@@ -4,5 +4,8 @@ import Quickshell
 import "components/bar" as Bar
 
 ShellRoot {
-    Bar.Bar {}
+    Bar.Bar {
+        // Change to "anchored" to use the PopupWindow fallback.
+        expandableHostMode: "combined"
+    }
 }

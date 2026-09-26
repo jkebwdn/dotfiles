@@ -1,7 +1,8 @@
 # Combined-surface production migration plan
 
-Prepared **2026-09-25**. This is an implementation plan, not an implementation
-record. Live MAGI QML has not been changed by this plan.
+Prepared **2026-09-25** and updated **2026-09-26** with implementation and
+runtime acceptance through M4. M5 and later remain plans; no real Volume,
+Control Centre, Bluetooth or Wi-Fi menu has been migrated.
 
 It reconciles the validated
 [combined-host experiment](architecture-experiment.md), the
@@ -14,15 +15,22 @@ otherwise.
 
 ### Verified current behavior
 
-- `components/bar/Bar.qml:15-28` owns MAGI's present 48px top PanelWindow.
-  Its explicit registry at `Bar.qml:47-90` and three Settings-driven Rows at
-  `Bar.qml:96-258` provide configurable placement.
-- `components/bar/ExpandablePlugin.qml:21-27` already accepts collapsed width,
-  expanded width, menu height and a Component-valued menu body. It owns the
-  seven-phase animation at lines 53-247 and the pill click at lines 253-275.
-- The anchored popup baseline uses TransformWatcher, window-relative
-  `mapFromItem()` coordinates and `PopupAdjustment.None` at
-  `ExpandablePlugin.qml:330-379`. Its content Loader begins at line 397.
+- `components/bar/Bar.qml:15-100` owns MAGI's top PanelWindow, host selection,
+  registered expandable-pill lookup, fixed combined-mode reservation, input
+  Region and keyboard policy. Its explicit plugin registry at lines 119-162
+  and three Settings-driven Rows at lines 197-407 retain configurable
+  placement.
+- `components/bar/ExpandablePlugin.qml:14-34` accepts plugin-owned pill
+  content, collapsed and expanded width, menu height and a Component-valued
+  menu body. It owns the seven-phase animation at lines 36-281, including
+  closed-width synchronization, and delegates only native hosting at lines
+  393-418.
+- `components/bar/menu/MenuHostSelector.qml:25-99` instantiates exactly one
+  host adapter. The anchored fallback in
+  `components/bar/menu/AnchoredPopupHost.qml:23-65` retains TransformWatcher,
+  rounded window-relative `mapFromItem()` coordinates, `anchor.window` and
+  `PopupAdjustment.None`. The same-surface adapter is
+  `components/bar/menu/CombinedMenuHost.qml`.
 - `services/MenuController.qml:10-29` stores one requested menu ID and provides
   toggle/open/close operations. It does not own native windows, Item
   references, animation phases or plugin state.
@@ -45,12 +53,91 @@ collapsed states, right-side status modules, dedicated transient menus,
 larger Control Centre, bounded lists and icon/header continuity. These are
 requirements supplied by the user, not behavior verified in current MAGI.
 
-### Proposed behavior
+### Proposed behavior beyond M4
 
-Everything below that describes new production components, interfaces,
-migration order or rollback is a design proposal until its checkpoint is
-implemented and tested. Multi-output and fractional-scale behavior remain
-unverified locally.
+M1-M4 are now implemented and accepted as recorded below. Descriptions of
+real-plugin migration, later cleanup or fallback retirement remain proposals.
+Multi-output and fractional-scale behavior remain unverified locally.
+
+## Production runtime acceptance — M2 through M4
+
+Tested **2026-09-26** on Quickshell 0.3.1 (Arch package) and Hyprland 0.56.2,
+commit `efb50993780079460b0cbed1363e2166a2de1d9f`. The session had one eDP-1
+output at 3840x2160 physical pixels, scale 2, yielding 1920x1080 logical
+coordinates. These results do not validate multiple outputs or fractional
+scales.
+
+### Compositor- and log-derived measurements
+
+- The initial combined instance was PID 73320. `hyprctl layers -j` reported
+  exactly one MAGI/Quickshell top-layer surface on eDP-1 at logical `(0, 0)`,
+  size `1920x1080`. `hyprctl monitors -j` reported reservation
+  `[0, 48, 0, 0]`.
+- Continuous sampling across closed, opening, open, closing, switching and
+  fullscreen activity never observed a reservation other than 48 logical
+  pixels. The full-height surface therefore did not increase its exclusive
+  zone.
+- During compositor fullscreen, the same layer retained its geometry and
+  reservation while alpha changed from 1 to 0. It returned to alpha 1 after
+  fullscreen. No additional MAGI layer appeared.
+- The registered combined path produced no extra PopupWindow/layer during the
+  Settings/Controls checks. Source selection creates only one Loader-backed
+  adapter, and the operator observed only one interactive/requested combined
+  menu at a time.
+- Legacy Wi-Fi remained outside the registered combined path. Opening it did
+  not enable combined-only behavior on its behalf, and its existing popup and
+  password flow remained functional. Concurrent legacy and combined menus are
+  still allowed during this migration stage.
+- MAGI's launch streams contained no QML, binding-loop, focus, Region, anchor,
+  surface or Loader error. A separate `quickshell log --follow` reader failed
+  while parsing the live binary log's trailing `activewindow` record and then
+  reported its own QThread shutdown fatal. PID 73320 remained healthy, so this
+  is recorded as a log-reader/tooling issue rather than a MAGI runtime error.
+
+After fallback validation, the final combined instance was PID 141853. It was
+the sole Quickshell instance and again exposed one surface at `(0, 0)`, size
+`1920x1080`, with reservation `[0, 48, 0, 0]`. The source and running shell
+were left in `expandableHostMode: "combined"`.
+
+### Operator-observed combined behavior
+
+All required interaction checks passed:
+
+1. Settings used the existing widen, reveal/fade, open and reverse close
+   sequence.
+2. Controls used the same lifecycle.
+3. Settings -> Controls -> Settings switched directly and cleanly.
+4. Each expanded menu remained visually attached to its originating pill.
+5. Rapid retargeting throughout opening and closing settled coherently.
+6. Right-clicking closed Controls switched between 28px and 104px collapsed
+   widths.
+7. Neighbouring pills relaid out correctly after either width change.
+8. Controls opened with correct geometry and the same lifecycle from both
+   collapsed widths.
+9. An outside click closed the combined menu exactly once and was consumed;
+   the underlying application did not receive it.
+10. A sibling-pill click switched menus directly above the catcher.
+11. Eligible keyboard focus worked and returned to the underlying application
+    after close.
+12. Entering compositor fullscreen hid bar and menu without blocking click,
+    scroll or keyboard input to the fullscreen client.
+13. Exiting fullscreen restored coherent bar/menu geometry; sibling switching
+    and consumed outside dismissal still worked.
+14. Legacy Wi-Fi popup and password behavior showed no visible regression.
+
+### Anchored fallback checkpoint
+
+The selector was temporarily changed to `anchored` and MAGI was restarted as
+PID 139643. Hyprland reported one native bar layer at logical `(0, 0)`, size
+`1920x48`, with reservation `[0, 48, 0, 0]`. The selector used the existing
+PopupWindow/TransformWatcher adapter. The operator confirmed normal Settings
+and Controls open/close, Settings -> Controls -> Settings switching, moving
+pill attachment and normal animation behavior. Continuous monitoring saw no
+reservation change, and the launch stream produced no runtime error.
+
+The anchored process was then stopped, the selector restored to `combined`,
+and the final combined process started. The anchored `1920x48` layer and host
+were absent afterward.
 
 ## Non-negotiable production invariants
 
@@ -110,22 +197,20 @@ hiding/restoration and one interactive menu are production gates.
   can move into plugin-owned menu content later without changing service or
   password-window ownership.
 
-### Contradictions to resolve before real plugin migration
+### Resolved constraints and remaining migration boundaries
 
-1. **The current pill presentation is too rigid.** ExpandablePlugin hardcodes
-   a single Text at `ExpandablePlugin.qml:253-269`, changes it from icon to
-   title based only on phase, and fixes height to 28. Although
-   `collapsedWidth` is a property, runtime changes after an animation are not
-   an established contract. This conflicts with richer, variable-width
-   Bluetooth and icon/header continuity. Add plugin-owned compact/header
-   content slots and explicitly synchronize or animate a changed collapsed
-   width while closed before migrating real plugins.
+1. **M2 resolved the rigid pill presentation.** ExpandablePlugin now accepts
+   plugin-owned `pillContent`, retains the old icon/title Text as its fallback,
+   and synchronizes a changed collapsed width while closed or narrowing. The
+   28px/104px Controls demonstration passed the production runtime checkpoint.
+   Real Bluetooth visuals and policy for changing width with device state are
+   still future plugin work.
 2. **A universal visual MenuContentFrame would be wrong.** The earlier
    structure proposed that name, but a frame that supplies a standard header
    would duplicate or break the render's pill/header continuity. If retained,
    it may provide only clipping, padding and lifecycle plumbing; plugin visuals
    stay in ExpandablePlugin and the menu Component.
-3. **The fixture instantiates both adapters.**
+3. **Production cannot copy the fixture's two adapters.**
    `experiments/bar-surface/ExpandablePill.qml:280-315` creates anchored and
    combined hosts and disables
    one. That was useful for a fair fixture, but it conflicts with the
@@ -151,9 +236,9 @@ hiding/restoration and one interactive menu are production gates.
 There is no architectural contradiction between variable menu sizes and a
 single combined surface. There is also no conflict between fixed 48px
 reservation and tall menus because visual height and exclusive zone are
-separate. The unresolved risks are the compact/header API, dynamic collapsed
-width after interrupted animation, output association, and exact content
-lifetime during host selection.
+separate. M2-M4 resolved the common compact/header API, closed-width
+retargeting, host selection and single-output lifecycle. Output association,
+fractional scaling and real-plugin content ownership remain unresolved.
 
 ## Proposed production structure
 
@@ -268,7 +353,8 @@ loaded without QML/runtime errors, and Hyprland continued to report one
 confirmed normal Settings and Controls open/close, Settings -> Controls ->
 Settings switching, rapid interruption, moving-pill popup alignment, unchanged
 animation sequence/timing and unchanged Wi-Fi open/close behavior. No visible
-regression was observed. This acceptance covers M1 only; M2 has not begun.
+regression was observed. At that checkpoint, acceptance covered M1 only and M2
+had not begun.
 
 ### M2 — Generalize the pill contract under anchored fallback
 
@@ -283,6 +369,11 @@ regression was observed. This acceptance covers M1 only; M2 has not begun.
   all animation phases and anchored popup tracking pass. **Rollback:** select
   the default icon/title presentation and fixed width; anchored geometry is
   untouched.
+
+**Accepted 2026-09-26:** the 28px/104px Controls demonstration passed closed
+width changes, neighbouring Row relayout, opening from either width, unchanged
+animation lifecycle, attached geometry and rapid retargeting. The default
+icon/title presentation remains available.
 
 ### M3 — Add production host selection in dark mode
 
@@ -311,6 +402,13 @@ regression was observed. This acceptance covers M1 only; M2 has not begun.
   dismissal, sibling switching, focus return and fullscreen recovery pass.
   Test each available output/scale. **Rollback:** choose anchored host and its
   native 48px Bar without changing TransformWatcher geometry.
+
+**Accepted on the available session 2026-09-26:** M3 and M4 passed the
+production Settings/Controls combined-host checkpoint and the bounded anchored
+rollback check recorded above. Acceptance covers the available single eDP-1
+output at integer scale 2. The instruction to test every available output was
+satisfied for this session; multi-output and fractional-scale compatibility
+remain open risks rather than claimed results.
 
 ### M5 — Migrate low-risk transient content
 
@@ -341,10 +439,13 @@ regression was observed. This acceptance covers M1 only; M2 has not begun.
   selector PopupWindow while retaining the combined host for already-migrated
   plugins.
 
-### M7 — Select combined mode by default
+### M7 — Confirm combined mode as the post-migration default
 
-- Change the default only after every migrated plugin passes and cleanup
-  leaves no legacy popup, duplicate focus owner or stale Region.
+- The stabilization shell currently selects combined mode for the accepted
+  Settings/Controls host while Bar's component-level fallback remains
+  anchored. Confirm combined as the final post-migration default only after
+  every migrated plugin passes and cleanup leaves no legacy popup, duplicate
+  focus owner or stale Region.
 - Keep anchored mode available for one stabilization milestone and document
   the switch used to select it.
 
@@ -384,11 +485,11 @@ Keep these test-only:
 The experiment source remains a regression fixture. Production should reuse
 its demonstrated ownership rules, not import its components or test controls.
 
-## Remaining questions before implementation
+## Remaining questions and compatibility risks
 
-- What internal development setting should choose anchored versus combined
-  during the stabilization milestone without exposing an unsupported public
-  setting?
+- Host selection currently uses the source-level `expandableHostMode` value in
+  `shell.qml`. Decide later whether stabilization needs a private runtime
+  setting; no public setting is required by the accepted host architecture.
 - Should a changed Bluetooth collapsed width snap or animate while its menu is
   closed? The architecture supports either; the render does not decide it.
 - Which content state belongs in long-lived services versus retained menu
@@ -401,6 +502,7 @@ its demonstrated ownership rules, not import its components or test controls.
   geometry at runtime? Bounded lists are required, but edge/scale policy still
   needs tests on additional output configurations.
 
-These questions do not block M1 or the API work in M2. Multi-output ownership
-must be decided before claiming M4 production-complete, and Wi-Fi state
-ownership must be decided before M6.
+These questions do not invalidate the single-output M1-M4 acceptance.
+Multi-output ownership and fractional-scale geometry must be tested before
+claiming broader compatibility, and Wi-Fi state ownership must be decided
+before M6.
