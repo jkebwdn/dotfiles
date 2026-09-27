@@ -186,3 +186,56 @@ invented controls or empty padding. The 44-step geometry/lifecycle regression
 passes. The subsequent CC screenshot shows the reference tile/slider treatment;
 the operator confirms Wi-Fi/Bluetooth detail-return height restoration. Full
 literal fidelity remains limited by the explicitly omitted modules/assets.
+
+
+## 2026-09-26 — Settings product constraints and proposed foundation
+
+**User-directed constraints:** freeze the accepted shared status surface; use a
+normal movable desktop window for Settings; preview/apply safe settings live;
+Catppuccin Mocha is the default/reference palette. The render's geometry remains
+a reference, while its sampled colors are not canonical. The extra CC battery
+status row is not final product composition and is to be removed during module
+configuration implementation. No production change was made for this entry.
+
+**Proposed, awaiting review:** [Settings architecture](design/settings-architecture.md)
+and its [v1 example](design/settings-schema-v1.example.json). One settings writer,
+explicit migration from the current flat file, semantic color/icon registries,
+master/per-role roundness, ordered CC module definitions and three initial pages
+(Appearance, Bar, Control Centre). Settings values do not become host/lifecycle
+controls. Profile data is opt-in and media uses real MPRIS state.
+
+The source audit at `5215bbef5fa3573295c1c1101059d62da502892c` found placement-owned
+plugin lifetime and no general same-view height retarget. Test stable detail-view
+availability and safe structural-change deferral before exposing arbitrary
+placement/layout editing. First proposed checkpoint is S1 migration/persistence;
+rollback requires matching old code with its original settings backup. See
+[bounded evidence](research/settings-spike-references.md) for API versus proposal
+boundaries. No live runtime validation is claimed by this documentation spike.
+
+
+## 2026-09-27 — S1/S2 implementation checkpoint
+
+The approved configuration core and theme foundation are implemented. See
+[the exact implementation/test record](research/settings-foundation-checkpoint.md).
+
+- SettingsStore is the sole writer. Pure migration/validation preserves raw
+  unknown values while exposing safe defaults; startup does not rewrite JSON.
+  Explicit save serializes revisions through a Python stdlib helper, preserving
+  a pre-schema backup, symlink target, file mode and atomic replacement. Disk
+  snapshot conflicts stop saving; advisory locks cannot exclude unrelated editors.
+- Stable nonvisual module sessions were pulled forward from S4. Bar visibility,
+  view availability and service lifetime are independent; idle-deferred placement
+  avoids destroying password/animation state. MenuController remains semantic.
+- Ten licensed/pinned palette definitions feed semantic Theme roles. Render
+  geometry remains authoritative; sampled colors no longer bypass Theme.
+  Radius multipliers are live preferences; layout minutiae stay design tokens.
+- Same-view width/height retargeting reuses existing animations without closing
+  the surface. The expanded 48-step regression passes.
+- Anchored hidden details use the actual CC trigger; visible anchored pills keep
+  the original adapter. No invisible registration pill is introduced.
+- The resumed runtime check caught unsupported Object.fromEntries in diagnostic
+  IPC, replaced by a plain loop. Final logs are clean; tests and 48px geometry pass.
+
+Settings GUI, real icon registry, configurable CC rendering and profile/MPRIS
+are not included. CC's extra battery summary remains marked for S4 removal.
+No new fullscreen/pointer/network-password operator acceptance is claimed.

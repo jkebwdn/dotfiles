@@ -129,6 +129,22 @@ Item {
     // targetWidth depends on collapsedWidth; apply the same settled-binding rule.
     onCollapsedWidthChanged: Qt.callLater(root.syncCompactWidth)
 
+    // Same-view layout changes reuse the running geometry animations. They do
+    // not select a view, fade content, steal focus or change lifecycle phases.
+    function retargetGeometry() {
+        if (!requestedOpen || displayedModule !== requestedModule || switchingView)
+            return
+        if (phase !== 1 && phase !== 2 && phase !== 3)
+            return
+        if (animatedWidth !== targetWidth && (!horizontal.running || horizontal.to !== targetWidth))
+            animate(horizontal, animatedWidth, targetWidth, 180)
+        if (phase !== 1 && revealedHeight !== targetHeight
+                && (!vertical.running || vertical.to !== targetHeight))
+            animate(vertical, revealedHeight, targetHeight, 140)
+    }
+    onTargetWidthChanged: Qt.callLater(root.retargetGeometry)
+    onTargetHeightChanged: Qt.callLater(root.retargetGeometry)
+
     NumberAnimation {
         id: horizontal
         target: root

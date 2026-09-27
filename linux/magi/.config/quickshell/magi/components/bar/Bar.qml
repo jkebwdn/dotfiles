@@ -5,15 +5,13 @@ import QtQuick
 
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Io
 
 import "../../plugins/bar/clock" as ClockPlugin
 import "../../plugins/bar/date" as DatePlugin
 import "../../plugins/bar/workspaces" as WorkspacePlugin
-import "../../plugins/bar/wifi" as WifiPlugin
-import "../../plugins/bar/volume" as VolumePlugin
 import "../../plugins/bar/battery" as BatteryPlugin
-import "../../plugins/bar/bluetooth" as BluetoothPlugin
-import "../../plugins/bar/controlcentre" as ControlCentrePlugin
+import "../../modules" as Modules
 import "../../services" as MagiServices
 import "../../theme" as MagiTheme
 
@@ -23,44 +21,22 @@ PanelWindow {
     // Set to "anchored" to retain the native 48px bar and PopupWindow host.
     property string expandableHostMode: "anchored"
 
-    property var expandablePillRegistry: ({})
-
-    readonly property bool combinedMode:
-        expandableHostMode === "combined"
-    readonly property var activeExpandablePill: {
-        if (!combinedMode || MagiServices.MenuController.activeMenu === "")
-            return null
-
-        return expandablePillRegistry[
-            MagiServices.MenuController.activeMenu
-        ] || null
+    Modules.ModuleRegistry {
+        id: registry
+        barWindow: bar
+        hostMode: bar.expandableHostMode
+        sharedSurface: bar.combinedMode ? statusSurface : null
     }
-    readonly property bool combinedMenuActive:
-        activeExpandablePill !== null
-        && activeExpandablePill.hostMode === "combined"
+    readonly property var expandablePillRegistry: registry.modules
+    readonly property bool combinedMode: expandableHostMode === "combined"
+    readonly property var activeExpandablePill: combinedMode
+        ? registry.modules[MagiServices.MenuController.activeMenu] || null : null
+    readonly property bool combinedMenuActive: activeExpandablePill !== null
     readonly property Item activeCombinedRegion:
         combinedMode && statusSurface.revealedHeight > 0 ? statusSurface : null
     readonly property bool catcherEnabled: combinedMenuActive
     readonly property bool combinedKeyboardEnabled:
         combinedMenuActive && activeExpandablePill.menuKeyboardFocus
-
-    function registerExpandablePill(menuId, pill) {
-        if (menuId === "" || !pill)
-            return
-
-        const next = Object.assign({}, expandablePillRegistry)
-        next[menuId] = pill
-        expandablePillRegistry = next
-    }
-
-    function unregisterExpandablePill(menuId, pill) {
-        if (expandablePillRegistry[menuId] !== pill)
-            return
-
-        const next = Object.assign({}, expandablePillRegistry)
-        delete next[menuId]
-        expandablePillRegistry = next
-    }
 
     function closeActiveCombinedMenu() {
         if (combinedMenuActive)
@@ -106,14 +82,34 @@ PanelWindow {
     // Enabled plugins and positions
     // ---------------------------------------------------------
 
-    readonly property var leftPlugins:
-        MagiServices.Settings.barLeftPlugins
-
-    readonly property var centerPlugins:
-        MagiServices.Settings.barCenterPlugins
-
-    readonly property var rightPlugins:
-        MagiServices.Settings.barRightPlugins
+    property var placement: ({left: [], center: [], right: []})
+    Component.onCompleted: syncPlacement()
+    readonly property var leftPlugins: placement.left
+    readonly property var centerPlugins: placement.center
+    readonly property var rightPlugins: placement.right
+    function syncPlacement() {
+        if (MagiServices.MenuController.activeMenu !== "" || statusSurface.phase !== 0
+                || registry.interactionBusy || registry.presentationBusy) return
+        if (JSON.stringify(placement) !== JSON.stringify(MagiServices.Settings.data.bar))
+            placement = MagiServices.Settings.data.bar
+    }
+    Connections {
+        target: MagiServices.Settings
+        function onDataChanged() { Qt.callLater(bar.syncPlacement) }
+    }
+    Connections {
+        target: statusSurface
+        function onPhaseChanged() { Qt.callLater(bar.syncPlacement) }
+    }
+    Connections {
+        target: registry
+        function onInteractionBusyChanged() { Qt.callLater(bar.syncPlacement) }
+        function onPresentationBusyChanged() { Qt.callLater(bar.syncPlacement) }
+    }
+    Connections {
+        target: MagiServices.MenuController
+        function onActiveMenuChanged() { Qt.callLater(bar.syncPlacement) }
+    }
 
     // ---------------------------------------------------------
     // Plugin components
@@ -151,23 +147,13 @@ PanelWindow {
     Component {
         id: wifiComponent
 
-        WifiPlugin.Wifi {
-            barWindow: bar
-            menuCoordinator: bar
-            hostMode: bar.expandableHostMode
-            sharedSurface: bar.combinedMode ? statusSurface : null
-        }
+        ModulePill { module: registry.modules.wifi }
     }
 
     Component {
         id: volumeComponent
 
-        VolumePlugin.Volume {
-            barWindow: bar
-            menuCoordinator: bar
-            hostMode: bar.expandableHostMode
-            sharedSurface: bar.combinedMode ? statusSurface : null
-        }
+        ModulePill { module: registry.modules.volume }
     }
 
     Component {
@@ -181,23 +167,40 @@ PanelWindow {
     Component {
         id: bluetoothComponent
 
-        BluetoothPlugin.Bluetooth {
-            barWindow: bar
-            menuCoordinator: bar
-            hostMode: bar.expandableHostMode
-            sharedSurface: bar.combinedMode ? statusSurface : null
-        }
+        ModulePill { module: registry.modules.bluetooth }
     }
 
     Component {
         id: controlCentreComponent
 
-        ControlCentrePlugin.ControlCentre {
-            barWindow: bar
-            menuCoordinator: bar
-            hostMode: bar.expandableHostMode
-            sharedSurface: bar.combinedMode ? statusSurface : null
+        ModulePill { module: registry.modules.controlcentre }
+    }
+
+    IpcHandler {
+        target: "magi"
+        function status(): string {
+            const phases = {}
+            for (const id of Object.keys(registry.modules)) phases[id] = registry.modules[id].phase
+            return JSON.stringify({mode: bar.expandableHostMode,
+                modules: Object.keys(registry.modules),
+                pills: Object.keys(registry.modules).filter(id => registry.modules[id].pill !== null),
+                active: MagiServices.MenuController.activeMenu,
+                phase: statusSurface.phase, catcher: bar.catcherEnabled,
+                keyboard: bar.combinedKeyboardEnabled,
+                width: bar.width, height: bar.height, reservation: bar.exclusiveZone,
+                viewWidth: statusSurface.width, viewHeight: statusSurface.height,
+                interactive: statusSurface.interactive,
+                theme: MagiTheme.Theme.effectiveTheme, themeDiagnostic: MagiTheme.Theme.diagnostic,
+                surfaceColor: MagiTheme.Theme.surface.toString(),
+                pillRadius: MagiTheme.Theme.barPillRadius,
+                modulePhases: phases})
         }
+        function open(view: string): bool {
+            if (!registry.modules[view]) return false
+            MagiServices.MenuController.open(view)
+            return true
+        }
+        function close(): void { MagiServices.MenuController.close() }
     }
 
     Item {
@@ -250,9 +253,10 @@ PanelWindow {
 
             Loader {
                 required property string modelData
-                readonly property var pluginItem: item
+                readonly property var pluginItem: registry.modules[modelData] || item
 
-                sourceComponent: bar.pluginComponents[modelData]
+                sourceComponent: bar.pluginComponents[modelData] || null
+                active: !registry.modules[modelData] || registry.modules[modelData].barVisible
                 visible: !pluginItem
                         || pluginItem["barVisible"] === undefined
                     ? true
@@ -278,9 +282,10 @@ PanelWindow {
 
             Loader {
                 required property string modelData
-                readonly property var pluginItem: item
+                readonly property var pluginItem: registry.modules[modelData] || item
 
-                sourceComponent: bar.pluginComponents[modelData]
+                sourceComponent: bar.pluginComponents[modelData] || null
+                active: !registry.modules[modelData] || registry.modules[modelData].barVisible
                 visible: !pluginItem
                         || pluginItem["barVisible"] === undefined
                     ? true
@@ -309,8 +314,9 @@ PanelWindow {
                     model: bar.rightPlugins
                     Loader {
                         required property string modelData
-                        readonly property var pluginItem: item
-                        sourceComponent: bar.pluginComponents[modelData]
+                        readonly property var pluginItem: registry.modules[modelData] || item
+                        sourceComponent: bar.pluginComponents[modelData] || null
+                        active: !registry.modules[modelData] || registry.modules[modelData].barVisible
                         visible: !pluginItem
                                 || pluginItem["barVisible"] === undefined
                             ? true : pluginItem["barVisible"]

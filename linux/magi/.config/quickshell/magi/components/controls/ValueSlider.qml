@@ -25,7 +25,7 @@ Item {
             verticalCenter: parent.verticalCenter
         }
         height: root.trackHeight
-        radius: height / 2
+        radius: MagiTheme.Theme.radius("slider", height / 2, width, height)
         color: root.trackColor
 
         Rectangle {
@@ -41,7 +41,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             width: root.handleSize
             height: root.handleSize
-            radius: width / 2
+            radius: MagiTheme.Theme.radius("slider", width / 2, width, height)
             color: root.interactive
                 ? MagiTheme.Theme.text
                 : MagiTheme.Theme.muted

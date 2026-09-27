@@ -7,7 +7,7 @@ import "../../../components/controls" as MagiControls
 import "../../../services" as MagiServices
 import "../../../theme" as MagiTheme
 
-MagiBar.ExpandablePlugin {
+MagiBar.ExpandableModule {
     id: root
 
     readonly property int volume: MagiServices.Audio.volumePercent

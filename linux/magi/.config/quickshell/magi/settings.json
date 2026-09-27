@@ -1,7 +1,22 @@
-
 {
-  "palette": "catppuccin",
-  "barLeftPlugins": ["clock", "date"],
-  "barCenterPlugins": ["workspaces"],
-  "barRightPlugins": ["volume", "wifi", "bluetooth", "battery", "controlcentre"]
+  "appearance": {
+    "theme": "catppuccin-mocha"
+  },
+  "bar": {
+    "left": [
+      "clock",
+      "date"
+    ],
+    "center": [
+      "workspaces"
+    ],
+    "right": [
+      "volume",
+      "wifi",
+      "bluetooth",
+      "battery",
+      "controlcentre"
+    ]
+  },
+  "schemaVersion": 1
 }

@@ -7,7 +7,7 @@ import "../../../components/controls" as MagiControls
 import "../../../services" as MagiServices
 import "../../../theme" as MagiTheme
 
-MagiBar.ExpandablePlugin {
+MagiBar.ExpandableModule {
     id: root
 
     menuId: "controlcentre"
@@ -19,7 +19,7 @@ MagiBar.ExpandablePlugin {
     viewPadding: MagiTheme.RenderTokens.padding
     viewBottomPadding: MagiTheme.RenderTokens.padding
     viewRadius: MagiTheme.RenderTokens.outerRadius
-    viewSurfaceColor: MagiTheme.RenderTokens.surface
+    viewSurfaceColor: MagiTheme.Theme.surface
     color: sharedSurface
         ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion)
         : MagiTheme.Theme.surface
@@ -66,8 +66,9 @@ MagiBar.ExpandablePlugin {
                         ? MagiServices.Network.ssid
                         : MagiServices.Network.wifiEnabled ? "On" : "Off"
                     active: MagiServices.Network.wifiEnabled
-                    activeColor: MagiTheme.RenderTokens.wifi
-                    rimColor: MagiTheme.RenderTokens.wifiRim
+                    accentRole: "teal"
+                    activeColor: MagiTheme.Theme.teal
+                    rimColor: MagiTheme.Theme.controlRim(MagiTheme.Theme.teal)
                     available: MagiServices.Network.wifiHardwareEnabled
                     onPrimaryTriggered:
                         MagiServices.Network.setWifiEnabled(
@@ -82,8 +83,9 @@ MagiBar.ExpandablePlugin {
                     subtitle: MagiServices.Battery.available
                         ? MagiServices.Battery.percentage + "%" : "Unknown"
                     active: MagiServices.Battery.available
-                    activeColor: MagiTheme.RenderTokens.power
-                    rimColor: MagiTheme.RenderTokens.powerRim
+                    accentRole: "red"
+                    activeColor: MagiTheme.Theme.red
+                    rimColor: MagiTheme.Theme.controlRim(MagiTheme.Theme.red)
                     available: MagiServices.Battery.available
                     interactive: false
                 }
@@ -94,8 +96,9 @@ MagiBar.ExpandablePlugin {
                     subtitle: MagiServices.Audio.muted
                         ? "Muted" : MagiServices.Audio.volumePercent + "%"
                     active: MagiServices.Audio.available && !MagiServices.Audio.muted
-                    activeColor: MagiTheme.RenderTokens.sound
-                    rimColor: MagiTheme.RenderTokens.soundRim
+                    accentRole: "peach"
+                    activeColor: MagiTheme.Theme.peach
+                    rimColor: MagiTheme.Theme.controlRim(MagiTheme.Theme.peach)
                     available: MagiServices.Audio.available
                     onPrimaryTriggered: MagiServices.Audio.toggleMute()
                 }
@@ -107,8 +110,9 @@ MagiBar.ExpandablePlugin {
                         : MagiServices.Bluetooth.connectedCount > 0
                             ? MagiServices.Bluetooth.connectedCount + " linked" : "On"
                     active: MagiServices.Bluetooth.enabled
-                    activeColor: MagiTheme.RenderTokens.bluetooth
-                    rimColor: MagiTheme.RenderTokens.bluetoothRim
+                    accentRole: "blue"
+                    activeColor: MagiTheme.Theme.blue
+                    rimColor: MagiTheme.Theme.controlRim(MagiTheme.Theme.blue)
                     available: MagiServices.Bluetooth.available
                     onPrimaryTriggered:
                         MagiServices.Bluetooth.setEnabled(!MagiServices.Bluetooth.enabled)
@@ -151,7 +155,7 @@ MagiBar.ExpandablePlugin {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: MagiServices.Battery.icon
-                    color: MagiTheme.RenderTokens.foreground
+                    color: MagiTheme.Theme.text
                     font.family: MagiTheme.Theme.fontFamily
                     font.pixelSize: 24
                 }
@@ -162,7 +166,7 @@ MagiBar.ExpandablePlugin {
                     anchors.rightMargin: 10
                     anchors.verticalCenter: parent.verticalCenter
                     text: MagiServices.Battery.stateText
-                    color: MagiTheme.RenderTokens.secondary
+                    color: MagiTheme.Theme.subtext
                     font.family: MagiTheme.RenderTokens.textFamily
                     font.pixelSize: MagiTheme.RenderTokens.secondarySize
                     elide: Text.ElideRight
@@ -175,7 +179,7 @@ MagiBar.ExpandablePlugin {
                         ? MagiServices.Battery.timeText
                         : MagiServices.Battery.available
                             ? MagiServices.Battery.percentage + "%" : "Unavailable"
-                    color: MagiTheme.RenderTokens.secondary
+                    color: MagiTheme.Theme.subtext
                     font.family: MagiTheme.RenderTokens.textFamily
                     font.pixelSize: MagiTheme.RenderTokens.secondarySize
                 }

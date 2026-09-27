@@ -191,3 +191,51 @@ The subsequent operator screenshot shows the reference presentation, and the
 operator confirms compact-height restoration on return from Wi-Fi/Bluetooth.
 This establishes the bounded geometry recheck, not new API or full regression
 guarantees.
+
+
+## Settings spike — Quickshell 0.3.1 (2026-09-26)
+
+Targeted documentation findings, **not local runtime tests**:
+
+- [FloatingWindow](https://quickshell.org/docs/v0.3.1/types/Quickshell/FloatingWindow/)
+  is the normal top-level window candidate for Settings. Its name does not imply
+  that Hyprland must place it in floating mode. Test compositor focus/placement
+  separately; no layer-shell or exclusive-zone ownership is proposed.
+- [FileView](https://quickshell.org/docs/v0.3.1/types/Quickshell.Io/FileView/)
+  supports atomic writes and save/error notification. A watcher may observe own
+  writes; saving and reloading require explicit coordination. At the spike baseline Settings
+  had no save path (F003); S1 now supplies the writer described below. Atomic writes do not resolve competing editors.
+- [Mpris](https://quickshell.org/docs/v0.3.1/types/Quickshell.Services.Mpris/Mpris/)
+  and [MprisPlayer](https://quickshell.org/docs/v0.3.1/types/Quickshell.Services.Mpris/MprisPlayer/)
+  provide the future media backend; controls must check per-player capabilities.
+
+The [evidence ledger](research/settings-spike-references.md) records exact APIs,
+version limits and required tests. The [architecture proposal](design/settings-architecture.md)
+contains the single-writer/reset/migration and future desktop-window design.
+No API experiment or shell restart was performed for these findings.
+
+
+## Settings foundation — locally tested 2026-09-27
+
+Quickshell **0.3.1**, Qt 6.11.2, Hyprland 0.56.2. The earlier
+[FileView evidence](research/settings-spike-references.md) remains the API source;
+production uses FileView only as watcher. `settings/SettingsStore.qml` uses
+[Process](https://quickshell.org/docs/v0.3.1/types/Quickshell.Io/Process/) and
+[StdioCollector](https://quickshell.org/docs/v0.3.1/types/Quickshell.Io/StdioCollector/)
+for a serialized JSON request/response with `persist.py`. Installed type metadata
+and local tests verified `exec`, `onStarted`/`write`, `onStreamFinished` and
+`onExited` on this runtime. Atomic rename, backup and conflict checks are MAGI's
+Python-helper behavior, not additional Quickshell guarantees.
+
+Actual isolated QML tests passed missing/legacy/current/partial/invalid settings,
+save/reload, rapid in-flight edits, resets, all ten palettes and live radii.
+Nonvisual module Scope ownership and password handoff passed mocked-backend tests.
+The shared-surface regression passes 48 steps, including same-view geometry
+retargeting. See [full results and limits](research/settings-foundation-checkpoint.md).
+
+Runtime discovery: `Object.fromEntries` is unavailable in the installed QML JS
+engine. The diagnostic IPC now builds its phase map with a plain loop. Final
+normal launch and all module switches log no errors/warnings. qmllint exits 0
+but reports existing type metadata/unqualified warnings and an unresolved
+`QProcess::ExitStatus` signal-parameter type at SettingsStore.onExited; real
+Process/store tests work. This is not a claim of a warning-free static scan.

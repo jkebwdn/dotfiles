@@ -1,5 +1,8 @@
 # MAGI research index
 
+Latest implementation evidence: [S1/S2 settings foundation checkpoint](settings-foundation-checkpoint.md),
+2026-09-27. The earlier investigations below retain their original dates/scope.
+
 Status: **2026-09-25**. The [local codebase audit](local-audit.md), documentation
 reconciliation and [phase-1 Quickshell research](quickshell-windows-and-lifecycle.md)
 are complete. Phase 2A now documents [K4](k4.md) and [Serpantinum](serpantinum.md),
@@ -24,6 +27,14 @@ compatibility questions and proposed tests. No external code was reused.
 See the [neutral A/B/C comparison](serpantinum.md#technical-comparison-for-magi)
 and measured experiment before implementation. Further external research and
 live implementation await approval.
+
+## Bounded Settings follow-up — 2026-09-26
+
+[Settings API/UX evidence](settings-spike-references.md) supports the
+[Settings architecture proposal](../design/settings-architecture.md). This is a
+focused documentation spike, not a resumed broad research phase. It distinguishes
+Noctalia's modern v5+ docs from the deferred v4 investigation. No external code
+was reused and no runtime tests were performed.
 
 ## Proposed order
 

@@ -8,7 +8,7 @@ Item {
     property string icon: ""
     property real value: 0
     property bool interactive: true
-    property color fillColor: MagiTheme.RenderTokens.sliderFill
+    property color fillColor: MagiTheme.Theme.sliderFill
     signal valueMoved(real value)
     implicitHeight: MagiTheme.RenderTokens.sliderHeight
     opacity: interactive ? 1 : 0.45
@@ -16,7 +16,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: MagiTheme.RenderTokens.sliderRadius
-        color: MagiTheme.RenderTokens.sliderTrack
+        color: MagiTheme.Theme.sliderTrack
 
         Item {
             anchors.fill: parent
@@ -29,8 +29,8 @@ Item {
                 Rectangle {
                     width: parent.parent.width
                     height: parent.height
-                    radius: MagiTheme.RenderTokens.sliderRadius
-                        - MagiTheme.RenderTokens.sliderBorder
+                    radius: Math.max(0, MagiTheme.RenderTokens.sliderRadius
+                        - MagiTheme.RenderTokens.sliderBorder)
                     color: root.fillColor
                 }
             }
@@ -40,14 +40,14 @@ Item {
             radius: parent.radius
             color: "transparent"
             border.width: MagiTheme.RenderTokens.sliderBorder
-            border.color: MagiTheme.RenderTokens.sliderRim
+            border.color: MagiTheme.Theme.sliderRim
         }
     }
     Text {
         x: 10
         anchors.verticalCenter: parent.verticalCenter
         text: root.icon
-        color: MagiTheme.RenderTokens.foreground
+        color: MagiTheme.Theme.text
         font.family: MagiTheme.Theme.fontFamily
         font.pixelSize: MagiTheme.RenderTokens.sliderIconSize
     }

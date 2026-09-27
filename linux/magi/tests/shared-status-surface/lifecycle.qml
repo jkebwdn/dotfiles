@@ -87,6 +87,24 @@ ShellRoot {
         const result = []
         function add(delay, run) { result.push({delay: delay, run: run}) }
         add(20, () => { surface.requestedModule = centre })
+        add(550, () => {
+            opened(centre); guardOpen = true
+            centre.expandedWidth = 440; centre.menuHeight = 310
+        })
+        add(300, () => {
+            opened(centre)
+            check(surface.animatedWidth === 440 && surface.height === 346,
+                "same-view geometry grows without collapse or content fade")
+            check(surface.contentOpacity === 1, "retarget preserves visible content")
+            centre.expandedWidth = 360; centre.menuHeight = 260
+        })
+        add(40, () => { centre.expandedWidth = 320; centre.menuHeight = 208 })
+        add(300, () => {
+            opened(centre)
+            check(surface.animatedWidth === 320 && surface.height === 244,
+                "interrupted same-view retarget settles to latest dimensions")
+            guardOpen = false
+        })
         add(550, () => { opened(centre); surface.requestedModule = null })
         add(550, () => { closed(); surface.requestedModule = centre })
         add(550, () => { opened(centre); guardOpen = true; surface.requestedModule = wifi })

@@ -3,6 +3,28 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
+## S1/S2 configuration and appearance foundation — 2026-09-27
+
+Implemented and validated: schema v1, pre-schema migration, one atomic settings
+writer, reset/validation/live notifications, stable module sessions independent
+of bar placement, ten data-defined palettes and semantic roundness. Catppuccin
+Mocha is the live default/reference. RenderTokens now holds geometry/typography;
+render-sampled colors are no longer the production palette source.
+
+[Implementation and validation record](research/settings-foundation-checkpoint.md)
+contains the migration backup, exact files, tests, runtime evidence and limits.
+The [approved architecture](design/settings-architecture.md) and
+[schema example](design/settings-schema-v1.example.json) also describe future
+work: icon registry, configurable CC composition and the normal Settings window.
+Those features are **not implemented**. The duplicated CC battery row remains
+pending its later composition stage.
+
+Final regressions passed: settings, appearance, module ownership and 48 lifecycle
+steps. qmllint exits 0 with documented metadata/unqualified warnings. The live
+combined shell has one 1920×1080 layer at `(0,0)` and exactly 48px reservation;
+startup and bounded module-switch logs are clean. No new pointer/fullscreen,
+real network/password, multi-output or fractional-scale acceptance is claimed.
+
 ## Literal-render reference checkpoint — 2026-09-26
 
 The accepted shared-surface architecture is frozen. The
@@ -110,8 +132,9 @@ and Hyprland environment.
 
 ## Next steps
 
-1. Refine render-driven production presentation, especially connected
-   Bluetooth name/header continuity, tile styling and menu spacing.
+1. Review S1/S2, then implement S3: semantic IconRegistry with the existing
+   glyph pack and incremental consumers. CC configuration and the Settings
+   window follow separately; defer subjective UI/morph work.
 2. Validate multi-output association, hotplug and fractional scaling.
 3. Add explicit Bluetooth pairing-agent UX only after its prompt/security
    lifecycle is designed.

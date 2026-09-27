@@ -1,0 +1,181 @@
+import QtQuick
+import Quickshell
+import Quickshell.Io
+import "SettingsSchema.js" as Schema
+import "SettingsMigrations.js" as Migrations
+
+// Reusable only for isolated tests; production owns exactly one via Settings.qml.
+Scope {
+    id: root
+    required property string path
+    readonly property var data: state.effective
+    readonly property int revision: state.revision
+    readonly property bool ready: state.ready
+    readonly property string saveState: state.status
+    readonly property string error: state.error
+    readonly property var diagnostics: state.errors.concat(state.warnings)
+    readonly property bool dirty: state.dirty
+
+    QtObject {
+        id: state
+        property var document: Schema.defaults()
+        property var effective: Schema.defaults()
+        property var baseline: null
+        property var errors: []
+        property var warnings: []
+        property bool ready: false
+        property bool dirty: false
+        property bool future: false
+        property bool parseInvalid: false
+        property int revision: 0
+        property string status: "loading"
+        property string error: ""
+        property var request: null
+        property string response: ""
+        property bool readPending: false
+    }
+
+    function publish(result) {
+        state.document = result.document
+        state.effective = result.effective
+        state.errors = result.errors
+        state.warnings = result.warnings
+        state.future = result.future
+        state.revision++
+    }
+    function acceptText(text) {
+        if (state.dirty && text !== state.baseline) {
+            state.status = "conflict"
+            state.error = "External settings changed while edits were pending"
+            return
+        }
+        if (state.ready && text === state.baseline) return
+        try {
+            const raw = text === null ? Schema.defaults() : Migrations.migrate(JSON.parse(text))
+            publish(Schema.analyze(raw))
+            state.parseInvalid = false
+            state.baseline = text
+            state.status = state.future ? "readOnly" : state.errors.length ? "invalid" : "saved"
+            state.error = state.future ? "Settings schema is newer than this MAGI version" : ""
+        } catch (exception) {
+            state.baseline = text
+            state.parseInvalid = true
+            state.errors = [String(exception)]
+            state.status = "invalid"
+            state.error = String(exception)
+        }
+    }
+    function reload() {
+        if (worker.running || state.request) { state.readPending = true; return }
+        start({op: "read", path: path})
+    }
+    function discardAndReload() {
+        if (state.request || worker.running) return false
+        state.dirty = false
+        state.ready = false
+        reload()
+        return true
+    }
+    function start(request) {
+        state.request = request
+        state.response = ""
+        worker.exec(["python3", Qt.resolvedUrl("persist.py").toString().replace(/^file:\/\//, "")])
+    }
+    function save() {
+        if (!state.ready || state.future || state.errors.length || !state.dirty
+                || state.status === "conflict") return false
+        if (worker.running || state.request) { saveTimer.restart(); return false }
+        state.status = "pending"
+        start({op: "write", path: path, expected: state.baseline,
+            text: JSON.stringify(state.document, null, 2) + "\n", revision: state.revision})
+        return true
+    }
+    function commit(document, repairMalformed) {
+        if (!ready || state.future || state.status === "conflict"
+                || (state.parseInvalid && !repairMalformed)) return false
+        try {
+            const result = Schema.analyze(document)
+            if (result.errors.length || result.future) { state.error = result.errors.join("; "); return false }
+            publish(result)
+            state.parseInvalid = false
+            state.dirty = true
+            state.status = "pending"
+            state.error = ""
+            saveTimer.restart()
+            return true
+        } catch (exception) { state.error = String(exception); return false }
+    }
+    function setValue(section, key, value) {
+        if (["appearance", "icons", "bar", "controlCentre"].indexOf(section) < 0) return false
+        const next = Schema.clone(state.document)
+        // Fill missing defaults, but retain unknown fields and diagnosed raw values.
+        if (next[section] === undefined) next[section] = Schema.defaults()[section]
+        if (!Schema.object(next[section]) || ["__proto__", "constructor", "prototype"].indexOf(key) >= 0) return false
+        next[section][key] = value
+        return commit(next)
+    }
+    function setTheme(id) { return setValue("appearance", "theme", id) }
+    function setIconPack(id) { return setValue("icons", "pack", id) }
+    function setRoundness(role, value) {
+        const roundness = Schema.clone(data.appearance.roundness)
+        if (role === "master") roundness.master = value
+        else if (Schema.radiusRoles.indexOf(role) >= 0) roundness.roles[role] = value
+        else return false
+        return setValue("appearance", "roundness", roundness)
+    }
+    function resetSection(section) {
+        if (["appearance", "icons", "bar", "controlCentre"].indexOf(section) < 0) return false
+        const next = Schema.clone(state.document)
+        next[section] = Schema.defaults()[section]
+        return commit(next)
+    }
+    function resetAll() {
+        const next = Schema.clone(state.document)
+        Object.assign(next, Schema.defaults())
+        return commit(next, true)
+    }
+    // Explicit migration/save, not an automatic startup rewrite.
+    function persistCurrent() { return commit(Schema.clone(state.document)) }
+
+    Component.onCompleted: reload()
+    Timer { id: saveTimer; interval: 250; onTriggered: root.save() }
+    FileView {
+        path: root.path
+        watchChanges: true
+        printErrors: false
+        onFileChanged: root.reload()
+    }
+    Process {
+        id: worker
+        stdinEnabled: true
+        onStarted: write(JSON.stringify(state.request) + "\n")
+        stdout: StdioCollector { onStreamFinished: state.response = text }
+        onExited: {
+            const request = state.request
+            state.request = null
+            try {
+                const result = JSON.parse(state.response)
+                if (!result.ok) {
+                    state.status = result.conflict ? "conflict" : "error"
+                    state.error = result.error
+                } else if (request.op === "read") {
+                    root.acceptText(result.text)
+                } else {
+                    state.baseline = result.text
+                    state.dirty = state.revision !== request.revision
+                    state.status = state.dirty ? "pending" : "saved"
+                    state.error = ""
+                    if (state.dirty) saveTimer.restart()
+                }
+            } catch (exception) {
+                state.status = "error"
+                state.error = "Settings I/O failed: " + String(exception)
+            }
+            state.ready = true
+            if (state.readPending) {
+                state.readPending = false
+                Qt.callLater(root.reload)
+            }
+        }
+    }
+}

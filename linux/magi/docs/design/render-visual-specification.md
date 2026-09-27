@@ -4,6 +4,17 @@ Prepared **2026-09-26 before QML changes**. The accepted shared status surface,
 semantic navigation, animation sequence/timings, native geometry, input/focus,
 fullscreen policy and 48px reservation are frozen for this milestone.
 
+## Product color-policy clarification — 2026-09-26
+
+The later Settings brief establishes **Catppuccin Mocha** as MAGI's default and
+reference palette. This document's sampled colors record the render and the
+completed reference pass; they are not canonical product colors. Geometry and
+composition measurements remain useful. See [the Settings architecture](settings-architecture.md)
+for semantic themes/roundness. S2 (2026-09-27) replaced sampled color bypasses
+with the selected Theme while retaining the measured geometry. The historical
+samples and screenshot comparisons below describe the earlier render pass. The adapted extra battery summary
+is also marked for removal when CC composition becomes configurable.
+
 ## Evidence and measurement convention
 
 Source: `/home/jkebwdn/Downloads/Magi Quickshell Render.png`, 6000×15000 PNG.
