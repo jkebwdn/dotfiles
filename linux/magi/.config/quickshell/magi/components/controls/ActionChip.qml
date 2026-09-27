@@ -6,6 +6,7 @@ Rectangle {
     id: root
 
     property string icon: ""
+    property string moduleId: ""
     property string label: ""
     property bool active: false
     property bool available: true
@@ -30,14 +31,14 @@ Rectangle {
         anchors.centerIn: parent
         spacing: root.icon.length > 0 && root.label.length > 0 ? 6 : 0
 
-        Text {
+        Icon {
             visible: root.icon.length > 0
-            text: root.icon
+            role: root.icon
+            moduleId: root.moduleId
             color: root.active
                 ? MagiTheme.Theme.accentText
                 : MagiTheme.Theme.text
-            font.family: MagiTheme.Theme.fontFamily
-            font.pixelSize: 11
+            size: 11
         }
 
         Text {

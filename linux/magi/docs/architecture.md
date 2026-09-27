@@ -8,6 +8,20 @@ Settings-spike source baseline is committed HEAD
 `5215bbef5fa3573295c1c1101059d62da502892c` (2026-09-26). Paths are relative to
 `.config/quickshell/magi/`.
 
+## Current Settings/CC integration — 2026-09-27
+
+The [new checkpoint](research/settings-application-checkpoint.md) supersedes the
+S1/S2-only limitations below: IconRegistry and shared Icon rendering are active;
+ControlCatalog drives ordered CC controls/sliders, responsive targets and safe
+live reflow; the duplicate battery row is removed. Default four assignments stay
+unchanged, including the optional legacy Battery tile. No richer Power module
+was added. SettingsApplication owns one lazy FloatingWindow with three real pages.
+It shares SettingsStore and waits for transient/password readiness before opening.
+Bar retains exclusive ownership of Region/focus/catcher and the 48px reservation.
+Automated and startup checks pass. The operator subsequently passed the requested
+window/pages, live settings/persistence, CC configuration and hidden-detail checks;
+post-review logs and the one-layer/48px baseline remain clean.
+
 ## Runtime surface and reservation
 
 `shell.qml` selects `expandableHostMode: "combined"`. `Bar.qml:19-104`
@@ -108,8 +122,9 @@ SharedStatusSurface reads each body's own insets and the displayed view's outer
 color/radius; defaults preserve the other views. Existing expandedWidth and
 menuHeight remain the geometry targets, including shrinking when navigating.
 
-CC adopts geometry/typography from `theme/RenderTokens.qml`: nominal width 320, body 208, total 244
-logical pixels with the existing 36px expanded header. The compact cluster width
+CC adopts tile/slider geometry from `theme/RenderTokens.qml`; its dimensions now
+derive from effective columns, enabled controls and sliders. Default targets are
+322px wide, 152px body and 188px including the 36px expanded header. The compact cluster width
 floor still applies. Colors now use the selected semantic Theme, with Mocha as the default. Anchored geometry/adapter is unchanged and retains
 its prior host insets. See [the visual specification](design/render-visual-specification.md)
 for measurements, deliberate omissions and pending visual acceptance.
@@ -226,7 +241,7 @@ anchor is fabricated when both placements are absent. Combined hosting has no
 such dependency. The bounded fallback check passed native 48px geometry and
 hidden Bluetooth detail, not a fresh full pointer/focus acceptance.
 
-CC column/order/slot settings are schema groundwork only: the existing four
-controls and duplicated battery summary are unchanged until S4. Settings GUI,
-IconRegistry/asset import and profile/MPRIS remain future stages. Host lifecycle,
+CC column/order/slot settings now drive ControlCatalog delegates. The duplicated
+battery summary has been removed. The initial Settings GUI and IconRegistry are
+implemented; asset import/override UI and profile/MPRIS remain future work. Host lifecycle,
 MenuController semantics, Network and other system services remain unchanged.

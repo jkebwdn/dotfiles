@@ -1,0 +1,22 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const base=process.argv[2];
+const registry=JSON.parse(fs.readFileSync(base+'/packs/registry.json'));
+const ctx=vm.createContext({});vm.runInContext(fs.readFileSync(base+'/IconResolver.js','utf8'),ctx);
+const settings={pack:'magi-legacy',modulePacks:{},overrides:{global:{},modules:{}}};
+for(const role of ['wifi','wifi-low','wifi-medium','wifi-high','bluetooth','bluetooth-connected','volume','volume-muted','brightness','battery','battery-charging','settings','night-light','dnd','power-profile','media-play','media-pause','media-next','media-previous','back','scan','connect','disconnect'])
+ assert(ctx.resolve(registry,settings,role,'').icon.text);
+registry.packs.push({id:'test',font:'test',roles:{wifi:{kind:'glyph',text:'G'}},modules:{wifi:{wifi:{kind:'glyph',text:'M'}}},assets:{}});
+settings.pack='test';assert.equal(ctx.resolve(registry,settings,'wifi','').icon.text,'G');
+assert.equal(ctx.resolve(registry,settings,'wifi','wifi').icon.text,'M');
+settings.modulePacks.wifi='magi-legacy';assert.notEqual(ctx.resolve(registry,settings,'wifi','wifi').icon.text,'M');
+settings.overrides.global.wifi={source:'bundled',pack:'test',icon:'wifi'};
+assert.equal(ctx.resolve(registry,settings,'wifi','wifi').icon.text,'M');
+settings.overrides.modules.wifi={wifi:{source:'bundled',pack:'magi-legacy',icon:'bluetooth'}};
+assert.equal(ctx.resolve(registry,settings,'wifi','wifi').icon.text,registry.packs[0].roles.bluetooth.text);
+settings.overrides.modules.wifi.wifi={source:'user',assetId:'../../etc/passwd'};
+assert(ctx.resolve(registry,settings,'wifi','wifi').diagnostic.includes('not enabled'));
+assert(ctx.resolve(registry,settings,'missing-role','').icon.text);
+registry.packs[1].roles.scan={kind:'svg',assetId:'sample'};registry.packs[1].assets.sample='sample.svg';
+assert.equal(ctx.resolve(registry,settings,'scan','').icon.path,'sample.svg');
+registry.packs[1].assets.sample='../../escape.svg';assert.equal(ctx.resolve(registry,settings,'scan','').icon.kind,'glyph');
+console.log('Semantic roles, global/module/individual precedence, missing fallback and bundled SVG path guards PASS');

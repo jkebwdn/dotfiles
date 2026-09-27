@@ -239,3 +239,18 @@ normal launch and all module switches log no errors/warnings. qmllint exits 0
 but reports existing type metadata/unqualified warnings and an unresolved
 `QProcess::ExitStatus` signal-parameter type at SettingsStore.onExited; real
 Process/store tests work. This is not a claim of a warning-free static scan.
+
+
+## Settings normal-window implementation — 2026-09-27
+
+The already selected [FloatingWindow v0.3.1 API](https://quickshell.org/docs/v0.3.1/types/Quickshell/FloatingWindow/)
+is now used by `components/settings/SettingsWindow.qml`. Installed
+`Quickshell/_Window/quickshell-window.qmltypes` confirms title/minimumSize and the
+normal window interface. Local production observation: it maps as a separate
+`org.quickshell` desktop client titled MAGI Settings; Hyprland tiles it normally.
+It creates no extra shell layer or reservation. The operator subsequently passed
+the requested window manipulation, page and live configuration checks; broader
+focus/fullscreen compatibility remains separate. Isolated page/persistence
+checks pass; the offscreen Qt backend emits its known unsupported-window-mask
+warning, absent from production logs. No additional web research was performed.
+See the [checkpoint](research/settings-application-checkpoint.md) for exact scope.

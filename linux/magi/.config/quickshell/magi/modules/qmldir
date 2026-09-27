@@ -1,0 +1,3 @@
+module MagiModules
+singleton ControlCatalog 1.0 ControlCatalog.qml
+ModuleRegistry 1.0 ModuleRegistry.qml

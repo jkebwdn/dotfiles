@@ -123,6 +123,48 @@ Scope {
         else return false
         return setValue("appearance", "roundness", roundness)
     }
+    // Structural edits are atomic snapshots; presentation owners choose safe timing.
+    function placeBar(id, section) {
+        const next = Schema.clone(state.document)
+        next.bar = Schema.clone(data.bar)
+        for (const key of ["left", "center", "right"]) next.bar[key] = next.bar[key].filter(value => value !== id)
+        if (section !== "hidden") {
+            if (["left", "center", "right"].indexOf(section) < 0) return false
+            next.bar[section].push(id)
+        }
+        return commit(next)
+    }
+    function moveBar(section, index, delta) {
+        const values = Schema.clone(data.bar[section])
+        const to = index + delta
+        if (to < 0 || to >= values.length) return false
+        const value = values.splice(index, 1)[0]; values.splice(to, 0, value)
+        return setValue("bar", section, values)
+    }
+    function setControlEntries(entries) { return setValue("controlCentre", "controls", entries) }
+    function editControl(key, field, value) {
+        const entries = Schema.clone(data.controlCentre.controls)
+        const entry = entries.find(e => e.key === key)
+        if (!entry || ["module", "enabled"].indexOf(field) < 0) return false
+        entry[field] = value
+        return setControlEntries(entries)
+    }
+    function moveControl(key, delta) {
+        const entries = Schema.clone(data.controlCentre.controls)
+        const index = entries.findIndex(e => e.key === key), to = index + delta
+        if (index < 0 || to < 0 || to >= entries.length) return false
+        const entry = entries.splice(index, 1)[0]; entries.splice(to, 0, entry)
+        return setControlEntries(entries)
+    }
+    function addControl(module) {
+        const entries = Schema.clone(data.controlCentre.controls)
+        if (entries.some(e => e.module === module)) return false
+        entries.push({key: module + "-" + Date.now(), module: module, enabled: true, presentation: "tile"})
+        return setControlEntries(entries)
+    }
+    function removeControl(key) {
+        return setControlEntries(data.controlCentre.controls.filter(e => e.key !== key))
+    }
     function resetSection(section) {
         if (["appearance", "icons", "bar", "controlCentre"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)

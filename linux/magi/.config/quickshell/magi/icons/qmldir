@@ -1,0 +1,2 @@
+module MagiIcons
+singleton IconRegistry 1.0 IconRegistry.qml

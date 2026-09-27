@@ -239,3 +239,20 @@ The approved configuration core and theme foundation are implemented. See
 Settings GUI, real icon registry, configurable CC rendering and profile/MPRIS
 are not included. CC's extra battery summary remains marked for S4 removal.
 No new fullscreen/pointer/network-password operator acceptance is claimed.
+
+
+## 2026-09-27 — Semantic icons, configured CC and Settings window
+
+[Implementation and accepted operator checkpoint](research/settings-application-checkpoint.md).
+Use data descriptors and one Icon renderer; retain installed legacy glyphs as the
+initial pack, with guarded bundled SVG references and deferred user import.
+CC order/enable/assignment data selects explicit live ControlCatalog callbacks;
+no commands or QML in settings. Keep default tiles, remove the redundant battery
+row, wrap requested columns and use the accepted same-view retarget path. Defer
+layout during password/pending network sessions. Settings uses one lazy normal
+FloatingWindow and the existing writer, with explicit save/conflict diagnostics.
+No Hyprland floating rule or shell focus exception is introduced. Automated suites
+and production mapping/48px startup checks pass. The operator subsequently
+confirmed the requested window, page, live configuration/persistence and hidden
+detail checks. Read-only follow-up confirms saved settings, clean logs and the
+unchanged one-layer/48px baseline. User-selected settings were preserved.

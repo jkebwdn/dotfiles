@@ -24,7 +24,8 @@ Rectangle {
     property bool barVisible: true
 
     property string menuId: ""
-    property string icon: "󰒓"
+    signal secondaryTriggered()
+    property string icon: "settings"
     property string title: "MAGI"
 
     property int collapsedWidth: 28
@@ -356,7 +357,11 @@ Rectangle {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
 
-        onClicked: MagiServices.MenuController.toggle(root.menuId)
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton) root.secondaryTriggered()
+            else MagiServices.MenuController.toggle(root.menuId)
+        }
     }
 
     Component.onCompleted: {

@@ -21,6 +21,7 @@ Scope {
             Hosts.AnchoredDetailHost { module: root; anchorItem: root.fallbackAnchor }
         }
     }
+    signal secondaryTriggered()
     property string menuId: ""
     property string icon: ""
     property string title: ""

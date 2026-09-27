@@ -1,6 +1,16 @@
 {
   "appearance": {
-    "theme": "catppuccin-mocha"
+    "theme": "catppuccin-mocha",
+    "roundness": {
+      "master": 1,
+      "roles": {
+        "barPill": 2,
+        "surface": 0.05,
+        "controlTile": 1.6,
+        "slider": null,
+        "action": null
+      }
+    }
   },
   "bar": {
     "left": [
@@ -18,5 +28,48 @@
       "controlcentre"
     ]
   },
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "controlCentre": {
+    "columns": 4,
+    "controls": [
+      {
+        "key": "power",
+        "module": "battery",
+        "enabled": true,
+        "presentation": "tile"
+      },
+      {
+        "key": "network",
+        "module": "wifi",
+        "enabled": true,
+        "presentation": "tile"
+      },
+      {
+        "key": "sound",
+        "module": "volume",
+        "enabled": true,
+        "presentation": "tile"
+      },
+      {
+        "key": "wireless",
+        "module": "bluetooth",
+        "enabled": true,
+        "presentation": "tile"
+      }
+    ],
+    "sliders": [
+      {
+        "key": "volume",
+        "module": "volume",
+        "enabled": true,
+        "presentation": "slider"
+      },
+      {
+        "key": "backlight",
+        "module": "brightness",
+        "enabled": true,
+        "presentation": "slider"
+      }
+    ]
+  }
 }

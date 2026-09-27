@@ -1,0 +1,183 @@
+{
+  "formatVersion": 1,
+  "packs": [
+    {
+      "id": "magi-legacy",
+      "label": "MAGI Legacy",
+      "font": "JetBrainsMono Nerd Font",
+      "attribution": "Existing MAGI glyph code points; uses the installed Nerd Font. No font or third-party artwork is redistributed.",
+      "roles": {
+        "wifi": {
+          "kind": "glyph",
+          "text": "󰤨"
+        },
+        "wifi-high": {
+          "kind": "glyph",
+          "text": "󰤨"
+        },
+        "wifi-medium": {
+          "kind": "glyph",
+          "text": "󰤥"
+        },
+        "wifi-low": {
+          "kind": "glyph",
+          "text": "󰤢"
+        },
+        "wifi-weak": {
+          "kind": "glyph",
+          "text": "󰤟"
+        },
+        "wifi-off": {
+          "kind": "glyph",
+          "text": "󰤭"
+        },
+        "bluetooth": {
+          "kind": "glyph",
+          "text": "󰂯"
+        },
+        "bluetooth-connected": {
+          "kind": "glyph",
+          "text": "󰂱"
+        },
+        "bluetooth-off": {
+          "kind": "glyph",
+          "text": "󰂲"
+        },
+        "volume": {
+          "kind": "glyph",
+          "text": "󰕾"
+        },
+        "volume-low": {
+          "kind": "glyph",
+          "text": "󰕿"
+        },
+        "volume-medium": {
+          "kind": "glyph",
+          "text": "󰖀"
+        },
+        "volume-muted": {
+          "kind": "glyph",
+          "text": "󰖁"
+        },
+        "brightness": {
+          "kind": "glyph",
+          "text": "󰃟"
+        },
+        "battery": {
+          "kind": "glyph",
+          "text": "󰁹"
+        },
+        "battery-charging": {
+          "kind": "glyph",
+          "text": "󰂄"
+        },
+        "battery-unknown": {
+          "kind": "glyph",
+          "text": "󰂑"
+        },
+        "battery-0": {
+          "kind": "glyph",
+          "text": "󰂎"
+        },
+        "settings": {
+          "kind": "glyph",
+          "text": "󰒓"
+        },
+        "night-light": {
+          "kind": "glyph",
+          "text": "󰖔"
+        },
+        "dnd": {
+          "kind": "glyph",
+          "text": "󰂛"
+        },
+        "power-profile": {
+          "kind": "glyph",
+          "text": "󰓅"
+        },
+        "media-play": {
+          "kind": "glyph",
+          "text": "󰐊"
+        },
+        "media-pause": {
+          "kind": "glyph",
+          "text": "󰏤"
+        },
+        "media-next": {
+          "kind": "glyph",
+          "text": "󰒭"
+        },
+        "media-previous": {
+          "kind": "glyph",
+          "text": "󰒮"
+        },
+        "back": {
+          "kind": "glyph",
+          "text": "󰁍"
+        },
+        "scan": {
+          "kind": "glyph",
+          "text": "󰑐"
+        },
+        "scanning": {
+          "kind": "glyph",
+          "text": "󰑓"
+        },
+        "connect": {
+          "kind": "glyph",
+          "text": "󰌘"
+        },
+        "disconnect": {
+          "kind": "glyph",
+          "text": "󰌙"
+        },
+        "missing": {
+          "kind": "glyph",
+          "text": "?"
+        },
+        "battery-10": {
+          "kind": "glyph",
+          "text": "󰁺"
+        },
+        "battery-20": {
+          "kind": "glyph",
+          "text": "󰁻"
+        },
+        "battery-30": {
+          "kind": "glyph",
+          "text": "󰁼"
+        },
+        "battery-40": {
+          "kind": "glyph",
+          "text": "󰁽"
+        },
+        "battery-50": {
+          "kind": "glyph",
+          "text": "󰁾"
+        },
+        "battery-60": {
+          "kind": "glyph",
+          "text": "󰁿"
+        },
+        "battery-70": {
+          "kind": "glyph",
+          "text": "󰂀"
+        },
+        "battery-80": {
+          "kind": "glyph",
+          "text": "󰂁"
+        },
+        "battery-90": {
+          "kind": "glyph",
+          "text": "󰂂"
+        },
+        "wifi-disconnected": {
+          "kind": "glyph",
+          "text": "󰤯"
+        }
+      },
+      "modules": {},
+      "assets": {}
+    }
+  ]
+}

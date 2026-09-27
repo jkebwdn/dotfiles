@@ -1,187 +1,103 @@
 pragma ComponentBehavior: Bound
-
 import QtQuick
-
 import "../../../components/bar" as MagiBar
-import "../../../components/controls" as MagiControls
-import "../../../services" as MagiServices
-import "../../../theme" as MagiTheme
-
+import "../../../components/controls" as Controls
+import "../../../services" as Services
+import "../../../theme" as Theme
+import "../../../modules" as Modules
+import "../../../icons" as Icons
 MagiBar.ExpandableModule {
     id: root
-
+    onSecondaryTriggered: Services.SettingsWindowState.open()
     menuId: "controlcentre"
-    icon: "󰒓"
+    icon: "settings"
     title: "Control Centre"
     collapsedWidth: 30
-    expandedWidth: MagiTheme.RenderTokens.controlWidth
-    menuHeight: MagiTheme.RenderTokens.controlBodyHeight
-    viewPadding: MagiTheme.RenderTokens.padding
-    viewBottomPadding: MagiTheme.RenderTokens.padding
-    viewRadius: MagiTheme.RenderTokens.outerRadius
-    viewSurfaceColor: MagiTheme.Theme.surface
-    color: sharedSurface
-        ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion)
-        : MagiTheme.Theme.surface
-
-    readonly property string volumeIcon: {
-        if (!MagiServices.Audio.available
-                || MagiServices.Audio.muted
-                || MagiServices.Audio.volumePercent === 0) {
-            return "󰖁"
-        }
-        if (MagiServices.Audio.volumePercent < 34)
-            return "󰕿"
-        if (MagiServices.Audio.volumePercent < 67)
-            return "󰖀"
-        return "󰕾"
+    property bool configurationBusy: false
+    property var layout: Services.Settings.data.controlCentre
+    function syncLayout() {
+        if (!configurationBusy && JSON.stringify(layout) !== JSON.stringify(Services.Settings.data.controlCentre))
+            layout = Services.Settings.data.controlCentre
     }
-
+    Connections { target: Services.Settings; function onDataChanged() { Qt.callLater(root.syncLayout) } }
+    onConfigurationBusyChanged: Qt.callLater(root.syncLayout)
+    readonly property var controls: layout.controls.filter(e => e.enabled && Modules.ControlCatalog.definition(e.module))
+    readonly property var sliders: layout.sliders.filter(e => e.enabled)
+    readonly property real tileGap: 18
+    readonly property real availableWidth: barWindow ? Math.max(88, barWindow.width - 28) : 1200
+    readonly property int columns: Math.max(1, Math.min(layout.columns,
+        Math.floor((availableWidth - 2 * viewPadding + tileGap) / (Theme.RenderTokens.tileSize + tileGap))))
+    readonly property int rows: Math.ceil(controls.length / columns)
+    readonly property real gridHeight: rows ? rows * Theme.RenderTokens.tileSize + (rows - 1) * tileGap : 0
+    readonly property real naturalHeight: gridHeight + (sliders.length ? (rows ? 24 : 0) + 48 : 0)
+    readonly property real availableHeight: barWindow && hostMode === "combined" ? Math.max(80, barWindow.height - 90) : 700
+    expandedWidth: Math.min(availableWidth, Math.max(200,
+        columns * Theme.RenderTokens.tileSize + (columns - 1) * tileGap + 2 * viewPadding))
+    menuHeight: Math.min(availableHeight, Math.max(42, naturalHeight + viewTopPadding + viewBottomPadding))
+    viewPadding: Theme.RenderTokens.padding
+    viewTopPadding: 6
+    viewBottomPadding: Theme.RenderTokens.padding
+    viewRadius: Theme.RenderTokens.outerRadius
+    viewSurfaceColor: Theme.Theme.surface
+    color: sharedSurface ? Qt.alpha(Theme.Theme.surface, 1 - sharedSurface.expansion) : Theme.Theme.surface
     pillContent: Component {
-        MagiControls.MorphingPillContent {
-            pill: parent
-            icon: root.icon
+        Controls.MorphingPillContent {
+            pill: parent; icon: root.icon; moduleId: "controlcentre"
             expandedTitle: "Control Centre"
-            expandedStatus: MagiServices.Battery.available
-                ? MagiServices.Battery.percentage + "%"
-                : ""
-            iconColor: MagiTheme.Theme.text
         }
     }
-
     menuContent: Component {
-        Column {
+        Flickable {
             width: parent ? parent.width : 0
-
-            Grid {
+            height: Math.max(0, root.menuHeight - root.viewTopPadding - root.viewBottomPadding)
+            contentHeight: content.implicitHeight
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            Column {
+                id: content
                 width: parent.width
-                columns: 4
-                spacing: Math.max(0,
-                    (width - 4 * MagiTheme.RenderTokens.tileSize) / 3)
-
-                ControlTile {
-                    icon: MagiServices.Network.icon
-                    title: "Wi-Fi"
-                    subtitle: MagiServices.Network.connected
-                        ? MagiServices.Network.ssid
-                        : MagiServices.Network.wifiEnabled ? "On" : "Off"
-                    active: MagiServices.Network.wifiEnabled
-                    accentRole: "teal"
-                    activeColor: MagiTheme.Theme.teal
-                    rimColor: MagiTheme.Theme.controlRim(MagiTheme.Theme.teal)
-                    available: MagiServices.Network.wifiHardwareEnabled
-                    onPrimaryTriggered:
-                        MagiServices.Network.setWifiEnabled(
-                            !MagiServices.Network.wifiEnabled)
-                    onSecondaryTriggered:
-                        MagiServices.MenuController.navigate("wifi")
+                spacing: root.rows && root.sliders.length ? 24 : 0
+                Grid {
+                    columns: root.columns
+                    columnSpacing: root.tileGap
+                    rowSpacing: root.tileGap
+                    Repeater {
+                        model: root.controls
+                        ControlTile {
+                            required property var modelData
+                            readonly property var definition: Modules.ControlCatalog.definition(modelData.module)
+                            readonly property var live: Modules.ControlCatalog.state(modelData.module)
+                            moduleId: modelData.module
+                            icon: live.icon
+                            title: definition.label
+                            subtitle: live.status
+                            active: live.active
+                            available: live.available
+                            interactive: modelData.module !== "battery"
+                            accentRole: definition.accent
+                            activeColor: Theme.Theme.roles[accentRole]
+                            rimColor: Theme.Theme.controlRim(activeColor)
+                            onPrimaryTriggered: Modules.ControlCatalog.primary(modelData.module)
+                            onSecondaryTriggered: Modules.ControlCatalog.secondary(modelData.module)
+                        }
+                    }
                 }
-
-                ControlTile {
-                    icon: MagiServices.Battery.icon
-                    title: "Power"
-                    subtitle: MagiServices.Battery.available
-                        ? MagiServices.Battery.percentage + "%" : "Unknown"
-                    active: MagiServices.Battery.available
-                    accentRole: "red"
-                    activeColor: MagiTheme.Theme.red
-                    rimColor: MagiTheme.Theme.controlRim(MagiTheme.Theme.red)
-                    available: MagiServices.Battery.available
-                    interactive: false
-                }
-
-                ControlTile {
-                    icon: root.volumeIcon
-                    title: "Sound"
-                    subtitle: MagiServices.Audio.muted
-                        ? "Muted" : MagiServices.Audio.volumePercent + "%"
-                    active: MagiServices.Audio.available && !MagiServices.Audio.muted
-                    accentRole: "peach"
-                    activeColor: MagiTheme.Theme.peach
-                    rimColor: MagiTheme.Theme.controlRim(MagiTheme.Theme.peach)
-                    available: MagiServices.Audio.available
-                    onPrimaryTriggered: MagiServices.Audio.toggleMute()
-                }
-
-                ControlTile {
-                    icon: MagiServices.Bluetooth.enabled ? "󰂯" : "󰂲"
-                    title: "Bluetooth"
-                    subtitle: !MagiServices.Bluetooth.enabled ? "Off"
-                        : MagiServices.Bluetooth.connectedCount > 0
-                            ? MagiServices.Bluetooth.connectedCount + " linked" : "On"
-                    active: MagiServices.Bluetooth.enabled
-                    accentRole: "blue"
-                    activeColor: MagiTheme.Theme.blue
-                    rimColor: MagiTheme.Theme.controlRim(MagiTheme.Theme.blue)
-                    available: MagiServices.Bluetooth.available
-                    onPrimaryTriggered:
-                        MagiServices.Bluetooth.setEnabled(!MagiServices.Bluetooth.enabled)
-                    onSecondaryTriggered:
-                        MagiServices.MenuController.navigate("bluetooth")
-                }
-            }
-
-            Item { width: 1; height: MagiTheme.RenderTokens.tileSliderGap }
-
-            Row {
-                width: parent.width
-                spacing: MagiTheme.RenderTokens.sliderGap
-                MagiControls.IconSlider {
-                    width: (parent.width - parent.spacing) / 2
-                    icon: root.volumeIcon
-                    value: MagiServices.Audio.volume
-                    interactive: MagiServices.Audio.available
-                    onValueMoved: value => MagiServices.Audio.setVolume(value)
-                }
-                MagiControls.IconSlider {
-                    width: (parent.width - parent.spacing) / 2
-                    icon: "󰃟"
-                    value: MagiServices.Brightness.percent / 100
-                    interactive: MagiServices.Brightness.available
-                    onValueMoved: value =>
-                        MagiServices.Brightness.setPercent(value * 100)
-                }
-            }
-
-            Item { width: 1; height: MagiTheme.RenderTokens.powerGap }
-
-            // Existing read-only power information, without an invented action
-            // strip or a placeholder for the render's unimplemented media module.
-            Item {
-                width: parent.width
-                height: MagiTheme.RenderTokens.powerHeight
-                Text {
-                    id: powerIcon
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: MagiServices.Battery.icon
-                    color: MagiTheme.Theme.text
-                    font.family: MagiTheme.Theme.fontFamily
-                    font.pixelSize: 24
-                }
-                Text {
-                    anchors.left: powerIcon.right
-                    anchors.leftMargin: 10
-                    anchors.right: remainingTime.left
-                    anchors.rightMargin: 10
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: MagiServices.Battery.stateText
-                    color: MagiTheme.Theme.subtext
-                    font.family: MagiTheme.RenderTokens.textFamily
-                    font.pixelSize: MagiTheme.RenderTokens.secondarySize
-                    elide: Text.ElideRight
-                }
-                Text {
-                    id: remainingTime
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: MagiServices.Battery.timeText !== ""
-                        ? MagiServices.Battery.timeText
-                        : MagiServices.Battery.available
-                            ? MagiServices.Battery.percentage + "%" : "Unavailable"
-                    color: MagiTheme.Theme.subtext
-                    font.family: MagiTheme.RenderTokens.textFamily
-                    font.pixelSize: MagiTheme.RenderTokens.secondarySize
+                Row {
+                    width: parent.width
+                    spacing: Theme.RenderTokens.sliderGap
+                    Repeater {
+                        model: root.sliders
+                        Controls.IconSlider {
+                            required property var modelData
+                            readonly property bool audio: modelData.module === "volume"
+                            width: (content.width - (root.sliders.length - 1) * Theme.RenderTokens.sliderGap) / Math.max(1, root.sliders.length)
+                            moduleId: modelData.module
+                            icon: audio ? Icons.IconRegistry.volumeRole(Services.Audio.available,Services.Audio.muted,Services.Audio.volumePercent) : "brightness"
+                            value: audio ? Services.Audio.volume : Services.Brightness.percent / 100
+                            interactive: audio ? Services.Audio.available : Services.Brightness.available
+                            onValueMoved: value => audio ? Services.Audio.setVolume(value) : Services.Brightness.setPercent(value * 100)
+                        }
+                    }
                 }
             }
         }

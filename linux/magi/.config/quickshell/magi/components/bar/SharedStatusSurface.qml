@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "../controls" as Controls
 import "../../services" as MagiServices
 import "../../theme" as MagiTheme
 
@@ -218,17 +219,15 @@ Item {
         height: MagiTheme.Theme.barPillHeight
     }
 
-    Text {
+    Controls.Icon {
         x: 10
         y: 4
         width: 24
         height: MagiTheme.Theme.barPillHeight
-        text: "󰁍"
-        font.family: MagiTheme.Theme.fontFamily
-        font.pixelSize: 16
+        role: "back"
+        moduleId: "navigation"
+        size: 16
         color: MagiTheme.Theme.text
-        verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignHCenter
         visible: root.combined && root.phase !== 0 && MagiServices.MenuController.canGoBack
         opacity: root.expansion
         MouseArea {

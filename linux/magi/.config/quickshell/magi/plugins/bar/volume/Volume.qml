@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "../../../icons" as Icons
 
 import "../../../components/bar" as MagiBar
 import "../../../components/controls" as MagiControls
@@ -14,15 +15,7 @@ MagiBar.ExpandableModule {
     readonly property bool muted: MagiServices.Audio.muted
     readonly property bool available: MagiServices.Audio.available
 
-    readonly property string volumeIcon: {
-        if (!available || muted || volume === 0)
-            return "󰖁"
-        if (volume < 34)
-            return "󰕿"
-        if (volume < 67)
-            return "󰖀"
-        return "󰕾"
-    }
+    readonly property string volumeIcon: Icons.IconRegistry.volumeRole(available, muted, volume)
 
     menuId: "volume"
     icon: volumeIcon
@@ -37,6 +30,7 @@ MagiBar.ExpandableModule {
     pillContent: Component {
         MagiControls.MorphingPillContent {
             pill: parent
+            moduleId: "volume"
             icon: root.volumeIcon
             collapsedText: ""
             expandedTitle: "Volume"
@@ -75,6 +69,7 @@ MagiBar.ExpandableModule {
                 }
 
                 MagiControls.ActionChip {
+                    moduleId: "volume"
                     id: muteButton
 
                     anchors {
@@ -82,7 +77,7 @@ MagiBar.ExpandableModule {
                         verticalCenter: parent.verticalCenter
                     }
                     width: 30
-                    icon: root.muted ? "󰝟" : "󰕾"
+                    icon: root.muted ? "volume-muted" : "volume"
                     active: root.muted
                     activeColor: MagiTheme.Theme.warning
                     available: root.available
@@ -96,7 +91,7 @@ MagiBar.ExpandableModule {
                 radius: MagiTheme.Theme.radiusMedium
                 color: MagiTheme.Theme.background
 
-                Text {
+                MagiControls.Icon {
                     id: lowVolumeIcon
 
                     anchors {
@@ -104,10 +99,10 @@ MagiBar.ExpandableModule {
                         leftMargin: 12
                         verticalCenter: parent.verticalCenter
                     }
-                    text: "󰕿"
+                    role: "volume-low"
+                    moduleId: "volume"
                     color: MagiTheme.Theme.muted
-                    font.family: MagiTheme.Theme.fontFamily
-                    font.pixelSize: 12
+                    size: 12
                 }
 
                 MagiControls.ValueSlider {
@@ -128,7 +123,7 @@ MagiBar.ExpandableModule {
                         MagiServices.Audio.setVolume(value)
                 }
 
-                Text {
+                MagiControls.Icon {
                     id: highVolumeIcon
 
                     anchors {
@@ -136,10 +131,10 @@ MagiBar.ExpandableModule {
                         rightMargin: 12
                         verticalCenter: parent.verticalCenter
                     }
-                    text: "󰕾"
+                    role: "volume"
+                    moduleId: "volume"
                     color: MagiTheme.Theme.muted
-                    font.family: MagiTheme.Theme.fontFamily
-                    font.pixelSize: 12
+                    size: 12
                 }
             }
         }

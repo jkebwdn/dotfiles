@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "../../../icons" as Icons
 import Quickshell.Networking
 
 import "../../../components/bar" as MagiBar
@@ -19,7 +20,8 @@ MagiBar.ExpandableModule {
     readonly property bool connecting: pendingNetwork !== null
 
     menuId: "wifi"
-    icon: MagiServices.Network.icon
+    icon: !MagiServices.Network.wifiHardwareEnabled || !MagiServices.Network.wifiEnabled ? "wifi-off"
+        : !MagiServices.Network.connected ? "wifi-disconnected" : signalIcon(MagiServices.Network.signalStrength)
     title: "Wi-Fi"
     collapsedWidth: 30
     expandedWidth: 328
@@ -28,15 +30,7 @@ MagiBar.ExpandableModule {
         ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion)
         : MagiTheme.Theme.surface
 
-    function signalIcon(strength) {
-        if (strength >= 75)
-            return "󰤨"
-        if (strength >= 50)
-            return "󰤥"
-        if (strength >= 25)
-            return "󰤢"
-        return "󰤟"
-    }
+    function signalIcon(strength) { return Icons.IconRegistry.signalRole(strength) }
 
     function updateScanning() {
         MagiServices.Network.setScanning(
@@ -155,7 +149,8 @@ MagiBar.ExpandableModule {
     pillContent: Component {
         MagiControls.MorphingPillContent {
             pill: parent
-            icon: MagiServices.Network.icon
+            moduleId: "wifi"
+            icon: root.icon
             expandedTitle: MagiServices.Network.connected
                 ? MagiServices.Network.ssid
                 : "Wi-Fi"

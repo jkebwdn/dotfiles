@@ -6,6 +6,7 @@ import "../../theme" as MagiTheme
 Item {
     id: root
     property string icon: ""
+    property string moduleId: ""
     property real value: 0
     property bool interactive: true
     property color fillColor: MagiTheme.Theme.sliderFill
@@ -43,13 +44,13 @@ Item {
             border.color: MagiTheme.Theme.sliderRim
         }
     }
-    Text {
+    Icon {
         x: 10
         anchors.verticalCenter: parent.verticalCenter
-        text: root.icon
+        role: root.icon
+            moduleId: root.moduleId
         color: MagiTheme.Theme.text
-        font.family: MagiTheme.Theme.fontFamily
-        font.pixelSize: MagiTheme.RenderTokens.sliderIconSize
+        size: MagiTheme.RenderTokens.sliderIconSize
     }
     MouseArea {
         anchors.fill: parent

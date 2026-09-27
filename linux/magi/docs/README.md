@@ -3,6 +3,22 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
+## Icons, Control Centre configuration and Settings — 2026-09-27
+
+Implemented; **requested operator checks passed, checkpoint accepted**. Semantic IconRegistry uses the existing
+MAGI glyph pack, CC renders ordered/enabled module definitions with live geometry,
+and Settings opens as a separate normal desktop window with Appearance, Bar and
+Control Centre pages. All edits use the accepted settings writer. See the
+[implementation/test checkpoint](research/settings-application-checkpoint.md).
+
+Automated settings/appearance/ownership/icon/window/layout tests and all 48
+lifecycle steps pass. Production startup is clean: one 1920×1080 layer at `(0,0)`,
+48px reservation, plus a normal Settings desktop client. Right-click the CC bar
+trigger or use `quickshell ipc -c magi call settingsWindow open`. The operator confirmed window manipulation, all pages and the requested live
+configuration/persistence/detail-navigation checks. Post-review logs are clean,
+settings are saved and the 48px baseline remains unchanged. Further feature work
+awaits a separate instruction.
+
 ## S1/S2 configuration and appearance foundation — 2026-09-27
 
 Implemented and validated: schema v1, pre-schema migration, one atomic settings
@@ -132,9 +148,8 @@ and Hyprland environment.
 
 ## Next steps
 
-1. Review S1/S2, then implement S3: semantic IconRegistry with the existing
-   glyph pack and incremental consumers. CC configuration and the Settings
-   window follow separately; defer subjective UI/morph work.
+1. Review bounded icon override/import work after the accepted Settings/CC
+   checkpoint; defer subjective UI/morph work.
 2. Validate multi-output association, hotplug and fractional scaling.
 3. Add explicit Bluetooth pairing-agent UX only after its prompt/security
    lifecycle is designed.

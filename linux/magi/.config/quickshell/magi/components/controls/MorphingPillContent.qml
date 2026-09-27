@@ -6,7 +6,8 @@ Item {
     id: root
 
     required property var pill
-    property string icon: ""
+    property string icon: "missing"
+    property string moduleId: ""
     property string collapsedText: ""
     property string expandedTitle: ""
     property string expandedStatus: ""
@@ -30,16 +31,16 @@ Item {
 
     anchors.fill: parent
 
-    Text {
+    Icon {
         id: iconText
 
         x: root.compactStartX
             + (10 - root.compactStartX) * root.expansionProgress
         anchors.verticalCenter: parent.verticalCenter
-        text: root.icon
+        role: root.icon
+        moduleId: root.moduleId
         color: root.iconColor
-        font.family: MagiTheme.Theme.fontFamily
-        font.pixelSize: 13
+        size: 13
     }
 
     Text {

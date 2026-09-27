@@ -39,6 +39,7 @@ Scope {
     }
     ControlCentre.ControlCentre {
         id: centre
+        configurationBusy: root.interactionBusy
         barWindow: root.barWindow
         sharedSurface: root.sharedSurface
         hostMode: root.hostMode

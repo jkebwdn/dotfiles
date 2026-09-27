@@ -27,6 +27,7 @@ PanelWindow {
         hostMode: bar.expandableHostMode
         sharedSurface: bar.combinedMode ? statusSurface : null
     }
+    readonly property bool settingsReady: statusSurface.phase === 0 && !registry.interactionBusy && !registry.presentationBusy
     readonly property var expandablePillRegistry: registry.modules
     readonly property bool combinedMode: expandableHostMode === "combined"
     readonly property var activeExpandablePill: combinedMode

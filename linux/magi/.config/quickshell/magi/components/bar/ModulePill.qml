@@ -4,6 +4,7 @@ import QtQuick
 ExpandablePlugin {
     id: root
     required property var module
+    onSecondaryTriggered: module.secondaryTriggered()
     barWindow: module.barWindow
     sharedSurface: module.sharedSurface
     hostMode: module.hostMode

@@ -1,5 +1,7 @@
 
 import QtQuick
+import "../../../icons" as Icons
+import "../../../components/controls" as Controls
 import Quickshell
 import "../../../theme" as MagiTheme
 import "../../../services" as MagiServices
@@ -18,20 +20,21 @@ Rectangle {
         ? MagiTheme.Theme.elevated
         : Qt.alpha(MagiTheme.Theme.surface, 1 - sharedExpansion)
 
-    Text {
+    Row {
         id: batteryLabel
         anchors.centerIn: parent
-
-        text: MagiServices.Battery.icon
-            + (MagiServices.Battery.available
-                ? " " + MagiServices.Battery.percentage + "%" : "")
-
-        color: !MagiServices.Battery.available
-            ? MagiTheme.Theme.muted
-            : MagiTheme.Theme.text
-
-        font.family: MagiTheme.Theme.fontFamily
-        font.pixelSize: 11
+        spacing: 4
+        Controls.Icon {
+            anchors.verticalCenter: parent.verticalCenter
+            role: Icons.IconRegistry.batteryRole(MagiServices.Battery.available, MagiServices.Battery.charging, MagiServices.Battery.percentage)
+            moduleId: "battery"; size: 11
+        }
+        Text {
+            text: MagiServices.Battery.available ? MagiServices.Battery.percentage + "%" : ""
+            color: MagiTheme.Theme.text
+            font.family: MagiTheme.Theme.fontFamily
+            font.pixelSize: 11
+        }
     }
 
     MouseArea {

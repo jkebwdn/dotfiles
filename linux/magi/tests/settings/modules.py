@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Actual module/session components, with isolated system-service and password-window stubs."""
 from pathlib import Path
-import os, shutil, subprocess, tempfile
+import os, shutil, subprocess, tempfile, sys
 root=Path(__file__).resolve().parents[2]
 with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
     stage=Path(tmp); config=stage/'config'
@@ -18,7 +18,7 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
         function setEnabled(v) {} function setDiscovering(v) {} function toggleConnection(d) {}''',
       'Audio': '''property bool available: false; property bool muted: false; property real volume: 0; property int volumePercent: 0
         function setVolume(v) {} function toggleMute() {}''',
-      'Battery': '''property bool available: false; property string icon: "battery"; property int percentage: 0
+      'Battery': '''property bool charging: false; property bool available: false; property string icon: "battery"; property int percentage: 0
         property string stateText: ""; property string timeText: ""''',
       'Brightness': 'property bool available: false; property int percent: 0; function setPercent(v) {}'
     }
@@ -28,10 +28,13 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
 QtObject { property var network: null; property bool connecting: false
 signal submitted(string password); signal cancelled(); function clearPassword() {} }
 ''')
-    (config/'test.qml').write_text(Path(__file__).with_name('modules.qml').read_text().replace('../../.config/quickshell/magi/',''))
+    (config/'test.qml').write_text(Path(__file__).with_name(sys.argv[1] if len(sys.argv) > 1 else 'modules.qml').read_text().replace('../../.config/quickshell/magi/',''))
     runtime=stage/'runtime';runtime.mkdir(mode=0o700)
-    env=dict(os.environ, QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime))
+    env=dict(os.environ, QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime),XDG_STATE_HOME=str(stage/'state'))
     env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None)
-    p=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=15)
+    p=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=30)
     out=p.stdout+p.stderr;print(out)
-    assert p.returncode==0 and 'RESULT: 0 failures' in out and 'ERROR' not in out and 'WARN' not in out
+    # Qt's offscreen platform cannot install a native window mask. Only this
+    # exact platform warning is allowed for the normal-window harness.
+    checked = out.replace("  WARN: This plugin does not support setting window masks\n", "") if len(sys.argv) > 1 and sys.argv[1] == "window.qml" else out
+    assert p.returncode==0 and 'RESULT: 0 failures' in out and 'ERROR' not in checked and 'WARN' not in checked

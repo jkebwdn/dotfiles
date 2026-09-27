@@ -56,6 +56,7 @@ Column {
         }
 
         MagiControls.ActionChip {
+                    moduleId: "wifi"
             id: radioToggle
 
             anchors {
@@ -81,7 +82,7 @@ Column {
         radius: MagiTheme.Theme.radiusMedium
         color: MagiTheme.Theme.background
 
-        Text {
+        MagiControls.Icon {
             id: heroSignalIcon
 
             anchors {
@@ -89,12 +90,12 @@ Column {
                 leftMargin: 14
                 verticalCenter: parent.verticalCenter
             }
-            text: root.controller.signalIcon(
+            role: root.controller.signalIcon(
                 MagiServices.Network.signalStrength
             )
             color: MagiTheme.Theme.accent
-            font.family: MagiTheme.Theme.fontFamily
-            font.pixelSize: 24
+            moduleId: "wifi"
+            size: 24
         }
 
         Column {
@@ -165,15 +166,15 @@ Column {
             font.letterSpacing: 0.8
         }
 
-        Text {
+        MagiControls.Icon {
             anchors {
                 right: parent.right
                 verticalCenter: parent.verticalCenter
             }
-            text: "󰑓"
+            role: "scanning"
             color: MagiTheme.Theme.muted
-            font.family: MagiTheme.Theme.fontFamily
-            font.pixelSize: 10
+            moduleId: "wifi"
+            size: 10
         }
     }
 
@@ -250,7 +251,7 @@ Column {
                         }
                     }
 
-                    Text {
+                    MagiControls.Icon {
                         id: networkIcon
 
                         anchors {
@@ -258,12 +259,12 @@ Column {
                             leftMargin: 10
                             verticalCenter: parent.verticalCenter
                         }
-                        text: root.controller.signalIcon(networkRow.strength)
+                        role: root.controller.signalIcon(networkRow.strength)
                         color: networkRow.pending
                             ? MagiTheme.Theme.accent
                             : MagiTheme.Theme.text
-                        font.family: MagiTheme.Theme.fontFamily
-                        font.pixelSize: 14
+                        moduleId: "wifi"
+                        size: 14
                     }
 
                     Column {

@@ -1,5 +1,8 @@
 # MAGI research index
 
+[Settings application / semantic icons / configured CC checkpoint](settings-application-checkpoint.md)
+records the 2026-09-27 implementation, automated passes and accepted operator checklist.
+
 Latest implementation evidence: [S1/S2 settings foundation checkpoint](settings-foundation-checkpoint.md),
 2026-09-27. The earlier investigations below retain their original dates/scope.
 

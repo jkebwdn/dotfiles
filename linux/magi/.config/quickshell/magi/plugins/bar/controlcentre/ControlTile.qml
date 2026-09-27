@@ -1,9 +1,11 @@
 import QtQuick
+import "../../../components/controls" as Controls
 import "../../../theme" as MagiTheme
 
 Rectangle {
     id: root
     property string icon: ""
+    property string moduleId: ""
     property string title: ""
     property string subtitle: ""
     property bool active: false
@@ -26,12 +28,12 @@ Rectangle {
     opacity: available ? 1 : 0.45
     Accessible.name: title + (subtitle.length ? ": " + subtitle : "")
 
-    Text {
+    Controls.Icon {
         anchors.centerIn: parent
-        text: root.icon
+        role: root.icon
+        moduleId: root.moduleId
         color: root.active ? MagiTheme.Theme.onColor(root.accentRole) : MagiTheme.Theme.text
-        font.family: MagiTheme.Theme.fontFamily
-        font.pixelSize: MagiTheme.RenderTokens.tileIconSize
+        size: MagiTheme.RenderTokens.tileIconSize
     }
     HoverHandler { id: tileHover; enabled: root.interactive }
     TapHandler {

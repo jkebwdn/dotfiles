@@ -23,7 +23,8 @@ MagiBar.ExpandableModule {
     ))
 
     menuId: "bluetooth"
-    icon: MagiServices.Bluetooth.enabled ? "󰂯" : "󰂲"
+    icon: !MagiServices.Bluetooth.enabled ? "bluetooth-off"
+        : connectedDevice ? "bluetooth-connected" : "bluetooth"
     title: "Bluetooth"
     collapsedWidth: connectedDevice ? connectedPillWidth : 30
     expandedWidth: 326
@@ -37,6 +38,7 @@ MagiBar.ExpandableModule {
     pillContent: Component {
         MagiControls.MorphingPillContent {
             pill: parent
+            moduleId: "bluetooth"
             icon: root.icon
             collapsedText: root.connectedDevice
                 ? root.connectedName
@@ -107,6 +109,7 @@ MagiBar.ExpandableModule {
                 }
 
                 MagiControls.ActionChip {
+                    moduleId: "bluetooth"
                     id: adapterToggle
 
                     anchors {
@@ -165,6 +168,7 @@ MagiBar.ExpandableModule {
                 }
 
                 MagiControls.ActionChip {
+                    moduleId: "bluetooth"
                     id: disconnectChip
 
                     anchors {
@@ -199,11 +203,12 @@ MagiBar.ExpandableModule {
                 }
 
                 MagiControls.ActionChip {
+                    moduleId: "bluetooth"
                     anchors {
                         right: parent.right
                         verticalCenter: parent.verticalCenter
                     }
-                    icon: MagiServices.Bluetooth.discovering ? "󰑓" : "󰑐"
+                    icon: MagiServices.Bluetooth.discovering ? "scanning" : "scan"
                     label: MagiServices.Bluetooth.discovering
                         ? "Stop"
                         : "Scan"
@@ -310,6 +315,7 @@ MagiBar.ExpandableModule {
                             }
 
                             MagiControls.ActionChip {
+                    moduleId: "bluetooth"
                                 id: deviceAction
 
                                 anchors {

@@ -20,6 +20,15 @@ Catppuccin Mocha is the default/reference palette. The render remains the
 composition/geometry reference; its sampled colors are historical evidence,
 not canonical MAGI colors. S2 removed that bypass.
 
+## S3 / CC / Settings implementation — 2026-09-27
+
+Semantic icons, responsive configured Control Centre and the initial normal
+Settings window are now implemented. The [checkpoint](../research/settings-application-checkpoint.md)
+records the exact departures/limits and passed operator checklist. Stable keys
+and explicit actions implement the contract below; user asset import and icon
+override UI remain deferred. S2 retargeting permits live open-view layout updates;
+password/pending sessions still defer them. The original audit remains historical.
+
 ## S1/S2 implementation delta — 2026-09-27
 
 The audit and staged designs below retain their original baseline/context.

@@ -6,3 +6,4 @@ singleton Battery 1.0 Battery.qml
 singleton Bluetooth 1.0 Bluetooth.qml
 singleton Brightness 1.0 Brightness.qml
 singleton MenuController 1.0 MenuController.qml
+singleton SettingsWindowState 1.0 SettingsWindowState.qml

@@ -60,8 +60,6 @@ function analyze(input) {
     }
     if (typeof effective.icons.pack !== "string" || !effective.icons.pack.length) {
         valid(false, "icons.pack", ""); effective.icons.pack = "magi-legacy"
-    } else if (effective.icons.pack !== "magi-legacy") {
-        warnings.push("Unknown icon pack: " + effective.icons.pack); effective.icons.pack = "magi-legacy"
     }
     const seen = []
     for (const section of ["left", "center", "right"]) {
@@ -91,7 +89,7 @@ function analyze(input) {
                 errors.push("Invalid/duplicate controlCentre." + group + " entry"); return false
             }
             keys.push(entry.key); modules.push(entry.module)
-            const supported = group === "controls" ? ["wifi", "battery", "volume", "bluetooth"] : ["volume", "brightness"]
+            const supported = group === "controls" ? ["wifi", "battery", "volume", "bluetooth", "settings", "volume-down", "volume-up", "brightness-down", "brightness-up"] : ["volume", "brightness"]
             if (supported.indexOf(entry.module) < 0) { warnings.push("Unavailable CC module: " + entry.module); return false }
             return true
         })
