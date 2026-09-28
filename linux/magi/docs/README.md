@@ -3,6 +3,22 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
+## Profile, real media and managed icon overrides — 2026-09-27
+
+Implemented and operator-accepted. Settings schema v2 preserves the existing
+configuration and adds explicit profile/media/Control Centre section data.
+Control Centre now has optional live profile and real MPRIS regions; player
+appearance/disappearance retargets the open surface without collapsing. Managed
+avatar and bounded SVG imports use content-addressed XDG storage. Settings floats
+and centres through a narrow class+title Hyprland rule while remaining a normal
+movable/resizable desktop client.
+
+All automated suites and 48 lifecycle steps pass. The operator passed profile
+persistence/avatar, real MPRIS metadata/artwork/transport/disappearance, SVG
+override/default, existing Wi-Fi/Bluetooth/Volume and outside dismissal. One
+1920×1080 layer remains at `(0,0)` with exactly 48px reservation. See the
+[implementation and acceptance record](research/profile-media-icons-checkpoint.md).
+
 ## Icons, Control Centre configuration and Settings — 2026-09-27
 
 Implemented; **requested operator checks passed, checkpoint accepted**. Semantic IconRegistry uses the existing
@@ -21,7 +37,7 @@ awaits a separate instruction.
 
 ## S1/S2 configuration and appearance foundation — 2026-09-27
 
-Implemented and validated: schema v1, pre-schema migration, one atomic settings
+Implemented and validated: schema v2, chained pre-schema migration, one atomic settings
 writer, reset/validation/live notifications, stable module sessions independent
 of bar placement, ten data-defined palettes and semantic roundness. Catppuccin
 Mocha is the live default/reference. RenderTokens now holds geometry/typography;
@@ -32,8 +48,8 @@ contains the migration backup, exact files, tests, runtime evidence and limits.
 The [approved architecture](design/settings-architecture.md) and
 [schema example](design/settings-schema-v1.example.json) also describe future
 work: icon registry, configurable CC composition and the normal Settings window.
-Those features are **not implemented**. The duplicated CC battery row remains
-pending its later composition stage.
+This paragraph records the earlier S1/S2 checkpoint. Semantic icons, configured
+CC, Settings, profile and MPRIS are now implemented in the newer checkpoints.
 
 Final regressions passed: settings, appearance, module ownership and 48 lifecycle
 steps. qmllint exits 0 with documented metadata/unqualified warnings. The live
@@ -144,12 +160,14 @@ and Hyprland environment.
   MAGI render; it is not a styling specification.
 - [Combined-surface migration plan](research/combined-surface-migration-plan.md):
   production invariants, ownership, staged checkpoints and rollback paths.
+- [Profile/media/icon checkpoint](research/profile-media-icons-checkpoint.md):
+  schema v2, managed assets, real MPRIS, runtime and operator evidence.
 - `tasks/`: intended location for bounded research and implementation tasks.
 
 ## Next steps
 
-1. Review bounded icon override/import work after the accepted Settings/CC
-   checkpoint; defer subjective UI/morph work.
+1. Plan the next Control Centre content/interaction step from the accepted
+   profile/media composition; defer subjective UI/morph work.
 2. Validate multi-output association, hotplug and fractional scaling.
 3. Add explicit Bluetooth pairing-agent UX only after its prompt/security
    lifecycle is designed.

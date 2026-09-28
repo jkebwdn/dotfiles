@@ -2,13 +2,17 @@
 const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "controlcentre"]
 const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action"]
 function defaults() {
-    return {schemaVersion: 1,
+    return {schemaVersion: 2,
         appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null}}},
         icons: {pack: "magi-legacy", modulePacks: {}, overrides: {global: {}, modules: {}}},
+        profile: {displayName: "", subtitle: "", avatar: null},
+        media: {enabled: true, preferredPlayer: null, emptyState: "collapse"},
         bar: {left: ["clock", "date"], center: ["workspaces"],
             right: ["volume", "wifi", "bluetooth", "battery", "controlcentre"]},
-        controlCentre: {columns: 4, controls: [
+        controlCentre: {columns: 4, sections: {
+            profile: true, quickControls: true, sliders: true, media: true, actions: false
+        }, controls: [
             {key: "network", module: "wifi", enabled: true, presentation: "tile"},
             {key: "power", module: "battery", enabled: true, presentation: "tile"},
             {key: "sound", module: "volume", enabled: true, presentation: "tile"},
@@ -27,7 +31,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 1) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 2) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -61,6 +65,64 @@ function analyze(input) {
     if (typeof effective.icons.pack !== "string" || !effective.icons.pack.length) {
         valid(false, "icons.pack", ""); effective.icons.pack = "magi-legacy"
     }
+    function validIconDescriptor(value) {
+        return object(value) && (value.source === "user"
+            ? typeof value.assetId === "string" && /^icon:[a-f0-9]{64}\.svg$/.test(value.assetId)
+            : value.source === "bundled" && typeof value.pack === "string" && value.pack.length
+                && typeof value.icon === "string" && value.icon.length)
+    }
+    if (!object(effective.icons.modulePacks)) {
+        valid(false, "icons.modulePacks", {}); effective.icons.modulePacks = {}
+    } else for (const key of Object.keys(effective.icons.modulePacks)) {
+        if (!/^[a-z0-9-]+$/.test(key) || typeof effective.icons.modulePacks[key] !== "string") {
+            errors.push("icons.modulePacks." + key + ": invalid value"); delete effective.icons.modulePacks[key]
+        }
+    }
+    if (!object(effective.icons.overrides) || !object(effective.icons.overrides.global)
+            || !object(effective.icons.overrides.modules)) {
+        valid(false, "icons.overrides", {}); effective.icons.overrides = defaults().icons.overrides
+    } else {
+        for (const role of Object.keys(effective.icons.overrides.global)) {
+            if (!/^[a-z0-9-]+$/.test(role) || !validIconDescriptor(effective.icons.overrides.global[role])) {
+                errors.push("icons.overrides.global." + role + ": invalid value")
+                delete effective.icons.overrides.global[role]
+            }
+        }
+        for (const moduleId of Object.keys(effective.icons.overrides.modules)) {
+            const roles = effective.icons.overrides.modules[moduleId]
+            if (!/^[a-z0-9-]+$/.test(moduleId) || !object(roles)) {
+                errors.push("icons.overrides.modules." + moduleId + ": invalid value")
+                delete effective.icons.overrides.modules[moduleId]; continue
+            }
+            for (const role of Object.keys(roles)) if (!/^[a-z0-9-]+$/.test(role) || !validIconDescriptor(roles[role])) {
+                errors.push("icons.overrides.modules." + moduleId + "." + role + ": invalid value")
+                delete roles[role]
+            }
+        }
+    }
+    function textField(section, key, maximum) {
+        const value = effective[section][key]
+        if (typeof value !== "string" || value.length > maximum) {
+            valid(false, section + "." + key, ""); effective[section][key] = ""
+        }
+    }
+    textField("profile", "displayName", 80)
+    textField("profile", "subtitle", 160)
+    if (effective.profile.avatar !== null
+            && (typeof effective.profile.avatar !== "string"
+                || !/^avatar:[a-f0-9]{64}\.(png|jpg|webp)$/.test(effective.profile.avatar))) {
+        valid(false, "profile.avatar", null); effective.profile.avatar = null
+    }
+    if (typeof effective.media.enabled !== "boolean") {
+        valid(false, "media.enabled", true); effective.media.enabled = true
+    }
+    if (effective.media.preferredPlayer !== null
+            && (typeof effective.media.preferredPlayer !== "string" || effective.media.preferredPlayer.length > 256)) {
+        valid(false, "media.preferredPlayer", null); effective.media.preferredPlayer = null
+    }
+    if (["collapse", "minimal"].indexOf(effective.media.emptyState) < 0) {
+        valid(false, "media.emptyState", "collapse"); effective.media.emptyState = "collapse"
+    }
     const seen = []
     for (const section of ["left", "center", "right"]) {
         const list = effective.bar[section]
@@ -75,6 +137,12 @@ function analyze(input) {
         })
     }
     const cc = effective.controlCentre
+    for (const section of ["profile", "quickControls", "sliders", "media", "actions"]) {
+        if (typeof cc.sections[section] !== "boolean") {
+            valid(false, "controlCentre.sections." + section, defaults().controlCentre.sections[section])
+            cc.sections[section] = defaults().controlCentre.sections[section]
+        }
+    }
     if (!Number.isInteger(cc.columns) || cc.columns < 1 || cc.columns > 16) {
         valid(false, "controlCentre.columns", 4); cc.columns = 4
     }

@@ -27,7 +27,7 @@ ShellRoot {
                 if (Quickshell.env("MAGI_TEST_INVALID") === "1") {
                     test.check(store.saveState === "invalid" && store.data.appearance.roundness.master === 1, "invalid fallback")
                     test.check(store.resetSection("appearance"), "explicit repair")
-                } else test.check(store.data.schemaVersion === 1 && store.saveState === "saved", "safe initial load")
+                } else test.check(store.data.schemaVersion === 2 && store.saveState === "saved", "safe initial load")
                 if (Quickshell.env("MAGI_TEST_LEGACY") === "1")
                     test.check(store.data.bar.left.join(",") === "date,clock"
                         && store.data.bar.center.length === 0 && store.data.custom === 42,
@@ -47,12 +47,17 @@ ShellRoot {
             case 3:
                 test.check(store.saveState === "saved" && store.data.appearance.roundness.master === 1.96, "rapid latest wins")
                 store.setValue("bar", "right", ["wifi", "controlcentre"])
+                store.setValue("profile", "displayName", "Ada")
+                store.setValue("profile", "subtitle", "Ready")
+                store.setValue("profile", "avatar", "avatar:" + "a".repeat(64) + ".png")
                 break
             case 4:
                 store.resetSection("appearance")
                 break
             case 5:
                 test.check(store.data.appearance.theme === "catppuccin-mocha" && store.data.bar.right.length === 2, "section reset isolation")
+                test.check(store.data.profile.displayName === "Ada" && store.data.profile.subtitle === "Ready"
+                    && store.data.profile.avatar.indexOf("avatar:") === 0, "profile live state and persistence")
                 test.check(!store.setRoundness("master", -5), "reject invalid edit")
                 store.resetAll()
                 break

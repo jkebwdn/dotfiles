@@ -106,7 +106,7 @@ Scope {
         } catch (exception) { state.error = String(exception); return false }
     }
     function setValue(section, key, value) {
-        if (["appearance", "icons", "bar", "controlCentre"].indexOf(section) < 0) return false
+        if (["appearance", "icons", "bar", "controlCentre", "profile", "media"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         // Fill missing defaults, but retain unknown fields and diagnosed raw values.
         if (next[section] === undefined) next[section] = Schema.defaults()[section]
@@ -116,6 +116,14 @@ Scope {
     }
     function setTheme(id) { return setValue("appearance", "theme", id) }
     function setIconPack(id) { return setValue("icons", "pack", id) }
+    function setIconOverride(role, assetId, moduleId) {
+        const icons = Schema.clone(data.icons)
+        const target = moduleId ? (icons.overrides.modules[moduleId] || {}) : icons.overrides.global
+        if (assetId === null) delete target[role]
+        else target[role] = {source: "user", assetId: assetId}
+        if (moduleId) icons.overrides.modules[moduleId] = target
+        return setValue("icons", "overrides", icons.overrides)
+    }
     function setRoundness(role, value) {
         const roundness = Schema.clone(data.appearance.roundness)
         if (role === "master") roundness.master = value
@@ -142,6 +150,12 @@ Scope {
         return setValue("bar", section, values)
     }
     function setControlEntries(entries) { return setValue("controlCentre", "controls", entries) }
+    function setControlSection(section, enabled) {
+        if (["profile", "quickControls", "sliders", "media", "actions"].indexOf(section) < 0) return false
+        const sections = Schema.clone(data.controlCentre.sections)
+        sections[section] = enabled
+        return setValue("controlCentre", "sections", sections)
+    }
     function editControl(key, field, value) {
         const entries = Schema.clone(data.controlCentre.controls)
         const entry = entries.find(e => e.key === key)
@@ -166,7 +180,7 @@ Scope {
         return setControlEntries(data.controlCentre.controls.filter(e => e.key !== key))
     }
     function resetSection(section) {
-        if (["appearance", "icons", "bar", "controlCentre"].indexOf(section) < 0) return false
+        if (["appearance", "icons", "bar", "controlCentre", "profile", "media"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         next[section] = Schema.defaults()[section]
         return commit(next)

@@ -52,7 +52,7 @@ FloatingWindow {
                     }
                     Label { text: "Settings"; color: Theme.Theme.subtext; Layout.bottomMargin: 20 }
                     Repeater {
-                        model: ["Appearance", "Bar", "Control Centre"]
+                        model: ["Appearance", "Profile", "Bar", "Control Centre", "Icons"]
                         SettingsButton {
                             id: navigationButton
                             required property string modelData
@@ -79,7 +79,9 @@ FloatingWindow {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     sourceComponent: Services.SettingsWindowState.page === "Appearance" ? appearance
-                        : Services.SettingsWindowState.page === "Bar" ? bar : centre
+                        : Services.SettingsWindowState.page === "Profile" ? profile
+                        : Services.SettingsWindowState.page === "Bar" ? bar
+                        : Services.SettingsWindowState.page === "Icons" ? icons : centre
                 }
                 Rectangle {
                     Layout.fillWidth: true
@@ -93,7 +95,7 @@ FloatingWindow {
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                             text: Services.Settings.error || Services.Settings.diagnostics.join(" · ")
-                                || (Services.Settings.saveState === "saved" ? "Saved · schema v1" : Services.Settings.saveState)
+                                || (Services.Settings.saveState === "saved" ? "Saved · schema v2" : Services.Settings.saveState)
                             color: Services.Settings.error ? Theme.Theme.red : Theme.Theme.subtext
                             font.pixelSize: 12
                         }
@@ -108,6 +110,8 @@ FloatingWindow {
         }
     }
     Component { id: appearance; Pages.AppearancePage {} }
+    Component { id: profile; Pages.ProfilePage {} }
     Component { id: bar; Pages.BarPage {} }
     Component { id: centre; Pages.ControlCentrePage { outputWidth: window.outputWidth } }
+    Component { id: icons; Pages.IconsPage {} }
 }

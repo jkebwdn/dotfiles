@@ -345,6 +345,20 @@ hl.bind(
     })
 )
 
+-- MAGI Settings is a normal Quickshell desktop window. Match its stable title
+-- as well as Quickshell's process-wide app ID so shell layer surfaces are not
+-- affected by this rule.
+hl.window_rule({
+    name = "magi-settings-window",
+    match = {
+        class = "^org\\.quickshell$",
+        title = "^MAGI Settings$",
+    },
+    float = true,
+    center = true,
+    size = "940 720",
+})
+
 hl.bind(
     SUPER .. " + F",
     hl.dsp.window.fullscreen({

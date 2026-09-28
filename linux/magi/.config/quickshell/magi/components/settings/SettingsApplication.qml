@@ -28,7 +28,7 @@ Scope {
         function open(): void { Services.SettingsWindowState.open() }
         function close(): void { Services.SettingsWindowState.requested = false; Services.SettingsWindowState.shown = false }
         function page(id: string): bool {
-            if (["Appearance", "Bar", "Control Centre"].indexOf(id) < 0) return false
+            if (["Appearance", "Profile", "Bar", "Control Centre", "Icons"].indexOf(id) < 0) return false
             Services.SettingsWindowState.page = id
             return true
         }

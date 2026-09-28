@@ -1,6 +1,6 @@
 # Settings architecture spike
 
-Status: **approved; S1/S2 implemented and validated 2026-09-27**. See the
+Status: **approved; S1–S6 foundation implemented and validated 2026-09-27**. See the
 [implementation record](../research/settings-foundation-checkpoint.md) for exact
 scope, evidence and limitations. Stable module ownership from S4 was brought
 forward to S1; descriptor-driven CC rendering and all Settings GUI work remain
@@ -75,7 +75,9 @@ Two integration risks follow from that source:
 
 ## 2. Proposed schema and boundaries
 
-Use one MAGI-specific JSON document with integer `schemaVersion: 1`. Keep its
+The original foundation used one MAGI-specific JSON document with integer
+`schemaVersion: 1`; production now chains that migration to schema v2 for
+profile/media/optional-region settings. Keep its
 existing location, `.config/quickshell/magi/settings.json`, for the first
 implementation. Avoid a simultaneous path migration or multiple override files.
 The [example document](settings-schema-v1.example.json) is a proposed default,
@@ -451,16 +453,17 @@ data (Serpantinum). These are design inferences from documentation, not claims
 that MAGI has tested or adopted their implementations. See the
 [evidence and version limits](../research/settings-spike-references.md).
 
-## 8. Next Control Centre milestone: profile and real MPRIS
+## 8. Implemented Control Centre milestone: profile and real MPRIS
 
-Profile's future settings shape:
-`{enabled:false, displayName:"", subtitle:"", avatar:null}`. Enable deliberately;
+Profile's implemented settings shape is
+`{displayName:"", subtitle:"", avatar:null}`; Control Centre section visibility
+is stored separately. Configure deliberately;
 no automatic username, hostname, account photograph or other identity. Store an
 imported local avatar asset reference, validate/decode/copy separately from SVG
 icons, and allow deletion/reset of the reference. An enabled empty name/avatar
 does not fabricate a profile; omit unavailable fields and collapse an empty area.
 
-Future media shape:
+Implemented media shape:
 `{enabled:true, preferredPlayer:null, emptyState:"collapse"}`. `Media.qml` wraps
 Quickshell.Services.Mpris, not an independent polling playerctl state store.
 Select explicit user choice if present; otherwise retain a still-playing current
@@ -512,7 +515,10 @@ The architecture is small enough to implement without a framework, but the
 implemented choices are multiplier-based roundness, the existing settings path,
 column cap 16 in the schema, legacy glyph pack identifier, idle deferral for bar
 placement and the real Control Centre pill as hidden-view fallback anchor.
-CC layout consumption and SVG assets remain unimplemented.
+CC layout consumption, bounded SVG override assets, explicit profile and real
+MPRIS media are implemented. See the latest
+[checkpoint](../research/profile-media-icons-checkpoint.md). Module-specific icon
+override UI, real multi-player operator coverage and final morph work remain.
 
 Required future investigation is implementation-bounded: FileView failure/
 watcher/symlink tests, Qt SVG subset support, normal-window focus behavior,

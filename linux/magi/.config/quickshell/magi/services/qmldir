@@ -7,3 +7,6 @@ singleton Bluetooth 1.0 Bluetooth.qml
 singleton Brightness 1.0 Brightness.qml
 singleton MenuController 1.0 MenuController.qml
 singleton SettingsWindowState 1.0 SettingsWindowState.qml
+singleton AssetManager 1.0 AssetManager.qml
+singleton Media 1.0 Media.qml
+MediaController 1.0 MediaController.qml

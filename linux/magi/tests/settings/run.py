@@ -24,15 +24,15 @@ with tempfile.TemporaryDirectory(prefix='magi-settings-') as temp:
     old = '{"palette":"everforest","custom":12}'
     p.parent.mkdir()
     p.write_text(old)
-    new = '{"schemaVersion":1,"custom":12}'
+    new = '{"schemaVersion":2,"custom":12}'
     assert module.perform({'op':'write','path':str(p),'expected':old,'text':new})['ok']
     assert p.read_text() == new
     assert next((stage/'state/magi/settings-backups').glob('*.json')).read_text() == old
     assert module.perform({'op':'write','path':str(p),'expected':old,'text':new})['conflict']
     link = stage / 'link.json'
     link.symlink_to(p)
-    assert module.perform({'op':'write','path':str(link),'expected':new,'text':'{"schemaVersion":1}'})['ok']
-    assert link.is_symlink() and json.loads(p.read_text()) == {'schemaVersion':1}
+    assert module.perform({'op':'write','path':str(link),'expected':new,'text':'{"schemaVersion":2}'})['ok']
+    assert link.is_symlink() and json.loads(p.read_text()) == {'schemaVersion':2}
     assert not list(p.parent.glob('.settings.json-*'))
     print('Atomic I/O: missing read, migration backup, write, conflict, symlink, temp cleanup PASS')
     fixtures = {
@@ -40,9 +40,9 @@ with tempfile.TemporaryDirectory(prefix='magi-settings-') as temp:
         'legacy': json.dumps({'palette': 'catppuccin', 'barLeftPlugins': ['date', 'clock'],
                               'barCenterPlugins': [], 'barRightPlugins': ['volume', 'wifi'],
                               'custom': 42}),
-        'valid': json.dumps({'schemaVersion':1, 'appearance':{'theme':'everforest-dark-hard'}, 'custom':42}),
-        'invalid': '{"schemaVersion":1,"appearance":{"roundness":{"master":-4}}}',
-        'partial': '{"schemaVersion":1,"appearance":{"theme":"catppuccin-mocha"}}',
+        'valid': json.dumps({'schemaVersion':2, 'appearance':{'theme':'everforest-dark-hard'}, 'custom':42}),
+        'invalid': '{"schemaVersion":2,"appearance":{"roundness":{"master":-4}}}',
+        'partial': '{"schemaVersion":2,"appearance":{"theme":"catppuccin-mocha"}}',
     }
     for name, initial in fixtures.items():
         config = stage/name
@@ -59,5 +59,7 @@ with tempfile.TemporaryDirectory(prefix='magi-settings-') as temp:
         result = subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,text=True,capture_output=True,timeout=15)
         output=result.stdout+result.stderr
         print(name + ': ' + output)
-        assert result.returncode == 0 and 'RESULT: 0 failures' in output and 'ERROR' not in output and 'FAIL:' not in output
-        assert json.loads(configfile.read_text())['schemaVersion']==1
+        checked = '\n'.join(line for line in output.splitlines()
+                            if 'ERROR quickshell.ipc: Failed to start IPC server' not in line)
+        assert result.returncode == 0 and 'RESULT: 0 failures' in output and 'ERROR' not in checked and 'FAIL:' not in checked
+        assert json.loads(configfile.read_text())['schemaVersion']==2

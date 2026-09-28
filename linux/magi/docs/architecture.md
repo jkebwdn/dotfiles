@@ -214,8 +214,8 @@ modified.
 ## Configuration and appearance foundation — implemented S1/S2
 
 `services/Settings.qml` owns `settings/SettingsStore.qml`, pure schema/migration
-JS and a Python standard-library atomic I/O helper. Schema v1 has appearance,
-icons, bar and Control Centre sections. Defaults are effective values, not an
+JS and a Python standard-library atomic I/O helper. Schema v2 has appearance,
+icons, bar, Control Centre, profile and media sections. Defaults are effective values, not an
 automatic startup rewrite. Unknown fields survive migration and ordinary edits;
 malformed/newer documents are protected from silent overwrites. Reset is explicit.
 The helper backs up pre-schema content, checks the prior disk snapshot and
@@ -241,7 +241,11 @@ anchor is fabricated when both placements are absent. Combined hosting has no
 such dependency. The bounded fallback check passed native 48px geometry and
 hidden Bluetooth detail, not a fresh full pointer/focus acceptance.
 
-CC column/order/slot settings now drive ControlCatalog delegates. The duplicated
-battery summary has been removed. The initial Settings GUI and IconRegistry are
-implemented; asset import/override UI and profile/MPRIS remain future work. Host lifecycle,
+CC column/order/slot and optional-region settings drive ControlCatalog delegates.
+ProfileHeader consumes explicit user profile data. Media wraps Quickshell MPRIS
+through one deterministic MediaController and disappears when no suitable player
+exists; both regions use same-view geometry retargeting. The duplicated battery
+summary has been removed. The initial Settings GUI and IconRegistry are
+implemented. AssetManager validates and copies avatars/SVG overrides into XDG-
+managed storage; bounded override UI covers an initial role subset. Host lifecycle,
 MenuController semantics, Network and other system services remain unchanged.

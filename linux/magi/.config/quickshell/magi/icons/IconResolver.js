@@ -21,7 +21,10 @@ function resolve(registry, settings, role, moduleId) {
     function override(value) {
         if (!value) return null
         if (value.source === "bundled") return fromPack(value.pack, value.icon)
-        warnings.push("User icon import is not enabled: " + (value.assetId || role))
+        if (value.source === "user" && typeof value.assetId === "string"
+                && /^icon:[a-f0-9]{64}\.svg$/.test(value.assetId))
+            return {kind: "user", assetId: value.assetId}
+        warnings.push("Invalid icon override: " + (value.assetId || role))
         return null
     }
     const overrides = settings.overrides || {}

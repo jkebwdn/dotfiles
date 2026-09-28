@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 2,
+  "appearance": {
+    "theme": "catppuccin-mocha",
+    "roundness": {
+      "master": 1,
+      "roles": {
+        "barPill": null,
+        "surface": null,
+        "controlTile": null,
+        "slider": null,
+        "action": null
+      }
+    }
+  },
+  "icons": {
+    "pack": "magi-legacy",
+    "modulePacks": {},
+    "overrides": {
+      "global": {},
+      "modules": {}
+    }
+  },
+  "profile": {
+    "displayName": "",
+    "subtitle": "",
+    "avatar": null
+  },
+  "media": {
+    "enabled": true,
+    "preferredPlayer": null,
+    "emptyState": "collapse"
+  },
+  "bar": {
+    "left": ["clock", "date"],
+    "center": ["workspaces"],
+    "right": ["volume", "wifi", "bluetooth", "battery", "controlcentre"]
+  },
+  "controlCentre": {
+    "columns": 4,
+    "sections": {
+      "profile": true,
+      "quickControls": true,
+      "sliders": true,
+      "media": true,
+      "actions": false
+    },
+    "controls": [
+      {"key": "network", "module": "wifi", "enabled": true, "presentation": "tile"},
+      {"key": "power", "module": "battery", "enabled": true, "presentation": "tile"},
+      {"key": "sound", "module": "volume", "enabled": true, "presentation": "tile"},
+      {"key": "wireless", "module": "bluetooth", "enabled": true, "presentation": "tile"}
+    ],
+    "sliders": [
+      {"key": "volume", "module": "volume", "enabled": true, "presentation": "slider"},
+      {"key": "backlight", "module": "brightness", "enabled": true, "presentation": "slider"}
+    ]
+  }
+}

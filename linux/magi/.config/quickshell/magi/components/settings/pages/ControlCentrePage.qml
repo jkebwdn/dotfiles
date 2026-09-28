@@ -25,6 +25,25 @@ Flickable {
             Label { text: "Fits " + root.effectiveColumns + " on this output"; color: Theme.Theme.subtext; Layout.fillWidth: true }
             SettingsUI.SettingsButton { text: "Preview"; onClicked: Services.MenuController.open("controlcentre") }
         }
+        Label { text: "Sections"; font.bold: true }
+        Flow {
+            Layout.fillWidth: true
+            spacing: 16
+            Repeater {
+                model: [
+                    {id:"profile", label:"Profile header"},
+                    {id:"quickControls", label:"Quick controls"},
+                    {id:"sliders", label:"Volume / brightness"},
+                    {id:"media", label:"Media"}
+                ]
+                CheckBox {
+                    required property var modelData
+                    text: modelData.label
+                    checked: Services.Settings.data.controlCentre.sections[modelData.id]
+                    onToggled: Services.Settings.setControlSection(modelData.id, checked)
+                }
+            }
+        }
         Label { text: "Top controls · " + Services.Settings.data.controlCentre.controls.filter(e => e.enabled).length + " enabled"; font.bold: true }
         Repeater {
             model: Services.Settings.data.controlCentre.controls

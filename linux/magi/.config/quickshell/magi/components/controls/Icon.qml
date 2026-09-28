@@ -1,6 +1,7 @@
 import QtQuick
 import "../../icons" as Icons
 import "../../theme" as Theme
+import "../../services" as Services
 Item {
     id: root
     property string role: "missing"
@@ -21,9 +22,9 @@ Item {
     Image {
         id: asset
         anchors.fill: parent
-        visible: root.resolved.icon.kind === "svg" && status !== Image.Error
-        source: root.resolved.icon.kind === "svg"
-            ? Qt.resolvedUrl("../../icons/packs/" + root.resolved.icon.path) : ""
+        visible: (root.resolved.icon.kind === "svg" || root.resolved.icon.kind === "user") && status !== Image.Error
+        source: root.resolved.icon.kind === "svg" ? Qt.resolvedUrl("../../icons/packs/" + root.resolved.icon.path)
+            : root.resolved.icon.kind === "user" ? Services.AssetManager.assetUrl(root.resolved.icon.assetId) : ""
         sourceSize: Qt.size(root.size * 2, root.size * 2)
         fillMode: Image.PreserveAspectFit
     }

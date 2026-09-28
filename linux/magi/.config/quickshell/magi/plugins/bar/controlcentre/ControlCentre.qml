@@ -23,13 +23,24 @@ MagiBar.ExpandableModule {
     onConfigurationBusyChanged: Qt.callLater(root.syncLayout)
     readonly property var controls: layout.controls.filter(e => e.enabled && Modules.ControlCatalog.definition(e.module))
     readonly property var sliders: layout.sliders.filter(e => e.enabled)
+    readonly property var sections: layout.sections
+    readonly property bool profileAvailable: !!(Services.Settings.data.profile.displayName
+        || Services.Settings.data.profile.subtitle || Services.Settings.data.profile.avatar)
+    readonly property bool showProfile: sections.profile && profileAvailable
+    readonly property bool showControls: sections.quickControls && controls.length > 0
+    readonly property bool showSliders: sections.sliders && sliders.length > 0
+    readonly property bool showMedia: sections.media && Services.Settings.data.media.enabled && Services.Media.available
     readonly property real tileGap: 18
     readonly property real availableWidth: barWindow ? Math.max(88, barWindow.width - 28) : 1200
     readonly property int columns: Math.max(1, Math.min(layout.columns,
         Math.floor((availableWidth - 2 * viewPadding + tileGap) / (Theme.RenderTokens.tileSize + tileGap))))
     readonly property int rows: Math.ceil(controls.length / columns)
     readonly property real gridHeight: rows ? rows * Theme.RenderTokens.tileSize + (rows - 1) * tileGap : 0
-    readonly property real naturalHeight: gridHeight + (sliders.length ? (rows ? 24 : 0) + 48 : 0)
+    readonly property int visibleSections: (showProfile ? 1 : 0) + (showControls ? 1 : 0)
+        + (showSliders ? 1 : 0) + (showMedia ? 1 : 0)
+    readonly property real naturalHeight: (showProfile ? 58 : 0)
+        + (showControls ? gridHeight : 0) + (showSliders ? 48 : 0)
+        + (showMedia ? 86 : 0) + Math.max(0, visibleSections - 1) * 18
     readonly property real availableHeight: barWindow && hostMode === "combined" ? Math.max(80, barWindow.height - 90) : 700
     expandedWidth: Math.min(availableWidth, Math.max(200,
         columns * Theme.RenderTokens.tileSize + (columns - 1) * tileGap + 2 * viewPadding))
@@ -56,8 +67,13 @@ MagiBar.ExpandableModule {
             Column {
                 id: content
                 width: parent.width
-                spacing: root.rows && root.sliders.length ? 24 : 0
+                spacing: 18
+                ProfileHeader {
+                    width: parent.width
+                    visible: root.showProfile
+                }
                 Grid {
+                    visible: root.showControls
                     columns: root.columns
                     columnSpacing: root.tileGap
                     rowSpacing: root.tileGap
@@ -83,6 +99,7 @@ MagiBar.ExpandableModule {
                     }
                 }
                 Row {
+                    visible: root.showSliders
                     width: parent.width
                     spacing: Theme.RenderTokens.sliderGap
                     Repeater {
@@ -98,6 +115,10 @@ MagiBar.ExpandableModule {
                             onValueMoved: value => audio ? Services.Audio.setVolume(value) : Services.Brightness.setPercent(value * 100)
                         }
                     }
+                }
+                MediaSection {
+                    width: parent.width
+                    visible: root.showMedia
                 }
             }
         }

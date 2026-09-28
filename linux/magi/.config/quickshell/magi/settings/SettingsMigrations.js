@@ -19,5 +19,14 @@ function migrate(input) {
         delete doc.barRightPlugins
         doc.schemaVersion = 1
     }
+    if (doc.schemaVersion === 1) {
+        doc.profile = doc.profile || {displayName: "", subtitle: "", avatar: null}
+        doc.media = doc.media || {enabled: true, preferredPlayer: null, emptyState: "collapse"}
+        doc.controlCentre = doc.controlCentre || {}
+        doc.controlCentre.sections = doc.controlCentre.sections || {
+            profile: true, quickControls: true, sliders: true, media: true, actions: false
+        }
+        doc.schemaVersion = 2
+    }
     return doc
 }

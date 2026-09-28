@@ -256,3 +256,28 @@ and production mapping/48px startup checks pass. The operator subsequently
 confirmed the requested window, page, live configuration/persistence and hidden
 detail checks. Read-only follow-up confirms saved settings, clean logs and the
 unchanged one-layer/48px baseline. User-selected settings were preserved.
+
+
+## 2026-09-27 — Explicit profile, real MPRIS and managed assets
+
+[Implementation and operator checkpoint](research/profile-media-icons-checkpoint.md).
+Advance settings to schema v2 through a pure v1→v2 migration; retain SettingsStore
+as sole writer. Profile information is opt-in and never inferred from the system.
+Imported avatars and SVGs are content-addressed XDG assets, while settings store
+only validated managed IDs. Permit the exact inert SVG 1.1 doctype used by common
+design tools, but continue rejecting entities, arbitrary DTDs, scripts, external
+resources and unbounded content.
+
+Wrap Quickshell MPRIS in one semantic service. Explicit preference wins; otherwise
+prefer a retained/playing player and deterministic stable ordering. Only real
+metadata is displayed. Capability-check transport actions, bound/cache artwork,
+and remove the media region when no suitable player remains. Profile/media are
+optional Control Centre body regions and retarget the already-open shared surface;
+they do not create another host or change reservation.
+
+Because Quickshell's app ID is process-wide, identify Settings by the exact pair
+`org.quickshell` + `MAGI Settings`. The Hyprland rule floats, centres and initially
+sizes only that client; it does not alter the shell layer or normal WM control.
+Operator checks accepted profile/avatar, real media controls/removal, SVG override/
+fallback, Settings desktop behavior and unchanged core modules. Multi-player on
+real clients, multi-output and fractional scale remain unverified.

@@ -4,10 +4,10 @@
     "roundness": {
       "master": 1,
       "roles": {
-        "barPill": 2,
-        "surface": 0.05,
+        "barPill": 1,
+        "surface": 1.05,
         "controlTile": 1.6,
-        "slider": null,
+        "slider": 1.6,
         "action": null
       }
     }
@@ -24,11 +24,11 @@
       "volume",
       "wifi",
       "bluetooth",
-      "battery",
-      "controlcentre"
+      "controlcentre",
+      "battery"
     ]
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "controlCentre": {
     "columns": 4,
     "controls": [
@@ -70,6 +70,31 @@
         "enabled": true,
         "presentation": "slider"
       }
-    ]
+    ],
+    "sections": {
+      "profile": true,
+      "quickControls": true,
+      "sliders": true,
+      "media": true,
+      "actions": false
+    }
+  },
+  "profile": {
+    "displayName": "jkebwdn",
+    "subtitle": "repeat.the.loop",
+    "avatar": "avatar:7d8af09a38b389046772cbd300bb891d0423d411c1fee0e984920b8565eb146c.png"
+  },
+  "media": {
+    "enabled": true,
+    "preferredPlayer": null,
+    "emptyState": "collapse"
+  },
+  "icons": {
+    "pack": "magi-legacy",
+    "modulePacks": {},
+    "overrides": {
+      "global": {},
+      "modules": {}
+    }
   }
 }

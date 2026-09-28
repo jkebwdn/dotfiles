@@ -14,6 +14,8 @@ import stat
 import sys
 import tempfile
 
+CURRENT_VERSION = 2
+
 
 def perform(request):
     path = Path(request['path']).expanduser().resolve()
@@ -38,7 +40,7 @@ def perform(request):
             prior_version = json.loads(before).get('schemaVersion', 0) if before else 0
         except (ValueError, AttributeError):
             prior_version = 0
-        if before is not None and prior_version != 1:
+        if before is not None and prior_version != CURRENT_VERSION:
             state = Path(os.environ.get('XDG_STATE_HOME', str(Path.home() / '.local/state')))
             backups = state / 'magi/settings-backups'
             backups.mkdir(parents=True, exist_ok=True, mode=0o700)

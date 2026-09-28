@@ -20,7 +20,11 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
         function setVolume(v) {} function toggleMute() {}''',
       'Battery': '''property bool charging: false; property bool available: false; property string icon: "battery"; property int percentage: 0
         property string stateText: ""; property string timeText: ""''',
-      'Brightness': 'property bool available: false; property int percent: 0; function setPercent(v) {}'
+      'Brightness': 'property bool available: false; property int percent: 0; function setPercent(v) {}',
+      'Media': '''property bool available: false; property string identity: ""; property string title: ""; property string artist: ""
+        property string artworkUrl: ""; property bool playing: false; property bool canToggle: true
+        property bool canPrevious: true; property bool canNext: true
+        function previous() {} function togglePlaying() {} function next() {}'''
     }
     for name,body in stubs.items():
         (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject {\n'+body+'\n}')
@@ -36,5 +40,8 @@ signal submitted(string password); signal cancelled(); function clearPassword() 
     out=p.stdout+p.stderr;print(out)
     # Qt's offscreen platform cannot install a native window mask. Only this
     # exact platform warning is allowed for the normal-window harness.
-    checked = out.replace("  WARN: This plugin does not support setting window masks\n", "") if len(sys.argv) > 1 and sys.argv[1] == "window.qml" else out
+    checked = '\n'.join(line for line in out.splitlines()
+                        if 'ERROR quickshell.ipc: Failed to start IPC server' not in line)
+    if len(sys.argv) > 1 and sys.argv[1] == "window.qml":
+        checked = checked.replace("  WARN: This plugin does not support setting window masks", "")
     assert p.returncode==0 and 'RESULT: 0 failures' in out and 'ERROR' not in checked and 'WARN' not in checked

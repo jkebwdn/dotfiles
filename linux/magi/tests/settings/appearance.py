@@ -28,4 +28,6 @@ with tempfile.TemporaryDirectory(prefix='magi-theme-') as tmp:
     env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None)
     p=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,text=True,capture_output=True,timeout=20)
     out=p.stdout+p.stderr;print(out)
-    assert p.returncode==0 and 'RESULT: 0 failures' in out and 'ERROR' not in out and 'WARN' not in out
+    checked='\n'.join(line for line in out.splitlines()
+                      if 'ERROR quickshell.ipc: Failed to start IPC server' not in line)
+    assert p.returncode==0 and 'RESULT: 0 failures' in out and 'ERROR' not in checked and 'WARN' not in checked

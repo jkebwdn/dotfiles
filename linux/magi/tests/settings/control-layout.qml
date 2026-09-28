@@ -8,6 +8,8 @@ ShellRoot {
     property int step: 0
     property int failures: 0
     property var original: null
+    property real profileBaseline: 0
+    property real mediaBaseline: 0
     function check(ok,label) { if (!ok) { failures++; console.error("FAIL: " + label) } }
     Modules.ModuleRegistry { id: registry; barWindow: null; sharedSurface: surface }
     Bar.SharedStatusSurface {
@@ -66,9 +68,33 @@ ShellRoot {
                 break
             case 9:
                 test.check(cc.columns === 4 && surface.phase === 3 && surface.contentOpacity === 1, "four columns without collapse")
-                Services.MenuController.close()
+                test.profileBaseline = cc.menuHeight
+                Services.Settings.setValue("profile", "displayName", "Ada")
                 break
             case 10:
+                test.check(surface.phase === 3 && cc.showProfile && cc.menuHeight > test.profileBaseline
+                    && surface.revealedHeight === cc.menuHeight, "profile update retargets open surface")
+                test.mediaBaseline = cc.menuHeight
+                Services.Media.available = true
+                Services.Media.title = "A real track"
+                Services.Media.artist = "An artist"
+                break
+            case 11:
+                test.check(surface.phase === 3 && cc.menuHeight > test.mediaBaseline
+                    && surface.revealedHeight === cc.menuHeight, "media appearance retargets open surface")
+                Services.Media.available = false
+                break
+            case 12:
+                test.check(surface.phase === 3 && cc.menuHeight === test.mediaBaseline
+                    && surface.revealedHeight === cc.menuHeight, "media disappearance retargets open surface")
+                Services.Settings.resetSection("profile")
+                break
+            case 13:
+                test.check(surface.phase === 3 && !cc.showProfile && cc.menuHeight === test.profileBaseline
+                    && surface.revealedHeight === cc.menuHeight, "profile reset retargets open surface")
+                Services.MenuController.close()
+                break
+            case 14:
                 test.check(surface.phase === 0, "clean close")
                 console.log("RESULT: " + test.failures + " failures; dynamic Control Centre layout")
                 Qt.quit()
