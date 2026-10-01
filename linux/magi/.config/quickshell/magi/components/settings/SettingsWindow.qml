@@ -95,7 +95,9 @@ FloatingWindow {
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
                             text: Services.Settings.error || Services.Settings.diagnostics.join(" · ")
-                                || (Services.Settings.saveState === "saved" ? "Saved · schema v2" : Services.Settings.saveState)
+                                || (Services.Settings.saveState === "saved"
+                                    ? "Saved · schema v" + Services.Settings.data.schemaVersion
+                                    : Services.Settings.saveState)
                             color: Services.Settings.error ? Theme.Theme.red : Theme.Theme.subtext
                             font.pixelSize: 12
                         }

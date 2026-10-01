@@ -10,12 +10,12 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
       'Network': '''property bool connected: false; property bool wifiEnabled: true; property bool wifiHardwareEnabled: true
         property string icon: "wifi"; property string ssid: ""; property int signalStrength: 0
         property var activeNetwork: null; property var availableNetworks: []
-        function setScanning(v) {} function setWifiEnabled(v) {} function connectKnown(n) {}
+        function setScanning(v) {} function setWifiEnabled(v) {root.wifiEnabled=v} function connectKnown(n) {}
         function connectOpen(n) {} function connectWithPassword(n,p) {}''',
       'Bluetooth': '''property bool available: false; property bool enabled: false; property bool discovering: false
         property var primaryDevice: null; property var devices: []; property int connectedCount: 0
         function displayName(d) {return ""} function batteryPercent(d) {return -1}
-        function setEnabled(v) {} function setDiscovering(v) {} function toggleConnection(d) {}''',
+        function setEnabled(v) {root.enabled=v} function setDiscovering(v) {} function toggleConnection(d) {}''',
       'Audio': '''property bool available: false; property bool muted: false; property real volume: 0; property int volumePercent: 0
         function setVolume(v) {} function toggleMute() {}''',
       'Battery': '''property bool charging: false; property bool available: false; property string icon: "battery"; property int percentage: 0
@@ -24,10 +24,21 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
       'Media': '''property bool available: false; property string identity: ""; property string title: ""; property string artist: ""
         property string artworkUrl: ""; property bool playing: false; property bool canToggle: true
         property bool canPrevious: true; property bool canNext: true
-        function previous() {} function togglePlaying() {} function next() {}'''
+        function previous() {} function togglePlaying() {} function next() {}''',
+      'QuickActions': '''property bool powerAvailable: false; property bool powerSaver: false; property string powerProfile: ""
+        property bool vpnAvailable: false; property bool vpnActive: false; property string vpnName: ""
+        property bool dndAvailable: true; property bool dndActive: false; property bool lockAvailable: true
+        property bool hibernateAvailable: false; property bool shutdownAvailable: true
+        function setPowerSaver(v) {root.powerSaver=v} function toggleVpn() {root.vpnActive=!root.vpnActive} function setDnd(v) { root.dndActive=v } function execute(v) {}''',
+      'AirplaneMode': '''property bool active: false; property bool priorWifi: false; property bool priorBluetooth: false
+        function begin(w,b){root.priorWifi=w;root.priorBluetooth=b;root.active=true}
+        function end(){const r={wifi:root.priorWifi,bluetooth:root.priorBluetooth};root.active=false;return r}
+        function cancel(){root.active=false}''',
+      'Caffeine': 'property bool requested: false; property bool bound: true; readonly property bool active: requested && bound; function setRequested(v) {requested=v}',
+      'ActionConfirmation': 'property string armedAction: ""; function request(v) {if (armedAction===v){armedAction="";return true} armedAction=v;return false} function cancel(){armedAction=""}'
     }
     for name,body in stubs.items():
-        (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject {\n'+body+'\n}')
+        (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { id: root\n'+body+'\n}')
     (config/'plugins/bar/wifi/WifiPasswordWindow.qml').write_text('''import QtQuick
 QtObject { property var network: null; property bool connecting: false
 signal submitted(string password); signal cancelled(); function clearPassword() {} }

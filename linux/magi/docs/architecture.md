@@ -1,6 +1,6 @@
 # MAGI — Architecture
 
-Updated **2026-09-27** for S1/S2 configuration and appearance integration.
+Updated **2026-09-28** for schema-v3 Control Centre actions and icon packs.
 The bounded shared-composition checkpoint is operator-accepted: full collapse,
 reliable repeated/rapid reopening and Control Centre → Bluetooth → Back.
 Broader focus/fullscreen/password regression remains unverified for this refactor.
@@ -8,14 +8,16 @@ Settings-spike source baseline is committed HEAD
 `5215bbef5fa3573295c1c1101059d62da502892c` (2026-09-26). Paths are relative to
 `.config/quickshell/magi/`.
 
-## Current Settings/CC integration — 2026-09-27
+## Current Settings/CC integration — 2026-09-28
 
 The [new checkpoint](research/settings-application-checkpoint.md) supersedes the
 S1/S2-only limitations below: IconRegistry and shared Icon rendering are active;
-ControlCatalog drives ordered CC controls/sliders, responsive targets and safe
-live reflow; the duplicate battery row is removed. Default four assignments stay
-unchanged, including the optional legacy Battery tile. No richer Power module
-was added. SettingsApplication owns one lazy FloatingWindow with three real pages.
+ControlCatalog drives presentation-aware primary controls, sliders, secondary
+actions and detail views, responsive targets and safe live reflow; the duplicate
+battery row is removed. Schema-v3 defaults are Wi-Fi/Bluetooth/Low Power/Airplane,
+Volume/Brightness sliders and VPN/DND/Caffeine/Lock/Hibernate/Shutdown actions.
+Unavailable system adapters remain visible but disabled. SettingsApplication
+owns one lazy FloatingWindow with real configuration pages.
 It shares SettingsStore and waits for transient/password readiness before opening.
 Bar retains exclusive ownership of Region/focus/catcher and the 48px reservation.
 Automated and startup checks pass. The operator subsequently passed the requested
@@ -166,12 +168,15 @@ New-device pairing and device-specific listening modes are not implemented.
 
 ### Control Centre
 
-`plugins/bar/controlcentre/ControlCentre.qml` uses the 320px-wide, 208px-body
-reference targets described above on the same host lifecycle. It contains live
-Wi-Fi and Bluetooth tiles, shared Volume and Brightness sliders, mute, and Battery status. `ControlTile.qml` separates
-primary and secondary triggers so future detail/long-press behavior does not
-require a host rewrite. Secondary Bluetooth and Wi-Fi actions route through
-MenuController to their registered detail plugins.
+`plugins/bar/controlcentre/ControlCentre.qml` uses the same host lifecycle and
+derives its target height from independently optional Profile, primary tile,
+slider, secondary action and Media regions. One ControlCatalog declares supported
+presentation forms and live action/state adapters. The default primary row is
+Wi-Fi, Bluetooth, Low Power and Airplane Mode; Volume and Brightness remain
+dedicated sliders; the secondary row is VPN, DND, Caffeine, Lock, Hibernate and
+Shutdown. Settings can replace, order, enable and reflow both rows while open.
+Wi-Fi/Bluetooth detail navigation still uses MenuController. Destructive actions
+share a five-second two-activation arm rather than executing on one click.
 
 ### Wi-Fi
 
@@ -211,11 +216,12 @@ modified.
   path and is not the target for new plugins.
 
 
-## Configuration and appearance foundation — implemented S1/S2
+## Configuration and appearance foundation — implemented through schema v3
 
 `services/Settings.qml` owns `settings/SettingsStore.qml`, pure schema/migration
-JS and a Python standard-library atomic I/O helper. Schema v2 has appearance,
-icons, bar, Control Centre, profile and media sections. Defaults are effective values, not an
+JS and a Python standard-library atomic I/O helper. Schema v3 has appearance,
+icons, bar, Control Centre, profile and media sections, with ordered primary,
+slider and secondary-action groups. Defaults are effective values, not an
 automatic startup rewrite. Unknown fields survive migration and ordinary edits;
 malformed/newer documents are protected from silent overwrites. Reset is explicit.
 The helper backs up pre-schema content, checks the prior disk snapshot and
@@ -226,8 +232,10 @@ See [persistence and validation evidence](research/settings-foundation-checkpoin
 semantic facade over Settings. RenderTokens contains no palette colors.
 Master roundness (0–2) and nullable barPill/surface/controlTile/slider/action
 multipliers drive live radii, clamped to geometry. Padding, font baselines, gaps
-and nominal dimensions stay internal. Icon-pack selection is stored/validated;
-only the existing magi-legacy pack is available until S3.
+and nominal dimensions stay internal. IconRegistry combines bundled and
+validated managed packs; incomplete packs inherit from a declared parent and
+ultimately MAGI Legacy. The [pack contract](design/icon-pack-contract.md) fixes
+the normal UI canvas at 24×24 without cropping internal whitespace.
 
 A module can bind `expandedWidth`/`menuHeight` or call `requestGeometry(w,h)`.
 `SharedStatusSurface.retargetGeometry()` coalesces target changes and animates

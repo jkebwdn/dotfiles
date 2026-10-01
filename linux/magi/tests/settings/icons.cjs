@@ -3,7 +3,7 @@ const base=process.argv[2];
 const registry=JSON.parse(fs.readFileSync(base+'/packs/registry.json'));
 const ctx=vm.createContext({});vm.runInContext(fs.readFileSync(base+'/IconResolver.js','utf8'),ctx);
 const settings={pack:'magi-legacy',modulePacks:{},overrides:{global:{},modules:{}}};
-for(const role of ['wifi','wifi-low','wifi-medium','wifi-high','bluetooth','bluetooth-connected','volume','volume-muted','brightness','battery','battery-charging','settings','night-light','dnd','power-profile','media-play','media-pause','media-next','media-previous','back','scan','connect','disconnect'])
+for(const role of ['wifi','wifi-low','wifi-medium','wifi-high','bluetooth','bluetooth-connected','volume','volume-muted','brightness','battery','battery-charging','settings','night-light','dnd','power-profile','power-saver','airplane-mode','vpn','caffeine','lock','hibernate','shutdown','media-play','media-pause','media-next','media-previous','back','scan','connect','disconnect'])
  assert(ctx.resolve(registry,settings,role,'').icon.text);
 registry.packs.push({id:'test',font:'test',roles:{wifi:{kind:'glyph',text:'G'}},modules:{wifi:{wifi:{kind:'glyph',text:'M'}}},assets:{}});
 settings.pack='test';assert.equal(ctx.resolve(registry,settings,'wifi','').icon.text,'G');
@@ -21,4 +21,8 @@ assert(ctx.resolve(registry,settings,'missing-role','').icon.text);
 registry.packs[1].roles.scan={kind:'svg',assetId:'sample'};registry.packs[1].assets.sample='sample.svg';
 assert.equal(ctx.resolve(registry,settings,'scan','').icon.path,'sample.svg');
 registry.packs[1].assets.sample='../../escape.svg';assert.equal(ctx.resolve(registry,settings,'scan','').icon.kind,'glyph');
+registry.packs.push({id:'child',parent:'magi-legacy',baseUrl:'file:///tmp/pack/',roles:{wifi:{kind:'managed-svg',path:'wifi.svg'}},modules:{},assets:{}});
+settings.pack='child';delete settings.modulePacks.wifi;delete settings.overrides.modules.wifi;delete settings.overrides.global.wifi;
+assert.equal(ctx.resolve(registry,settings,'wifi','').icon.kind,'managed');
+assert.equal(ctx.resolve(registry,settings,'bluetooth','').icon.text,registry.packs[0].roles.bluetooth.text);
 console.log('Semantic roles, global/module/individual precedence, missing fallback and bundled SVG path guards PASS');

@@ -1,5 +1,24 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-09-28 — Presentation-aware Control Centre catalogue
+
+Control Centre controls are instances of one catalogue contract, with declared
+tile/action/slider/detail presentations, rather than fixed row-specific QML
+arrays. Settings schema v3 owns independent ordered primary and secondary
+instances. Service availability, bar placement and Control Centre placement
+remain separate. Volume and Brightness are sliders; the production primary
+default is Wi-Fi, Bluetooth, Low Power and Airplane Mode.
+
+Airplane Mode composes the existing Network/Bluetooth owners; Caffeine binds a
+Wayland IdleInhibitor to the existing bar window; platform, NetworkManager,
+SwayNC and login1/systemd operations stay behind a bounded replaceable adapter.
+Hibernate and Shutdown require two activations within five seconds.
+
+Local full icon packs use a validated manifest and managed XDG storage. Normal
+UI SVGs retain a canonical 24×24 canvas and internal negative space. Incomplete
+packs inherit and ultimately fall back to MAGI Legacy; no consumer imports a
+pack-specific path directly.
+
 Reconciled on **2026-09-26** against source HEAD
 `35c282012f2d749081a3f8b1821f01bf0b8aa6ea` plus the current uncommitted
 production-plugin integration. Paths are relative to

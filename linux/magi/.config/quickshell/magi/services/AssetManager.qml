@@ -22,6 +22,7 @@ Scope {
     }
     function importAvatar(url) { return enqueue("avatar", url, {}) }
     function importIcon(url, role, moduleId) { return enqueue("icon", url, {role:role, moduleId:moduleId || ""}) }
+    function importIconPack(url) { return enqueue("icon-pack", url, {}) }
     function cacheArtwork(url, token) { return enqueue("artwork", url, {token:token || ""}) }
     function assetUrl(assetId) {
         if (!assetId) return ""

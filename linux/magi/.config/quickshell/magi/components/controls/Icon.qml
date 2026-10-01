@@ -22,8 +22,10 @@ Item {
     Image {
         id: asset
         anchors.fill: parent
-        visible: (root.resolved.icon.kind === "svg" || root.resolved.icon.kind === "user") && status !== Image.Error
+        visible: (root.resolved.icon.kind === "svg" || root.resolved.icon.kind === "managed"
+            || root.resolved.icon.kind === "user") && status !== Image.Error
         source: root.resolved.icon.kind === "svg" ? Qt.resolvedUrl("../../icons/packs/" + root.resolved.icon.path)
+            : root.resolved.icon.kind === "managed" ? root.resolved.icon.url
             : root.resolved.icon.kind === "user" ? Services.AssetManager.assetUrl(root.resolved.icon.assetId) : ""
         sourceSize: Qt.size(root.size * 2, root.size * 2)
         fillMode: Image.PreserveAspectFit

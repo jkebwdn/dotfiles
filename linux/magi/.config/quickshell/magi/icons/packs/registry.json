@@ -1,9 +1,12 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "packs": [
     {
       "id": "magi-legacy",
       "label": "MAGI Legacy",
+      "version": "1",
+      "description": "MAGI's complete fallback glyph pack.",
+      "parent": null,
       "font": "JetBrainsMono Nerd Font",
       "attribution": "Existing MAGI glyph code points; uses the installed Nerd Font. No font or third-party artwork is redistributed.",
       "roles": {
@@ -94,6 +97,34 @@
         "power-profile": {
           "kind": "glyph",
           "text": "󰓅"
+        },
+        "power-saver": {
+          "kind": "glyph",
+          "text": "󰌪"
+        },
+        "airplane-mode": {
+          "kind": "glyph",
+          "text": "󰀝"
+        },
+        "vpn": {
+          "kind": "glyph",
+          "text": "󰖂"
+        },
+        "caffeine": {
+          "kind": "glyph",
+          "text": "󰅶"
+        },
+        "lock": {
+          "kind": "glyph",
+          "text": "󰌾"
+        },
+        "hibernate": {
+          "kind": "glyph",
+          "text": "󰒲"
+        },
+        "shutdown": {
+          "kind": "glyph",
+          "text": "󰐥"
         },
         "media-play": {
           "kind": "glyph",

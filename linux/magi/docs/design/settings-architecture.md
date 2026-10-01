@@ -1,6 +1,7 @@
 # Settings architecture spike
 
-Status: **approved; S1–S6 foundation implemented and validated 2026-09-27**. See the
+Status: **approved; S1–S7 foundation implemented through the action/icon-pack
+checkpoint on 2026-09-28**. See the
 [implementation record](../research/settings-foundation-checkpoint.md) for exact
 scope, evidence and limitations. Stable module ownership from S4 was brought
 forward to S1; descriptor-driven CC rendering and all Settings GUI work remain
@@ -25,8 +26,10 @@ not canonical MAGI colors. S2 removed that bypass.
 Semantic icons, responsive configured Control Centre and the initial normal
 Settings window are now implemented. The [checkpoint](../research/settings-application-checkpoint.md)
 records the exact departures/limits and passed operator checklist. Stable keys
-and explicit actions implement the contract below; user asset import and icon
-override UI remain deferred. S2 retargeting permits live open-view layout updates;
+and explicit actions implement the contract below; managed individual SVG
+overrides and local manifest-based packs are now implemented. Schema v3 adds
+presentation-aware primary controls, sliders and secondary actions; see the
+[icon-pack contract](icon-pack-contract.md). S2 retargeting permits live open-view layout updates;
 password/pending sessions still defer them. The original audit remains historical.
 
 ## S1/S2 implementation delta — 2026-09-27

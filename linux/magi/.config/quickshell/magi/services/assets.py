@@ -21,6 +21,8 @@ IMAGE_LIMIT = 5 * 1024 * 1024
 ART_LIMIT = 4 * 1024 * 1024
 ART_CACHE_LIMIT = 32 * 1024 * 1024
 ART_CACHE_FILES = 64
+PACK_MANIFEST_LIMIT = 64 * 1024
+PACK_ID = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SVG_TAGS = {"svg", "g", "path", "rect", "circle", "ellipse", "line", "polyline",
             "polygon", "defs", "linearGradient", "radialGradient", "stop",
             "clipPath", "mask", "title", "desc"}
@@ -84,9 +86,7 @@ def numeric_dimension(value):
     return float(match.group(1)) if match else None
 
 
-def import_svg(value):
-    path = local_path(value)
-    data = path.read_bytes()
+def validate_svg(data, canonical=True):
     if len(data) > SVG_LIMIT: raise ValueError("SVG exceeds the 256 KiB limit")
     lowered = data.lower()
     if b"<!entity" in lowered:
@@ -110,6 +110,11 @@ def import_svg(value):
         except ValueError: raise ValueError("Invalid SVG viewBox")
     if not width or not height or width <= 0 or height <= 0 or width > 4096 or height > 4096:
         raise ValueError("SVG needs positive dimensions no larger than 4096×4096")
+    if canonical:
+        try: canonical_box = [float(value) for value in viewbox] == [0.0, 0.0, 24.0, 24.0]
+        except ValueError: canonical_box = False
+        if not canonical_box:
+            raise ValueError('UI icons require viewBox="0 0 24 24"')
     elements = list(root.iter())
     if len(elements) > 512: raise ValueError("SVG contains too many elements")
     for element in elements:
@@ -124,7 +129,91 @@ def import_svg(value):
             for target in re.findall(r"url\((.*?)\)", low_value):
                 if not target.strip(" '\"").startswith("#"):
                     raise ValueError("External SVG resources are not supported")
-    return persist(data, data_root() / "icons", "svg", "icon")
+    return data
+
+
+def import_svg(value):
+    path = local_path(value)
+    return persist(validate_svg(path.read_bytes()), data_root() / "icons", "svg", "icon")
+
+
+def pack_manifest(value):
+    path = local_path(value)
+    if path.stat().st_size > PACK_MANIFEST_LIMIT:
+        raise ValueError("Icon-pack manifest exceeds 64 KiB")
+    try: manifest = json.loads(path.read_text())
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"Invalid icon-pack manifest: {error}")
+    if not isinstance(manifest, dict) or manifest.get("formatVersion") != 1:
+        raise ValueError("Unsupported icon-pack manifest version")
+    pack_id = manifest.get("id")
+    if not isinstance(pack_id, str) or not PACK_ID.fullmatch(pack_id) or pack_id == "magi-legacy":
+        raise ValueError("Icon-pack ID must be lowercase kebab-case")
+    label = manifest.get("displayName")
+    if not isinstance(label, str) or not label.strip() or len(label) > 80:
+        raise ValueError("Icon pack needs a display name")
+    parent = manifest.get("parent", "magi-legacy")
+    if not isinstance(parent, str) or not PACK_ID.fullmatch(parent) or parent == pack_id:
+        raise ValueError("Invalid icon-pack parent")
+    roles = manifest.get("roles")
+    if not isinstance(roles, dict) or not roles or len(roles) > 256:
+        raise ValueError("Icon pack needs 1–256 role mappings")
+    checked = {}
+    for role, filename in roles.items():
+        if not isinstance(role, str) or not PACK_ID.fullmatch(role):
+            raise ValueError("Icon roles must be lowercase kebab-case")
+        if not isinstance(filename, str) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*\.svg", filename):
+            raise ValueError("Icon filenames must be lowercase kebab-case SVG names")
+        asset = (path.parent / filename).resolve()
+        if asset.parent != path.parent.resolve() or not asset.is_file():
+            raise ValueError(f"Missing local pack asset: {filename}")
+        checked[filename] = validate_svg(asset.read_bytes())
+    clean = {"formatVersion": 1, "id": pack_id, "displayName": label.strip(),
+             "parent": parent, "roles": roles}
+    for field in ("author", "description", "version"):
+        value = manifest.get(field, "")
+        if value is not None and (not isinstance(value, str) or len(value) > 240):
+            raise ValueError(f"Invalid icon-pack {field}")
+        if value: clean[field] = value
+    return clean, checked
+
+
+def import_pack(value):
+    manifest, assets = pack_manifest(value)
+    root = data_root() / "icon-packs"
+    destination = root / manifest["id"]
+    if destination.exists():
+        raise ValueError("An icon pack with this ID is already installed")
+    root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    temporary = Path(tempfile.mkdtemp(prefix=".pack-", dir=root))
+    try:
+        for filename, data in assets.items():
+            (temporary / filename).write_bytes(data)
+        (temporary / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+        os.rename(temporary, destination)
+    finally:
+        if temporary.exists(): shutil.rmtree(temporary)
+    return {"assetId": "pack:" + manifest["id"], "url": (destination / "manifest.json").as_uri()}
+
+
+def list_packs():
+    packs = []
+    root = data_root() / "icon-packs"
+    if root.is_dir():
+        for directory in sorted(root.iterdir()):
+            try:
+                manifest = json.loads((directory / "manifest.json").read_text())
+                if directory.name != manifest["id"]: continue
+                roles = {role: {"kind": "managed-svg", "path": filename}
+                         for role, filename in manifest["roles"].items()
+                         if (directory / filename).is_file()}
+                packs.append({"id": manifest["id"], "label": manifest["displayName"],
+                    "author": manifest.get("author", ""), "description": manifest.get("description", ""),
+                    "version": manifest.get("version", ""), "parent": manifest.get("parent", "magi-legacy"),
+                    "baseUrl": directory.as_uri() + "/", "roles": roles, "modules": {}, "assets": {}})
+            except (OSError, KeyError, json.JSONDecodeError):
+                continue
+    return {"packs": packs}
 
 
 def cache_artwork(value):
@@ -156,6 +245,8 @@ def perform(request):
     operation = request.get("op")
     if operation == "avatar": return import_image(request["url"])
     if operation == "icon": return import_svg(request["url"])
+    if operation == "icon-pack": return import_pack(request["url"])
+    if operation == "pack-list": return list_packs()
     if operation == "artwork": return cache_artwork(request["url"])
     raise ValueError("Unknown asset operation")
 

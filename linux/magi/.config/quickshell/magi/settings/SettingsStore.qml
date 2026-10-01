@@ -149,36 +149,49 @@ Scope {
         const value = values.splice(index, 1)[0]; values.splice(to, 0, value)
         return setValue("bar", section, values)
     }
-    function setControlEntries(entries) { return setValue("controlCentre", "controls", entries) }
+    function setControlEntries(entries) { return setEntries("controls", entries) }
+    function setEntries(group, entries) {
+        if (["controls", "sliders", "actions"].indexOf(group) < 0) return false
+        return setValue("controlCentre", group, entries)
+    }
     function setControlSection(section, enabled) {
         if (["profile", "quickControls", "sliders", "media", "actions"].indexOf(section) < 0) return false
         const sections = Schema.clone(data.controlCentre.sections)
         sections[section] = enabled
         return setValue("controlCentre", "sections", sections)
     }
-    function editControl(key, field, value) {
-        const entries = Schema.clone(data.controlCentre.controls)
+    function editEntry(group, key, field, value) {
+        if (["controls", "sliders", "actions"].indexOf(group) < 0) return false
+        const entries = Schema.clone(data.controlCentre[group])
         const entry = entries.find(e => e.key === key)
         if (!entry || ["module", "enabled"].indexOf(field) < 0) return false
         entry[field] = value
-        return setControlEntries(entries)
+        return setEntries(group, entries)
     }
-    function moveControl(key, delta) {
-        const entries = Schema.clone(data.controlCentre.controls)
+    function moveEntry(group, key, delta) {
+        if (["controls", "sliders", "actions"].indexOf(group) < 0) return false
+        const entries = Schema.clone(data.controlCentre[group])
         const index = entries.findIndex(e => e.key === key), to = index + delta
         if (index < 0 || to < 0 || to >= entries.length) return false
         const entry = entries.splice(index, 1)[0]; entries.splice(to, 0, entry)
-        return setControlEntries(entries)
+        return setEntries(group, entries)
     }
-    function addControl(module) {
-        const entries = Schema.clone(data.controlCentre.controls)
+    function addEntry(group, module) {
+        if (["controls", "sliders", "actions"].indexOf(group) < 0) return false
+        const entries = Schema.clone(data.controlCentre[group])
         if (entries.some(e => e.module === module)) return false
-        entries.push({key: module + "-" + Date.now(), module: module, enabled: true, presentation: "tile"})
-        return setControlEntries(entries)
+        const presentation = group === "controls" ? "tile" : group === "sliders" ? "slider" : "action"
+        entries.push({key: module + "-" + Date.now(), module: module, enabled: true, presentation: presentation})
+        return setEntries(group, entries)
     }
-    function removeControl(key) {
-        return setControlEntries(data.controlCentre.controls.filter(e => e.key !== key))
+    function removeEntry(group, key) {
+        if (["controls", "sliders", "actions"].indexOf(group) < 0) return false
+        return setEntries(group, data.controlCentre[group].filter(e => e.key !== key))
     }
+    function editControl(key, field, value) { return editEntry("controls", key, field, value) }
+    function moveControl(key, delta) { return moveEntry("controls", key, delta) }
+    function addControl(module) { return addEntry("controls", module) }
+    function removeControl(key) { return removeEntry("controls", key) }
     function resetSection(section) {
         if (["appearance", "icons", "bar", "controlCentre", "profile", "media"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)

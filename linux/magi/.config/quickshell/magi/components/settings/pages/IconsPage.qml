@@ -12,6 +12,7 @@ Flickable {
     id: root
     property string selectedRole: ""
     property int importRequest: 0
+    property int packRequest: 0
     property string importError: ""
     readonly property var roles: ["wifi", "bluetooth", "volume", "settings"]
     contentHeight: content.implicitHeight + 48
@@ -25,6 +26,11 @@ Flickable {
         Label {
             text: "Overrides are validated and copied into MAGI-managed storage. Clearing one returns to the selected pack."
             color: Theme.Theme.subtext; wrapMode: Text.WordWrap; Layout.fillWidth: true
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            Label { text: "Installed packs"; font.bold: true; Layout.fillWidth: true }
+            SettingsUI.SettingsButton { text: "Install pack manifest…"; onClicked: packDialog.open() }
         }
         Repeater {
             model: root.roles
@@ -61,9 +67,24 @@ Flickable {
             root.importRequest = Services.AssetManager.importIcon(selectedFile, root.selectedRole, "")
         }
     }
+    FileDialog {
+        id: packDialog
+        title: "Install a local MAGI icon-pack manifest"
+        nameFilters: ["JSON manifests (*.json)"]
+        onAccepted: {
+            root.importError = ""
+            root.packRequest = Services.AssetManager.importIconPack(selectedFile)
+        }
+    }
     Connections {
         target: Services.AssetManager
         function onCompleted(requestId, operation, assetId, url, error) {
+            if (requestId === root.packRequest && operation === "icon-pack") {
+                root.importError = error
+                if (!error && assetId.indexOf("pack:") === 0)
+                    Services.Settings.setIconPack(assetId.slice(5))
+                return
+            }
             if (requestId !== root.importRequest) return
             root.importError = error
             if (!error) Services.Settings.setIconOverride(root.selectedRole, assetId, "")

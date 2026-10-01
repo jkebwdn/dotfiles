@@ -28,16 +28,18 @@
       "battery"
     ]
   },
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "controlCentre": {
     "columns": 4,
+    "actionColumns": 6,
+    "sections": {
+      "profile": true,
+      "quickControls": true,
+      "sliders": true,
+      "actions": true,
+      "media": true
+    },
     "controls": [
-      {
-        "key": "power",
-        "module": "battery",
-        "enabled": true,
-        "presentation": "tile"
-      },
       {
         "key": "network",
         "module": "wifi",
@@ -45,14 +47,20 @@
         "presentation": "tile"
       },
       {
-        "key": "sound",
-        "module": "volume",
+        "key": "wireless",
+        "module": "bluetooth",
         "enabled": true,
         "presentation": "tile"
       },
       {
-        "key": "wireless",
-        "module": "bluetooth",
+        "key": "power-saver",
+        "module": "power-saver",
+        "enabled": true,
+        "presentation": "tile"
+      },
+      {
+        "key": "airplane-mode",
+        "module": "airplane-mode",
         "enabled": true,
         "presentation": "tile"
       }
@@ -71,13 +79,38 @@
         "presentation": "slider"
       }
     ],
-    "sections": {
-      "profile": true,
-      "quickControls": true,
-      "sliders": true,
-      "media": true,
-      "actions": false
-    }
+    "actions": [
+      {
+        "key": "dnd",
+        "module": "dnd",
+        "enabled": true,
+        "presentation": "action"
+      },
+      {
+        "key": "caffeine",
+        "module": "caffeine",
+        "enabled": true,
+        "presentation": "action"
+      },
+      {
+        "key": "lock",
+        "module": "lock",
+        "enabled": true,
+        "presentation": "action"
+      },
+      {
+        "key": "hibernate",
+        "module": "hibernate",
+        "enabled": true,
+        "presentation": "action"
+      },
+      {
+        "key": "shutdown",
+        "module": "shutdown",
+        "enabled": true,
+        "presentation": "action"
+      }
+    ]
   },
   "profile": {
     "displayName": "jkebwdn",

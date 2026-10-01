@@ -9,4 +9,8 @@ singleton MenuController 1.0 MenuController.qml
 singleton SettingsWindowState 1.0 SettingsWindowState.qml
 singleton AssetManager 1.0 AssetManager.qml
 singleton Media 1.0 Media.qml
+singleton QuickActions 1.0 QuickActions.qml
+singleton AirplaneMode 1.0 AirplaneMode.qml
+singleton Caffeine 1.0 Caffeine.qml
+singleton ActionConfirmation 1.0 ActionConfirmation.qml
 MediaController 1.0 MediaController.qml

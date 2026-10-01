@@ -1,5 +1,24 @@
 # MAGI — Quickshell Technical Reference
 
+## Idle inhibition (verified 2026-09-28)
+
+Applicable version: installed Quickshell 0.3.1. The official
+[IdleInhibitor reference](https://quickshell.org/docs/v0.3.1/types/Quickshell.Wayland/IdleInhibitor/)
+documents `import Quickshell.Wayland`, writable `window` and `enabled`
+properties, a required non-null associated window, and compositor policy over
+whether an inhibitor is respected. The
+[0.3.1 changelog](https://quickshell.org/changelog/#v031) records Wayland idle
+inhibition support. Both were inspected 2026-09-28.
+
+Local installed metadata
+`/usr/lib/qt6/qml/Quickshell/Wayland/_IdleInhibitor/quickshell-wayland-idle-inhibit.qmltypes`
+exports the same properties, and public `Quickshell/Wayland/qmldir` imports
+the implementation module. MAGI attaches one inhibitor to its existing bar
+PanelWindow for Caffeine. The API guarantees request association; actual
+inhibition remains compositor policy and requires
+`idle-inhibit-unstable-v1`. A bounded local idle-timeout test remains required
+to prove Hyprland honors this surface in the current session.
+
 ## Evidence baseline
 
 Initially inspected **2026-09-24** and updated **2026-09-26**. The current

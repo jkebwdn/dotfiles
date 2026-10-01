@@ -3,6 +3,28 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
+## Control Centre actions and icon packs — 2026-09-28
+
+Implemented and operator-accepted: settings schema v3 generalizes Control Centre into
+primary tiles, dedicated sliders, secondary actions and detail views.
+Production adapters cover Low Power, aggregate Airplane Mode, NetworkManager
+VPN, SwayNC DND, Wayland idle inhibition, lock and confirmed
+hibernate/shutdown. Defaults are data, not fixed UI slots.
+
+Local inspection found no configured VPN and no user-writable power-profile
+backend, so those actions correctly remain unavailable. Full local icon packs
+now use validated 24×24 SVGs, managed XDG storage, a bounded manifest and parent
+fallback to MAGI Legacy. See the
+[checkpoint](research/control-centre-actions-icons-checkpoint.md) and
+[icon-pack contract](design/icon-pack-contract.md).
+
+All automated suites pass. The live shell has one 1920×1080 layer at `(0,0)`,
+exactly 48px reservation, a saved/diagnostic-free v3 store and clean logs.
+The operator passed DND, Caffeine indication, live secondary configuration,
+destructive single-click arming and existing-feature regression checks.
+Airplane Mode remains automated-only to avoid dropping the remote session;
+Hibernate is unavailable on this no-swap system.
+
 ## Profile, real media and managed icon overrides — 2026-09-27
 
 Implemented and operator-accepted. Settings schema v2 preserves the existing

@@ -79,12 +79,21 @@ PanelWindow {
     color: "transparent"
     mask: combinedMode ? combinedInputMask : null
 
+    IdleInhibitor {
+        enabled: MagiServices.Caffeine.requested
+        window: bar
+    }
+    Component.onDestruction: MagiServices.Caffeine.bound = false
+
     // ---------------------------------------------------------
     // Enabled plugins and positions
     // ---------------------------------------------------------
 
     property var placement: ({left: [], center: [], right: []})
-    Component.onCompleted: syncPlacement()
+    Component.onCompleted: {
+        MagiServices.Caffeine.bound = true
+        syncPlacement()
+    }
     readonly property var leftPlugins: placement.left
     readonly property var centerPlugins: placement.center
     readonly property var rightPlugins: placement.right

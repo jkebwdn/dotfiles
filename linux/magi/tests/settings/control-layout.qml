@@ -26,12 +26,13 @@ ShellRoot {
             const cc = registry.modules.controlcentre
             switch (test.step++) {
             case 0:
+                Services.Settings.resetSection("profile")
                 test.original = registry.modules.bluetooth
                 Services.MenuController.open("controlcentre")
                 break
             case 1:
                 test.check(surface.phase === 3, "open CC")
-                for (const id of ["settings","volume-down","volume-up","brightness-up"]) Services.Settings.addControl(id)
+                for (const id of ["battery","settings","vpn","dnd"]) Services.Settings.addControl(id)
                 Services.Settings.setValue("controlCentre","columns",8)
                 break
             case 2:
@@ -49,7 +50,7 @@ ShellRoot {
                 Services.Settings.moveControl(key,1)
                 break
             case 5:
-                test.check(cc.controls[0].module === "volume" && surface.phase === 3, "reorder while open")
+                test.check(cc.controls[0].module === "power-saver" && surface.phase === 3, "reorder while open")
                 Services.Settings.placeBar("bluetooth","hidden")
                 Modules.ControlCatalog.secondary("bluetooth")
                 break

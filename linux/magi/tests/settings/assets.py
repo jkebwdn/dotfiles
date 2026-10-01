@@ -29,6 +29,11 @@ with tempfile.TemporaryDirectory(prefix='magi-assets-') as temporary:
     standard = stage / 'standard.svg'
     standard.write_text('<?xml version="1.0"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24"><path d="M1 1h22v22H1z"/></svg>')
     assert assets.perform({'op':'icon','url':standard.as_uri()})['assetId'].startswith('icon:')
+    noncanonical = stage / 'noncanonical.svg'
+    noncanonical.write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M1 1h14v14H1z"/></svg>')
+    try: assets.perform({'op':'icon','url':noncanonical.as_uri()})
+    except ValueError as error: assert '24 24' in str(error)
+    else: raise AssertionError('noncanonical UI icon accepted')
     bad = stage / 'bad.svg'
     bad.write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><script>alert(1)</script></svg>')
     try: assets.perform({'op':'icon','url':bad.as_uri()})
@@ -46,4 +51,13 @@ with tempfile.TemporaryDirectory(prefix='magi-assets-') as temporary:
     else: raise AssertionError('external SVG resource accepted')
     artwork = assets.perform({'op':'artwork','url':png.as_uri()})
     assert artwork['assetId'].startswith('artwork:') and Path(artwork['url'][7:]).is_file()
-    print('Managed avatar persistence, SVG validation/override storage and bounded local artwork PASS')
+    pack = stage / 'pack'; pack.mkdir()
+    (pack/'wifi.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 12h16"/></svg>')
+    manifest = pack/'manifest.json'
+    manifest.write_text('{"formatVersion":1,"id":"test-pack","displayName":"Test Pack","parent":"magi-legacy","roles":{"wifi":"wifi.svg"}}')
+    installed = assets.perform({'op':'icon-pack','url':manifest.as_uri()})
+    assert installed['assetId'] == 'pack:test-pack'
+    listed = assets.perform({'op':'pack-list'})['packs']
+    assert listed[0]['id'] == 'test-pack' and listed[0]['roles']['wifi']['kind'] == 'managed-svg'
+    assert listed[0]['parent'] == 'magi-legacy'
+    print('Managed assets, canonical SVG validation, pack install/list and artwork PASS')

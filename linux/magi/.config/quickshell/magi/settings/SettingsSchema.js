@@ -2,7 +2,7 @@
 const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "controlcentre"]
 const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action"]
 function defaults() {
-    return {schemaVersion: 2,
+    return {schemaVersion: 3,
         appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null}}},
         icons: {pack: "magi-legacy", modulePacks: {}, overrides: {global: {}, modules: {}}},
@@ -10,16 +10,23 @@ function defaults() {
         media: {enabled: true, preferredPlayer: null, emptyState: "collapse"},
         bar: {left: ["clock", "date"], center: ["workspaces"],
             right: ["volume", "wifi", "bluetooth", "battery", "controlcentre"]},
-        controlCentre: {columns: 4, sections: {
-            profile: true, quickControls: true, sliders: true, media: true, actions: false
+        controlCentre: {columns: 4, actionColumns: 6, sections: {
+            profile: true, quickControls: true, sliders: true, actions: true, media: true
         }, controls: [
             {key: "network", module: "wifi", enabled: true, presentation: "tile"},
-            {key: "power", module: "battery", enabled: true, presentation: "tile"},
-            {key: "sound", module: "volume", enabled: true, presentation: "tile"},
-            {key: "wireless", module: "bluetooth", enabled: true, presentation: "tile"}],
+            {key: "wireless", module: "bluetooth", enabled: true, presentation: "tile"},
+            {key: "power-saver", module: "power-saver", enabled: true, presentation: "tile"},
+            {key: "airplane-mode", module: "airplane-mode", enabled: true, presentation: "tile"}],
             sliders: [
                 {key: "volume", module: "volume", enabled: true, presentation: "slider"},
-                {key: "backlight", module: "brightness", enabled: true, presentation: "slider"}]}}
+                {key: "backlight", module: "brightness", enabled: true, presentation: "slider"}],
+            actions: [
+                {key: "vpn", module: "vpn", enabled: true, presentation: "action"},
+                {key: "dnd", module: "dnd", enabled: true, presentation: "action"},
+                {key: "caffeine", module: "caffeine", enabled: true, presentation: "action"},
+                {key: "lock", module: "lock", enabled: true, presentation: "action"},
+                {key: "hibernate", module: "hibernate", enabled: true, presentation: "action"},
+                {key: "shutdown", module: "shutdown", enabled: true, presentation: "action"}]}}
 }
 function clone(value) { return JSON.parse(JSON.stringify(value)) }
 function object(value) { return value !== null && typeof value === "object" && !Array.isArray(value) }
@@ -31,7 +38,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 2) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 3) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -146,8 +153,17 @@ function analyze(input) {
     if (!Number.isInteger(cc.columns) || cc.columns < 1 || cc.columns > 16) {
         valid(false, "controlCentre.columns", 4); cc.columns = 4
     }
-    for (const group of ["controls", "sliders"]) {
-        const keys = [], modules = [], presentation = group === "controls" ? "tile" : "slider"
+    if (!Number.isInteger(cc.actionColumns) || cc.actionColumns < 1 || cc.actionColumns > 16) {
+        valid(false, "controlCentre.actionColumns", 6); cc.actionColumns = 6
+    }
+    const supportedByPresentation = {
+        tile: ["wifi", "bluetooth", "power-saver", "airplane-mode", "battery", "settings", "vpn", "dnd", "caffeine"],
+        slider: ["volume", "brightness"],
+        action: ["vpn", "dnd", "caffeine", "lock", "hibernate", "shutdown"]
+    }
+    for (const group of ["controls", "sliders", "actions"]) {
+        const keys = [], modules = []
+        const presentation = group === "controls" ? "tile" : group === "sliders" ? "slider" : "action"
         if (!Array.isArray(cc[group])) { valid(false, "controlCentre." + group, []); cc[group] = defaults().controlCentre[group] }
         cc[group] = cc[group].filter(entry => {
             if (!object(entry) || typeof entry.key !== "string" || !entry.key.length
@@ -157,7 +173,7 @@ function analyze(input) {
                 errors.push("Invalid/duplicate controlCentre." + group + " entry"); return false
             }
             keys.push(entry.key); modules.push(entry.module)
-            const supported = group === "controls" ? ["wifi", "battery", "volume", "bluetooth", "settings", "volume-down", "volume-up", "brightness-down", "brightness-up"] : ["volume", "brightness"]
+            const supported = supportedByPresentation[presentation]
             if (supported.indexOf(entry.module) < 0) { warnings.push("Unavailable CC module: " + entry.module); return false }
             return true
         })

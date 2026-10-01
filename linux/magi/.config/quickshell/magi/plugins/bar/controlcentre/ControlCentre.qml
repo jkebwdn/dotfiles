@@ -23,12 +23,14 @@ MagiBar.ExpandableModule {
     onConfigurationBusyChanged: Qt.callLater(root.syncLayout)
     readonly property var controls: layout.controls.filter(e => e.enabled && Modules.ControlCatalog.definition(e.module))
     readonly property var sliders: layout.sliders.filter(e => e.enabled)
+    readonly property var actions: layout.actions.filter(e => e.enabled && Modules.ControlCatalog.supports(e.module, "action"))
     readonly property var sections: layout.sections
     readonly property bool profileAvailable: !!(Services.Settings.data.profile.displayName
         || Services.Settings.data.profile.subtitle || Services.Settings.data.profile.avatar)
     readonly property bool showProfile: sections.profile && profileAvailable
     readonly property bool showControls: sections.quickControls && controls.length > 0
     readonly property bool showSliders: sections.sliders && sliders.length > 0
+    readonly property bool showActions: sections.actions && actions.length > 0
     readonly property bool showMedia: sections.media && Services.Settings.data.media.enabled && Services.Media.available
     readonly property real tileGap: 18
     readonly property real availableWidth: barWindow ? Math.max(88, barWindow.width - 28) : 1200
@@ -36,11 +38,16 @@ MagiBar.ExpandableModule {
         Math.floor((availableWidth - 2 * viewPadding + tileGap) / (Theme.RenderTokens.tileSize + tileGap))))
     readonly property int rows: Math.ceil(controls.length / columns)
     readonly property real gridHeight: rows ? rows * Theme.RenderTokens.tileSize + (rows - 1) * tileGap : 0
+    readonly property int actionColumns: Math.max(1, Math.min(layout.actionColumns, actions.length))
+    readonly property int actionRows: Math.ceil(actions.length / actionColumns)
+    readonly property real actionGap: 8
+    readonly property real actionHeight: actionRows ? actionRows * 38 + (actionRows - 1) * actionGap : 0
     readonly property int visibleSections: (showProfile ? 1 : 0) + (showControls ? 1 : 0)
-        + (showSliders ? 1 : 0) + (showMedia ? 1 : 0)
+        + (showSliders ? 1 : 0) + (showActions ? 1 : 0) + (showMedia ? 1 : 0)
     readonly property real naturalHeight: (showProfile ? 58 : 0)
         + (showControls ? gridHeight : 0) + (showSliders ? 48 : 0)
-        + (showMedia ? 86 : 0) + Math.max(0, visibleSections - 1) * 18
+        + (showActions ? actionHeight : 0) + (showMedia ? 86 : 0)
+        + Math.max(0, visibleSections - 1) * 18
     readonly property real availableHeight: barWindow && hostMode === "combined" ? Math.max(80, barWindow.height - 90) : 700
     expandedWidth: Math.min(availableWidth, Math.max(200,
         columns * Theme.RenderTokens.tileSize + (columns - 1) * tileGap + 2 * viewPadding))
@@ -51,6 +58,13 @@ MagiBar.ExpandableModule {
     viewRadius: Theme.RenderTokens.outerRadius
     viewSurfaceColor: Theme.Theme.surface
     color: sharedSurface ? Qt.alpha(Theme.Theme.surface, 1 - sharedSurface.expansion) : Theme.Theme.surface
+    Connections {
+        target: Services.MenuController
+        function onActiveMenuChanged() {
+            if (Services.MenuController.activeMenu !== "controlcentre")
+                Services.ActionConfirmation.cancel()
+        }
+    }
     pillContent: Component {
         Controls.MorphingPillContent {
             pill: parent; icon: root.icon; moduleId: "controlcentre"
@@ -113,6 +127,29 @@ MagiBar.ExpandableModule {
                             value: audio ? Services.Audio.volume : Services.Brightness.percent / 100
                             interactive: audio ? Services.Audio.available : Services.Brightness.available
                             onValueMoved: value => audio ? Services.Audio.setVolume(value) : Services.Brightness.setPercent(value * 100)
+                        }
+                    }
+                }
+                Grid {
+                    visible: root.showActions
+                    width: parent.width
+                    columns: root.actionColumns
+                    columnSpacing: root.actionGap
+                    rowSpacing: root.actionGap
+                    Repeater {
+                        model: root.actions
+                        ActionButton {
+                            required property var modelData
+                            readonly property var definition: Modules.ControlCatalog.definition(modelData.module)
+                            readonly property var live: Modules.ControlCatalog.state(modelData.module)
+                            width: (content.width - (root.actionColumns - 1) * root.actionGap) / root.actionColumns
+                            moduleId: modelData.module
+                            label: definition.label + (live.status ? ": " + live.status : "")
+                            icon: live.icon
+                            active: live.active
+                            available: live.available
+                            danger: !!definition.danger
+                            onTriggered: Modules.ControlCatalog.primary(modelData.module)
                         }
                     }
                 }
