@@ -159,17 +159,28 @@ def pack_manifest(value):
     if not isinstance(roles, dict) or not roles or len(roles) > 256:
         raise ValueError("Icon pack needs 1–256 role mappings")
     checked = {}
-    for role, filename in roles.items():
+    normalized_roles = {}
+    for role, descriptor in roles.items():
         if not isinstance(role, str) or not PACK_ID.fullmatch(role):
             raise ValueError("Icon roles must be lowercase kebab-case")
+        if isinstance(descriptor, str):
+            filename, color_mode = descriptor, "semantic"
+        elif isinstance(descriptor, dict):
+            filename = descriptor.get("asset")
+            color_mode = descriptor.get("colorMode", "semantic")
+            if color_mode not in ("semantic", "fixed"):
+                raise ValueError("Icon color mode must be semantic or fixed")
+        else:
+            raise ValueError("Icon role mappings must name an SVG asset")
         if not isinstance(filename, str) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*\.svg", filename):
             raise ValueError("Icon filenames must be lowercase kebab-case SVG names")
         asset = (path.parent / filename).resolve()
         if asset.parent != path.parent.resolve() or not asset.is_file():
             raise ValueError(f"Missing local pack asset: {filename}")
         checked[filename] = validate_svg(asset.read_bytes())
+        normalized_roles[role] = {"asset": filename, "colorMode": color_mode}
     clean = {"formatVersion": 1, "id": pack_id, "displayName": label.strip(),
-             "parent": parent, "roles": roles}
+             "parent": parent, "roles": normalized_roles}
     for field in ("author", "description", "version"):
         value = manifest.get(field, "")
         if value is not None and (not isinstance(value, str) or len(value) > 240):
@@ -204,9 +215,19 @@ def list_packs():
             try:
                 manifest = json.loads((directory / "manifest.json").read_text())
                 if directory.name != manifest["id"]: continue
-                roles = {role: {"kind": "managed-svg", "path": filename}
-                         for role, filename in manifest["roles"].items()
-                         if (directory / filename).is_file()}
+                roles = {}
+                for role, descriptor in manifest["roles"].items():
+                    if isinstance(descriptor, str):
+                        filename, color_mode = descriptor, "semantic"
+                    elif isinstance(descriptor, dict):
+                        filename = descriptor.get("asset", "")
+                        color_mode = descriptor.get("colorMode", "semantic")
+                    else: continue
+                    if color_mode not in ("semantic", "fixed"):
+                        continue
+                    if (directory / filename).is_file():
+                        roles[role] = {"kind": "managed-svg", "path": filename,
+                                       "colorMode": color_mode}
                 packs.append({"id": manifest["id"], "label": manifest["displayName"],
                     "author": manifest.get("author", ""), "description": manifest.get("description", ""),
                     "version": manifest.get("version", ""), "parent": manifest.get("parent", "magi-legacy"),

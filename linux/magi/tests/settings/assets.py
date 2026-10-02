@@ -53,11 +53,14 @@ with tempfile.TemporaryDirectory(prefix='magi-assets-') as temporary:
     assert artwork['assetId'].startswith('artwork:') and Path(artwork['url'][7:]).is_file()
     pack = stage / 'pack'; pack.mkdir()
     (pack/'wifi.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 12h16"/></svg>')
+    (pack/'logo.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#89b4fa" d="M4 4h16v16H4z"/></svg>')
     manifest = pack/'manifest.json'
-    manifest.write_text('{"formatVersion":1,"id":"test-pack","displayName":"Test Pack","parent":"magi-legacy","roles":{"wifi":"wifi.svg"}}')
+    manifest.write_text('{"formatVersion":1,"id":"test-pack","displayName":"Test Pack","parent":"magi-legacy","roles":{"wifi":"wifi.svg","profile":{"asset":"logo.svg","colorMode":"fixed"}}}')
     installed = assets.perform({'op':'icon-pack','url':manifest.as_uri()})
     assert installed['assetId'] == 'pack:test-pack'
     listed = assets.perform({'op':'pack-list'})['packs']
     assert listed[0]['id'] == 'test-pack' and listed[0]['roles']['wifi']['kind'] == 'managed-svg'
     assert listed[0]['parent'] == 'magi-legacy'
+    assert listed[0]['roles']['wifi']['colorMode'] == 'semantic'
+    assert listed[0]['roles']['profile']['colorMode'] == 'fixed'
     print('Managed assets, canonical SVG validation, pack install/list and artwork PASS')

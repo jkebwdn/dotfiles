@@ -3,6 +3,21 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
+## First-party MAGI icon pack — 2026-10-01
+
+Implemented and operator-accepted: all 47 corrected 24×24 exports pass the
+bounded SVG audit and are bundled byte-for-byte as the partial first-party
+`magi-default` pack. Production semantic tinting preserves internal opacity in
+default, accent and muted states across Catppuccin dark and light themes;
+explicit fixed-color mode remains available for future multicolor artwork.
+Missing roles inherit MAGI Legacy through the existing resolver.
+
+The production shell is left on `magi-default` and Catppuccin Mocha. Full
+settings and 48-step lifecycle tests pass, logs are clean, and the compositor
+baseline remains one layer at `(0,0)` with 48px reservation. See the
+[audit and acceptance checkpoint](research/magi-default-icon-pack-checkpoint.md)
+and [icon-pack contract](design/icon-pack-contract.md).
+
 ## Control Centre actions and icon packs — 2026-09-28
 
 Implemented and operator-accepted: settings schema v3 generalizes Control Centre into

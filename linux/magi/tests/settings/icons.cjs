@@ -5,6 +5,12 @@ const ctx=vm.createContext({});vm.runInContext(fs.readFileSync(base+'/IconResolv
 const settings={pack:'magi-legacy',modulePacks:{},overrides:{global:{},modules:{}}};
 for(const role of ['wifi','wifi-low','wifi-medium','wifi-high','bluetooth','bluetooth-connected','volume','volume-muted','brightness','battery','battery-charging','settings','night-light','dnd','power-profile','power-saver','airplane-mode','vpn','caffeine','lock','hibernate','shutdown','media-play','media-pause','media-next','media-previous','back','scan','connect','disconnect'])
  assert(ctx.resolve(registry,settings,role,'').icon.text);
+const firstParty=registry.packs.find(pack=>pack.id==='magi-default');
+assert(firstParty && firstParty.parent==='magi-legacy');
+settings.pack='magi-default';
+assert.equal(ctx.resolve(registry,settings,'wifi','').icon.kind,'svg');
+assert.equal(ctx.resolve(registry,settings,'wifi','').icon.colorMode,'semantic');
+assert.equal(ctx.resolve(registry,settings,'settings','').icon.kind,'glyph');
 registry.packs.push({id:'test',font:'test',roles:{wifi:{kind:'glyph',text:'G'}},modules:{wifi:{wifi:{kind:'glyph',text:'M'}}},assets:{}});
 settings.pack='test';assert.equal(ctx.resolve(registry,settings,'wifi','').icon.text,'G');
 assert.equal(ctx.resolve(registry,settings,'wifi','wifi').icon.text,'M');
@@ -18,11 +24,14 @@ assert(ctx.resolve(registry,settings,'wifi','wifi').diagnostic.includes('Invalid
 settings.overrides.modules.wifi.wifi={source:'user',assetId:'icon:'+'a'.repeat(64)+'.svg'};
 assert.equal(ctx.resolve(registry,settings,'wifi','wifi').icon.kind,'user');
 assert(ctx.resolve(registry,settings,'missing-role','').icon.text);
-registry.packs[1].roles.scan={kind:'svg',assetId:'sample'};registry.packs[1].assets.sample='sample.svg';
+const testPack=registry.packs.find(pack=>pack.id==='test');
+testPack.roles.scan={kind:'svg',assetId:'sample',colorMode:'fixed'};testPack.assets.sample='sample.svg';
 assert.equal(ctx.resolve(registry,settings,'scan','').icon.path,'sample.svg');
-registry.packs[1].assets.sample='../../escape.svg';assert.equal(ctx.resolve(registry,settings,'scan','').icon.kind,'glyph');
+assert.equal(ctx.resolve(registry,settings,'scan','').icon.colorMode,'fixed');
+testPack.assets.sample='../../escape.svg';assert.equal(ctx.resolve(registry,settings,'scan','').icon.kind,'glyph');
 registry.packs.push({id:'child',parent:'magi-legacy',baseUrl:'file:///tmp/pack/',roles:{wifi:{kind:'managed-svg',path:'wifi.svg'}},modules:{},assets:{}});
 settings.pack='child';delete settings.modulePacks.wifi;delete settings.overrides.modules.wifi;delete settings.overrides.global.wifi;
 assert.equal(ctx.resolve(registry,settings,'wifi','').icon.kind,'managed');
+assert.equal(ctx.resolve(registry,settings,'wifi','').icon.colorMode,'semantic');
 assert.equal(ctx.resolve(registry,settings,'bluetooth','').icon.text,registry.packs[0].roles.bluetooth.text);
-console.log('Semantic roles, global/module/individual precedence, missing fallback and bundled SVG path guards PASS');
+console.log('Semantic roles, first-party SVG tint mode, precedence, parent fallback and path guards PASS');

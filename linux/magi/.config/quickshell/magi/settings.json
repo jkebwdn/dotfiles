@@ -4,8 +4,8 @@
     "roundness": {
       "master": 1,
       "roles": {
-        "barPill": 1,
-        "surface": 1.05,
+        "barPill": 1.2000000000000002,
+        "surface": 1.6,
         "controlTile": 1.6,
         "slider": 1.6,
         "action": null
@@ -123,7 +123,7 @@
     "emptyState": "collapse"
   },
   "icons": {
-    "pack": "magi-legacy",
+    "pack": "magi-default",
     "modulePacks": {},
     "overrides": {
       "global": {},

@@ -17,6 +17,12 @@ Normal semantic UI glyphs are local SVG files with:
 - monochrome structure suitable for semantic recoloring where the SVG itself
   permits it.
 
+First-party semantic glyphs use neutral white geometry and may use object or
+fill opacity for hierarchy. The production renderer treats their rendered alpha
+as a mask and applies the caller's semantic foreground color, preserving those
+opacity differences. Fixed-color artwork is explicit; the renderer never tries
+to infer mode from SVG colors.
+
 The validator checks the canvas and bounded safe SVG subset. It does not reject
 art simply because paths occupy less than 24×24. Future logos, illustrations
 and artwork need an explicit non-UI asset type rather than weakening this rule.
@@ -36,10 +42,18 @@ A pack is installed from a local JSON manifest next to its SVG files:
   "parent": "magi-legacy",
   "roles": {
     "wifi": "wifi.svg",
-    "bluetooth": "bluetooth.svg"
+    "profile-logo": {
+      "asset": "profile-logo.svg",
+      "colorMode": "fixed"
+    }
   }
 }
 ```
+
+A filename is shorthand for `{ "asset": filename, "colorMode": "semantic" }`.
+`colorMode` is either `semantic` or `fixed`. Semantic mode preserves the SVG's
+alpha while replacing RGB with the requested theme role; fixed mode preserves
+the SVG's own colors for future logos and multicolor assets.
 
 `id`, role names and filenames use lowercase kebab-case. The manifest is
 limited to 64 KiB and 256 role mappings. Every mapped asset must be a regular
@@ -58,6 +72,14 @@ Resolution remains:
 
 An incomplete pack is therefore valid. Adding a future first-party MAGI SVG
 pack requires a manifest and assets, not edits to consuming controls.
+
+## Built-in packs
+
+`magi-default` is MAGI's partial first-party SVG pack. Its bundled manifest and
+registry descriptors use semantic color mode and inherit missing roles from
+`magi-legacy`. `magi-legacy` remains the complete Nerd Font fallback. Bundled
+SVG files retain their exported 24×24 canvases byte-for-byte; MAGI does not trim
+them to visible path bounds.
 
 ## Current semantic action roles
 

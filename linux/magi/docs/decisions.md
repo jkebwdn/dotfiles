@@ -1,5 +1,19 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-01 — First-party SVGs use explicit semantic tint mode
+
+The partial built-in `magi-default` pack contains the operator-supplied 24×24
+exports byte-for-byte and declares MAGI Legacy as its parent. Missing artwork
+therefore falls back without pack-specific conditionals in consumers.
+
+SVG descriptors declare `semantic` or `fixed` color mode. Semantic mode uses
+the rendered SVG alpha as the mask for the caller's theme color, preserving the
+first-party library's white-plus-opacity hierarchy across dark and light
+themes. Fixed mode preserves source colors for future logos and multicolor
+assets. MAGI does not infer mode from fill values or generate palette-specific
+SVG variants. See the
+[validated checkpoint](research/magi-default-icon-pack-checkpoint.md).
+
 ## 2026-09-28 — Presentation-aware Control Centre catalogue
 
 Control Centre controls are instances of one catalogue contract, with declared

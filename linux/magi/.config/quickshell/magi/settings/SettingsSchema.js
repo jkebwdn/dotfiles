@@ -73,7 +73,10 @@ function analyze(input) {
         valid(false, "icons.pack", ""); effective.icons.pack = "magi-legacy"
     }
     function validIconDescriptor(value) {
-        return object(value) && (value.source === "user"
+        return object(value)
+            && (value.colorMode === undefined
+                || ["semantic", "fixed"].indexOf(value.colorMode) >= 0)
+            && (value.source === "user"
             ? typeof value.assetId === "string" && /^icon:[a-f0-9]{64}\.svg$/.test(value.assetId)
             : value.source === "bundled" && typeof value.pack === "string" && value.pack.length
                 && typeof value.icon === "string" && value.icon.length)

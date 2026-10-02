@@ -16,11 +16,13 @@ function resolve(registry, settings, role, moduleId) {
         if (value.kind === "svg" && pack.assets && pack.assets[value.assetId]) {
             const path = pack.assets[value.assetId]
             if (/^[a-zA-Z0-9_/-]+\.svg$/.test(path) && path.indexOf("..") < 0)
-                return {kind: "svg", path: path}
+                return {kind: "svg", path: path,
+                    colorMode: value.colorMode === "fixed" ? "fixed" : "semantic"}
         }
         if (value.kind === "managed-svg" && typeof pack.baseUrl === "string"
                 && /^file:\/\//.test(pack.baseUrl) && /^[a-z0-9-]+\.svg$/.test(value.path))
-            return {kind: "managed", url: pack.baseUrl + value.path}
+            return {kind: "managed", url: pack.baseUrl + value.path,
+                colorMode: value.colorMode === "fixed" ? "fixed" : "semantic"}
         warnings.push("Invalid icon: " + id + "/" + name)
         return null
     }
@@ -29,7 +31,8 @@ function resolve(registry, settings, role, moduleId) {
         if (value.source === "bundled") return fromPack(value.pack, value.icon)
         if (value.source === "user" && typeof value.assetId === "string"
                 && /^icon:[a-f0-9]{64}\.svg$/.test(value.assetId))
-            return {kind: "user", assetId: value.assetId}
+            return {kind: "user", assetId: value.assetId,
+                colorMode: value.colorMode === "fixed" ? "fixed" : "semantic"}
         warnings.push("Invalid icon override: " + (value.assetId || role))
         return null
     }

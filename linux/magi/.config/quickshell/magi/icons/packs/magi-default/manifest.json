@@ -1,0 +1,203 @@
+{
+  "formatVersion": 1,
+  "id": "magi-default",
+  "displayName": "MAGI",
+  "version": "0.1",
+  "author": "MAGI",
+  "description": "First-party MAGI semantic UI icons. Partial; missing roles inherit MAGI Legacy.",
+  "parent": "magi-legacy",
+  "roles": {
+    "airplane-mode": {
+      "asset": "airplane-mode.svg",
+      "colorMode": "semantic"
+    },
+    "back": {
+      "asset": "chevron-left.svg",
+      "colorMode": "semantic"
+    },
+    "battery": {
+      "asset": "battery.svg",
+      "colorMode": "semantic"
+    },
+    "battery-charging": {
+      "asset": "battery-charging.svg",
+      "colorMode": "semantic"
+    },
+    "battery-full": {
+      "asset": "battery-full.svg",
+      "colorMode": "semantic"
+    },
+    "battery-low": {
+      "asset": "battery-low.svg",
+      "colorMode": "semantic"
+    },
+    "battery-medium": {
+      "asset": "battery-medium.svg",
+      "colorMode": "semantic"
+    },
+    "bluetooth": {
+      "asset": "bluetooth.svg",
+      "colorMode": "semantic"
+    },
+    "bluetooth-off": {
+      "asset": "bluetooth-off.svg",
+      "colorMode": "semantic"
+    },
+    "bluetooth-on": {
+      "asset": "bluetooth-on.svg",
+      "colorMode": "semantic"
+    },
+    "brightness": {
+      "asset": "brightness.svg",
+      "colorMode": "semantic"
+    },
+    "chevron-down": {
+      "asset": "chevron-down.svg",
+      "colorMode": "semantic"
+    },
+    "chevron-left": {
+      "asset": "chevron-left.svg",
+      "colorMode": "semantic"
+    },
+    "chevron-right": {
+      "asset": "chevron-right.svg",
+      "colorMode": "semantic"
+    },
+    "chevron-up": {
+      "asset": "chevron-up.svg",
+      "colorMode": "semantic"
+    },
+    "close": {
+      "asset": "close.svg",
+      "colorMode": "semantic"
+    },
+    "copy": {
+      "asset": "copy.svg",
+      "colorMode": "semantic"
+    },
+    "earbuds": {
+      "asset": "earbuds.svg",
+      "colorMode": "semantic"
+    },
+    "ethernet": {
+      "asset": "ethernet.svg",
+      "colorMode": "semantic"
+    },
+    "favorite": {
+      "asset": "favorite.svg",
+      "colorMode": "semantic"
+    },
+    "home": {
+      "asset": "home.svg",
+      "colorMode": "semantic"
+    },
+    "media-next": {
+      "asset": "media-next.svg",
+      "colorMode": "semantic"
+    },
+    "media-pause": {
+      "asset": "media-pause.svg",
+      "colorMode": "semantic"
+    },
+    "media-play": {
+      "asset": "media-play.svg",
+      "colorMode": "semantic"
+    },
+    "media-previous": {
+      "asset": "media-previous.svg",
+      "colorMode": "semantic"
+    },
+    "menu": {
+      "asset": "menu.svg",
+      "colorMode": "semantic"
+    },
+    "more": {
+      "asset": "more.svg",
+      "colorMode": "semantic"
+    },
+    "music": {
+      "asset": "music.svg",
+      "colorMode": "semantic"
+    },
+    "package": {
+      "asset": "package.svg",
+      "colorMode": "semantic"
+    },
+    "paste": {
+      "asset": "paste.svg",
+      "colorMode": "semantic"
+    },
+    "power-saver": {
+      "asset": "power-saver.svg",
+      "colorMode": "semantic"
+    },
+    "profile": {
+      "asset": "profile.svg",
+      "colorMode": "semantic"
+    },
+    "save": {
+      "asset": "save.svg",
+      "colorMode": "semantic"
+    },
+    "screen-record": {
+      "asset": "screen-record.svg",
+      "colorMode": "semantic"
+    },
+    "search": {
+      "asset": "search.svg",
+      "colorMode": "semantic"
+    },
+    "user": {
+      "asset": "user.svg",
+      "colorMode": "semantic"
+    },
+    "volume": {
+      "asset": "volume.svg",
+      "colorMode": "semantic"
+    },
+    "volume-high": {
+      "asset": "volume-high.svg",
+      "colorMode": "semantic"
+    },
+    "volume-low": {
+      "asset": "volume-low.svg",
+      "colorMode": "semantic"
+    },
+    "volume-medium": {
+      "asset": "volume-medium.svg",
+      "colorMode": "semantic"
+    },
+    "volume-muted": {
+      "asset": "volume-muted.svg",
+      "colorMode": "semantic"
+    },
+    "vpn": {
+      "asset": "vpn.svg",
+      "colorMode": "semantic"
+    },
+    "warning": {
+      "asset": "warning.svg",
+      "colorMode": "semantic"
+    },
+    "wifi": {
+      "asset": "wifi.svg",
+      "colorMode": "semantic"
+    },
+    "wifi-high": {
+      "asset": "wifi-high.svg",
+      "colorMode": "semantic"
+    },
+    "wifi-low": {
+      "asset": "wifi-low.svg",
+      "colorMode": "semantic"
+    },
+    "wifi-medium": {
+      "asset": "wifi-medium.svg",
+      "colorMode": "semantic"
+    },
+    "wifi-on": {
+      "asset": "wifi-on.svg",
+      "colorMode": "semantic"
+    }
+  }
+}

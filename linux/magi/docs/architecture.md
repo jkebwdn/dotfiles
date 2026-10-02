@@ -1,6 +1,6 @@
 # MAGI — Architecture
 
-Updated **2026-09-28** for schema-v3 Control Centre actions and icon packs.
+Updated **2026-10-01** for the first-party MAGI SVG pack and semantic tint path.
 The bounded shared-composition checkpoint is operator-accepted: full collapse,
 reliable repeated/rapid reopening and Control Centre → Bluetooth → Back.
 Broader focus/fullscreen/password regression remains unverified for this refactor.
@@ -236,6 +236,12 @@ and nominal dimensions stay internal. IconRegistry combines bundled and
 validated managed packs; incomplete packs inherit from a declared parent and
 ultimately MAGI Legacy. The [pack contract](design/icon-pack-contract.md) fixes
 the normal UI canvas at 24×24 without cropping internal whitespace.
+`magi-default` is the partial built-in first-party pack and inherits missing
+roles from `magi-legacy`. Icon descriptors explicitly select `semantic` or
+`fixed` color mode. The shared Icon component applies semantic colors through
+the SVG's rendered alpha mask, retaining internal opacity; fixed mode preserves
+source RGB for future multicolor assets. Bundled, managed and individual assets
+continue through one resolver and the existing override/pack/fallback order.
 
 A module can bind `expandedWidth`/`menuHeight` or call `requestGeometry(w,h)`.
 `SharedStatusSurface.retargetGeometry()` coalesces target changes and animates
