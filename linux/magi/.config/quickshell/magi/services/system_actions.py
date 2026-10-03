@@ -86,23 +86,6 @@ def vpn_set(uuid, enabled):
     return {**vpn_profiles(), "ok": True}
 
 
-def dnd_status():
-    executable = shutil.which("swaync-client")
-    if not executable: return result(reason="No supported notification DND adapter")
-    queried = run([executable, "-D"])
-    if queried.returncode: return result(reason=queried.stderr.strip())
-    value = queried.stdout.strip().lower()
-    return result(value in ("true", "false"), value == "true", backend="swaync")
-
-
-def dnd_set(enabled):
-    status = dnd_status()
-    if not status["available"]: return {**status, "ok": False, "error": status.get("reason", "DND unavailable")}
-    changed = run([shutil.which("swaync-client"), "-dn" if enabled else "-df"])
-    if changed.returncode: return {**status, "ok": False, "error": changed.stderr.strip()}
-    return {**dnd_status(), "ok": True}
-
-
 def can_login_action(method):
     executable = shutil.which("busctl")
     if not executable: return False
@@ -133,8 +116,6 @@ def perform(request):
     if operation == "power-set": return power_set(request.get("profile", ""))
     if operation == "vpn-status": return vpn_profiles()
     if operation == "vpn-set": return vpn_set(request.get("uuid", ""), bool(request.get("enabled")))
-    if operation == "dnd-status": return dnd_status()
-    if operation == "dnd-set": return dnd_set(bool(request.get("enabled")))
     if operation == "action-status": return action_status()
     if operation == "action": return execute_action(request.get("name", ""))
     raise ValueError("Unknown operation")

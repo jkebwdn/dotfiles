@@ -41,10 +41,9 @@ with tempfile.TemporaryDirectory(prefix='magi-actions-') as temporary:
     assert actions.vpn_set(vpn['uuid'], False)['ok']
 
     actions.shutil.which = lambda name: None
-    assert not actions.dnd_status()['available']
     os.environ['MAGI_ACTION_DRY_RUN'] = '1'
     for name in ('lock', 'hibernate', 'shutdown'):
         checked = actions.execute_action(name)
         assert checked['ok'] and checked['dryRun']
     del os.environ['MAGI_ACTION_DRY_RUN']
-    print('Power, VPN, unavailable DND and dry-run destructive action boundaries PASS')
+    print('Power, VPN and dry-run destructive action boundaries PASS')

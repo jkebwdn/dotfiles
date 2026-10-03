@@ -3,7 +3,8 @@
 Milestone baseline: `d539b9b`. Started 2026-10-03. Implementation and operator
 acceptance are tracked in [the checkpoint](../research/notifications-toasts-checkpoint.md).
 Operator accepted the bounded live checks and supplied toast/Centre screenshots on
-2026-10-03. Permanent daemon/startup migration remains outside the temporary approval.
+2026-10-03. Permanent daemon/startup ownership is now implemented and recorded in
+[its close-out checkpoint](../research/permanent-notification-ownership-checkpoint.md).
 
 ## Ownership and model
 
@@ -63,8 +64,7 @@ enable unrestricted rich text or advertise support without implementation/tests.
 ## DND, fullscreen and disabled preferences
 
 QuickActions remains the public DND action, backed by Settings as the sole state.
-During the pre-handoff gate only, its old SwayNC adapter remains in use; MAGI's
-Centre DND button is disabled until activation so it cannot toggle another daemon.
+There is no legacy SwayNC query/set fallback after permanent ownership migration.
 DND accepts/history-records ordinary notifications but suppresses their toasts.
 Critical bypass of DND defaults on, configurable. No fullscreen bypass, including
 critical. Hidden notifications are not replayed on leaving fullscreen or DND.
@@ -98,16 +98,12 @@ maxVisible, historyLimit, showBody, criticalBypassDnd. No per-app rules.
 Host receives an explicit screen; initial presentation follows the existing bar's
 output. Model has no window ownership, allowing output routing later without
 duplicating the notification server. Multi-output/fractional scaling unverified.
-The approved temporary test currently gives MAGI the bus name, with SwayNC stopped.
-Server construction automatically attempts
-ownership and retries when the current daemon exits, so production construction
-is gated until approved handoff. ShellRoot PersistentProperties retains explicit
-session activation across QML reload, never process restart; this is not a saved
-preference or permanent startup change. Test real protocol on a private bus
-first. Ask before stopping SwayNC/restarting MAGI; no config removal, uninstall,
-Hyprland edits or autostart edits. Later accepted migration removes competing
-autostart through separate reviewed work.
+MAGI is the intended startup owner, with SwayNC masked but installed and preserved.
+Server construction automatically attempts ownership and retries when an existing
+owner exits. Production ShellRoot constructs it on completion; Hyprland no longer
+starts SwayNC or its greeting script, the greeting timer is disabled, and the
+packaged D-Bus service is masked. Test protocol changes on a private bus first.
 The server backend remains process-global once constructed. Rollback after
-ownership requires an approved MAGI restart with the gate closed before restarting
-SwayNC; unloading the QML server alone does not release the name. Current owner
-and exact procedure are in the durable checkpoint.
+ownership requires reverting automatic activation and restarting MAGI before
+starting SwayNC; unloading QML alone does not release the name. Current owner and
+exact procedure are in the permanent-ownership checkpoint.

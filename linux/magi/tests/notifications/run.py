@@ -130,8 +130,8 @@ with tempfile.TemporaryDirectory(prefix='magi-notifications-') as temporary:
         monitor.terminate(); monitor.wait(timeout=5); signals.close()
         log.seek(0); output = log.read(); print(output); log.close()
     assert 'ERROR' not in output and 'WARN' not in output, output
-    # Exercise the actual production singleton's construction gate separately,
-    # after the first private server has exited. This never touches the desktop bus.
+    # Exercise the production singleton's automatic startup separately, after the
+    # first private server has exited. This never touches the desktop bus.
     (config/'settings.json').write_text('{"schemaVersion":5}')
     (config/'activation.qml').write_text(Path(__file__).with_name('activation.qml').read_text()
         .replace('../../.config/quickshell/magi/',''))
@@ -146,19 +146,18 @@ with tempfile.TemporaryDirectory(prefix='magi-notifications-') as temporary:
                     if gate('ready') == 'true': break
                 except subprocess.CalledProcessError: pass
                 time.sleep(.05)
-            else: raise AssertionError('production gate not ready')
+            else: raise AssertionError('production notification server not ready')
             owner=subprocess.run(['busctl','--user','status','org.freedesktop.Notifications'],
                                  env=env,capture_output=True)
-            assert owner.returncode != 0, 'gate unexpectedly took ownership'
-            gate('activate')
-            send('Production gate activation')
+            assert owner.returncode == 0, 'automatic startup did not take ownership'
+            send('Production automatic activation')
             settle(); assert gate('count') == '1'
             activation=config/'activation.qml'
-            activation.write_text(activation.read_text()+'\n// reload session approval\n')
+            activation.write_text(activation.read_text()+'\n// automatic ownership reload test\n')
             time.sleep(.8)
             assert gate('active') == 'true'
             send('After session gate reload'); settle(); assert gate('count') == '2'
-            print('PRIVATE BUS: production gate takes no ownership until activation, then receives notifications PASS')
+            print('PRIVATE BUS: production singleton automatically owns notifications and survives reload PASS')
         finally:
             gate_shell.terminate(); gate_shell.wait(timeout=5)
             gate_log.seek(0); gate_output=gate_log.read(); print(gate_output)

@@ -1,5 +1,27 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-03 — MAGI permanently owns desktop notifications
+
+Activate the existing NotificationServer synchronously from production ShellRoot
+completion. Do not auto-activate inside the singleton: the first focused attempt
+made service/test imports claim a private bus unexpectedly. The corrected fixture
+proves automatic ownership and reload continuity without an IPC activation call.
+
+Remove SwayNC and its greeting updater from Hyprland login startup, repoint
+`SUPER+N` to MAGI, disable the greeting timer and mask `swaync.service`. Disabling
+alone is insufficient because the installed session-D-Bus service names map back
+to that unit. Preserve the package, config, scripts and tracked unit sources.
+Represent the mask declaratively through the existing Stow systemd package. Since
+Stow rejects absolute symlinks in deployed trees, use an ignored package-local
+`/dev/null` target behind a relative unit symlink. Fresh-target simulation proves
+the mask resolves correctly and installs no timer enablement links.
+
+Also remove QuickActions' obsolete SwayNC DND query/set path. A production reload
+demonstrated why: its early status query D-Bus-activated SwayNC before ShellRoot
+completion. MAGI Settings remains the accepted sole DND source. Clean restart/live
+toast/history/Centre/DND checks pass; one main layer and48px reservation remain.
+See [the durable migration checkpoint](research/permanent-notification-ownership-checkpoint.md).
+
 ## 2026-10-03 — First-party notifications, gated daemon handoff
 
 Build on `d539b9b` using Quickshell0.3.1 NotificationServer and native action/close

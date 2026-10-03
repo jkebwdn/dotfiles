@@ -17,6 +17,7 @@ Arch Linux workstation running Hyprland.
 Current configuration includes:
 
 - Hyprland
+- MAGI / Quickshell
 - Waybar
 - Ghostty
 - Neovim
@@ -63,6 +64,7 @@ Further configuration will be migrated into the repository over time.
 ```text
 dotfiles/
 ├── linux/
+│   ├── magi/
 │   └── t15g/
 │       ├── ghostty/
 │       ├── hypr/
@@ -101,13 +103,24 @@ Packages can be linked individually from the relevant machine directory.
 For example:
 
 ```bash
+cd ~/dotfiles/linux
+stow magi
+
 cd ~/dotfiles/linux/t15g
 
 stow hypr
+stow systemd
 stow waybar
 stow ghostty
 stow yazi
+
+systemctl --user daemon-reload
 ```
+
+On the T15g, the `systemd` package declaratively masks `swaync.service` so the
+installed SwayNC D-Bus service cannot race MAGI for desktop notification ownership.
+It also installs the optional SwayNC greeting service/timer definitions, but does
+not enable the timer. SwayNC and its configuration remain available for rollback.
 
 This keeps configuration files inside the Git repository while exposing them at the locations expected by each application.
 

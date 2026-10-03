@@ -3,7 +3,24 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
-## Notifications + Toasts — 2026-10-03, operator-accepted
+## Permanent notification ownership — 2026-10-03, operator-accepted
+
+MAGI now activates its accepted first-party NotificationServer directly from the
+production ShellRoot on every process start. The legacy SwayNC DND adapter is no
+longer queried. Hyprland starts only MAGI, and `SUPER+N` opens MAGI's Notification
+Centre. The SwayNC package/configuration remain intact; its user service is masked
+against D-Bus activation through the tracked Stow systemd package; its greeting
+timer definition remains available but has no enablement links.
+
+A final clean MAGI process restart automatically reacquired
+`org.freedesktop.Notifications` as PID143717 without IPC activation. One live
+notification produced a toast/history entry; Centre and DND checks pass. The
+fresh runtime log is INFO-only, one main1920×1080 layer remains, and reservation
+is exactly48px. See the
+[permanent ownership checkpoint](research/permanent-notification-ownership-checkpoint.md)
+for exact state and rollback. Operator review passed; Clipboard is not started.
+
+## Notifications + Toasts — 2026-10-03, operator-accepted implementation
 
 Continue from the [durable checkpoint](research/notifications-toasts-checkpoint.md)
 and [design](design/notifications-toasts.md), based on accepted `d539b9b`.
@@ -13,18 +30,16 @@ Private-bus protocol tests, focused Settings/appearance/module tests and48-step
 shared lifecycle pass. Connected-only Bluetooth and inherited primary/secondary
 state colors are implemented; existing primary palette accents remain intact.
 
-With explicit approval, SwayNC is temporarily stopped and MAGI PID1548 owns the
-production notification name (verified before test sends). Activation survives
-QML reload only, not process restart; no permanent/autostart migration occurred.
+This section records the earlier temporary handoff; it is superseded for startup
+ownership by the permanent-ownership checkpoint above.
 The operator reports all checks passed and supplied Centre/toast screenshots;
 pointer/fullscreen recovery, Settings, Bluetooth and state styling are accepted.
 Latest runtime retains one1920×1080 main layer and exactly48px reservation. The
-checkpoint records the current owner/PIDs, upstream action-label limitation and
-resume/rollback procedure. SwayNC is currently failed after a competing start;
-MAGI remains healthy owner. Next work is separately reviewed permanent activation/
-startup migration, not an automatic extension of this approval. Plain-text body
+checkpoint records the earlier owner/PIDs and upstream action-label limitation.
+At that temporary checkpoint SwayNC had failed after a competing start; the
+permanent tracked mask above now supersedes that live state. Plain-text body
 markup polish, disk history and multi-output/fractional-scale remain follow-ups.
-No commit/push; Clipboard is not started.
+The accepted implementation is committed at `f3bdd43`; Clipboard is not started.
 
 ## Visual/state/morph sprint — 2026-10-03, accepted
 

@@ -46,8 +46,6 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("hypridle")
     hl.exec_cmd("hyprmon")
     hl.exec_cmd("quickshell -c magi")
-    hl.exec_cmd("swaync")
-    hl.exec_cmd("~/.config/swaync/scripts/swaync-greeting.sh")
 end)
 
 
@@ -234,12 +232,12 @@ hl.bind(
 
 
 ----------------------------------------------------------------
--- SwayNC
+-- Notifications
 ----------------------------------------------------------------
 
 hl.bind(
     SUPER .. " + N",
-    hl.dsp.exec_cmd("swaync-client -t")
+    hl.dsp.exec_cmd("quickshell ipc -c magi call notifications toggle")
 )
 
 

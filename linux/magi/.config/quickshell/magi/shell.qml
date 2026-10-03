@@ -7,19 +7,9 @@ import "components/notifications" as NotificationsUI
 import "services" as Services
 
 ShellRoot {
-    // Temporary testing approval lasts through QML reload, never process restart.
-    PersistentProperties {
-        id: notificationSession
-        reloadableId: "magi-notification-test-approval"
-        property bool approved: false
-        onLoaded: { if (approved) Services.Notifications.activateServer() }
-    }
-    Connections {
-        target: Services.Notifications
-        function onServerActivatedChanged() {
-            if (Services.Notifications.serverActivated) notificationSession.approved = true
-        }
-    }
+    // MAGI is the session notification daemon. Activate with the shell itself,
+    // without a delayed IPC command or a persisted temporary approval flag.
+    Component.onCompleted: Services.Notifications.activateServer()
     NotificationsUI.FullscreenMonitor { id: fullscreen; screen: bar.screen }
     Binding { target: Services.Notifications; property: "fullscreen"; value: fullscreen.suppressed }
     Binding { target: Services.Notifications; property: "outputToastLimit"; value: Math.max(1, Math.floor(((bar.screen ? bar.screen.height : 1080) - 76) / 300)) }

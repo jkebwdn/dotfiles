@@ -1,6 +1,22 @@
 # MAGI — Architecture
 
-## Notifications milestone — 2026-10-03, operator-accepted; temporary ownership
+## Permanent notification ownership — 2026-10-03
+
+Production `ShellRoot.Component.onCompleted` invokes the existing idempotent
+`Notifications.activateServer()`. This gives lifecycle ownership to the shell
+without making arbitrary singleton importers claim D-Bus and without delayed IPC
+or persisted approval state. A clean process restart proves automatic ownership.
+
+Hyprland starts `quickshell -c magi` but no longer starts SwayNC or its greeting
+script. `SUPER+N` invokes MAGI's Centre. The Stow-managed systemd package resolves
+the SwayNC user unit through a tracked relative link to a package-local `/dev/null`
+mask target. Its linked greeting timer has no enablement links, eliminating client/timer
+activation races while retaining package/configuration for rollback. QuickActions
+uses Settings as its only DND state and has no SwayNC query path. Operational
+evidence and rollback are in the
+[ownership checkpoint](research/permanent-notification-ownership-checkpoint.md).
+
+## Notifications milestone — 2026-10-03, operator-accepted implementation
 
 Baseline is accepted `d539b9b`; earlier sections below retain their historical
 milestone context. [Current design](design/notifications-toasts.md) and
@@ -26,13 +42,9 @@ true compositor fullscreen on the target output suppresses every toast and close
 the Centre. The established bar fullscreen behavior remains compositor-owned.
 
 Settings schema5 adds notification preferences and the bell placement. QuickActions
-remains the DND action interface. Before daemon handoff it still controls SwayNC;
-after MAGI activation it shares `Settings.data.notifications.dnd` with both views.
-Do not mistake `serverActivated` for proof of bus ownership; verify with busctl.
-`activateServer()` is explicit/session-only. ShellRoot PersistentProperties retains
-testing approval across QML reload, but never process restart. No persisted setting
-or source flag silently enables ownership on a later launch. The approved temporary
-handoff now has MAGI owning the name; no permanent startup migration occurred.
+remains the DND action interface and shares `Settings.data.notifications.dnd` with
+both views. `serverActivated` describes backend construction, not D-Bus proof;
+runtime ownership is verified externally with `busctl`.
 
 Bluetooth `barVisible` now follows connectedCount>0, while registry/service/detail
 ownership stays unchanged. Collapsed rows animate reflow; the right-row move
@@ -45,7 +57,8 @@ Automated/private-bus checks passed. The operator reports all requested live che
 passed, including pointer/motion/fullscreen recovery, Bluetooth and state styling,
 and supplied Centre/toast screenshots accepting the current presentation. Body
 markup remains literal plain text; no markup capability is advertised. Multi-output
-and fractional scaling remain unverified. Permanent daemon migration is separate.
+and fractional scaling remain unverified. Startup ownership is now migrated as
+described above; multi-output presentation remains separate.
 
 Updated **2026-10-03** for the visual/state/morph close-out.
 The implementation below is operator-accepted except for the final bounded

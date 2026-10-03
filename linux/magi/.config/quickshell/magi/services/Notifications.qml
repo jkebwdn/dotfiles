@@ -1,14 +1,14 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
 import Quickshell.Io
 
 NotificationModel {
     id: root
     preferences: Settings.data.notifications
-    // Migration gate: no NotificationServer exists until explicitly activated.
-    // This is not a user preference: daemon handoff must be deliberate.
+    // The production ShellRoot activates this idempotently at process startup.
+    // Keeping construction explicit prevents non-shell fixtures/importers from
+    // claiming the notification bus as a side effect.
     property bool serverActivated: false
     property var backend: null
     Component { id: backendComponent; NotificationBackend { owner: root } }

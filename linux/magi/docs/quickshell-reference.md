@@ -16,6 +16,11 @@ exits. Constructing the server is therefore a migration action, not passive disc
 The QML API exposes no ownership status or original replaces_id. Verify owner
 externally; MAGI keeps production construction gated until approved handoff.
 
+The permanent-ownership close-out supersedes that migration gate: production
+ShellRoot now calls the existing idempotent activation method on completion. A
+private-bus fixture and clean live process restart prove automatic ownership.
+SwayNC's packaged D-Bus unit is masked so retry/activation cannot race startup.
+
 Tagged [notification.cpp](https://github.com/quickshell-mirror/quickshell/blob/v0.3.1/src/services/notifications/notification.cpp)
 stores wire timeout directly in milliseconds despite a seconds comment in the
 header. The installed-binary test confirms1234→1234. Native invoke emits action

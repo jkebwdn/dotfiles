@@ -1,5 +1,9 @@
 # Notifications/toasts — durable checkpoint
 
+> Historical implementation/temporary-handoff ledger. Permanent startup ownership
+> now supersedes its live-state instructions; see
+> [permanent-notification-ownership-checkpoint.md](permanent-notification-ownership-checkpoint.md).
+
 Baseline `d539b9b`, 2026-10-03. No commit/push authorized. User requested GPT-6
 Astra High; session model cannot be changed by the agent (client selection needed).
 
