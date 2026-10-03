@@ -17,7 +17,7 @@ Flickable {
         Label { text: "Bar"; font.pixelSize: 26; font.bold: true }
         Label { text: "Place modules and adjust their order. Hidden modules remain available in Control Centre.\nPlacement waits until menus and password/network interactions finish."; wrapMode: Text.WordWrap; Layout.fillWidth: true; color: Theme.Theme.subtext }
         Repeater {
-            model: ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "controlcentre"]
+            model: ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "controlcentre"]
             RowLayout {
                 id: row
                 required property string modelData

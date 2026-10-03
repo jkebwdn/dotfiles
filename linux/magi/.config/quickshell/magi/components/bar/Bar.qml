@@ -14,6 +14,7 @@ import "../../plugins/bar/battery" as BatteryPlugin
 import "../../modules" as Modules
 import "../../services" as MagiServices
 import "../../theme" as MagiTheme
+import "../notifications" as NotificationsUI
 
 PanelWindow {
     id: bar
@@ -134,6 +135,7 @@ PanelWindow {
         "wifi": wifiComponent,
         "bluetooth": bluetoothComponent,
         "battery": batteryComponent,
+        "notifications": notificationsComponent,
         "controlcentre": controlCentreComponent
     })
 
@@ -186,6 +188,7 @@ PanelWindow {
 
         ModulePill { module: registry.modules.controlcentre }
     }
+    Component { id: notificationsComponent; NotificationsUI.NotificationIndicator {} }
 
     IpcHandler {
         target: "magi"
@@ -258,6 +261,7 @@ PanelWindow {
 
         spacing: MagiTheme.Theme.barSectionSpacing
         z: 10
+        move: Transition { NumberAnimation { properties: "x,y"; duration: 140; easing.type: Easing.OutCubic } }
 
         Repeater {
             model: bar.leftPlugins
@@ -287,6 +291,7 @@ PanelWindow {
 
         spacing: MagiTheme.Theme.barSectionSpacing
         z: 10
+        move: Transition { NumberAnimation { properties: "x,y"; duration: 140; easing.type: Easing.OutCubic } }
 
         Repeater {
             model: bar.centerPlugins
@@ -328,6 +333,10 @@ PanelWindow {
                 readonly property real compactWidth: itemWidths + Math.max(0, visibleItems - 1) * MagiTheme.Theme.barSectionSpacing
                 readonly property real expandedStatusWidth: itemWidths + Math.max(0, visibleItems - 1) * 12
                 spacing: MagiTheme.Theme.barSectionSpacing + (12 - MagiTheme.Theme.barSectionSpacing) * statusSurface.expansion
+                move: Transition {
+                    enabled: !bar.combinedMode || statusSurface.phase === 0
+                    NumberAnimation { properties: "x,y"; duration: 140; easing.type: Easing.OutCubic }
+                }
                 Repeater {
                     model: bar.rightPlugins
                     Loader {

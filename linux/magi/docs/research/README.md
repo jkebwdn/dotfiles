@@ -1,5 +1,10 @@
 # MAGI research index
 
+Current milestone: [Notifications + Toasts checkpoint](notifications-toasts-checkpoint.md),
+2026-10-03. Bounded Quickshell0.3.1/freedesktop investigation and private-bus tests
+complete; operator live/visual validation passed with screenshots. Temporary handoff
+remains active; permanent startup migration is separately reviewed future work.
+
 [Settings application / semantic icons / configured CC checkpoint](settings-application-checkpoint.md)
 records the 2026-09-27 implementation, automated passes and accepted operator checklist.
 

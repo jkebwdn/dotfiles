@@ -93,9 +93,19 @@ Flickable {
             numbers: [{key:"statusIconSize",label:"Status icon size",min:16,max:28,step:1},
                 {key:"tileBackgroundShade",label:"Primary tile background shade",min:-1,max:1,step:.02,shade:true},
                 {key:"tileBorderShade",label:"Primary tile border shade",min:-1,max:1,step:.02,shade:true},
-                {key:"tileBorderWidth",label:"Primary tile border width",min:0,max:6,step:.5},
-                {key:"controlOffOpacity",label:"Off-state opacity",min:.1,max:.6,step:.05}]
-            colors: [{key:"controlOn",label:"On / action colour"},{key:"controlOff",label:"Off-state colour"}]
+                {key:"tileBorderWidth",label:"Primary tile border width",min:0,max:6,step:.5}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Primary icon states"
+            numbers: [{key:"controlOffShade",label:"Off shade",min:-1,max:1,step:.02,shade:true},
+                {key:"controlOffOpacity",label:"Off strength",min:0,max:1,step:.05}]
+            colors: [{key:"controlOn",label:"On role"},{key:"controlOff",label:"Off role"}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Secondary icon states"
+            numbers: [{key:"secondaryOffShade",label:"Off shade",min:-1,max:1,step:.02,shade:true},
+                {key:"secondaryOffOpacity",label:"Off strength",min:0,max:1,step:.05}]
+            colors: [{key:"secondaryOn",label:"On role"},{key:"secondaryOff",label:"Off role"}]
         }
         SettingsUI.VisualSettingsGroup {
             title: "Sliders"

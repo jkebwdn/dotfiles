@@ -15,11 +15,21 @@ QtObject {
 
     readonly property var visual: MagiServices.Settings.data.appearance.visual
     readonly property real statusIconSize: visual.statusIconSize
-    readonly property color controlOn: roles[visual.controlOn]
-    readonly property color controlOff: Qt.alpha(roles[visual.controlOff], visual.controlOffOpacity)
-    function controlInk(toggle, active, available, armed) {
+    readonly property color controlOn: stateColor("primary", true)
+    readonly property color controlOff: stateColor("primary", false)
+    // Semantic role -> signed palette shade -> strength -> rendered ink.
+    function stateColor(group, on) {
+        const prefix = group === "secondary" ? "secondary" : "control"
+        const role = visual[prefix + (on ? "On" : "Off")]
+        return Qt.alpha(shadeAccent(roles[role] || text,
+            on ? 0 : visual[prefix + "OffShade"]), on ? 1 : visual[prefix + "OffOpacity"])
+    }
+    function stateInk(group, toggle, active, available, armed) {
         if (armed) return danger
-        return !available || (toggle && !active) ? controlOff : controlOn
+        return stateColor(group, available && (!toggle || active))
+    }
+    function controlInk(toggle, active, available, armed) {
+        return stateInk("primary", toggle, active, available, armed)
     }
     function radius(role, reference, width, height) {
         const override = roundness.roles[role]

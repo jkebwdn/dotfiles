@@ -1,5 +1,48 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-03 — First-party notifications, gated daemon handoff
+
+Build on `d539b9b` using Quickshell0.3.1 NotificationServer and native action/close
+APIs. No handwritten notification D-Bus server. Retain bounded text snapshots in
+memory after expiry, invalidating native actions and image-provider URLs on close.
+Default100 records, maximum500; transients skip history. Disk persistence is a
+deliberate follow-up, avoiding arbitrary binary/sensitive payload serialization.
+Replacements keep returned ID and update the existing toast. Installed0.3.1 has
+two API limitations: same-identifier action labels retain stale text (confirmed on
+private bus), and fully identical updates have no observable receipt signal.
+
+QuickActions remains the DND entry point. Once activated, MAGI's Settings state
+suppresses ordinary toasts while retaining ordinary history; critical may bypass
+DND but never true compositor fullscreen. Timeout0 stays live; -1 uses5s default
+(critical -1 stays live); positive sender timeouts remain milliseconds. Overflow
+goes to history without replay. No persistence capability is advertised.
+
+Separate bounded Centre and zero-reservation toast host preserve shared-status
+ownership. Notification windows start62px from output top (48px bar +14px gap).
+Explicit toast Region geometry follows both card slide and ancestor reflow;
+Region.item alone observes only the immediate Item geometry in0.3.1. Closing or
+suppression removes input immediately. The focused stacked geometry test passed.
+
+Bluetooth visibility and grouped primary/secondary icon-state styling complete
+the two accepted carry-forwards without changing service lifetime or primary
+accent selection. Settings schema5 preserves operator preferences and adds the
+bell entry. No Clipboard work, daemon disable/removal, startup edits, commit/push.
+
+Private-bus/model/Settings tests passed. The operator approved a temporary stop of
+swaync.service; MAGI PID1548 now owns the name, explicitly verified before sends.
+Activation approval is ShellRoot PersistentProperties state, surviving QML reload
+but resetting on process restart; it is not a permanent source/startup switch.
+Live replacement and safe action delivery passed. The operator subsequently reported
+all checks passed and supplied Centre/toast screenshots: presentation and the bounded
+single-output live checklist are accepted. Permanent migration is not authorized.
+Native geometry exposed conflicting exclusiveZone/exclusionMode setters; notification
+panels now set only Ignore, measuring y62 with no additional reservation.
+Post-acceptance snapshot confirms fullscreenfalse, main layer alpha1, no idle toast/
+Centre layers and unchanged48px reservation. SwayNC's competing start failed;
+MAGI remains owner. Screenshots show sender `<i>` tags literally under intentional
+PlainText rendering; safe markup handling is polish follow-up, not silently added.
+See [the checkpoint](research/notifications-toasts-checkpoint.md).
+
 ## 2026-10-02 — Continuous header geometry and inline Wi-Fi session
 
 The visual/state sprint keeps the accepted combined host, registry and semantic

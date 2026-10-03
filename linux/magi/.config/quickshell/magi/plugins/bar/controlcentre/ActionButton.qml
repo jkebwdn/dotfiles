@@ -20,7 +20,7 @@ Item {
         role: root.icon
         moduleId: root.moduleId
         size: Theme.RenderTokens.tileIconSize
-        color: Theme.Theme.controlInk(root.toggle, root.active, root.available, root.danger && root.active)
+        color: Theme.Theme.stateInk("secondary", root.toggle, root.active, root.available, root.danger && root.active)
     }
     MouseArea {
         id: pointer

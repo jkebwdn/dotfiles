@@ -1,24 +1,29 @@
 // MAGI's preference schema, not system or menu-session state.
-const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "controlcentre"]
+const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "controlcentre"]
 const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar"]
 const controlAccentRoles = ["red", "peach", "yellow", "green", "teal", "blue", "lavender"]
 const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "green",
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 4,
+    return {schemaVersion: 5,
         appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null}},
             visual: {statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
                 tileBorderWidth: 4, controlOn: "text",
-                controlOff: "background", controlOffOpacity: 0.28,
+                controlOff: "background", controlOffOpacity: 0.28, controlOffShade: 0,
+                secondaryOn: "text", secondaryOff: "overlay", secondaryOffShade: 0,
+                secondaryOffOpacity: 0.6,
                 sliderTrack: "elevated", sliderFill: "overlay", sliderBorder: "lavender",
                 sliderBorderWidth: 2, avatarBorderWidth: 2}},
         icons: {pack: "magi-legacy", modulePacks: {}, overrides: {global: {}, modules: {}}},
         profile: {displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
         media: {enabled: true, preferredPlayer: null, emptyState: "collapse"},
+        notifications: {enabled: true, toastsEnabled: true, dnd: false,
+            fallbackTimeout: 5000, maxVisible: 3, historyLimit: 100,
+            showBody: true, criticalBypassDnd: true},
         bar: {left: ["clock", "date"], center: ["workspaces"],
-            right: ["volume", "wifi", "bluetooth", "battery", "controlcentre"]},
+            right: ["volume", "wifi", "bluetooth", "battery", "notifications", "controlcentre"]},
         controlCentre: {columns: 4, actionColumns: 6, sections: {
             profile: true, quickControls: true, sliders: true, actions: true, media: true
         }, controls: [
@@ -47,7 +52,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 4) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 5) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -71,13 +76,24 @@ function analyze(input) {
     const visualDefaults = defaults().appearance.visual
     const numberRanges = {statusIconSize: [16, 28], tileBackgroundShade: [-1, 1],
         tileBorderShade: [-1, 1], tileBorderWidth: [0, 6],
-        controlOffOpacity: [0.1, 0.6], sliderBorderWidth: [0, 5], avatarBorderWidth: [0, 5]}
+        controlOffOpacity: [0, 1], controlOffShade: [-1, 1], secondaryOffShade: [-1, 1],
+        secondaryOffOpacity: [0, 1], sliderBorderWidth: [0, 5], avatarBorderWidth: [0, 5]}
     for (const key of Object.keys(visualDefaults)) {
         const value = a.visual[key], range = numberRanges[key]
         const good = range ? typeof value === "number" && isFinite(value) && value >= range[0] && value <= range[1]
             : ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "accent",
                 "blue", "lavender", "green", "yellow", "peach", "red", "teal", "border"].indexOf(value) >= 0
         if (!good) { valid(false, "appearance.visual." + key, null); a.visual[key] = visualDefaults[key] }
+    }
+    const notificationDefaults = defaults().notifications
+    const notificationRanges = {fallbackTimeout: [1000, 30000], maxVisible: [1, 4], historyLimit: [10, 500]}
+    for (const key of Object.keys(notificationDefaults)) {
+        const value = effective.notifications[key], range = notificationRanges[key]
+        if (range ? !Number.isInteger(value) || value < range[0] || value > range[1]
+                : typeof value !== "boolean") {
+            valid(false, "notifications." + key, null)
+            effective.notifications[key] = notificationDefaults[key]
+        }
     }
     const r = a.roundness
     if (typeof r.master !== "number" || !isFinite(r.master) || r.master < 0 || r.master > 2) {

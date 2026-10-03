@@ -27,7 +27,7 @@ MagiBar.ExpandableModule {
     color: sharedSurface
         ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion)
         : MagiTheme.Theme.surface
-    barVisible: true
+    barVisible: MagiServices.Bluetooth.connectedCount > 0
 
     pillContent: Component {
         MagiControls.MorphingPillContent {

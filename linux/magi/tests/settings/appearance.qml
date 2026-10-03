@@ -40,6 +40,10 @@ ShellRoot {
                     test.check(test.near(tile.border.color, test.mixed(base, theme.shadeDark, .48)), "same-accent darker border " + role)
                 }
                 test.check(theme.controlOn.toString() === theme.text.toString(), "on icon stays Text across palettes")
+                for (const group of ["primary", "secondary"]) {
+                    test.check(Qt.colorEqual(theme.stateColor(group, true), theme.text), group + " inherits ON role")
+                    test.check(theme.stateColor(group, false).a < 1, group + " inherits OFF strength")
+                }
                 test.check(Qt.colorEqual(configuredTile.activeColor, theme.roles[test.selectedAccent]),
                     "semantic accent resolves in " + theme.effectiveTheme)
                 test.check(test.near(configuredTile.color, theme.primaryTileColor(configuredTile.activeColor))
@@ -110,6 +114,16 @@ ShellRoot {
                 test.check(Services.Settings.data.appearance.visual.tileBackgroundShade === -.2
                     && Services.Settings.data.appearance.visual.tileBorderShade === .6
                     && MagiTheme.Theme.statusIconSize === 24, "shades and custom icon size survive disk reload")
+                Services.Settings.setVisual("controlOffShade", 1)
+                Services.Settings.setVisual("controlOffOpacity", .7)
+                Services.Settings.setVisual("secondaryOff", "red")
+                Services.Settings.setVisual("secondaryOffShade", -1)
+                Services.Settings.setVisual("secondaryOffOpacity", .3)
+                break
+            case 10:
+                test.check(test.near(MagiTheme.Theme.stateColor("primary", false), Qt.alpha(MagiTheme.Theme.shadeDark, .7)), "primary dark endpoint and strength")
+                test.check(test.near(MagiTheme.Theme.stateColor("secondary", false), Qt.alpha(MagiTheme.Theme.shadeLight, .3)), "secondary light endpoint and strength")
+                test.check(Qt.colorEqual(MagiTheme.Theme.stateColor("secondary", true), MagiTheme.Theme.text), "secondary off preferences do not alter ON")
                 console.log("RESULT: " + test.failures + " failures; 10 palettes and live appearance")
                 Qt.quit()
             }

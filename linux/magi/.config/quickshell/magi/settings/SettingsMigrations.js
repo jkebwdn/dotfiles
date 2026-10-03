@@ -73,5 +73,14 @@ function migrate(input) {
         }
         doc.schemaVersion = 4
     }
+    if (doc.schemaVersion === 4) {
+        // Add the new entry without disturbing existing placement/order/preferences.
+        if (doc.bar && ["left", "center", "right"].every(k => Array.isArray(doc.bar[k]))
+                && !["left", "center", "right"].some(k => doc.bar[k].indexOf("notifications") >= 0)) {
+            const index = doc.bar.right.indexOf("controlcentre")
+            doc.bar.right.splice(index < 0 ? doc.bar.right.length : index, 0, "notifications")
+        }
+        doc.schemaVersion = 5
+    }
     return doc
 }

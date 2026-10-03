@@ -8,7 +8,8 @@
         "surface": 1.6,
         "controlTile": 1.6,
         "slider": 1.6,
-        "action": null
+        "action": null,
+        "avatar": null
       }
     },
     "visual": {
@@ -16,14 +17,19 @@
       "tileBorderWidth": 5,
       "controlOn": "text",
       "controlOff": "background",
-      "controlOffOpacity": 0.25,
+      "controlOffOpacity": 0.5,
       "sliderTrack": "elevated",
       "sliderFill": "overlay",
-      "sliderBorder": "lavender",
+      "sliderBorder": "border",
       "sliderBorderWidth": 2,
-      "avatarBorderWidth": 2,
+      "avatarBorderWidth": 3,
       "tileBackgroundShade": 0.17999999999999994,
-      "tileBorderShade": 0.10000000000000009
+      "tileBorderShade": 0.10000000000000009,
+      "controlOffShade": 0.06000000000000005,
+      "secondaryOn": "text",
+      "secondaryOff": "overlay",
+      "secondaryOffShade": 0,
+      "secondaryOffOpacity": 0.5
     }
   },
   "bar": {
@@ -38,11 +44,12 @@
       "volume",
       "wifi",
       "bluetooth",
+      "notifications",
       "controlcentre",
       "battery"
     ]
   },
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "controlCentre": {
     "columns": 4,
     "actionColumns": 6,
@@ -147,5 +154,15 @@
       "global": {},
       "modules": {}
     }
+  },
+  "notifications": {
+    "enabled": true,
+    "toastsEnabled": true,
+    "dnd": false,
+    "fallbackTimeout": 5000,
+    "maxVisible": 3,
+    "historyLimit": 100,
+    "showBody": true,
+    "criticalBypassDnd": true
   }
 }

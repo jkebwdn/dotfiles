@@ -27,7 +27,7 @@ ShellRoot {
                 if (Quickshell.env("MAGI_TEST_INVALID") === "1") {
                     test.check(store.saveState === "invalid" && store.data.appearance.roundness.master === 1, "invalid fallback")
                     test.check(store.resetSection("appearance"), "explicit repair")
-                } else test.check(store.data.schemaVersion === 4 && store.saveState === "saved", "safe initial load")
+                } else test.check(store.data.schemaVersion === 5 && store.saveState === "saved", "safe initial load")
                 if (Quickshell.env("MAGI_TEST_LEGACY") === "1")
                     test.check(store.data.bar.left.join(",") === "date,clock"
                         && store.data.bar.center.length === 0 && store.data.custom === 42,
@@ -65,15 +65,27 @@ ShellRoot {
                 test.check(store.data.profile.displayName === "Ada" && store.data.profile.subtitle === "Ready"
                     && store.data.profile.avatar.indexOf("avatar:") === 0, "profile live state and persistence")
                 test.check(!store.setRoundness("master", -5), "reject invalid edit")
-                store.resetAll()
+                test.check(store.setValue("notifications", "dnd", true)
+                    && store.setValue("notifications", "maxVisible", 4)
+                    && store.setValue("notifications", "historyLimit", 50), "notification edits accepted")
                 break
             case 6:
-                test.check(store.data.bar.right.length === 5 && store.saveState === "saved", "full reset persisted")
+                test.check(store.data.notifications.dnd && store.data.notifications.maxVisible === 4
+                    && store.data.notifications.historyLimit === 50 && store.saveState === "saved", "notification settings persisted")
+                store.discardAndReload()
+                break
+            case 7:
+                test.check(store.data.notifications.dnd && store.data.notifications.maxVisible === 4
+                    && store.data.notifications.historyLimit === 50, "notification settings reloaded")
+                store.resetAll()
+                break
+            case 8:
+                test.check(store.data.bar.right.length === 6 && store.saveState === "saved", "full reset persisted")
                 test.check(store.data.controlCentre.controls.map(e => e.accent).join(",") === "teal,blue,green,lavender", "full reset restores tile accents")
                 test.check(test.notifications >= 50, "live notifications")
                 store.reload()
                 break
-            case 7:
+            case 9:
                 test.check(store.data.appearance.roundness.master === 1 && !store.dirty, "reset reload")
                 console.log("RESULT: " + test.failures + " failures")
                 Qt.quit()

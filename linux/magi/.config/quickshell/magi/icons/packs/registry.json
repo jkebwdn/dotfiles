@@ -94,6 +94,10 @@
           "kind": "glyph",
           "text": "󰂛"
         },
+        "notifications": {
+          "kind": "glyph",
+          "text": "󰂚"
+        },
         "power-profile": {
           "kind": "glyph",
           "text": "󰓅"

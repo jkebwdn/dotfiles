@@ -25,8 +25,10 @@ ShellRoot {
             switch (test.step++) {
             case 0:
                 test.originalWifi = registry.modules.wifi
+                test.check(!registry.modules.bluetooth.barVisible, "Bluetooth off hides compact indicator")
                 Services.Bluetooth.available = true
                 Services.Bluetooth.enabled = true
+                test.check(!registry.modules.bluetooth.barVisible, "Bluetooth enabled without connection stays hidden")
                 Services.Bluetooth.primaryDevice = connectedHeadphones
                 Services.Bluetooth.connectedCount = 1
                 test.check(Object.keys(registry.modules).length === 4, "all independent modules exist")
@@ -41,6 +43,9 @@ ShellRoot {
                 break
             case 1:
                 test.check(surface.phase === 3, "CC opens without bar delegates")
+                Services.Bluetooth.connectedCount = 0
+                Services.Bluetooth.primaryDevice = null
+                test.check(!registry.modules.bluetooth.barVisible, "last disconnect hides compact indicator")
                 Services.MenuController.navigate("bluetooth")
                 break
             case 2:

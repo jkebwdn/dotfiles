@@ -1,0 +1,30 @@
+const fs = require('fs'), vm = require('vm'), assert = require('assert');
+const base = '.config/quickshell/magi/';
+const c = vm.createContext({});
+for (const path of ['services/NotificationPolicy.js','settings/SettingsSchema.js','settings/SettingsMigrations.js'])
+    vm.runInContext(fs.readFileSync(base + path, 'utf8'), c);
+const run = code => JSON.parse(JSON.stringify(vm.runInContext(code,c)));
+assert.equal(run('timeout(-1,1,5000)'),5000);
+assert.equal(run('timeout(1234,1,5000)'),1234);
+assert.equal(run('timeout(0,1,5000)'),0);
+assert.equal(run('timeout(-1,2,5000)'),0);
+assert.equal(run('timeout(1234,2,5000)'),1234);
+assert.equal(run('canToast(defaults().notifications,1,false,false)'),true);
+assert.equal(run('canToast({...defaults().notifications,dnd:true},1,false,false)'),false);
+assert.equal(run('canToast({...defaults().notifications,dnd:true},0,false,false)'),false);
+assert.equal(run('canToast({...defaults().notifications,dnd:true},2,false,false)'),true);
+assert.equal(run('canToast(defaults().notifications,2,true,false)'),false);
+assert.equal(run('canToast(defaults().notifications,1,false,true)'),false);
+assert.equal(run('isFullscreen({monitor:0,fullscreen:2,workspace:{id:1}},{id:0,activeWorkspace:{id:1}})'),true);
+assert.equal(run('isFullscreen({monitor:0,fullscreen:1,workspace:{id:1}},{id:0,activeWorkspace:{id:1}})'),false);
+assert.equal(run('isFullscreen({monitor:0,fullscreen:2,workspace:{id:2}},{id:0,activeWorkspace:{id:1}})'),false);
+assert.equal(run('isFullscreen({monitor:1,fullscreen:2,workspace:{id:1}},{id:0,activeWorkspace:{id:1}})'),false);
+const migrated = run('migrate({schemaVersion:4,bar:{left:[],center:[],right:["wifi","controlcentre"]},appearance:{visual:{controlOff:"overlay",controlOffOpacity:.4}},custom:42})');
+assert.deepEqual(migrated.bar.right,['wifi','notifications','controlcentre']);
+assert.equal(migrated.appearance.visual.controlOffOpacity,.4);
+assert.equal(migrated.custom,42);
+for (const key of ['controlOffShade','secondaryOffShade'])
+    for (const value of [-1,0,1]) assert.equal(run(`analyze({schemaVersion:5,appearance:{visual:{${key}:${value}}}}).effective.appearance.visual.${key}`),value);
+assert.equal(run('analyze({schemaVersion:5,notifications:{maxVisible:99}}).effective.notifications.maxVisible'),3);
+assert.equal(run('analyze({schemaVersion:5,notifications:{historyLimit:999999}}).effective.notifications.historyLimit'),100);
+console.log('Notification policy, true fullscreen, grouped state schema and v4→v5 preservation PASS');

@@ -1,5 +1,57 @@
 # MAGI — Quickshell Technical Reference
 
+## Notifications0.3.1 — inspected/tested 2026-10-03
+
+Detailed evidence and limitations are in the
+[notification checkpoint](research/notifications-toasts-checkpoint.md).
+Official [NotificationServer](https://quickshell.org/docs/v0.3.1/types/Quickshell.Services.Notifications/NotificationServer/)
+provides tracking and explicit advertised capabilities. Installed metadata agrees.
+MAGI advertises body/actions/icon-static; no markup, sound, inline reply, hyperlinks
+or persistence. Set tracked=true synchronously when accepting a new notification.
+
+Tagged [server.cpp](https://github.com/quickshell-mirror/quickshell/blob/v0.3.1/src/services/notifications/server.cpp)
+demonstrates same-object replacement, no new-notification signal for replacement,
+registration of org.freedesktop.Notifications and retry after an existing owner
+exits. Constructing the server is therefore a migration action, not passive discovery.
+The QML API exposes no ownership status or original replaces_id. Verify owner
+externally; MAGI keeps production construction gated until approved handoff.
+
+Tagged [notification.cpp](https://github.com/quickshell-mirror/quickshell/blob/v0.3.1/src/services/notifications/notification.cpp)
+stores wire timeout directly in milliseconds despite a seconds comment in the
+header. The installed-binary test confirms1234→1234. Native invoke emits action
+and dismisses unless resident; expire/dismiss/client close use reasons1/2/3.
+Closed objects must no longer be used. Quickshell exposes image/provider URLs;
+MAGI drops provider images on close. Same-identifier changed action text stays
+stale in the installed version; identical updates lack a reliable QML receipt signal.
+
+The [Desktop Notifications1.3 protocol](https://specifications.freedesktop.org/notification/latest/protocol.html)
+and [hints](https://specifications.freedesktop.org/notification/latest/hints.html)
+define action pairs, IDs, close reasons, timeouts, transient and resident behavior.
+Quickshell reports spec1.2; MAGI does not claim1.3 activation-token support. Private
+bus tests exercise creation/replacement/actions/close, not native application focus.
+
+`HyprlandToplevel.lastIpcObject` requires explicit refresh per the official
+[0.3.1 reference](https://quickshell.org/docs/v0.3.1/types/Quickshell.Hyprland/HyprlandToplevel/).
+FullscreenMonitor refreshes toplevels/monitors on relevant events and uses compositor
+fullscreen=2 on a visible workspace of its output. Policy tests distinguish
+maximized/off-output/hidden-workspace clients; live fullscreen2 suppression and
+operator-confirmed exit/history/pointer recovery now pass on the single output.
+
+Tagged [region.cpp](https://github.com/quickshell-mirror/quickshell/blob/v0.3.1/src/core/region.cpp),
+`setItem/build`, maps Items to scene coordinates but observes only the immediate
+Item's x/y/size, not its ancestors. ToastHost explicitly binds window-local region
+x/y/width/height to the animated wrapper/card, avoiding stale native geometry on
+stack reflow. Three-card removal/update/mask binding tests pass with the native
+window wrapper substituted offscreen; native pointer checks subsequently passed
+in the operator's bounded live acceptance, not through the offscreen fixture.
+
+Official0.3.1 [PanelWindow](https://quickshell.org/docs/v0.3.1/types/Quickshell/PanelWindow/)
+and [ExclusionMode](https://quickshell.org/docs/v0.3.1/types/Quickshell/ExclusionMode/)
+(inspected2026-10-03) document that setting exclusiveZone changes exclusionMode to
+Normal, whereas Ignore reserves nothing and ignores other reservations. Notification
+panels must set Ignore alone: setting both produced native y110 instead of62.
+After removing exclusiveZone, the live host measures y62 and bar reservation remains48.
+
 ## State, progress and image masking — inspected 2026-10-02
 
 Quickshell0.3.1 [ObjectModel.values](https://quickshell.org/docs/v0.3.1/types/Quickshell/ObjectModel/)

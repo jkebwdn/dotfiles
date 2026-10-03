@@ -1,5 +1,52 @@
 # MAGI — Architecture
 
+## Notifications milestone — 2026-10-03, operator-accepted; temporary ownership
+
+Baseline is accepted `d539b9b`; earlier sections below retain their historical
+milestone context. [Current design](design/notifications-toasts.md) and
+[validation/resume ledger](research/notifications-toasts-checkpoint.md) supersede
+the earlier deferred Bluetooth/state-style statements.
+
+`Notifications` owns a `NotificationModel` independently of any bar delegate or
+window. `NotificationBackend` wraps Quickshell0.3.1 NotificationServer; per-live-ID
+`NotificationRecord` observers coalesce replacement changes and copy bounded display
+metadata. The model handles expiry, read/dismiss, actual action lookup, bounded
+history (default100), stable toast IDs and exit retention. Closed objects/actions
+are never retained for invocation. Expired snapshots remain in memory; dismissed,
+client-closed and transient notifications leave history. No disk history store.
+
+`ToastHost` and `NotificationCentre` are separate top-layer windows with zero
+reservation, explicitly on the existing bar's screen. Toasts use one stack and a
+union of animated card rectangles, with no keyboard focus or desktop-wide catcher.
+The Centre uses a bounded scrolling surface and OnDemand focus. Neither enters
+SharedStatusSurface or its module registry. The configurable bar bell opens the
+Centre, closing status selection; opening a status menu closes the Centre.
+`FullscreenMonitor` refreshes Hyprland raw client/monitor state on relevant events;
+true compositor fullscreen on the target output suppresses every toast and closes
+the Centre. The established bar fullscreen behavior remains compositor-owned.
+
+Settings schema5 adds notification preferences and the bell placement. QuickActions
+remains the DND action interface. Before daemon handoff it still controls SwayNC;
+after MAGI activation it shares `Settings.data.notifications.dnd` with both views.
+Do not mistake `serverActivated` for proof of bus ownership; verify with busctl.
+`activateServer()` is explicit/session-only. ShellRoot PersistentProperties retains
+testing approval across QML reload, but never process restart. No persisted setting
+or source flag silently enables ownership on a later launch. The approved temporary
+handoff now has MAGI owning the name; no permanent startup migration occurred.
+
+Bluetooth `barVisible` now follows connectedCount>0, while registry/service/detail
+ownership stays unchanged. Collapsed rows animate reflow; the right-row move
+transition is disabled during the accepted shared-surface morph. Theme's grouped
+`stateColor/stateInk` resolves palette role→signed shade→strength. Primary uses
+the existing `controlOn/Off` preferences plus OffShade; secondary has its own four
+group settings. Primary per-control accent and tile/rim shades are unchanged.
+
+Automated/private-bus checks passed. The operator reports all requested live checks
+passed, including pointer/motion/fullscreen recovery, Bluetooth and state styling,
+and supplied Centre/toast screenshots accepting the current presentation. Body
+markup remains literal plain text; no markup capability is advertised. Multi-output
+and fractional scaling remain unverified. Permanent daemon migration is separate.
+
 Updated **2026-10-03** for the visual/state/morph close-out.
 The implementation below is operator-accepted except for the final bounded
 per-control-accent/connected-Bluetooth review; see the

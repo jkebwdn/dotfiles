@@ -3,6 +3,29 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
+## Notifications + Toasts — 2026-10-03, operator-accepted
+
+Continue from the [durable checkpoint](research/notifications-toasts-checkpoint.md)
+and [design](design/notifications-toasts.md), based on accepted `d539b9b`.
+First-party Quickshell notification service, bounded memory history, separate toast
+stack and Notification Centre, DND integration and schema5 Settings are implemented.
+Private-bus protocol tests, focused Settings/appearance/module tests and48-step
+shared lifecycle pass. Connected-only Bluetooth and inherited primary/secondary
+state colors are implemented; existing primary palette accents remain intact.
+
+With explicit approval, SwayNC is temporarily stopped and MAGI PID1548 owns the
+production notification name (verified before test sends). Activation survives
+QML reload only, not process restart; no permanent/autostart migration occurred.
+The operator reports all checks passed and supplied Centre/toast screenshots;
+pointer/fullscreen recovery, Settings, Bluetooth and state styling are accepted.
+Latest runtime retains one1920×1080 main layer and exactly48px reservation. The
+checkpoint records the current owner/PIDs, upstream action-label limitation and
+resume/rollback procedure. SwayNC is currently failed after a competing start;
+MAGI remains healthy owner. Next work is separately reviewed permanent activation/
+startup migration, not an automatic extension of this approval. Plain-text body
+markup polish, disk history and multi-output/fractional-scale remain follow-ups.
+No commit/push; Clipboard is not started.
+
 ## Visual/state/morph sprint — 2026-10-03, accepted
 
 Implementation, automated validation and final operator review are accepted.
@@ -220,7 +243,7 @@ and Hyprland environment.
   schema v2, managed assets, real MPRIS, runtime and operator evidence.
 - `tasks/`: intended location for bounded research and implementation tasks.
 
-## Next steps
+## Historical next steps (before Notifications milestone)
 
 1. Plan the next Control Centre content/interaction step from the accepted
    profile/media composition; defer subjective UI/morph work.

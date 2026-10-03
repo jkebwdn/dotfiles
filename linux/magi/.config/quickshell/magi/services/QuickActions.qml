@@ -14,8 +14,10 @@ Scope {
     property bool vpnActive: false
     property string vpnName: ""
     property string vpnUuid: ""
-    property bool dndAvailable: false
-    property bool dndActive: false
+    property bool externalDndAvailable: false
+    property bool externalDndActive: false
+    readonly property bool dndAvailable: Notifications.serverActivated || externalDndAvailable
+    readonly property bool dndActive: Notifications.serverActivated ? Settings.data.notifications.dnd : externalDndActive
     property bool lockAvailable: true
     property bool hibernateAvailable: false
     property bool shutdownAvailable: true
@@ -36,7 +38,8 @@ Scope {
     }
     function refresh() {
         enqueue({op:"power-status"}); enqueue({op:"vpn-status"})
-        enqueue({op:"dnd-status"}); enqueue({op:"action-status"})
+        if (!Notifications.serverActivated) enqueue({op:"dnd-status"})
+        enqueue({op:"action-status"})
     }
     function setPowerSaver(enabled) {
         if (!powerAvailable) return false
@@ -51,6 +54,7 @@ Scope {
         enqueue({op:"vpn-set", uuid:vpnUuid, enabled:!vpnActive}); return true
     }
     function setDnd(enabled) {
+        if (Notifications.serverActivated) return Settings.setValue("notifications", "dnd", !!enabled)
         if (!dndAvailable) return false
         enqueue({op:"dnd-set", enabled:enabled}); return true
     }
@@ -68,7 +72,7 @@ Scope {
             vpnAvailable = !!result.available; vpnActive = !!result.active
             vpnName = result.name || ""; vpnUuid = result.uuid || ""
         } else if (request.op.indexOf("dnd-") === 0) {
-            dndAvailable = !!result.available; dndActive = !!result.active
+            externalDndAvailable = !!result.available; externalDndActive = !!result.active
         } else if (request.op === "action-status") {
             lockAvailable = !!result.lock; hibernateAvailable = !!result.hibernate
             shutdownAvailable = !!result.shutdown
