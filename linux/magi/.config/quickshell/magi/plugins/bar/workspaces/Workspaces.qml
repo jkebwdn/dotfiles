@@ -2,6 +2,7 @@
 import QtQuick
 import Quickshell.Hyprland
 import "../../../theme" as MagiTheme
+import "WorkspaceModel.js" as WorkspaceModel
 
 Rectangle {
     id: root
@@ -22,7 +23,7 @@ Rectangle {
         spacing: 0
 
         Repeater {
-            model: Hyprland.workspaces
+            model: WorkspaceModel.normalWorkspaces(Hyprland.workspaces.values)
 
             delegate: Rectangle {
                 id: workspace
@@ -33,13 +34,7 @@ Rectangle {
                     Hyprland.focusedWorkspace !== null
                     && modelData.id === Hyprland.focusedWorkspace.id
 
-                readonly property bool isVisible:
-                    modelData.lastIpcObject !== null
-                    && (modelData.lastIpcObject.windows > 0 || isActive)
-
-                visible: isVisible
-
-                implicitWidth: isVisible ? 28 : 0
+                implicitWidth: 28
                 implicitHeight: MagiTheme.Theme.barPillHeight
 
                 radius: MagiTheme.Theme.radiusSmall

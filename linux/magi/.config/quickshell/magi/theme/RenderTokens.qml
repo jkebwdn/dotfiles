@@ -11,13 +11,13 @@ QtObject {
     readonly property real outerRadius: Theme.radius("surface", 11, controlWidth, controlBodyHeight)
     readonly property int tileSize: 60
     readonly property real tileRadius: Theme.radius("controlTile", 10, tileSize, tileSize)
-    readonly property int tileBorder: 3
+    readonly property real tileBorder: Theme.visual.tileBorderWidth
     readonly property int tileIconSize: 32
     readonly property int tileSliderGap: 24
     readonly property int sliderHeight: 48
     readonly property int sliderGap: 20
     readonly property real sliderRadius: Theme.radius("slider", 10, 1000, sliderHeight)
-    readonly property int sliderBorder: 2
+    readonly property real sliderBorder: Theme.visual.sliderBorderWidth
     readonly property int sliderIconSize: 28
     readonly property int powerGap: 20
     readonly property int powerHeight: 36

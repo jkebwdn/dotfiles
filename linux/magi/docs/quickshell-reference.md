@@ -1,5 +1,33 @@
 # MAGI — Quickshell Technical Reference
 
+## State, progress and image masking — inspected 2026-10-02
+
+Quickshell0.3.1 [ObjectModel.values](https://quickshell.org/docs/v0.3.1/types/Quickshell/ObjectModel/)
+is a reactive list. [HyprlandWorkspace](https://quickshell.org/docs/v0.3.1/types/Quickshell.Hyprland/HyprlandWorkspace/)
+raw `lastIpcObject` does not refresh automatically. Workspaces.qml therefore uses
+native id/name objects, filters positive numeric workspaces and sorts the list;
+creation/removal/order/special IDs are regression-tested. Live compositor evidence
+on this output includes workspaces1 and2; operator dynamic checks remain pending.
+
+[MprisPlayer0.3.1](https://quickshell.org/docs/v0.3.1/types/Quickshell.Services.Mpris/MprisPlayer/)
+exposes position/length in seconds with explicit support flags. Position normally
+requires polling for continuous progress. MediaController only monitors when a
+supported player is playing and CC is selected; no progress is invented otherwise.
+Tests cover supported/unsupported progress and nonlinear changes. Real-player
+progress-border appearance is still an operator check.
+
+[Qt MultiEffect](https://doc.qt.io/qt-6/qml-qtquick-effects-multieffect.html)
+provides source masking/colorization. Installed Qt6.11.2 metadata and qmllint accept
+the properties; RoundedArtwork uses a layered rounded alpha mask, not Rectangle.clip
+(which clips a bounding rectangle). A live CC capture shows the rounded avatar.
+Icon separates semantic RGB tint from state alpha so source alpha is multiplied.
+The web page tracks current Qt6; local validation is on the installed runtime.
+
+[PopupWindow0.3.1](https://quickshell.org/docs/v0.3.1/types/Quickshell/PopupWindow/)
+documents grabFocus dismissal and warns that changing it while open only applies
+after a hide/show. This sprint leaves it unchanged; inline keyboard behavior in
+the anchored fallback is **not established** by geometry-only regression tests.
+
 ## Idle inhibition (verified 2026-09-28)
 
 Applicable version: installed Quickshell 0.3.1. The official

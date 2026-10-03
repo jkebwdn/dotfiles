@@ -1,5 +1,31 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-02 — Continuous header geometry and inline Wi-Fi session
+
+The visual/state sprint keeps the accepted combined host, registry and semantic
+navigation. Header progress is now independently animated: changing module widths
+cannot reinterpret/jump its current position. One real status Row survives, with
+no proxy/duplicate click targets. The phase durations remain180/140/90ms opening
+and70/120/160ms closing. Visual acceptance is pending.
+
+Wi-Fi password entry moves into the selected row. Network service calls remain
+unchanged; the plugin owns pending callbacks so deleting/scrolling a row cannot
+lose completion. Secret text is cleared on submission/cancel/navigation. Leaving
+the view does not pretend to cancel NetworkManager. Anchored fallback owners gain
+same-view geometry retargeting so an inline form is not clipped at the old height.
+Native fallback keyboard acceptance remains unverified.
+
+Central state selectors replace raw workspace IPC and scattered icon thresholds.
+Media retains an honest empty state; Volume's bar interaction becomes mute/wheel,
+with its redundant single-slider view removed. Semantic color alpha is applied
+separately from SVG RGB tint to preserve both internal artwork opacity and muted
+presentation. Additive schema3 settings preserve existing values; current user
+status-size selection18px is retained (default26px).
+
+See [the sprint ledger](design/visual-refinement-checkpoint.md) for measurements,
+files, tests and required operator checks. This entry records implementation,
+not operator acceptance or a commit.
+
 ## 2026-10-01 — First-party SVGs use explicit semantic tint mode
 
 The partial built-in `magi-default` pack contains the operator-supplied 24×24
@@ -314,3 +340,47 @@ sizes only that client; it does not alter the shell layer or normal WM control.
 Operator checks accepted profile/avatar, real media controls/removal, SVG override/
 fallback, Settings desktop behavior and unchanged core modules. Multi-player on
 real clients, multi-output and fractional scale remain unverified.
+
+
+## 2026-10-03 — palette-derived primary tile shading
+
+Operator functional review of the visual/state/morph sprint passed. The bounded
+follow-up sets fresh/reset status icons to18px without changing saved preferences.
+Primary tile background/border shades default to+28%/+48% darkening respectively,
+each derived from the assigned semantic accent. Signed shade controls use the
+current palette's Background/Text as dark/light endpoints (reversed in light
+palettes), with zero preserving the accent. No raw colors or Mocha-only branches.
+Active icons retain Text; Off-state preferences, border width and unboxed secondary
+actions remain unchanged. Final new-shade visual acceptance is pending; see
+[the checkpoint](design/visual-refinement-checkpoint.md).
+
+## 2026-10-03 — per-control semantic accents and compact Bluetooth
+
+Settings schema v4 adds `accent` to each primary Control Centre entry. The palette
+registry owns the selectable role list; settings persist a role name, never RGB.
+Rendering resolves selected role → current palette color → global background/border
+shade. Invalid roles fall back deterministically to the module catalogue default,
+then the palette accent. The v3→v4 migration preserves the established defaults:
+Wi-Fi Teal, Bluetooth Blue, Low Power Green and Airplane Lavender.
+
+Bluetooth now has a fixed30px, icon-only compact presentation in off, enabled and
+connected states. Connection changes only its semantic icon. Device name, battery
+when exposed, scanning and connection controls remain in the same detail Component;
+no service or shared-surface lifecycle behavior changes.
+
+Operator review accepted semantic accent selection, live palette-derived background/
+border shading and removal of the connected-device name from the compact bar.
+
+### Deferred next-milestone decisions — not implemented here
+
+1. The compact Bluetooth bar indicator should exist only while at least one device
+   is connected. This will affect bar presentation only: the Bluetooth service,
+   Control Centre tile and shared-surface detail view must remain independently
+   available. The current close-out deliberately leaves the configured icon visible
+   in off/enabled/connected states until that lifecycle change is implemented and
+   tested as a separate milestone.
+2. Generalize the palette-derived shade model into reusable inherited primary and
+   secondary icon-state styling. A shared style should combine semantic ON/OFF
+   palette roles, signed shade adjustment and state strength/opacity. Containers or
+   groups provide defaults; individual controls override only when needed. Do not
+   duplicate complete state settings per button.

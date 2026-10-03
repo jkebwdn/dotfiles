@@ -1,6 +1,9 @@
 # MAGI — Architecture
 
-Updated **2026-10-01** for the first-party MAGI SVG pack and semantic tint path.
+Updated **2026-10-03** for the visual/state/morph close-out.
+The implementation below is operator-accepted except for the final bounded
+per-control-accent/connected-Bluetooth review; see the
+[sprint ledger](design/visual-refinement-checkpoint.md).
 The bounded shared-composition checkpoint is operator-accepted: full collapse,
 reliable repeated/rapid reopening and Control Centre → Bluetooth → Back.
 Broader focus/fullscreen/password regression remains unverified for this refactor.
@@ -56,8 +59,8 @@ Control Centre sessions as nonvisual `ExpandableModule` Scopes. Their body
 Components, password/connection state and service references survive removal
 of a compact bar delegate. No invisible bar Items register detail views.
 `Bar.qml` maps the existing IDs to `ModulePill` delegates or ordinary
-clock/date/workspaces/battery Components. Conditional Bluetooth visibility
-controls delegate creation only; its CC detail remains available.
+clock/date/workspaces/battery Components. A configured Bluetooth placement always
+uses one 30px icon-only delegate; service and detail availability remain independent.
 
 Schema v1 retains the user's placement: left clock/date, centre workspaces,
 right volume/Wi-Fi/Bluetooth/battery/Control Centre. Settings validates arrays;
@@ -72,14 +75,15 @@ still unresolved.
 `SharedStatusSurface.qml` owns the combined production silhouette and animation.
 Its right Row contains the actual compact plugin visuals throughout opening,
 view changes and closure. The Row moves inward/downward into the header while
-individual backgrounds blend into the common surface. Volume is icon-only;
-Battery displays percentage. Connected Bluetooth retains variable width.
+individual backgrounds blend into the common surface. Volume and Bluetooth are
+icon-only; Battery displays percentage. Bluetooth connection state changes its
+semantic icon, never compact width; its device name remains detail content.
 
 `ExpandableModule.qml` owns plugin visuals/body Components and size requirements;
 `ModulePill.qml` delegates compact presentation to `ExpandablePlugin.qml`. When `sharedSurface` is supplied, its individual animation driver
 is bypassed and `MenuHostSelector.hostingEnabled` is false: no per-plugin adapter
 or content Loader is instantiated. Plugin `phase` mirrors the common surface,
-which preserves Wi-Fi's wait-until-closed password handoff.
+used by plugin presentation and lifecycle guards. Wi-Fi authentication now stays inline.
 
 The shared opening sequence remains widen 180ms, reveal 140ms with a concurrent
 90ms fade; closure remains fade 70ms, retract 120ms, narrow 160ms, all OutCubic.
@@ -94,8 +98,8 @@ The windowless lifecycle regression is `tests/shared-status-surface/run.py`
 (relative to the repository root); pointer/focus acceptance remains separate.
 
 Body Loaders remain alive while their registered plugins exist, even when not
-selected. This retains body state and Wi-Fi network-result Connections. The
-surface grows to at least its compact status-row width plus navigation/insets;
+selected. This retains body state; Wi-Fi completion is observed by its module owner. The
+surface grows to at least its expanded status-row width plus navigation/insets;
 individual body widths/heights remain plugin-provided.
 
 MenuController owns only a requested semantic ID and an ID history. `navigate`
@@ -106,7 +110,7 @@ secondary Wi-Fi/Bluetooth tile actions use `navigate` within the same surface.
 Anchored rollback still selects the existing per-plugin animation and
 PopupWindow adapter, including TransformWatcher, rounded window-relative
 `mapFromItem()`, `anchor.window` and `PopupAdjustment.None`. Its geometry and
-host code were not changed by this structural pass. `CombinedMenuHost.qml`
+anchor mapping remains unchanged; animation owners now retarget open geometry for inline forms. `CombinedMenuHost.qml`
 remains available for the earlier per-plugin implementation but is not loaded
 by the production shared status group.
 
@@ -151,10 +155,11 @@ is shared through services and reused by Control Centre.
 
 ### Volume
 
-`plugins/bar/volume/Volume.qml` is a 30px icon-only collapsed status pill with
-a mute-aware icon. Its nominal 280px-wide, 100px-body view uses the shared
-PipeWire service, a reusable `components/controls/ValueSlider.qml`, and an explicit
-mute toggle. External mixer/media-key changes update the pill and slider.
+`plugins/bar/volume/Volume.qml` is a 30px compact control: left-click toggles mute,
+wheel changes volume via Audio's existing 5% steps. The semantic icon uses central
+muted/low/medium/high thresholds in `icons/IconState.js`. `expandsOnClick: false`
+prevents the obsolete slider-only detail view; Control Centre retains the slider.
+The nonvisual module and registry identity remain available for a future real mixer.
 
 ### Bluetooth
 
@@ -180,22 +185,21 @@ share a five-second two-activation arm rather than executing on one click.
 
 ### Wi-Fi
 
-`plugins/bar/wifi/Wifi.qml` owns the browser session state and routes the
-same Network service calls as before. `WifiMenuContent.qml` supplies the
-328px-wide, 390px-body combined view with a bounded network Flickable. It retains
-radio, scan, known/open/PSK selection, pending/error and retry behavior.
+`plugins/bar/wifi/Wifi.qml` owns selection, pending connection and error state.
+`WifiMenuContent.qml` supplies a 344px-wide bounded view with a content-dependent
+height. `WifiAuthentication.qml` lives beneath the selected row, with masked input,
+Enter/Connect, Cancel, Escape and inline retry/error feedback. Secrets live only in
+TextInput and are cleared on submission/cancel/navigation. The old PasswordWindow
+file is not instantiated. The combined surface and OnDemand focus remain active.
 
-`WifiPasswordWindow.qml` remains a separate 300x150 top/right PanelWindow
-with Ignore exclusion, OnDemand keyboard focus, masked TextInput, Enter,
-Connect, Cancel and Escape. Selecting a secured network closes the semantic
-combined browser and waits until its animation reaches phase 0 before showing
-and focusing the password window. A candidate keeps scanning active during
-that handoff. Cancel or submission reopens the browser.
-
-The operator passed scanning, known/open/PSK connection, incorrect-password
-feedback, retry, successful connection, input masking, Enter/Connect/Cancel
-and scanning-handoff equivalence on 2026-09-26. `Network.qml` was not
-modified.
+Pending-network Connections live in the session owner, independent of row lifetime.
+Navigating away clears the auth UI but does not falsely cancel an in-flight
+NetworkManager request. Late completion cannot reopen the view. Scanning continues
+while the browser or a pending operation exists. Known/open/PSK Network calls are
+unchanged. Real-component mocked lifecycle/geometry tests pass; real password,
+compositor keyboard and anchored-inline-focus acceptance remain pending for this
+change. The 2026-09-26 password-window acceptance is historical, not evidence for
+this new inline UI.
 
 ## Remaining risks and planned work
 
@@ -210,16 +214,17 @@ modified.
   secured networks through PSK.
 - Add timeout/cancellation policy for Wi-Fi connection attempts and adapter
   failover only as separately tested Network-service work.
-- Build semantic icons and CC configuration on the completed Settings foundation
-  before further render refinement; preserve the accepted lifecycle throughout.
+- Complete operator validation of the new inline authentication and header morph.
+- The supplied pack lacks battery-high artwork; that semantic state uses Legacy.
+- Bluetooth's empty/off view still uses its earlier fixed-height composition.
 - Decide when the anchored fallback can be retired. It remains a rollback
   path and is not the target for new plugins.
 
 
-## Configuration and appearance foundation — implemented through schema v3
+## Configuration and appearance foundation — implemented through schema v4
 
 `services/Settings.qml` owns `settings/SettingsStore.qml`, pure schema/migration
-JS and a Python standard-library atomic I/O helper. Schema v3 has appearance,
+JS and a Python standard-library atomic I/O helper. Schema v4 has appearance,
 icons, bar, Control Centre, profile and media sections, with ordered primary,
 slider and secondary-action groups. Defaults are effective values, not an
 automatic startup rewrite. Unknown fields survive migration and ordinary edits;
@@ -257,9 +262,41 @@ hidden Bluetooth detail, not a fresh full pointer/focus acceptance.
 
 CC column/order/slot and optional-region settings drive ControlCatalog delegates.
 ProfileHeader consumes explicit user profile data. Media wraps Quickshell MPRIS
-through one deterministic MediaController and disappears when no suitable player
-exists; both regions use same-view geometry retargeting. The duplicated battery
+through one deterministic MediaController. The section keeps an intentional empty state when no suitable player
+exists; explicit region/layout settings still use same-view geometry retargeting. The duplicated battery
 summary has been removed. The initial Settings GUI and IconRegistry are
 implemented. AssetManager validates and copies avatars/SVG overrides into XDG-
 managed storage; bounded override UI covers an initial role subset. Host lifecycle,
 MenuController semantics, Network and other system services remain unchanged.
+
+## Current presentation ownership and tokens — 2026-10-02
+
+`SharedStatusSurface.headerProgress` is independent of a changing module target.
+The same status Loader/Row survives every transition; spacing6→12px, inset0→12px,
+y0→8px and header28→44px interpolate without recomputing icon positions from a
+new body width. Compact metrics ignore animated spacing. Body lifecycle durations
+and single interactive owner remain unchanged. Anchored adapters now retarget
+open width/height for inline forms; TransformWatcher/rounded positioning and native
+bar reservation are unchanged. Fallback keyboard behavior requires runtime review.
+
+`appearance.visual` adds bounded status icon size, primary rim width, on/off semantic
+roles/opacity, slider track/fill/rim roles and width, avatar border width. Existing
+roundness gains an avatar role. Schema v4 additionally stores one registry-validated
+semantic accent role on every primary Control Centre entry. Theme changes resolve
+that name through the new palette; global background/border shades remain downstream.
+The v3→v4 migration supplies the catalogue defaults without changing order,
+visibility or unrelated settings. These are additive effective defaults;
+SettingsStore remains the sole writer. No automatic overwrite of live preferences.
+`profile.subtitleMode` defaults to local greeting, with saved custom subtitle selectable.
+`RoundedArtwork` masks source alpha with rounded geometry and draws a theme border;
+media alone adds progress when supported position and duration exist. Explicit
+user section-disable settings still apply; player absence alone never removes media.
+
+The legacy `media.emptyState` field remains preserved for schema compatibility;
+player absence no longer follows its old `collapse` value.
+
+Deferred after the accepted visual-refinement checkpoint: Bluetooth compact
+visibility will become connected-only without coupling service/detail availability
+to bar placement. Primary and secondary controls will also share an inherited
+semantic icon-state style combining ON/OFF roles, signed palette shade and state
+strength/opacity. Neither change is part of the current implementation.

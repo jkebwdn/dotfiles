@@ -13,137 +13,93 @@ MagiBar.ExpandableModule {
     id: root
 
     property var selectedNetwork: null
-    property var passwordCandidate: null
     property var pendingNetwork: null
+    property var errorNetwork: null
     property string connectionError: ""
-
+    signal clearPassword()
     readonly property bool connecting: pendingNetwork !== null
-
+    readonly property bool authenticating: selectedNetwork !== null
+    readonly property int listCount: {
+        const networks = MagiServices.Network.availableNetworks
+        const values = networks && typeof networks.values !== "function" ? networks.values || networks : networks || []
+        return values.filter(n => !n.connected).length
+    }
+    readonly property real baseHeight: !MagiServices.Network.wifiEnabled ? 122
+        : 74 + (MagiServices.Network.connected ? 76 : 0) + Math.max(48, Math.min(6, listCount) * 48)
     menuId: "wifi"
     icon: !MagiServices.Network.wifiHardwareEnabled || !MagiServices.Network.wifiEnabled ? "wifi-off"
         : !MagiServices.Network.connected ? "wifi-disconnected" : signalIcon(MagiServices.Network.signalStrength)
     title: "Wi-Fi"
     collapsedWidth: 30
-    expandedWidth: 328
-    menuHeight: 390
-    color: sharedSurface
-        ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion)
-        : MagiTheme.Theme.surface
+    expandedWidth: 344
+    menuHeight: Math.min(barWindow && hostMode === "combined" ? barWindow.height - 100 : 640,
+        baseHeight + (authenticating ? 124 : connectionError ? 38 : 0))
+    color: sharedSurface ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion) : MagiTheme.Theme.surface
 
     function signalIcon(strength) { return Icons.IconRegistry.signalRole(strength) }
-
-    function updateScanning() {
-        MagiServices.Network.setScanning(
-            requestedOpen
-            || selectedNetwork !== null
-            || passwordCandidate !== null
-        )
-    }
-
+    function updateScanning() { MagiServices.Network.setScanning(requestedOpen || connecting) }
     function resetTransientState() {
-        passwordWindow.clearPassword()
-        passwordCandidate = null
+        clearPassword()
         selectedNetwork = null
+        errorNetwork = null
         connectionError = ""
         updateScanning()
     }
-
     function selectNetwork(network) {
-        if (!network || network.connected || connecting)
-            return
-
-        connectionError = ""
-        passwordWindow.clearPassword()
-
+        if (!network || network.connected || connecting) return
+        resetTransientState()
         if (network.known) {
             pendingNetwork = network
             MagiServices.Network.connectKnown(network)
-            return
-        }
-
-        if (network.security === WifiSecurityType.Open) {
+        } else if (network.security === WifiSecurityType.Open) {
             pendingNetwork = network
             MagiServices.Network.connectOpen(network)
-            return
-        }
-
-        passwordCandidate = network
-        updateScanning()
-        MagiServices.MenuController.close()
-    }
-
-    function showPasswordCandidate() {
-        if (!passwordCandidate || phase !== 0)
-            return
-
-        selectedNetwork = passwordCandidate
-        passwordCandidate = null
-        passwordWindow.clearPassword()
+        } else selectedNetwork = network
         updateScanning()
     }
-
     function submitPassword(password) {
-        if (!selectedNetwork || password.length === 0 || connecting)
-            return
-
-        const network = selectedNetwork
+        if (!selectedNetwork || password.length === 0 || connecting) return
         connectionError = ""
-        pendingNetwork = network
-
-        MagiServices.Network.connectWithPassword(network, password)
-
-        passwordWindow.clearPassword()
-        selectedNetwork = null
-        MagiServices.MenuController.open(menuId)
+        errorNetwork = null
+        pendingNetwork = selectedNetwork
+        MagiServices.Network.connectWithPassword(selectedNetwork, password)
+        clearPassword()
         updateScanning()
     }
-
-    function cancelPassword() {
-        passwordWindow.clearPassword()
-        selectedNetwork = null
-        connectionError = ""
-        MagiServices.MenuController.open(menuId)
-        updateScanning()
-    }
-
+    // Cancels the UI session, not an already submitted NetworkManager operation.
+    // The pending object is retained independently so late completion is observed.
+    function cancelPassword() { resetTransientState() }
     function connectionSucceeded(network) {
-        if (pendingNetwork !== network)
-            return
-
+        if (pendingNetwork !== network) return
         pendingNetwork = null
-        connectionError = ""
-        passwordCandidate = null
-        selectedNetwork = null
-        passwordWindow.clearPassword()
-        updateScanning()
+        resetTransientState()
     }
-
     function connectionFailed(network) {
-        if (pendingNetwork !== network)
-            return
-
+        if (pendingNetwork !== network) return
         pendingNetwork = null
-        connectionError =
-            "Connection failed. Check the password or try again."
+        if (requestedOpen) {
+            connectionError = "Connection failed. Check the password and retry."
+            errorNetwork = network
+            if (network.security !== WifiSecurityType.Open) selectedNetwork = network
+        }
         updateScanning()
     }
-
+    onRequestedOpenChanged: {
+        if (!requestedOpen) resetTransientState()
+        updateScanning()
+    }
+    onSelectedNetworkChanged: clearPassword()
+    onPendingNetworkChanged: updateScanning()
     Connections {
-        target: root
-
-        function onRequestedOpenChanged() {
-            if (!root.requestedOpen
-                    && !root.selectedNetwork
-                    && !root.passwordCandidate
-                    && !root.pendingNetwork) {
-                root.connectionError = ""
-            }
-            root.updateScanning()
+        target: root.pendingNetwork
+        function onConnectedChanged() {
+            if (root.pendingNetwork && root.pendingNetwork.connected) root.connectionSucceeded(root.pendingNetwork)
         }
-
-        function onPhaseChanged() {
-            root.showPasswordCandidate()
-        }
+        function onConnectionFailed(reason) { root.connectionFailed(root.pendingNetwork) }
+    }
+    Connections {
+        target: MagiServices.Network
+        function onWifiEnabledChanged() { if (!MagiServices.Network.wifiEnabled) root.resetTransientState() }
     }
 
     pillContent: Component {
@@ -169,13 +125,4 @@ MagiBar.ExpandableModule {
         }
     }
 
-    WifiPasswordWindow {
-        id: passwordWindow
-
-        network: root.selectedNetwork
-        connecting: root.connecting
-
-        onSubmitted: password => root.submitPassword(password)
-        onCancelled: root.cancelPassword()
-    }
 }

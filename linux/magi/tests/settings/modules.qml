@@ -8,6 +8,8 @@ ShellRoot {
     property int step: 0
     property int failures: 0
     property var originalWifi: null
+    QtObject { id: connectedHeadphones; property string name: "AirPods"; property bool batteryAvailable: false; property real battery: 0 }
+    QtObject { id: secured; property bool connected: false; property bool known: false; property int security: 999; property string name: "Test"; property real signalStrength: .5; signal connectionFailed(int reason) }
     function check(ok, label) { if (!ok) { failures++; console.error("FAIL: " + label) } }
     Modules.ModuleRegistry { id: registry; barWindow: null; sharedSurface: surface }
     Bar.SharedStatusSurface {
@@ -23,8 +25,18 @@ ShellRoot {
             switch (test.step++) {
             case 0:
                 test.originalWifi = registry.modules.wifi
+                Services.Bluetooth.available = true
+                Services.Bluetooth.enabled = true
+                Services.Bluetooth.primaryDevice = connectedHeadphones
+                Services.Bluetooth.connectedCount = 1
                 test.check(Object.keys(registry.modules).length === 4, "all independent modules exist")
                 test.check(registry.modules.bluetooth.pill === null, "no hidden Bluetooth pill")
+                test.check(registry.modules.bluetooth.collapsedWidth === 30
+                    && registry.modules.bluetooth.barVisible
+                    && registry.modules.bluetooth.icon === "bluetooth-connected",
+                    "connected Bluetooth remains compact and icon-only")
+                test.check(registry.modules.bluetooth.connectedName === "AirPods",
+                    "connected-device name remains available to detail view")
                 Services.MenuController.open("controlcentre")
                 break
             case 1:
@@ -40,12 +52,12 @@ ShellRoot {
                 test.check(surface.phase === 3 && registry.modules.wifi === test.originalWifi,
                     "Wi-Fi session identity survives navigation")
                 // Exercise the preserved secured-network handoff against a stub backend/window.
-                registry.modules.wifi.selectNetwork({connected:false,known:false,security:999,name:"Test"})
+                registry.modules.wifi.selectNetwork(secured)
                 break
             case 4:
-                test.check(registry.modules.wifi.selectedNetwork !== null && surface.phase === 0,
-                    "password handoff waits for collapse")
-                test.check(registry.interactionBusy, "password blocks destructive placement")
+                test.check(registry.modules.wifi.selectedNetwork !== null && surface.phase === 3,
+                    "inline password preserves open surface")
+                test.check(registry.interactionBusy, "authentication blocks destructive placement")
                 registry.modules.wifi.cancelPassword()
                 break
             case 5:
@@ -55,7 +67,7 @@ ShellRoot {
                 break
             case 6:
                 test.check(surface.phase === 0 && registry.modules.bluetooth.pill === null, "clean close without hidden pills")
-                console.log("RESULT: " + test.failures + " failures; module ownership/handoff")
+                console.log("RESULT: " + test.failures + " failures; module ownership/inline authentication")
                 Qt.quit()
             }
         }

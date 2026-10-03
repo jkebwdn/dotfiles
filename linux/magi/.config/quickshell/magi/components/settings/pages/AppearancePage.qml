@@ -69,7 +69,7 @@ Flickable {
         Repeater {
             model: [{id:"master",label:"Master"},{id:"barPill",label:"Bar pills"},
                 {id:"surface",label:"Expanded surfaces"},{id:"controlTile",label:"Control Centre tiles"},
-                {id:"slider",label:"Sliders"},{id:"action",label:"Buttons / actions"}]
+                {id:"slider",label:"Sliders"},{id:"action",label:"Buttons / actions"},{id:"avatar",label:"Avatar"}]
             RowLayout {
                 id: radiusRow
                 required property var modelData
@@ -86,6 +86,25 @@ Flickable {
                 Label { text: parent.setting === null ? "Default" : Number(parent.setting).toFixed(2); Layout.preferredWidth: 55 }
                 SettingsUI.SettingsButton { text: "Default"; onClicked: Services.Settings.setRoundness(parent.modelData.id, parent.modelData.id === "master" ? 1 : null) }
             }
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Status and controls"
+            description: "Tile shades: − lighter · 0 original palette accent · + darker. Border and background use the same accent."
+            numbers: [{key:"statusIconSize",label:"Status icon size",min:16,max:28,step:1},
+                {key:"tileBackgroundShade",label:"Primary tile background shade",min:-1,max:1,step:.02,shade:true},
+                {key:"tileBorderShade",label:"Primary tile border shade",min:-1,max:1,step:.02,shade:true},
+                {key:"tileBorderWidth",label:"Primary tile border width",min:0,max:6,step:.5},
+                {key:"controlOffOpacity",label:"Off-state opacity",min:.1,max:.6,step:.05}]
+            colors: [{key:"controlOn",label:"On / action colour"},{key:"controlOff",label:"Off-state colour"}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Sliders"
+            numbers: [{key:"sliderBorderWidth",label:"Border width",min:0,max:5,step:.5}]
+            colors: [{key:"sliderTrack",label:"Empty track"},{key:"sliderFill",label:"Fill"},{key:"sliderBorder",label:"Border"}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Profile"
+            numbers: [{key:"avatarBorderWidth",label:"Avatar border",min:0,max:5,step:.5}]
         }
         SettingsUI.SettingsButton { text: "Reset appearance"; onClicked: Services.Settings.resetSection("appearance") }
     }

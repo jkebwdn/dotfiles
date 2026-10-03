@@ -15,7 +15,7 @@ Scope {
         volume: volume, controlcentre: centre})
     readonly property bool presentationBusy: Object.values(modules).some(module => module.phase !== 0)
     readonly property bool interactionBusy: wifi.selectedNetwork !== null
-        || wifi.passwordCandidate !== null || wifi.pendingNetwork !== null
+        || wifi.pendingNetwork !== null
     Wifi.Wifi {
         id: wifi
         barWindow: root.barWindow

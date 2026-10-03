@@ -27,7 +27,7 @@ Item {
         iconText.implicitWidth
         + (collapsedText.length > 0 ? 6 + compactLabel.implicitWidth : 0)
     readonly property real compactStartX:
-        Math.max(8, (width - compactContentWidth) / 2)
+        Math.max(0, (width - compactContentWidth) / 2)
 
     anchors.fill: parent
 
@@ -40,7 +40,7 @@ Item {
         role: root.icon
         moduleId: root.moduleId
         color: root.iconColor
-        size: 13
+        size: MagiTheme.Theme.statusIconSize
     }
 
     Text {

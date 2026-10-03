@@ -13,12 +13,36 @@ QtObject {
     readonly property string iconPack: MagiServices.Settings.data.icons.pack
     readonly property var roundness: MagiServices.Settings.data.appearance.roundness
 
+    readonly property var visual: MagiServices.Settings.data.appearance.visual
+    readonly property real statusIconSize: visual.statusIconSize
+    readonly property color controlOn: roles[visual.controlOn]
+    readonly property color controlOff: Qt.alpha(roles[visual.controlOff], visual.controlOffOpacity)
+    function controlInk(toggle, active, available, armed) {
+        if (armed) return danger
+        return !available || (toggle && !active) ? controlOff : controlOn
+    }
     function radius(role, reference, width, height) {
         const override = roundness.roles[role]
         const multiplier = override === null || override === undefined ? roundness.master : override
         return Math.max(0, Math.min(reference * multiplier, width / 2, height / 2))
     }
-    function controlRim(color) { return Qt.tint(color, Qt.alpha(text, 0.22)) }
+    // Positive shades darken; negative shades lighten. Both endpoints belong to
+    // the selected palette. Light themes reverse the text/background anchors.
+    readonly property color shadeDark: definition.dark ? background : text
+    readonly property color shadeLight: definition.dark ? text : background
+    function shadeAccent(accentColor, adjustment) {
+        const amount = Math.max(-1, Math.min(1, adjustment))
+        return Qt.tint(accentColor, Qt.alpha(amount >= 0 ? shadeDark : shadeLight, Math.abs(amount)))
+    }
+    function primaryAccent(role, fallbackRole) {
+        if (ThemeRegistry.accentRoles.indexOf(role) >= 0 && roles[role] !== undefined)
+            return roles[role]
+        if (ThemeRegistry.accentRoles.indexOf(fallbackRole) >= 0 && roles[fallbackRole] !== undefined)
+            return roles[fallbackRole]
+        return accent
+    }
+    function primaryTileColor(accentColor) { return shadeAccent(accentColor, visual.tileBackgroundShade) }
+    function primaryTileRim(accentColor) { return shadeAccent(accentColor, visual.tileBorderShade) }
     function onColor(role) {
         return roles["on" + role.charAt(0).toUpperCase() + role.slice(1)] || text
     }
@@ -45,9 +69,9 @@ QtObject {
     readonly property color success: roles.success
     readonly property color warning: roles.warning
     readonly property color danger: roles.danger
-    readonly property color sliderFill: roles.sliderFill
-    readonly property color sliderTrack: roles.sliderTrack
-    readonly property color sliderRim: roles.sliderRim
+    readonly property color sliderFill: roles[visual.sliderFill]
+    readonly property color sliderTrack: roles[visual.sliderTrack]
+    readonly property color sliderRim: roles[visual.sliderBorder]
 
     // Internal design tokens retain their accepted geometry.
     readonly property string fontFamily: "JetBrainsMono Nerd Font"

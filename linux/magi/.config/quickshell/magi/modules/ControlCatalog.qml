@@ -25,7 +25,7 @@ QtObject {
         {id:"airplane-mode", label:"Airplane", icon:"airplane-mode", accent:"lavender", detail:"", presentations:["tile"]},
         {id:"battery", label:"Battery status", icon:"battery", accent:"red", detail:"", presentations:["tile"]},
         {id:"settings", label:"Settings", icon:"settings", accent:"lavender", detail:"", presentations:["tile","action"]},
-        {id:"volume", label:"Volume", icon:"volume", accent:"peach", detail:"volume", presentations:["slider","detail"]},
+        {id:"volume", label:"Volume", icon:"volume", accent:"peach", detail:"", presentations:["slider"]},
         {id:"brightness", label:"Brightness", icon:"brightness", accent:"yellow", detail:"", presentations:["slider"]},
         {id:"vpn", label:"VPN", icon:"vpn", accent:"blue", detail:"", presentations:["tile","action"]},
         {id:"dnd", label:"Do Not Disturb", icon:"dnd", accent:"lavender", detail:"", presentations:["tile","action"]},
@@ -34,6 +34,7 @@ QtObject {
         {id:"hibernate", label:"Hibernate", icon:"hibernate", accent:"peach", detail:"", presentations:["action"], danger:true, confirmation:true},
         {id:"shutdown", label:"Shutdown", icon:"shutdown", accent:"red", detail:"", presentations:["action"], danger:true, confirmation:true}
     ]
+    function isToggle(id) { return ["wifi", "bluetooth", "power-saver", "airplane-mode", "vpn", "dnd", "caffeine"].indexOf(id) >= 0 }
     function definition(id) { return definitions.find(d => d.id === id) || null }
     function supports(id, presentation) {
         const item = definition(id)

@@ -4,6 +4,9 @@ import QtQuick
 ExpandablePlugin {
     id: root
     required property var module
+    expandsOnClick: module.expandsOnClick
+    onPrimaryTriggered: module.primaryTriggered()
+    onWheelTriggered: steps => module.wheelTriggered(steps)
     onSecondaryTriggered: module.secondaryTriggered()
     barWindow: module.barWindow
     sharedSurface: module.sharedSurface

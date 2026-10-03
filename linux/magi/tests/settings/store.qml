@@ -27,12 +27,16 @@ ShellRoot {
                 if (Quickshell.env("MAGI_TEST_INVALID") === "1") {
                     test.check(store.saveState === "invalid" && store.data.appearance.roundness.master === 1, "invalid fallback")
                     test.check(store.resetSection("appearance"), "explicit repair")
-                } else test.check(store.data.schemaVersion === 3 && store.saveState === "saved", "safe initial load")
+                } else test.check(store.data.schemaVersion === 4 && store.saveState === "saved", "safe initial load")
                 if (Quickshell.env("MAGI_TEST_LEGACY") === "1")
                     test.check(store.data.bar.left.join(",") === "date,clock"
                         && store.data.bar.center.length === 0 && store.data.custom === 42,
                         "migration preserves order, empty placement and unknown fields")
+                test.check(store.setVisual("statusIconSize", 24) && store.setVisual("sliderFill", "blue"), "visual settings accepted")
+                test.check(!store.setVisual("statusIconSize", 90) && !store.setVisual("sliderFill", "not-a-role"), "visual bounds enforced")
                 test.check(store.setTheme("everforest-dark-hard"), "set theme")
+                test.check(store.editControl(store.data.controlCentre.controls[0].key, "accent", "red"), "semantic tile accent accepted")
+                test.check(!store.editControl(store.data.controlCentre.controls[0].key, "accent", "rosewater"), "unsupported tile accent rejected")
                 break
             case 1:
                 test.check(store.saveState === "saved", "atomic save acknowledged")
@@ -40,6 +44,8 @@ ShellRoot {
                 break
             case 2:
                 test.check(store.data.appearance.theme === "everforest-dark-hard", "save/reload")
+                test.check(store.data.appearance.visual.statusIconSize === 24 && store.data.appearance.visual.sliderFill === "blue", "visual persistence reload")
+                test.check(store.data.controlCentre.controls[0].accent === "red", "semantic tile accent persistence reload")
                 store.setRoundness("master", 0.1)
                 store.save() // start a write, then supersede its in-flight snapshot
                 for (let i = 0; i < 50; i++) store.setRoundness("master", i / 25)
@@ -63,6 +69,7 @@ ShellRoot {
                 break
             case 6:
                 test.check(store.data.bar.right.length === 5 && store.saveState === "saved", "full reset persisted")
+                test.check(store.data.controlCentre.controls.map(e => e.accent).join(",") === "teal,blue,green,lavender", "full reset restores tile accents")
                 test.check(test.notifications >= 50, "live notifications")
                 store.reload()
                 break

@@ -10,6 +10,20 @@
         "slider": 1.6,
         "action": null
       }
+    },
+    "visual": {
+      "statusIconSize": 18,
+      "tileBorderWidth": 5,
+      "controlOn": "text",
+      "controlOff": "background",
+      "controlOffOpacity": 0.25,
+      "sliderTrack": "elevated",
+      "sliderFill": "overlay",
+      "sliderBorder": "lavender",
+      "sliderBorderWidth": 2,
+      "avatarBorderWidth": 2,
+      "tileBackgroundShade": 0.17999999999999994,
+      "tileBorderShade": 0.10000000000000009
     }
   },
   "bar": {
@@ -28,7 +42,7 @@
       "battery"
     ]
   },
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "controlCentre": {
     "columns": 4,
     "actionColumns": 6,
@@ -44,25 +58,29 @@
         "key": "network",
         "module": "wifi",
         "enabled": true,
-        "presentation": "tile"
+        "presentation": "tile",
+        "accent": "red"
       },
       {
         "key": "wireless",
         "module": "bluetooth",
         "enabled": true,
-        "presentation": "tile"
+        "presentation": "tile",
+        "accent": "blue"
       },
       {
         "key": "power-saver",
         "module": "power-saver",
         "enabled": true,
-        "presentation": "tile"
+        "presentation": "tile",
+        "accent": "peach"
       },
       {
         "key": "airplane-mode",
         "module": "airplane-mode",
         "enabled": true,
-        "presentation": "tile"
+        "presentation": "tile",
+        "accent": "lavender"
       }
     ],
     "sliders": [

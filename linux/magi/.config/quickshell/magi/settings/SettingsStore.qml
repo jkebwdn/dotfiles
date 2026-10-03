@@ -114,6 +114,12 @@ Scope {
         next[section][key] = value
         return commit(next)
     }
+    function setVisual(key, value) {
+        if (!Object.prototype.hasOwnProperty.call(Schema.defaults().appearance.visual, key)) return false
+        const visual = Schema.clone(data.appearance.visual)
+        visual[key] = value
+        return setValue("appearance", "visual", visual)
+    }
     function setTheme(id) { return setValue("appearance", "theme", id) }
     function setIconPack(id) { return setValue("icons", "pack", id) }
     function setIconOverride(role, assetId, moduleId, colorMode) {
@@ -165,7 +171,7 @@ Scope {
         if (["controls", "sliders", "actions"].indexOf(group) < 0) return false
         const entries = Schema.clone(data.controlCentre[group])
         const entry = entries.find(e => e.key === key)
-        if (!entry || ["module", "enabled"].indexOf(field) < 0) return false
+        if (!entry || ["module", "enabled", "accent"].indexOf(field) < 0) return false
         entry[field] = value
         return setEntries(group, entries)
     }
@@ -182,7 +188,10 @@ Scope {
         const entries = Schema.clone(data.controlCentre[group])
         if (entries.some(e => e.module === module)) return false
         const presentation = group === "controls" ? "tile" : group === "sliders" ? "slider" : "action"
-        entries.push({key: module + "-" + Date.now(), module: module, enabled: true, presentation: presentation})
+        const entry = {key: module + "-" + Date.now(), module: module, enabled: true,
+            presentation: presentation}
+        if (group === "controls") entry.accent = Schema.controlAccentDefaults[module] || "lavender"
+        entries.push(entry)
         return setEntries(group, entries)
     }
     function removeEntry(group, key) {
@@ -190,6 +199,14 @@ Scope {
         return setEntries(group, data.controlCentre[group].filter(e => e.key !== key))
     }
     function editControl(key, field, value) { return editEntry("controls", key, field, value) }
+    function setControlModule(key, module) {
+        const entries = Schema.clone(data.controlCentre.controls)
+        const entry = entries.find(e => e.key === key)
+        if (!entry) return false
+        entry.module = module
+        entry.accent = Schema.controlAccentDefaults[module] || "lavender"
+        return setControlEntries(entries)
+    }
     function moveControl(key, delta) { return moveEntry("controls", key, delta) }
     function addControl(module) { return addEntry("controls", module) }
     function removeControl(key) { return removeEntry("controls", key) }

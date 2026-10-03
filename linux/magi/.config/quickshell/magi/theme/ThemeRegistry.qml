@@ -8,6 +8,7 @@ Scope {
     readonly property var registry: readRegistry(source.text())
     readonly property var themes: registry.themes
     readonly property var ids: themes.map(theme => theme.id)
+    readonly property var accentRoles: registry.accentRoles
     function readRegistry(text) {
         const document = JSON.parse(text)
         if (document.formatVersion !== 1) throw new Error("Unsupported palette registry")
@@ -16,11 +17,15 @@ Scope {
             "yellow", "peach", "red", "teal", "success", "warning", "danger", "focus",
             "sliderFill", "sliderTrack", "sliderRim", "onAccent", "onBlue", "onLavender",
             "onGreen", "onYellow", "onPeach", "onRed", "onTeal"]
+        if (!Array.isArray(document.accentRoles) || document.accentRoles.length === 0
+                || document.accentRoles.some(role => typeof role !== "string" || required.indexOf(role) < 0))
+            throw new Error("Palette accent-role registry is missing or invalid")
         const seen = []
         document.themes = document.themes.filter(theme => {
             const valid = typeof theme.id === "string" && seen.indexOf(theme.id) < 0
                 && typeof theme.dark === "boolean" && theme.roles
                 && required.every(role => /^#[0-9a-fA-F]{6}$/.test(theme.roles[role]))
+                && document.accentRoles.every(role => /^#[0-9a-fA-F]{6}$/.test(theme.roles[role]))
             if (!valid) console.warn("Ignoring invalid palette definition: " + theme.id)
             else seen.push(theme.id)
             return valid

@@ -16,11 +16,14 @@ Scope {
     readonly property var fallbackPill: fallbackLoader.item
     Loader {
         id: fallbackLoader
-        active: !root.sharedSurface && root.pill === null && root.fallbackAnchor !== null
+        active: root.expandsOnClick && !root.sharedSurface && root.pill === null && root.fallbackAnchor !== null
         sourceComponent: Component {
             Hosts.AnchoredDetailHost { module: root; anchorItem: root.fallbackAnchor }
         }
     }
+    property bool expandsOnClick: true
+    signal primaryTriggered()
+    signal wheelTriggered(real steps)
     signal secondaryTriggered()
     property string menuId: ""
     property string icon: ""

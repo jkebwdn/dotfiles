@@ -41,6 +41,9 @@ Item {
         visible: root.semanticAsset && asset.status !== Image.Error
         autoPaddingEnabled: false
         colorization: 1
-        colorizationColor: root.color
+        // Separate state alpha from RGB tint. Preserve the SVG's own alpha mask;
+        // muted/off states multiply it, just as Text's color alpha does.
+        colorizationColor: Qt.rgba(root.color.r, root.color.g, root.color.b, 1)
+        opacity: root.color.a
     }
 }

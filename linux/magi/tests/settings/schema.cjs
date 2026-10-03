@@ -8,16 +8,16 @@ assert.equal(run('analyze(defaults()).errors').length, 0);
 assert.equal(run('analyze(migrate({palette:"everforest",barCenterPlugins:[],custom:7})).effective.appearance.theme'), 'everforest-dark-hard');
 assert.deepEqual(run('migrate({palette:"catppuccin",barCenterPlugins:[]}).bar.center'), []);
 assert.equal(run('migrate({palette:"catppuccin",custom:7}).custom'), 7);
-assert.equal(run('migrate({schemaVersion:1,appearance:{theme:"catppuccin-latte"}}).schemaVersion'), 3);
-assert.deepEqual(run('analyze({schemaVersion:3}).effective.bar.center'), ['workspaces']);
-assert.equal(run('analyze({schemaVersion:3,appearance:{roundness:{master:-4}}}).effective.appearance.roundness.master'), 1);
-assert.equal(run('analyze({schemaVersion:3,appearance:{theme:"unknown"}}).effective.appearance.theme'), 'unknown');
-assert.equal(run('analyze({schemaVersion:4}).future'), true);
-assert.deepEqual(run('analyze({schemaVersion:3,bar:{left:["wifi"],right:["wifi","bogus","volume"]}}).effective.bar.right'), ['volume']);
+assert.equal(run('migrate({schemaVersion:1,appearance:{theme:"catppuccin-latte"}}).schemaVersion'), 4);
+assert.deepEqual(run('analyze({schemaVersion:4}).effective.bar.center'), ['workspaces']);
+assert.equal(run('analyze({schemaVersion:4,appearance:{roundness:{master:-4}}}).effective.appearance.roundness.master'), 1);
+assert.equal(run('analyze({schemaVersion:4,appearance:{theme:"unknown"}}).effective.appearance.theme'), 'unknown');
+assert.equal(run('analyze({schemaVersion:5}).future'), true);
+assert.deepEqual(run('analyze({schemaVersion:4,bar:{left:["wifi"],right:["wifi","bogus","volume"]}}).effective.bar.right'), ['volume']);
 assert.throws(() => run('analyze(JSON.parse(\'{"schemaVersion":1,"__proto__":{}}\'))'));
 assert.throws(() => run('migrate({palette:"catppuccin",appearance:{}})'));
-assert.equal(run('analyze({schemaVersion:3,profile:{displayName:"Ada",subtitle:"Ready",avatar:null}}).effective.profile.displayName'), 'Ada');
-assert.equal(run('analyze({schemaVersion:3,profile:{avatar:"/tmp/nope"}}).effective.profile.avatar'), null);
+assert.equal(run('analyze({schemaVersion:4,profile:{displayName:"Ada",subtitle:"Ready",avatar:null}}).effective.profile.displayName'), 'Ada');
+assert.equal(run('analyze({schemaVersion:4,profile:{avatar:"/tmp/nope"}}).effective.profile.avatar'), null);
 const migrated=run('migrate({schemaVersion:2,controlCentre:{columns:4,sections:{},controls:['
     + '{key:"sound",module:"volume",enabled:true,presentation:"tile"},'
     + '{key:"wireless",module:"bluetooth",enabled:true,presentation:"tile"},'
@@ -30,4 +30,28 @@ const custom=run('migrate({schemaVersion:2,controlCentre:{sections:{},controls:[
 assert.deepEqual(custom.controlCentre.controls.map(e=>e.module),['wifi']);
 assert.deepEqual(run('analyze(migrate({schemaVersion:2})).effective.controlCentre.actions.map(e=>e.module)'),
     ['vpn','dnd','caffeine','lock','hibernate','shutdown']);
-console.log('Schema: v0→v3, defaults, validation and CC action migration PASS');
+const v3=run('migrate({schemaVersion:3,controlCentre:{controls:['
+    + '{key:"network",module:"wifi",enabled:true,presentation:"tile"},'
+    + '{key:"wireless",module:"bluetooth",enabled:true,presentation:"tile"},'
+    + '{key:"power-saver",module:"power-saver",enabled:true,presentation:"tile"},'
+    + '{key:"airplane-mode",module:"airplane-mode",enabled:true,presentation:"tile"}]}})');
+assert.equal(v3.schemaVersion,4);
+assert.deepEqual(v3.controlCentre.controls.map(e=>e.accent),['teal','blue','green','lavender']);
+const customAccent=run('migrate({schemaVersion:3,controlCentre:{controls:['
+    + '{key:"network",module:"wifi",accent:"red",enabled:true,presentation:"tile"}]}})');
+assert.equal(customAccent.controlCentre.controls[0].accent,'red');
+const invalidAccent=run('analyze({schemaVersion:4,controlCentre:{controls:['
+    + '{key:"network",module:"wifi",accent:"rosewater",enabled:true,presentation:"tile"}]}})');
+assert.equal(invalidAccent.effective.controlCentre.controls[0].accent,'teal');
+assert.ok(invalidAccent.errors.some(e=>e.includes('.accent')));
+console.log('Schema: v0→v4, defaults, validation, CC action and semantic-accent migration PASS');
+
+assert.equal(run('defaults().appearance.visual.statusIconSize'), 18);
+assert.equal(run('analyze({schemaVersion:4,appearance:{visual:{statusIconSize:22}}}).effective.appearance.visual.statusIconSize'), 22);
+for (const key of ['tileBackgroundShade','tileBorderShade']) {
+    for (const value of [-1, 0, 1])
+        assert.equal(run(`analyze({schemaVersion:4,appearance:{visual:{${key}:${value}}}}).effective.appearance.visual.${key}`), value);
+    for (const value of ['2', '-2', '"dark"', 'null'])
+        assert.equal(run(`analyze({schemaVersion:4,appearance:{visual:{${key}:${value}}}}).effective.appearance.visual.${key}`), run(`defaults().appearance.visual.${key}`));
+}
+console.log('Visual defaults, saved size preservation and signed shade validation PASS');

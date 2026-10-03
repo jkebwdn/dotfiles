@@ -1,5 +1,10 @@
 # Shared status surface — structural review checkpoint
 
+Current update2026-10-02: the new [visual refinement ledger](visual-refinement-checkpoint.md)
+records independent header motion with one persistent status Row, compact Volume
+mute/wheel and inline Wi-Fi authentication. Those changes await operator review.
+The separate-password-window discussion below describes the historical checkpoint.
+
 Design correction, 2026-09-26. Re-inspected the original
 `/home/jkebwdn/Downloads/Magi Quickshell Render.png`, including the detail-view
 status/navigation strips and Control Centre's icon-over-slider controls.

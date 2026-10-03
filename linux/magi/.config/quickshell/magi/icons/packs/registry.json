@@ -205,6 +205,26 @@
         "wifi-disconnected": {
           "kind": "glyph",
           "text": "󰤯"
+        },
+        "volume-high": {
+          "kind": "glyph",
+          "text": "󰕾"
+        },
+        "battery-full": {
+          "kind": "glyph",
+          "text": "󰁹"
+        },
+        "battery-high": {
+          "kind": "glyph",
+          "text": "󰂀"
+        },
+        "battery-medium": {
+          "kind": "glyph",
+          "text": "󰁾"
+        },
+        "battery-low": {
+          "kind": "glyph",
+          "text": "󰁻"
         }
       },
       "modules": {},
@@ -457,6 +477,11 @@
         "wifi-on": {
           "kind": "svg",
           "assetId": "wifi-on",
+          "colorMode": "semantic"
+        },
+        "bluetooth-connected": {
+          "kind": "svg",
+          "assetId": "bluetooth-on",
           "colorMode": "semantic"
         }
       },

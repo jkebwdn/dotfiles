@@ -17,6 +17,10 @@ ShellRoot {
         property string trackTitle: "First"
         property string trackArtist: "Artist A"
         property string trackArtUrl: ""
+        property bool positionSupported: true
+        property bool lengthSupported: true
+        property real position: 25
+        property real length: 100
         property bool isPlaying: false
         property bool canControl: true
         property bool canTogglePlaying: true
@@ -57,10 +61,13 @@ ShellRoot {
                 break
             case 1:
                 test.check(media.available && media.title === "First" && media.artist === "Artist A", "player appears")
+                test.check(media.progress === .25, "real supported position/duration")
+                first.position = 50
                 first.trackTitle = "Changed"
                 media.previous(); media.togglePlaying(); media.next()
                 break
             case 2:
+                test.check(media.progress === .5, "nonlinear position update")
                 test.check(media.title === "Changed", "metadata updates live")
                 test.check(first.previousCalls === 1 && first.toggleCalls === 1 && first.nextCalls === 1, "playback actions dispatched")
                 test.players = [first, second]
@@ -74,7 +81,7 @@ ShellRoot {
                 test.players = []
                 break
             case 5:
-                test.check(!media.available && media.title === "", "player disappearance clears state")
+                test.check(!media.available && media.title === "" && media.progress === -1, "player disappearance clears state")
                 console.log("RESULT: " + test.failures + " failures; MPRIS selection, metadata and actions")
                 Qt.quit()
             }

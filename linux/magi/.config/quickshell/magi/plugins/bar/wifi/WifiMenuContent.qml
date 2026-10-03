@@ -1,382 +1,136 @@
 pragma ComponentBehavior: Bound
-
 import QtQuick
 import Quickshell.Networking
-
-import "../../../components/controls" as MagiControls
-import "../../../services" as MagiServices
-import "../../../theme" as MagiTheme
-
+import "../../../components/controls" as Controls
+import "../../../services" as Services
+import "../../../theme" as Theme
 Column {
     id: root
-
     required property var controller
-
-    readonly property bool connectionStatusVisible:
-        controller.connectionError !== "" || controller.connecting
-
     width: parent ? parent.width : 0
-    spacing: 10
-
-    Item {
-        width: parent.width
-        height: 30
-
-        Column {
-            anchors {
-                left: parent.left
-                right: radioToggle.left
-                rightMargin: 10
-                verticalCenter: parent.verticalCenter
-            }
-            spacing: 2
-
-            Text {
-                width: parent.width
-                text: !MagiServices.Network.wifiEnabled
-                    ? "Wireless is off"
-                    : MagiServices.Network.connected
-                        ? "Connected"
-                        : "Looking for a network"
-                color: MagiTheme.Theme.text
-                font.family: MagiTheme.Theme.fontFamily
-                font.pixelSize: 10
-                font.bold: true
-            }
-
-            Text {
-                width: parent.width
-                text: MagiServices.Network.wifiEnabled
-                    ? "Scanning nearby networks"
-                    : "Turn on to discover networks"
-                color: MagiTheme.Theme.muted
-                font.family: MagiTheme.Theme.fontFamily
-                font.pixelSize: 8
-            }
-        }
-
-        MagiControls.ActionChip {
-                    moduleId: "wifi"
-            id: radioToggle
-
-            anchors {
-                right: parent.right
-                verticalCenter: parent.verticalCenter
-            }
-            label: MagiServices.Network.wifiEnabled ? "On" : "Off"
-            active: MagiServices.Network.wifiEnabled
-            available: MagiServices.Network.wifiHardwareEnabled
-            onTriggered: {
-                MagiServices.Network.setWifiEnabled(
-                    !MagiServices.Network.wifiEnabled
-                )
-                root.controller.resetTransientState()
-            }
+    spacing: 12
+    function requestInitialFocus() {
+        for (let i = 0; i < rows.count; ++i) {
+            const row = rows.itemAt(i)
+            if (row && row.authenticating) row.focusAuthentication()
         }
     }
-
+    Keys.onEscapePressed: event => {
+        if (root.controller.authenticating) { root.controller.cancelPassword(); event.accepted = true }
+        else event.accepted = false
+    }
+    Item {
+        width: parent.width; height: 30
+        Text {
+            anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
+            text: Services.Network.wifiEnabled ? "Wi-Fi" : "Wireless is off"
+            color: Theme.Theme.text; font.family: Theme.Theme.fontFamily; font.pixelSize: 13; font.bold: true
+        }
+        Controls.ActionChip {
+            anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+            moduleId: "wifi"; label: Services.Network.wifiEnabled ? "On" : "Off"
+            active: Services.Network.wifiEnabled; available: Services.Network.wifiHardwareEnabled
+            onTriggered: { Services.Network.setWifiEnabled(!Services.Network.wifiEnabled); root.controller.resetTransientState() }
+        }
+    }
     Rectangle {
-        width: parent.width
-        visible: MagiServices.Network.connected
-        height: visible ? 62 : 0
-        radius: MagiTheme.Theme.radiusMedium
-        color: MagiTheme.Theme.background
-
-        MagiControls.Icon {
-            id: heroSignalIcon
-
-            anchors {
-                left: parent.left
-                leftMargin: 14
-                verticalCenter: parent.verticalCenter
-            }
-            role: root.controller.signalIcon(
-                MagiServices.Network.signalStrength
-            )
-            color: MagiTheme.Theme.accent
-            moduleId: "wifi"
-            size: 24
+        id: connected
+        width: parent.width; height: 64
+        visible: Services.Network.connected && Services.Network.wifiEnabled
+        radius: Theme.Theme.radiusMedium; color: Theme.Theme.elevated
+        Controls.Icon {
+            id: connectedIcon
+            x: 12; anchors.verticalCenter: parent.verticalCenter
+            size: 30; role: root.controller.signalIcon(Services.Network.signalStrength); moduleId: "wifi"; color: Theme.Theme.accent
         }
-
         Column {
-            anchors {
-                left: heroSignalIcon.right
-                leftMargin: 12
-                right: signalValue.left
-                rightMargin: 12
-                verticalCenter: parent.verticalCenter
-            }
-            spacing: 3
-
-            Text {
-                width: parent.width
-                text: MagiServices.Network.ssid
-                color: MagiTheme.Theme.text
-                font.family: MagiTheme.Theme.fontFamily
-                font.pixelSize: 12
-                font.bold: true
-                elide: Text.ElideRight
-            }
-
-            Text {
-                width: parent.width
-                text: MagiServices.Network.activeNetwork
-                        && MagiServices.Network.activeNetwork.known
-                    ? "Saved network · Signal strength"
-                    : "Connected · Signal strength"
-                color: MagiTheme.Theme.muted
-                font.family: MagiTheme.Theme.fontFamily
-                font.pixelSize: 8
-                elide: Text.ElideRight
-            }
-        }
-
-        Text {
-            id: signalValue
-
-            anchors {
-                right: parent.right
-                rightMargin: 14
-                verticalCenter: parent.verticalCenter
-            }
-            text: MagiServices.Network.signalStrength + "%"
-            color: MagiTheme.Theme.text
-            font.family: MagiTheme.Theme.fontFamily
-            font.pixelSize: 16
-            font.bold: true
+            anchors { left: connectedIcon.right; leftMargin: 10; right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
+            spacing: 4
+            Text { width: parent.width; text: Services.Network.ssid; font.pixelSize: 13; font.bold: true; color: Theme.Theme.text; elide: Text.ElideRight }
+            Text { text: "Connected · " + Services.Network.signalStrength + "%"; font.pixelSize: 10; color: Theme.Theme.subtext }
         }
     }
-
-    Item {
-        width: parent.width
-        visible: MagiServices.Network.wifiEnabled
-        height: visible ? 24 : 0
-
-        Text {
-            anchors {
-                left: parent.left
-                verticalCenter: parent.verticalCenter
-            }
-            text: MagiServices.Network.connected
-                ? "OTHER NETWORKS"
-                : "AVAILABLE NETWORKS"
-            color: MagiTheme.Theme.muted
-            font.family: MagiTheme.Theme.fontFamily
-            font.pixelSize: 8
-            font.letterSpacing: 0.8
-        }
-
-        MagiControls.Icon {
-            anchors {
-                right: parent.right
-                verticalCenter: parent.verticalCenter
-            }
-            role: "scanning"
-            color: MagiTheme.Theme.muted
-            moduleId: "wifi"
-            size: 10
-        }
+    Text {
+        id: listHeading
+        visible: Services.Network.wifiEnabled
+        text: "Nearby networks"; font.pixelSize: 10; color: Theme.Theme.muted
     }
-
     Flickable {
+        id: list
         width: parent.width
-        height: {
-            if (!MagiServices.Network.wifiEnabled)
-                return 0
-            if (MagiServices.Network.connected)
-                return root.connectionStatusVisible ? 174 : 216
-            return root.connectionStatusVisible ? 246 : 288
+        height: Math.max(48, root.controller.menuHeight - root.controller.viewTopPadding - root.controller.viewBottomPadding
+            - 30 - 24 - listHeading.height - (connected.visible ? 76 : 0))
+        visible: Services.Network.wifiEnabled
+        contentHeight: networkColumn.implicitHeight; contentWidth: width
+        clip: true; boundsBehavior: Flickable.StopAtBounds
+        function showRow(row) {
+            Qt.callLater(function() {
+                const bottom = row.y + row.height
+                if (bottom > list.contentY + list.height) list.contentY = bottom - list.height
+                if (row.y < list.contentY) list.contentY = row.y
+                list.returnToBounds()
+            })
         }
-        visible: MagiServices.Network.wifiEnabled
-        contentWidth: width
-        contentHeight: networkColumn.implicitHeight
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
-
         Column {
             id: networkColumn
-
-            width: parent.width
-            spacing: 4
-
+            width: list.width; spacing: 4
             Repeater {
-                model: MagiServices.Network.wifiEnabled
-                    ? MagiServices.Network.availableNetworks
-                    : null
-
-                delegate: Rectangle {
-                    id: networkRow
-
+                id: rows
+                model: Services.Network.wifiEnabled ? Services.Network.availableNetworks : null
+                Rectangle {
+                    id: row
                     required property var modelData
-
-                    readonly property int strength:
-                        Math.round(modelData.signalStrength * 100)
-                    readonly property bool pending:
-                        root.controller.pendingNetwork === modelData
-                    readonly property string networkState: {
-                        if (pending)
-                            return "Connecting"
-                        if (modelData.known)
-                            return "Saved"
-                        if (modelData.security === WifiSecurityType.Open)
-                            return "Open"
-                        return "Secured"
-                    }
-
+                    readonly property bool authenticating: root.controller.selectedNetwork === modelData
+                    readonly property bool pending: root.controller.pendingNetwork === modelData
+                    readonly property bool failed: root.controller.errorNetwork === modelData
+                    readonly property int strength: Math.round(modelData.signalStrength * 100)
                     width: networkColumn.width
                     visible: !modelData.connected
-                    height: visible ? 44 : 0
-                    radius: MagiTheme.Theme.radiusSmall
-                    color: networkHover.hovered
-                        ? MagiTheme.Theme.elevated
-                        : modelData.known
-                            ? MagiTheme.Theme.background
-                            : "transparent"
-
-                    Connections {
-                        target: networkRow.modelData
-
-                        function onConnectedChanged() {
-                            if (networkRow.modelData.connected) {
-                                root.controller.connectionSucceeded(
-                                    networkRow.modelData
-                                )
+                    height: visible ? 44 + (authenticating ? 124 : failed ? 38 : 0) : 0
+                    radius: Theme.Theme.radiusSmall
+                    color: authenticating ? Theme.Theme.elevated : hover.hovered ? Theme.Theme.overlay : "transparent"
+                    function focusAuthentication() { auth.requestInputFocus(); list.showRow(row) }
+                    onAuthenticatingChanged: { if (authenticating) focusAuthentication() }
+                    Item {
+                        width: parent.width; height: 44
+                        Controls.Icon {
+                            id: signal
+                            x: 8; anchors.verticalCenter: parent.verticalCenter; size: 22
+                            role: root.controller.signalIcon(row.strength); moduleId: "wifi"
+                            color: row.pending || row.authenticating ? Theme.Theme.accent : Theme.Theme.text
+                        }
+                        Column {
+                            anchors { left: signal.right; leftMargin: 10; right: percentage.left; rightMargin: 10; verticalCenter: parent.verticalCenter }
+                            spacing: 3
+                            Text { width: parent.width; text: row.modelData.name; font.pixelSize: 11; color: Theme.Theme.text; elide: Text.ElideRight }
+                            Text {
+                                text: row.pending ? "Connecting…" : row.modelData.known ? "Saved" : row.modelData.security === WifiSecurityType.Open ? "Open" : "Secured"
+                                font.pixelSize: 9; color: row.pending ? Theme.Theme.accent : Theme.Theme.muted
                             }
                         }
-
-                        function onConnectionFailed(reason) {
-                            root.controller.connectionFailed(
-                                networkRow.modelData
-                            )
-                        }
+                        Text { id: percentage; anchors.right: parent.right; anchors.rightMargin: 8; anchors.verticalCenter: parent.verticalCenter; text: row.strength + "%"; font.pixelSize: 9; color: Theme.Theme.muted }
+                        TapHandler { enabled: !row.modelData.connected && !root.controller.connecting; onTapped: root.controller.selectNetwork(row.modelData) }
                     }
-
-                    MagiControls.Icon {
-                        id: networkIcon
-
-                        anchors {
-                            left: parent.left
-                            leftMargin: 10
-                            verticalCenter: parent.verticalCenter
-                        }
-                        role: root.controller.signalIcon(networkRow.strength)
-                        color: networkRow.pending
-                            ? MagiTheme.Theme.accent
-                            : MagiTheme.Theme.text
-                        moduleId: "wifi"
-                        size: 14
+                    WifiAuthentication {
+                        id: auth
+                        x: 10; y: 48; width: parent.width - 20
+                        controller: root.controller; network: row.modelData
+                        visible: row.authenticating
                     }
-
-                    Column {
-                        anchors {
-                            left: networkIcon.right
-                            leftMargin: 10
-                            right: networkStrength.left
-                            rightMargin: 12
-                            verticalCenter: parent.verticalCenter
-                        }
-                        spacing: 2
-
-                        Text {
-                            width: parent.width
-                            text: networkRow.modelData.name
-                            color: MagiTheme.Theme.text
-                            font.family: MagiTheme.Theme.fontFamily
-                            font.pixelSize: 10
-                            font.bold: networkRow.modelData.known
-                            elide: Text.ElideRight
-                        }
-
-                        Text {
-                            width: parent.width
-                            text: networkRow.networkState
-                            color: networkRow.pending
-                                ? MagiTheme.Theme.accent
-                                : MagiTheme.Theme.muted
-                            font.family: MagiTheme.Theme.fontFamily
-                            font.pixelSize: 8
-                        }
-                    }
-
                     Text {
-                        id: networkStrength
-
-                        anchors {
-                            right: parent.right
-                            rightMargin: 10
-                            verticalCenter: parent.verticalCenter
-                        }
-                        text: networkRow.strength + "%"
-                        color: MagiTheme.Theme.muted
-                        font.family: MagiTheme.Theme.fontFamily
-                        font.pixelSize: 9
+                        x: 10; y: 44; width: parent.width - 20
+                        visible: row.failed && !row.authenticating
+                        text: root.controller.connectionError; wrapMode: Text.WordWrap; color: Theme.Theme.danger; font.pixelSize: 10
                     }
-
-                    HoverHandler {
-                        id: networkHover
-                    }
-
-                    TapHandler {
-                        enabled: !networkRow.modelData.connected
-                            && !root.controller.connecting
-                        acceptedButtons: Qt.LeftButton
-                        onTapped: root.controller.selectNetwork(
-                            networkRow.modelData
-                        )
-                    }
+                    HoverHandler { id: hover }
                 }
             }
         }
     }
-
-    Rectangle {
+    Text {
+        visible: !Services.Network.wifiEnabled
         width: parent.width
-        visible: !MagiServices.Network.wifiEnabled
-        height: visible ? 72 : 0
-        radius: MagiTheme.Theme.radiusMedium
-        color: MagiTheme.Theme.background
-
-        Text {
-            anchors {
-                left: parent.left
-                right: parent.right
-                margins: 14
-                verticalCenter: parent.verticalCenter
-            }
-            text: MagiServices.Network.wifiHardwareEnabled
-                ? "Turn on Wi-Fi to discover and connect to nearby networks."
-                : "No wireless hardware is available."
-            color: MagiTheme.Theme.muted
-            font.family: MagiTheme.Theme.fontFamily
-            font.pixelSize: 9
-            wrapMode: Text.WordWrap
-        }
-    }
-
-    Rectangle {
-        width: parent.width
-        visible: root.connectionStatusVisible
-        height: visible ? 34 : 0
-        radius: MagiTheme.Theme.radiusSmall
-        color: root.controller.connectionError !== ""
-            ? MagiTheme.Theme.danger
-            : MagiTheme.Theme.background
-
-        Text {
-            anchors {
-                left: parent.left
-                right: parent.right
-                margins: 10
-                verticalCenter: parent.verticalCenter
-            }
-            text: root.controller.connectionError !== ""
-                ? root.controller.connectionError
-                    + " Select the network to retry."
-                : "Connecting…"
-            color: MagiTheme.Theme.text
-            font.family: MagiTheme.Theme.fontFamily
-            font.pixelSize: 8
-            elide: Text.ElideRight
-        }
+        text: Services.Network.wifiHardwareEnabled ? "Turn on Wi-Fi to discover nearby networks." : "No wireless hardware available."
+        font.pixelSize: 11; color: Theme.Theme.muted; wrapMode: Text.WordWrap
     }
 }

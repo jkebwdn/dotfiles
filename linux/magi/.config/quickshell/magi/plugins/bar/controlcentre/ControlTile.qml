@@ -8,34 +8,31 @@ Rectangle {
     property string moduleId: ""
     property string title: ""
     property string subtitle: ""
+    property bool toggle: true
     property bool active: false
     property bool available: true
     property bool interactive: true
     property color activeColor: MagiTheme.Theme.teal
     property string accentRole: "teal"
-    property color rimColor: MagiTheme.Theme.teal
+    property color rimColor: MagiTheme.Theme.primaryTileRim(activeColor)
     signal primaryTriggered()
     signal secondaryTriggered()
 
     implicitWidth: MagiTheme.RenderTokens.tileSize
     implicitHeight: MagiTheme.RenderTokens.tileSize
     radius: MagiTheme.RenderTokens.tileRadius
-    color: active ? activeColor : MagiTheme.Theme.elevated
+    color: MagiTheme.Theme.primaryTileColor(activeColor)
     border.width: MagiTheme.RenderTokens.tileBorder
-    border.color: tileHover.hovered && interactive
-        ? Qt.lighter(rimColor, 1.12)
-        : active ? rimColor : MagiTheme.Theme.sliderRim
-    opacity: available ? 1 : 0.45
+    border.color: rimColor
     Accessible.name: title + (subtitle.length ? ": " + subtitle : "")
 
     Controls.Icon {
         anchors.centerIn: parent
         role: root.icon
         moduleId: root.moduleId
-        color: root.active ? MagiTheme.Theme.onColor(root.accentRole) : MagiTheme.Theme.text
+        color: MagiTheme.Theme.controlInk(root.toggle, root.active, root.available, false)
         size: MagiTheme.RenderTokens.tileIconSize
     }
-    HoverHandler { id: tileHover; enabled: root.interactive }
     TapHandler {
         acceptedButtons: Qt.LeftButton
         enabled: root.available && root.interactive

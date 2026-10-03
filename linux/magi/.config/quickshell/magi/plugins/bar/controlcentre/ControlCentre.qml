@@ -31,7 +31,7 @@ MagiBar.ExpandableModule {
     readonly property bool showControls: sections.quickControls && controls.length > 0
     readonly property bool showSliders: sections.sliders && sliders.length > 0
     readonly property bool showActions: sections.actions && actions.length > 0
-    readonly property bool showMedia: sections.media && Services.Settings.data.media.enabled && Services.Media.available
+    readonly property bool showMedia: sections.media && Services.Settings.data.media.enabled
     readonly property real tileGap: 18
     readonly property real availableWidth: barWindow ? Math.max(88, barWindow.width - 28) : 1200
     readonly property int columns: Math.max(1, Math.min(layout.columns,
@@ -101,12 +101,12 @@ MagiBar.ExpandableModule {
                             icon: live.icon
                             title: definition.label
                             subtitle: live.status
+                            toggle: Modules.ControlCatalog.isToggle(modelData.module)
                             active: live.active
                             available: live.available
                             interactive: modelData.module !== "battery"
-                            accentRole: definition.accent
-                            activeColor: Theme.Theme.roles[accentRole]
-                            rimColor: Theme.Theme.controlRim(activeColor)
+                            accentRole: modelData.accent || definition.accent
+                            activeColor: Theme.Theme.primaryAccent(accentRole, definition.accent)
                             onPrimaryTriggered: Modules.ControlCatalog.primary(modelData.module)
                             onSecondaryTriggered: Modules.ControlCatalog.secondary(modelData.module)
                         }
@@ -146,6 +146,7 @@ MagiBar.ExpandableModule {
                             moduleId: modelData.module
                             label: definition.label + (live.status ? ": " + live.status : "")
                             icon: live.icon
+                            toggle: Modules.ControlCatalog.isToggle(modelData.module)
                             active: live.active
                             available: live.available
                             danger: !!definition.danger

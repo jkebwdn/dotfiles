@@ -57,5 +57,21 @@ function migrate(input) {
         ]
         doc.schemaVersion = 3
     }
+    if (doc.schemaVersion === 3) {
+        const accents = {wifi: "teal", bluetooth: "blue", "power-saver": "green",
+            "airplane-mode": "lavender", battery: "red", settings: "lavender",
+            vpn: "blue", dnd: "lavender", caffeine: "yellow"}
+        doc.controlCentre = doc.controlCentre || {}
+        if (Array.isArray(doc.controlCentre.controls)) {
+            doc.controlCentre.controls = doc.controlCentre.controls.map(entry => {
+                if (!entry || typeof entry !== "object" || entry.accent !== undefined)
+                    return entry
+                const next = Object.assign({}, entry)
+                next.accent = accents[next.module] || "lavender"
+                return next
+            })
+        }
+        doc.schemaVersion = 4
+    }
     return doc
 }

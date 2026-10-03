@@ -52,7 +52,12 @@ Flickable {
             onTextEdited: Services.Settings.setValue("profile", "displayName", text)
             onEditingFinished: Services.Settings.setValue("profile", "displayName", text.trim())
         }
-        Label { text: "Subtitle or status"; font.bold: true }
+        CheckBox {
+            text: "Use custom subtitle instead of time-of-day greeting"
+            checked: Services.Settings.data.profile.subtitleMode === "custom"
+            onToggled: Services.Settings.setValue("profile", "subtitleMode", checked ? "custom" : "greeting")
+        }
+        Label { text: "Saved custom subtitle"; font.bold: true }
         TextField {
             Layout.fillWidth: true
             text: Services.Settings.data.profile.subtitle

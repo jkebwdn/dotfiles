@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Actual module/session components, with isolated system-service and password-window stubs."""
+"""Actual module/session components, with isolated system-service stubs."""
 from pathlib import Path
 import os, shutil, subprocess, tempfile, sys
 root=Path(__file__).resolve().parents[2]
@@ -10,19 +10,20 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
       'Network': '''property bool connected: false; property bool wifiEnabled: true; property bool wifiHardwareEnabled: true
         property string icon: "wifi"; property string ssid: ""; property int signalStrength: 0
         property var activeNetwork: null; property var availableNetworks: []
-        function setScanning(v) {} function setWifiEnabled(v) {root.wifiEnabled=v} function connectKnown(n) {}
-        function connectOpen(n) {} function connectWithPassword(n,p) {}''',
+        property bool scanning: false; property int knownCalls: 0; property int openCalls: 0; property int passwordCalls: 0
+        function setScanning(v) {root.scanning=v} function setWifiEnabled(v) {root.wifiEnabled=v} function connectKnown(n) {root.knownCalls++}
+        function connectOpen(n) {root.openCalls++} function connectWithPassword(n,p) {root.passwordCalls++}''',
       'Bluetooth': '''property bool available: false; property bool enabled: false; property bool discovering: false
         property var primaryDevice: null; property var devices: []; property int connectedCount: 0
-        function displayName(d) {return ""} function batteryPercent(d) {return -1}
+        function displayName(d) {return d ? d.name : ""} function batteryPercent(d) {return d && d.batteryAvailable ? Math.round(d.battery*100) : -1}
         function setEnabled(v) {root.enabled=v} function setDiscovering(v) {} function toggleConnection(d) {}''',
       'Audio': '''property bool available: false; property bool muted: false; property real volume: 0; property int volumePercent: 0
-        function setVolume(v) {} function toggleMute() {}''',
+        function setVolume(v) {} function toggleMute() {} function adjustVolume(v) {}''',
       'Battery': '''property bool charging: false; property bool available: false; property string icon: "battery"; property int percentage: 0
         property string stateText: ""; property string timeText: ""''',
       'Brightness': 'property bool available: false; property int percent: 0; function setPercent(v) {}',
       'Media': '''property bool available: false; property string identity: ""; property string title: ""; property string artist: ""
-        property string artworkUrl: ""; property bool playing: false; property bool canToggle: true
+        property real progress: -1; property string artworkUrl: ""; property bool playing: false; property bool canToggle: true
         property bool canPrevious: true; property bool canNext: true
         function previous() {} function togglePlaying() {} function next() {}''',
       'QuickActions': '''property bool powerAvailable: false; property bool powerSaver: false; property string powerProfile: ""
@@ -39,9 +40,16 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
     }
     for name,body in stubs.items():
         (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { id: root\n'+body+'\n}')
-    (config/'plugins/bar/wifi/WifiPasswordWindow.qml').write_text('''import QtQuick
-QtObject { property var network: null; property bool connecting: false
-signal submitted(string password); signal cancelled(); function clearPassword() {} }
+    if len(sys.argv) > 1 and sys.argv[1] == 'anchored-layout.qml':
+        # Test actual animation owners without creating offscreen native popups.
+        (config/'components/bar/menu/AnchoredPopupHost.qml').write_text('''import QtQuick
+Item {
+    property var barWindow: null; property Item anchorItem: null
+    property real menuWidth: 0; property real revealedHeight: 0
+    property int menuHeight: 0; property real contentOpacity: 0
+    property color menuColor: "transparent"
+    property Component menuContent: null; property Component fallbackContent: null
+}
 ''')
     (config/'test.qml').write_text(Path(__file__).with_name(sys.argv[1] if len(sys.argv) > 1 else 'modules.qml').read_text().replace('../../.config/quickshell/magi/',''))
     runtime=stage/'runtime';runtime.mkdir(mode=0o700)

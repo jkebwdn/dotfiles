@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import "PlayerSelection.js" as Selection
+import "../components/controls/VisualState.js" as VisualState
 
 Scope {
     id: root
@@ -21,6 +22,14 @@ Scope {
     readonly property bool canPrevious: available && activePlayer.canGoPrevious
     readonly property bool canNext: available && activePlayer.canGoNext
 
+    readonly property bool progressSupported: available && !!activePlayer.positionSupported && !!activePlayer.lengthSupported
+    readonly property real progress: VisualState.progress(progressSupported ? activePlayer.position : 0,
+        progressSupported ? activePlayer.length : 0, progressSupported)
+    Timer {
+        interval: 1000; repeat: true
+        running: root.progressSupported && root.playing && MenuController.activeMenu === "controlcentre"
+        onTriggered: root.activePlayer.positionChanged()
+    }
     function refresh() {
         activePlayer = Selection.choose(players, preferredPlayer, activePlayer)
         refreshArtwork()

@@ -17,35 +17,24 @@ MagiBar.ExpandableModule {
         MagiServices.Bluetooth.displayName(connectedDevice)
     readonly property int connectedBattery:
         MagiServices.Bluetooth.batteryPercent(connectedDevice)
-    readonly property int connectedPillWidth: Math.min(210, Math.max(
-        118,
-        46 + connectedName.length * 7 + (connectedBattery >= 0 ? 42 : 0)
-    ))
-
     menuId: "bluetooth"
     icon: !MagiServices.Bluetooth.enabled ? "bluetooth-off"
         : connectedDevice ? "bluetooth-connected" : "bluetooth"
     title: "Bluetooth"
-    collapsedWidth: connectedDevice ? connectedPillWidth : 30
+    collapsedWidth: 30
     expandedWidth: 326
     menuHeight: 350
     color: sharedSurface
         ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion)
         : MagiTheme.Theme.surface
-    barVisible: connectedDevice !== null
-        || (!sharedSurface && (requestedOpen || phase !== 0))
+    barVisible: true
 
     pillContent: Component {
         MagiControls.MorphingPillContent {
             pill: parent
             moduleId: "bluetooth"
             icon: root.icon
-            collapsedText: root.connectedDevice
-                ? root.connectedName
-                    + (root.connectedBattery >= 0
-                        ? " · " + root.connectedBattery + "%"
-                        : "")
-                : ""
+            collapsedText: ""
             expandedTitle: root.connectedDevice
                 ? root.connectedName
                 : "Bluetooth"

@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import "../services" as Services
 import "IconResolver.js" as Resolver
+import "IconState.js" as State
 Scope {
     id: root
     readonly property var builtInRegistry: JSON.parse(data.text())
@@ -16,16 +17,13 @@ Scope {
         return Resolver.resolve(registry, Services.Settings.data.icons, role, moduleId || "")
     }
     function signalRole(strength) {
-        return strength >= 75 ? "wifi-high" : strength >= 50 ? "wifi-medium"
-            : strength >= 25 ? "wifi-low" : "wifi-weak"
+        return State.signalRole(strength)
     }
     function volumeRole(available, muted, percent) {
-        return !available || muted || percent === 0 ? "volume-muted"
-            : percent < 34 ? "volume-low" : percent < 67 ? "volume-medium" : "volume"
+        return State.volumeRole(available, muted, percent)
     }
     function batteryRole(available, charging, percent) {
-        return !available ? "battery-unknown" : charging ? "battery-charging"
-            : percent >= 95 ? "battery" : "battery-" + Math.max(0, Math.min(90, Math.floor((percent + 5) / 10) * 10))
+        return State.batteryRole(available, charging, percent)
     }
     FileView { id: data; path: Qt.resolvedUrl("packs/registry.json"); blockLoading: true }
     function reloadManaged() {

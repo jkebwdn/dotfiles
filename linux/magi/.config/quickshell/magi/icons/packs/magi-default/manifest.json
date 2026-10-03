@@ -198,6 +198,10 @@
     "wifi-on": {
       "asset": "wifi-on.svg",
       "colorMode": "semantic"
+    },
+    "bluetooth-connected": {
+      "asset": "bluetooth-on.svg",
+      "colorMode": "semantic"
     }
   }
 }

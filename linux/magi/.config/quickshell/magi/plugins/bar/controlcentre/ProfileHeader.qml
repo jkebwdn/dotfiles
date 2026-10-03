@@ -1,5 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../../components/controls" as Controls
+import "../../../components/controls/VisualState.js" as VisualState
 import "../../../services" as Services
 import "../../../theme" as Theme
 
@@ -9,23 +11,19 @@ Rectangle {
     radius: Theme.Theme.radius("controlTile", 10, width, height)
     color: Theme.Theme.elevated
     readonly property var profile: Services.Settings.data.profile
+    property int localHour: new Date().getHours()
+    Timer { interval: 60000; repeat: true; running: true; onTriggered: root.localHour = new Date().getHours() }
     RowLayout {
         anchors.fill: parent
         anchors.margins: 8
         spacing: 10
-        Rectangle {
+        Controls.RoundedArtwork {
             Layout.preferredWidth: 42
             Layout.preferredHeight: 42
-            radius: 21
-            clip: true
-            color: Theme.Theme.overlay
-            Image {
-                anchors.fill: parent
-                source: Services.AssetManager.assetUrl(root.profile.avatar)
-                fillMode: Image.PreserveAspectCrop
-                visible: source !== ""
-                sourceSize: Qt.size(84, 84)
-            }
+            radius: Theme.Theme.radius("avatar", 10, width, height)
+            borderWidth: Theme.Theme.visual.avatarBorderWidth
+            source: Services.AssetManager.assetUrl(root.profile.avatar)
+            placeholder: "profile"
         }
         ColumnLayout {
             Layout.fillWidth: true
@@ -42,7 +40,7 @@ Rectangle {
             }
             Text {
                 Layout.fillWidth: true
-                text: root.profile.subtitle
+                text: root.profile.subtitleMode === "custom" ? root.profile.subtitle : VisualState.greeting(root.localHour)
                 color: Theme.Theme.subtext
                 font.family: Theme.Theme.fontFamily
                 font.pixelSize: 11

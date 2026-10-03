@@ -12,6 +12,7 @@ ShellRoot {
     property int step: 0
     property int statusWidth: 180
     property int bodiesCreated: 0
+    property int headersCreated: 0
     property bool guardOpen: false
 
     Component {
@@ -49,7 +50,7 @@ ShellRoot {
         combined: true
         modules: [centre, wifi, bluetooth, volume]
         statusContent: Component {
-            Item { implicitWidth: test.statusWidth; implicitHeight: 28 }
+            Item { implicitWidth: test.statusWidth; implicitHeight: 28; Component.onCompleted: test.headersCreated++ }
         }
     }
 
@@ -65,7 +66,7 @@ ShellRoot {
         check(surface.phase === 3 && surface.displayedModule === module
             && surface.contentOpacity === 1
             && surface.revealedHeight === module.menuHeight
-            && surface.interactive, "open settles to requested interactive body")
+            && surface.interactive && surface.expansion === 1, "open settles to requested interactive body")
     }
     function closed() {
         check(surface.phase === 0 && surface.revealedHeight === 0
@@ -93,7 +94,7 @@ ShellRoot {
         })
         add(300, () => {
             opened(centre)
-            check(surface.animatedWidth === 440 && surface.height === 346,
+            check(surface.animatedWidth === 440 && surface.height === 354,
                 "same-view geometry grows without collapse or content fade")
             check(surface.contentOpacity === 1, "retarget preserves visible content")
             centre.expandedWidth = 360; centre.menuHeight = 260
@@ -101,7 +102,7 @@ ShellRoot {
         add(40, () => { centre.expandedWidth = 320; centre.menuHeight = 208 })
         add(300, () => {
             opened(centre)
-            check(surface.animatedWidth === 320 && surface.height === 244,
+            check(surface.animatedWidth === 320 && surface.height === 252,
                 "interrupted same-view retarget settles to latest dimensions")
             guardOpen = false
         })
@@ -111,13 +112,13 @@ ShellRoot {
         add(550, () => { opened(wifi); surface.requestedModule = centre })
         add(550, () => {
             opened(centre)
-            check(surface.height === 244, "CC drops excess detail height")
+            check(surface.height === 252, "CC drops excess detail height")
             surface.requestedModule = bluetooth
         })
         add(550, () => { opened(bluetooth); surface.requestedModule = volume })
         add(550, () => {
             opened(volume)
-            check(surface.height === 136, "Volume uses its own short geometry")
+            check(surface.height === 144, "Volume uses its own short geometry")
             surface.requestedModule = centre
         })
         add(25, () => { surface.requestedModule = wifi })
@@ -145,6 +146,9 @@ ShellRoot {
             add(20, () => { surface.requestedModule = centre })
             add(timing.delay, () => {
                 check(surface.phase === timing.phase, "reached interruption phase " + timing.phase)
+                const headerPosition = surface.expansion
+                wifi.expandedWidth = 410
+                check(surface.expansion === headerPosition, "target geometry cannot jump header progress")
                 surface.requestedModule = null
             })
             add(30, () => { surface.requestedModule = wifi })
@@ -169,6 +173,7 @@ ShellRoot {
         add(550, () => { opened(wifi); surface.requestedModule = null })
         add(550, () => {
             closed()
+            check(headersCreated === 1, "one persistent status header through every transition")
             check(bodiesCreated === 4, "module bodies survive switching and closing")
         })
         return result

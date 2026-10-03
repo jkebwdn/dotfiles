@@ -22,18 +22,12 @@ Item {
         Item {
             anchors.fill: parent
             anchors.margins: MagiTheme.RenderTokens.sliderBorder
-            // Reveal a full rounded fill, avoiding a bulging short capsule at 0%.
-            Item {
+            Rectangle {
                 width: parent.width * Math.max(0, Math.min(1, root.value))
                 height: parent.height
-                clip: true
-                Rectangle {
-                    width: parent.parent.width
-                    height: parent.height
-                    radius: Math.max(0, MagiTheme.RenderTokens.sliderRadius
-                        - MagiTheme.RenderTokens.sliderBorder)
-                    color: root.fillColor
-                }
+                radius: Math.min(width / 2, Math.max(0, MagiTheme.RenderTokens.sliderRadius
+                    - MagiTheme.RenderTokens.sliderBorder))
+                color: root.fillColor
             }
         }
         Rectangle {

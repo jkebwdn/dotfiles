@@ -20,21 +20,23 @@ Item {
     property real animatedWidth: collapsedWidth
     property real revealedHeight: 0
     property real contentOpacity: 0
+    // Header geometry is animated independently of a module's target width.
+    // Retargeting the body must never reinterpret the current icon positions.
+    property real headerProgress: 0
 
     readonly property real collapsedWidth: statusLoader.item
-        ? statusLoader.item.implicitWidth : 0
-    readonly property real targetWidth: Math.max(collapsedWidth + 52,
+        ? presentation(statusLoader.item, "compactWidth", statusLoader.item.implicitWidth) : 0
+    readonly property real expandedStatusWidth: statusLoader.item
+        ? presentation(statusLoader.item, "expandedStatusWidth", collapsedWidth) : collapsedWidth
+    readonly property real targetWidth: Math.max(expandedStatusWidth + 52,
         displayedModule ? displayedModule.expandedWidth : collapsedWidth)
     readonly property real targetHeight: displayedModule
         ? displayedModule.menuHeight : 0
     readonly property bool requestedOpen: combined && requestedModule !== null
     readonly property bool interactive: requestedOpen && phase === 3
         && !switchingView && displayedModule === requestedModule
-    readonly property real expansion: phase === 0 ? 0
-        : phase === 1 || phase === 6
-            ? Math.max(0, Math.min(1, (animatedWidth - collapsedWidth)
-                / Math.max(1, targetWidth - collapsedWidth))) : 1
-    readonly property real headerHeight: MagiTheme.Theme.barPillHeight + 8 * expansion
+    readonly property real expansion: combined ? headerProgress : 0
+    readonly property real headerHeight: MagiTheme.Theme.barPillHeight + 16 * expansion
 
     width: combined ? animatedWidth : collapsedWidth
     height: headerHeight + revealedHeight
@@ -55,6 +57,7 @@ Item {
         horizontal.stop()
         vertical.stop()
         fade.stop()
+        headerMotion.stop()
     }
 
     function focusBody() {
@@ -82,6 +85,7 @@ Item {
 
     function narrow() {
         phase = 6
+        animate(headerMotion, headerProgress, 0, 160)
         animate(horizontal, animatedWidth, collapsedWidth, 160)
     }
 
@@ -101,6 +105,7 @@ Item {
             return
         }
 
+        animate(headerMotion, headerProgress, 1, 180)
         if (revealedHeight > 0) {
             // Keep the surface open, including when reversing a partial close.
             // Multiple requests during the fade resolve to the latest module.
@@ -147,6 +152,12 @@ Item {
     onTargetHeightChanged: Qt.callLater(root.retargetGeometry)
 
     NumberAnimation {
+        id: headerMotion
+        target: root
+        property: "headerProgress"
+        easing.type: Easing.OutCubic
+    }
+    NumberAnimation {
         id: horizontal
         target: root
         property: "animatedWidth"
@@ -154,8 +165,10 @@ Item {
         onFinished: {
             if (root.phase === 1)
                 root.reveal()
-            else if (root.phase === 6)
+            else if (root.phase === 6) {
+                root.headerProgress = 0
                 root.phase = 0
+            }
         }
     }
 
@@ -196,8 +209,8 @@ Item {
         anchors.fill: parent
         visible: root.combined && root.phase !== 0
         opacity: root.expansion
-        radius: root.presentation(root.displayedModule, "viewRadius",
-            MagiTheme.Theme.radiusMedium)
+        radius: MagiTheme.Theme.barPillRadius + root.expansion *
+            (root.presentation(root.displayedModule, "viewRadius", MagiTheme.Theme.radiusMedium) - MagiTheme.Theme.barPillRadius)
         color: root.presentation(root.displayedModule, "viewSurfaceColor",
             MagiTheme.Theme.surface)
 
@@ -213,7 +226,8 @@ Item {
         id: statusLoader
         sourceComponent: root.statusContent
         x: root.width - width - 12 * root.expansion
-        y: 4 * root.expansion
+        y: 8 * root.expansion
+        z: 2
         // Intrinsic row size stays independent of the growing surface.
         width: item ? item.implicitWidth : 0
         height: MagiTheme.Theme.barPillHeight
@@ -221,12 +235,13 @@ Item {
 
     Controls.Icon {
         x: 10
-        y: 4
+        y: 8 * root.expansion
+        z: 2
         width: 24
         height: MagiTheme.Theme.barPillHeight
         role: "back"
         moduleId: "navigation"
-        size: 16
+        size: 24
         color: MagiTheme.Theme.text
         visible: root.combined && root.phase !== 0 && MagiServices.MenuController.canGoBack
         opacity: root.expansion

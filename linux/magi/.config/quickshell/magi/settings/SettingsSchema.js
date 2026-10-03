@@ -1,22 +1,31 @@
 // MAGI's preference schema, not system or menu-session state.
 const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "controlcentre"]
-const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action"]
+const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar"]
+const controlAccentRoles = ["red", "peach", "yellow", "green", "teal", "blue", "lavender"]
+const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "green",
+    "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
+    dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 3,
+    return {schemaVersion: 4,
         appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
-            roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null}}},
+            roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null}},
+            visual: {statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
+                tileBorderWidth: 4, controlOn: "text",
+                controlOff: "background", controlOffOpacity: 0.28,
+                sliderTrack: "elevated", sliderFill: "overlay", sliderBorder: "lavender",
+                sliderBorderWidth: 2, avatarBorderWidth: 2}},
         icons: {pack: "magi-legacy", modulePacks: {}, overrides: {global: {}, modules: {}}},
-        profile: {displayName: "", subtitle: "", avatar: null},
+        profile: {displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
         media: {enabled: true, preferredPlayer: null, emptyState: "collapse"},
         bar: {left: ["clock", "date"], center: ["workspaces"],
             right: ["volume", "wifi", "bluetooth", "battery", "controlcentre"]},
         controlCentre: {columns: 4, actionColumns: 6, sections: {
             profile: true, quickControls: true, sliders: true, actions: true, media: true
         }, controls: [
-            {key: "network", module: "wifi", enabled: true, presentation: "tile"},
-            {key: "wireless", module: "bluetooth", enabled: true, presentation: "tile"},
-            {key: "power-saver", module: "power-saver", enabled: true, presentation: "tile"},
-            {key: "airplane-mode", module: "airplane-mode", enabled: true, presentation: "tile"}],
+            {key: "network", module: "wifi", accent: "teal", enabled: true, presentation: "tile"},
+            {key: "wireless", module: "bluetooth", accent: "blue", enabled: true, presentation: "tile"},
+            {key: "power-saver", module: "power-saver", accent: "green", enabled: true, presentation: "tile"},
+            {key: "airplane-mode", module: "airplane-mode", accent: "lavender", enabled: true, presentation: "tile"}],
             sliders: [
                 {key: "volume", module: "volume", enabled: true, presentation: "slider"},
                 {key: "backlight", module: "brightness", enabled: true, presentation: "slider"}],
@@ -38,7 +47,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 3) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 4) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -59,6 +68,17 @@ function analyze(input) {
     const a = effective.appearance
     if (typeof a.theme !== "string" || !a.theme.length) { valid(false, "appearance.theme", ""); a.theme = "catppuccin-mocha" }
 
+    const visualDefaults = defaults().appearance.visual
+    const numberRanges = {statusIconSize: [16, 28], tileBackgroundShade: [-1, 1],
+        tileBorderShade: [-1, 1], tileBorderWidth: [0, 6],
+        controlOffOpacity: [0.1, 0.6], sliderBorderWidth: [0, 5], avatarBorderWidth: [0, 5]}
+    for (const key of Object.keys(visualDefaults)) {
+        const value = a.visual[key], range = numberRanges[key]
+        const good = range ? typeof value === "number" && isFinite(value) && value >= range[0] && value <= range[1]
+            : ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "accent",
+                "blue", "lavender", "green", "yellow", "peach", "red", "teal", "border"].indexOf(value) >= 0
+        if (!good) { valid(false, "appearance.visual." + key, null); a.visual[key] = visualDefaults[key] }
+    }
     const r = a.roundness
     if (typeof r.master !== "number" || !isFinite(r.master) || r.master < 0 || r.master > 2) {
         valid(false, "roundness.master", 1); r.master = 1
@@ -118,6 +138,9 @@ function analyze(input) {
     }
     textField("profile", "displayName", 80)
     textField("profile", "subtitle", 160)
+    if (["greeting", "custom"].indexOf(effective.profile.subtitleMode) < 0) {
+        valid(false, "profile.subtitleMode", "greeting"); effective.profile.subtitleMode = "greeting"
+    }
     if (effective.profile.avatar !== null
             && (typeof effective.profile.avatar !== "string"
                 || !/^avatar:[a-f0-9]{64}\.(png|jpg|webp)$/.test(effective.profile.avatar))) {
@@ -178,6 +201,10 @@ function analyze(input) {
             keys.push(entry.key); modules.push(entry.module)
             const supported = supportedByPresentation[presentation]
             if (supported.indexOf(entry.module) < 0) { warnings.push("Unavailable CC module: " + entry.module); return false }
+            if (group === "controls" && controlAccentRoles.indexOf(entry.accent) < 0) {
+                errors.push("controlCentre.controls." + entry.key + ".accent: invalid value")
+                entry.accent = controlAccentDefaults[entry.module] || "lavender"
+            }
             return true
         })
     }

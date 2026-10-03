@@ -62,34 +62,4 @@ QtObject {
         return summary + " · " + timeText + " remaining"
     }
 
-    readonly property string icon: {
-        if (!available)
-            return "󰂑"
-
-        if (charging)
-            return "󰂄"
-
-        if (percentage >= 95)
-            return "󰁹"
-        if (percentage >= 85)
-            return "󰂂"
-        if (percentage >= 75)
-            return "󰂁"
-        if (percentage >= 65)
-            return "󰂀"
-        if (percentage >= 55)
-            return "󰁿"
-        if (percentage >= 45)
-            return "󰁾"
-        if (percentage >= 35)
-            return "󰁽"
-        if (percentage >= 25)
-            return "󰁼"
-        if (percentage >= 15)
-            return "󰁻"
-        if (percentage >= 5)
-            return "󰁺"
-
-        return "󰂎"
-    }
 }

@@ -1,6 +1,7 @@
 {
   "formatVersion": 1,
   "default": "catppuccin-mocha",
+  "accentRoles": ["red", "peach", "yellow", "green", "teal", "blue", "lavender"],
   "themes": [
     {
       "id": "catppuccin-mocha",

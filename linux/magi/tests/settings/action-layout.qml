@@ -23,7 +23,11 @@ ShellRoot {
             if (!Services.Settings.ready) return
             const cc = registry.modules.controlcentre
             switch (test.step++) {
-            case 0: Services.MenuController.open("controlcentre"); break
+            case 0:
+                // The disposable copy may contain operator customizations.
+                Services.Settings.resetSection("controlCentre")
+                Services.MenuController.open("controlcentre")
+                break
             case 1:
                 test.check(surface.phase === 3 && cc.actions.length === 6 && cc.actionRows === 1, "default action row")
                 test.baseline = cc.menuHeight

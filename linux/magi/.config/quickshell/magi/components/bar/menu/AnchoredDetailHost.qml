@@ -35,7 +35,23 @@ Scope {
         horizontal.to = anchorItem ? anchorItem.width : 0
         horizontal.duration = 160; horizontal.start()
     }
-    Connections { target: root.module; function onRequestedOpenChanged() { root.sync() } }
+    function retargetGeometry() {
+        if (!module.requestedOpen || phase < 1 || phase > 3) return
+        if (menuWidth !== module.expandedWidth) {
+            horizontal.stop(); horizontal.from = menuWidth
+            horizontal.to = module.expandedWidth; horizontal.duration = 180; horizontal.start()
+        }
+        if (phase !== 1 && revealedHeight !== module.menuHeight) {
+            vertical.stop(); vertical.from = revealedHeight
+            vertical.to = module.menuHeight; vertical.duration = 140; vertical.start()
+        }
+    }
+    Connections {
+        target: root.module
+        function onRequestedOpenChanged() { root.sync() }
+        function onMenuHeightChanged() { Qt.callLater(root.retargetGeometry) }
+        function onExpandedWidthChanged() { Qt.callLater(root.retargetGeometry) }
+    }
     Component.onCompleted: { if (module.requestedOpen) sync() }
     NumberAnimation {
         id: horizontal; target: root; property: "menuWidth"; easing.type: Easing.OutCubic

@@ -27,9 +27,10 @@ Rectangle {
         Controls.Icon {
             anchors.verticalCenter: parent.verticalCenter
             role: Icons.IconRegistry.batteryRole(MagiServices.Battery.available, MagiServices.Battery.charging, MagiServices.Battery.percentage)
-            moduleId: "battery"; size: 11
+            moduleId: "battery"; size: MagiTheme.Theme.statusIconSize
         }
         Text {
+            anchors.verticalCenter: parent.verticalCenter
             text: MagiServices.Battery.available ? MagiServices.Battery.percentage + "%" : ""
             color: MagiTheme.Theme.text
             font.family: MagiTheme.Theme.fontFamily

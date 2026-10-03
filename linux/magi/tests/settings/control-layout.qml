@@ -81,21 +81,31 @@ ShellRoot {
                 Services.Media.artist = "An artist"
                 break
             case 11:
-                test.check(surface.phase === 3 && cc.menuHeight > test.mediaBaseline
-                    && surface.revealedHeight === cc.menuHeight, "media appearance retargets open surface")
+                test.check(surface.phase === 3 && cc.showMedia && cc.menuHeight === test.mediaBaseline
+                    && surface.revealedHeight === cc.menuHeight, "real metadata replaces permanent empty state without resize")
                 Services.Media.available = false
                 break
             case 12:
                 test.check(surface.phase === 3 && cc.menuHeight === test.mediaBaseline
-                    && surface.revealedHeight === cc.menuHeight, "media disappearance retargets open surface")
+                    && surface.revealedHeight === cc.menuHeight, "media disappearance retains intentional empty section")
                 Services.Settings.resetSection("profile")
                 break
             case 13:
                 test.check(surface.phase === 3 && !cc.showProfile && cc.menuHeight === test.profileBaseline
                     && surface.revealedHeight === cc.menuHeight, "profile reset retargets open surface")
-                Services.MenuController.close()
+                Services.Settings.setControlSection("media", false)
                 break
             case 14:
+                test.check(surface.phase === 3 && !cc.showMedia && cc.menuHeight < test.profileBaseline,
+                    "explicit media-section setting still retargets open geometry")
+                Services.Settings.setControlSection("media", true)
+                break
+            case 15:
+                test.check(surface.phase === 3 && cc.showMedia && cc.menuHeight === test.profileBaseline,
+                    "restoring permanent media section retargets without collapse")
+                Services.MenuController.close()
+                break
+            case 16:
                 test.check(surface.phase === 0, "clean close")
                 console.log("RESULT: " + test.failures + " failures; dynamic Control Centre layout")
                 Qt.quit()

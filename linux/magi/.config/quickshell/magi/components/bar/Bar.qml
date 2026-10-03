@@ -31,7 +31,8 @@ PanelWindow {
     readonly property var expandablePillRegistry: registry.modules
     readonly property bool combinedMode: expandableHostMode === "combined"
     readonly property var activeExpandablePill: combinedMode
-        ? registry.modules[MagiServices.MenuController.activeMenu] || null : null
+        && registry.modules[MagiServices.MenuController.activeMenu]?.expandsOnClick
+        ? registry.modules[MagiServices.MenuController.activeMenu] : null
     readonly property bool combinedMenuActive: activeExpandablePill !== null
     readonly property Item activeCombinedRegion:
         combinedMode && statusSurface.revealedHeight > 0 ? statusSurface : null
@@ -206,7 +207,7 @@ PanelWindow {
                 modulePhases: phases})
         }
         function open(view: string): bool {
-            if (!registry.modules[view]) return false
+            if (!registry.modules[view] || !registry.modules[view].expandsOnClick) return false
             MagiServices.MenuController.open(view)
             return true
         }
@@ -319,7 +320,14 @@ PanelWindow {
 
         statusContent: Component {
             Row {
-                spacing: MagiTheme.Theme.barSectionSpacing
+                id: statusRow
+                // Same live delegates in both states. Only spacing/inset changes;
+                // compact metrics never depend on animated spacing.
+                readonly property int visibleItems: children.filter(item => item.visible && item.width > 0).length
+                readonly property real itemWidths: children.reduce((sum, item) => sum + (item.visible ? item.width : 0), 0)
+                readonly property real compactWidth: itemWidths + Math.max(0, visibleItems - 1) * MagiTheme.Theme.barSectionSpacing
+                readonly property real expandedStatusWidth: itemWidths + Math.max(0, visibleItems - 1) * 12
+                spacing: MagiTheme.Theme.barSectionSpacing + (12 - MagiTheme.Theme.barSectionSpacing) * statusSurface.expansion
                 Repeater {
                     model: bar.rightPlugins
                     Loader {

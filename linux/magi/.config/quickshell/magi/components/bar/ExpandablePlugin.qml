@@ -24,6 +24,9 @@ Rectangle {
     property bool barVisible: true
 
     property string menuId: ""
+    property bool expandsOnClick: true
+    signal primaryTriggered()
+    signal wheelTriggered(real steps)
     signal secondaryTriggered()
     property string icon: "settings"
     property string title: "MAGI"
@@ -217,6 +220,26 @@ Rectangle {
 
     onRequestedOpenChanged: syncRequestedState()
     onCollapsedWidthChanged: syncCollapsedWidth()
+    // Inline forms and live layout changes must also fit the rollback host.
+    function retargetGeometry() {
+        if (sharedSurface || !requestedOpen || phase < 1 || phase > 3) return
+        if (animatedWidth !== expandedWidth) {
+            horizontalAnimation.stop()
+            horizontalAnimation.from = animatedWidth
+            horizontalAnimation.to = expandedWidth
+            horizontalAnimation.duration = expandDuration
+            horizontalAnimation.start()
+        }
+        if (phase !== 1 && revealedHeight !== menuHeight) {
+            verticalAnimation.stop()
+            verticalAnimation.from = revealedHeight
+            verticalAnimation.to = menuHeight
+            verticalAnimation.duration = revealDuration
+            verticalAnimation.start()
+        }
+    }
+    onMenuHeightChanged: Qt.callLater(root.retargetGeometry)
+    onExpandedWidthChanged: Qt.callLater(root.retargetGeometry)
 
     // ---------------------------------------------------------
     // Horizontal animation
@@ -357,10 +380,15 @@ Rectangle {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
 
+        onWheel: wheel => {
+            if (!root.expandsOnClick) { root.wheelTriggered(wheel.angleDelta.y / 120); wheel.accepted = true }
+            else wheel.accepted = false
+        }
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) root.secondaryTriggered()
-            else MagiServices.MenuController.toggle(root.menuId)
+            else if (root.expandsOnClick) MagiServices.MenuController.toggle(root.menuId)
+            else root.primaryTriggered()
         }
     }
 
@@ -432,7 +460,7 @@ Rectangle {
     MenuHosts.MenuHostSelector {
         id: menuHost
 
-        hostingEnabled: !root.sharedSurface
+        hostingEnabled: !root.sharedSurface && root.expandsOnClick
         hostMode: root.hostMode
         barWindow: root.barWindow
         anchorItem: root

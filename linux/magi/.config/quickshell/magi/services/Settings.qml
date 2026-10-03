@@ -23,6 +23,9 @@ Configuration.SettingsStore {
             return root.setRoundness(role, Number(value))
         }
         function iconPack(id: string): bool { return root.setIconPack(id) }
+        function controlAccent(key: string, role: string): bool {
+            return root.editControl(key, "accent", role)
+        }
         function placement(section: string, ids: string): bool {
             if (["left", "center", "right"].indexOf(section) < 0) return false
             try { return root.setValue("bar", section, JSON.parse(ids)) }

@@ -65,7 +65,19 @@ Flickable {
                     model: Modules.ControlCatalog.forPresentation("tile").filter(d => d.id === row.modelData.module || !Services.Settings.data.controlCentre.controls.some(e => e.module === d.id))
                     textRole: "label"
                     currentIndex: model.findIndex(d => d.id === row.modelData.module)
-                    onActivated: index => Services.Settings.editControl(row.modelData.key,"module",model[index].id)
+                    onActivated: index => Services.Settings.setControlModule(row.modelData.key,model[index].id)
+                }
+                ComboBox {
+                    Layout.preferredWidth: 118
+                    model: Theme.ThemeRegistry.accentRoles
+                    currentIndex: Math.max(0, model.indexOf(row.modelData.accent))
+                    displayText: currentText.charAt(0).toUpperCase() + currentText.slice(1)
+                    delegate: ItemDelegate {
+                        required property string modelData
+                        width: ListView.view ? ListView.view.width : implicitWidth
+                        text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
+                    }
+                    onActivated: index => Services.Settings.editControl(row.modelData.key,"accent",model[index])
                 }
                 SettingsUI.SettingsButton { text: "↑"; Accessible.name: "Move earlier"; enabled: row.index > 0; onClicked: Services.Settings.moveControl(row.modelData.key,-1) }
                 SettingsUI.SettingsButton { text: "↓"; Accessible.name: "Move later"; enabled: row.index < Services.Settings.data.controlCentre.controls.length - 1; onClicked: Services.Settings.moveControl(row.modelData.key,1) }

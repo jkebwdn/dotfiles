@@ -3,6 +3,25 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
+## Visual/state/morph sprint — 2026-10-03, accepted
+
+Implementation, automated validation and final operator review are accepted.
+The close-out adds per-control semantic palette accents and icon-only compact
+Bluetooth. Continue from
+[the durable sprint ledger](design/visual-refinement-checkpoint.md), not from the
+original prompt. It records changed files, thresholds, appearance settings,
+real-component tests, runtime measurements and remaining checks.
+
+The status header remains one persistent Row with independent geometry progress.
+Volume is a compact mute/wheel control. Wi-Fi authentication is now inline (the
+Network backend is unchanged). CC has permanent media empty state, masked/profile
+artwork, local greetings, unboxed actions and configurable semantic visual tokens.
+The default and live status icon size are18px, still adjustable. Primary backgrounds
+and rims use configurable signed shades of each selected-palette accent. Settings
+schema v4 stores the semantic base accent per primary control; resolved RGB remains
+theme-owned. The sprint is ready to checkpoint. Conditional connected-only Bluetooth
+visibility and generalized inherited icon-state styling are deferred decisions.
+
 ## First-party MAGI icon pack — 2026-10-01
 
 Implemented and operator-accepted: all 47 corrected 24×24 exports pass the
