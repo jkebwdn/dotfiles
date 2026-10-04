@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const c=vm.createContext({});
 for(const f of ['SettingsSchema','SettingsMigrations']) vm.runInContext(fs.readFileSync('.config/quickshell/magi/settings/'+f+'.js','utf8'),c);
-assert.equal(c.migrate({schemaVersion:6,custom:12}).schemaVersion,7);
+assert.equal(c.migrate({schemaVersion:6,custom:12}).schemaVersion,8);
 assert.equal(c.migrate({schemaVersion:6,custom:12}).custom,12);
 assert.equal(c.analyze(c.defaults()).errors.length,0);
 for(const [key,value] of Object.entries({layout:'bad',panelWidth:0,gridColumns:99,iconSize:1,headerImage:'https://example.com/a',enabled:'yes',position:'bottom',visibleRows:2.5})) {

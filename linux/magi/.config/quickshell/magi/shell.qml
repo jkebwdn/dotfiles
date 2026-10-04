@@ -17,6 +17,7 @@ ShellRoot {
     }
     NotificationsUI.FullscreenMonitor { id: fullscreen; screen: bar.screen }
     Binding { target: Services.Notifications; property: "fullscreen"; value: fullscreen.suppressed }
+    Binding { target: Services.Calendar; property: "suppressed"; value: fullscreen.suppressed }
     Binding { target: Services.Clipboard; property: "fullscreen"; value: fullscreen.suppressed }
     Binding { target: Services.Notifications; property: "outputToastLimit"; value: Math.max(1, Math.floor(((bar.screen ? bar.screen.height : 1080) - 76) / 300)) }
     NotificationsUI.ToastHost { screen: bar.screen; service: Services.Notifications; suppressed: fullscreen.suppressed }

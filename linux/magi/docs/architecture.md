@@ -1,5 +1,19 @@
 # MAGI — Architecture
 
+## Calendar / Date surface (2026-10-04)
+
+`ClockState` owns one SystemClock and the shared time/date formats. `CalendarMath`
+provides civil arithmetic, `CalendarModel` exposes selection/grid/navigation, and
+`Calendar` coordinates open state through MenuController and fullscreen suppression.
+`TimeDatePill` is reused in bar slots and the expanded header. Original slots retain
+geometry with opacity0 while the shared surface is active; closing restores them.
+`CalendarSurface` inherits SharedStatusSurface with optional left header alignment,
+leaving the status cluster's default unchanged. The existing Bar PanelWindow owns
+input, focus, stacking and the sole48px reservation. Schema8 adds Date & time Settings.
+Current placement support is left/centre/right within the top bar. See the
+[checkpoint](design/calendar-date-surface.md) for interactions, validation and limits.
+
+
 ## Application launcher (2026-10-04)
 
 `services/Launcher.qml` owns application selection and state, `LauncherSearch.js`

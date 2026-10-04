@@ -6,7 +6,7 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 7,
+    return {schemaVersion: 8,
         appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null}},
             visual: {statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
@@ -19,6 +19,8 @@ function defaults() {
         icons: {pack: "magi-legacy", modulePacks: {}, overrides: {global: {}, modules: {}}},
         profile: {displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
         media: {enabled: true, preferredPlayer: null, emptyState: "collapse"},
+        calendar: {firstDay: "locale", showWeekNumbers: false, showAdjacentDays: true,
+            density: "comfortable", timeFormat: "24h", dateFormat: "numeric"},
         launcher: {enabled: true, hiddenIds: [], layout: "list", panelWidth: 420, gridWidth: 720,
             rowHeight: 56, iconSize: 32, visibleRows: 6, gridColumns: 5,
             showLabels: true, showSubtitles: true, showIcons: true,
@@ -59,7 +61,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 7) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 8) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -100,6 +102,15 @@ function analyze(input) {
                 : typeof value !== "boolean") {
             valid(false, "notifications." + key, null)
             effective.notifications[key] = notificationDefaults[key]
+        }
+    }
+    const calendarDefaults = defaults().calendar
+    const calendarEnums = {firstDay:["locale","monday","sunday"], density:["compact","comfortable"],
+        timeFormat:["24h","12h","locale"], dateFormat:["numeric","iso","locale"]}
+    for (const key of Object.keys(calendarDefaults)) {
+        const value = effective.calendar[key], values = calendarEnums[key]
+        if (values ? values.indexOf(value) < 0 : typeof value !== "boolean") {
+            valid(false, "calendar." + key, null); effective.calendar[key] = calendarDefaults[key]
         }
     }
     const launcherDefaults = defaults().launcher

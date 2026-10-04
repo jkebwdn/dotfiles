@@ -15,6 +15,7 @@ import "../../modules" as Modules
 import "../../services" as MagiServices
 import "../../theme" as MagiTheme
 import "../notifications" as NotificationsUI
+import "../calendar" as CalendarUI
 
 PanelWindow {
     id: bar
@@ -28,18 +29,25 @@ PanelWindow {
         hostMode: bar.expandableHostMode
         sharedSurface: bar.combinedMode ? statusSurface : null
     }
-    readonly property bool settingsReady: statusSurface.phase === 0 && !registry.interactionBusy && !registry.presentationBusy
+    readonly property bool settingsReady: statusSurface.phase === 0 && calendarSurface.phase === 0 && !MagiServices.Calendar.opened && !registry.interactionBusy && !registry.presentationBusy
     readonly property var expandablePillRegistry: registry.modules
     readonly property bool combinedMode: expandableHostMode === "combined"
     readonly property var activeExpandablePill: combinedMode
         && registry.modules[MagiServices.MenuController.activeMenu]?.expandsOnClick
         ? registry.modules[MagiServices.MenuController.activeMenu] : null
-    readonly property bool combinedMenuActive: activeExpandablePill !== null
+    readonly property bool combinedMenuActive: activeExpandablePill !== null || MagiServices.Calendar.opened
+    readonly property bool fullSurface: combinedMode || MagiServices.Calendar.opened || calendarSurface.absorbed
+    property Item clockAnchor: null
+    property Item dateAnchor: null
+    function toggleCalendar(item) {
+        if (!MagiServices.Calendar.opened) calendarSurface.anchorItem = item
+        MagiServices.Calendar.toggle()
+    }
     readonly property Item activeCombinedRegion:
         combinedMode && statusSurface.revealedHeight > 0 ? statusSurface : null
     readonly property bool catcherEnabled: combinedMenuActive
     readonly property bool combinedKeyboardEnabled:
-        combinedMenuActive && activeExpandablePill.menuKeyboardFocus
+        MagiServices.Calendar.opened || (activeExpandablePill !== null && activeExpandablePill.menuKeyboardFocus)
 
     function closeActiveCombinedMenu() {
         if (combinedMenuActive)
@@ -55,13 +63,17 @@ PanelWindow {
         }
 
         Region {
+            item: calendarSurface.absorbed ? calendarSurface : null
+            intersection: Intersection.Combine
+        }
+        Region {
             item: bar.catcherEnabled ? clickCatcher : null
             intersection: Intersection.Combine
         }
     }
 
-    exclusiveZone: combinedMode ? 48 : 0
-    exclusionMode: combinedMode
+    exclusiveZone: fullSurface ? 48 : 0
+    exclusionMode: fullSurface
         ? ExclusionMode.Normal
         : ExclusionMode.Auto
     WlrLayershell.layer: WlrLayer.Top
@@ -75,11 +87,11 @@ PanelWindow {
         right: true
     }
 
-    implicitHeight: combinedMode
+    implicitHeight: fullSurface
         ? Math.max(48, screen ? screen.height : 48)
         : 48
     color: "transparent"
-    mask: combinedMode ? combinedInputMask : null
+    mask: fullSurface ? combinedInputMask : null
 
     IdleInhibitor {
         enabled: MagiServices.Caffeine.requested
@@ -100,7 +112,7 @@ PanelWindow {
     readonly property var centerPlugins: placement.center
     readonly property var rightPlugins: placement.right
     function syncPlacement() {
-        if (MagiServices.MenuController.activeMenu !== "" || statusSurface.phase !== 0
+        if (MagiServices.MenuController.activeMenu !== "" || statusSurface.phase !== 0 || calendarSurface.phase !== 0
                 || registry.interactionBusy || registry.presentationBusy) return
         if (JSON.stringify(placement) !== JSON.stringify(MagiServices.Settings.data.bar))
             placement = MagiServices.Settings.data.bar
@@ -111,6 +123,10 @@ PanelWindow {
     }
     Connections {
         target: statusSurface
+        function onPhaseChanged() { Qt.callLater(bar.syncPlacement) }
+    }
+    Connections {
+        target: calendarSurface
         function onPhaseChanged() { Qt.callLater(bar.syncPlacement) }
     }
     Connections {
@@ -142,13 +158,25 @@ PanelWindow {
     Component {
         id: clockComponent
 
-        ClockPlugin.Clock {}
+        ClockPlugin.Clock {
+            id: clockPill
+            absorbed: calendarSurface.absorbed
+            onTriggered: bar.toggleCalendar(clockPill)
+            Component.onCompleted: bar.clockAnchor = clockPill
+            Component.onDestruction: { if (bar.clockAnchor === clockPill) bar.clockAnchor = null }
+        }
     }
 
     Component {
         id: dateComponent
 
-        DatePlugin.CalendarDate {}
+        DatePlugin.CalendarDate {
+            id: datePill
+            absorbed: calendarSurface.absorbed
+            onTriggered: bar.toggleCalendar(datePill)
+            Component.onCompleted: bar.dateAnchor = datePill
+            Component.onDestruction: { if (bar.dateAnchor === datePill) bar.dateAnchor = null }
+        }
     }
 
     Component {
@@ -207,9 +235,21 @@ PanelWindow {
                 theme: MagiTheme.Theme.effectiveTheme, themeDiagnostic: MagiTheme.Theme.diagnostic,
                 surfaceColor: MagiTheme.Theme.surface.toString(),
                 pillRadius: MagiTheme.Theme.barPillRadius,
+                calendar: {opened:MagiServices.Calendar.opened, phase:calendarSurface.phase,
+                    absorbed:calendarSurface.absorbed, x:calendarSurface.x, y:calendarSurface.y,
+                    width:calendarSurface.width, height:calendarSurface.height,
+                    clockOpacity:bar.clockAnchor ? bar.clockAnchor.opacity : -1,
+                    dateOpacity:bar.dateAnchor ? bar.dateAnchor.opacity : -1},
                 modulePhases: phases})
         }
         function open(view: string): bool {
+            if (view === "calendar") {
+                const anchor = bar.clockAnchor || bar.dateAnchor
+                if (!anchor) return false
+                calendarSurface.anchorItem = anchor
+                MagiServices.Calendar.open()
+                return MagiServices.Calendar.opened
+            }
             if (!registry.modules[view] || !registry.modules[view].expandsOnClick) return false
             MagiServices.MenuController.open(view)
             return true
@@ -217,6 +257,14 @@ PanelWindow {
         function close(): void { MagiServices.MenuController.close() }
     }
 
+    CalendarUI.CalendarSurface {
+        id: calendarSurface
+        objectName: "calendarSurface"
+        service: MagiServices.Calendar
+        clockItem: bar.clockAnchor
+        dateItem: bar.dateAnchor
+        z: 20
+    }
     Item {
         id: clickCatcher
 

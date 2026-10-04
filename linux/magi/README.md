@@ -1,7 +1,7 @@
 # MAGI
 
 MAGI is a first-party Quickshell desktop shell for my Arch Linux + Hyprland setup.
-It brings the bar, system controls, Settings, application launching, notifications and clipboard history
+It brings the bar, system controls, Settings, application launching, Calendar, notifications and clipboard history
 into one interface with shared themes and icons.
 
 ## Current status
@@ -22,7 +22,7 @@ behaviour still need broader testing. Hyprlock remains the current lock screen.
 - Control Centre with configurable primary tiles, secondary actions, sliders,
   ordering and columns; available actions reflect the machine's backends.
 - A separate Settings application for appearance, profile, bar, Control Centre,
-  icons, launcher, notifications and clipboard preferences.
+  icons, date/time, launcher, notifications and clipboard preferences.
 - Semantic themes/palettes, configurable visual roles and a custom icon system
   with bundled packs, overrides and fallback icons.
 - First-party notification ownership, toasts, history, Notification Centre and DND.
@@ -32,6 +32,20 @@ behaviour still need broader testing. Hyprlock remains the current lock screen.
 - Wi-Fi scanning/connection/password entry, Bluetooth status/device controls,
   PipeWire volume, brightness and battery integration.
 - Fullscreen-aware notification and Clipboard behaviour.
+
+## Calendar / Date surface
+
+Click the bar time or date to expand Calendar from that area. The clock/date
+become its header and return to their bar slots on closing, without visible
+duplication. Select days with the mouse or arrow keys, change month with the
+navigation buttons or PageUp/PageDown, and return to today with Today or Home.
+Header click, Escape or an outside click closes it; reopening selects today.
+
+Settings → Date & time controls week start, ISO week numbers, adjacent days,
+spacing and shared bar/header time/date formats. Calendar uses local dates and
+Qt locale names. This is a local date surface; event/agenda providers are deferred.
+See the [Calendar checkpoint](docs/design/calendar-date-surface.md) for architecture,
+validation, current top-bar support and limitations.
 
 ## Application launcher
 

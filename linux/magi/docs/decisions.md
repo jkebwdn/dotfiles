@@ -1,5 +1,19 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-04 — Shared time/date → Calendar
+
+Reuse SharedStatusSurface's animation/focus lifecycle with one optional header
+alignment property. Keep Calendar out of Control Centre's module definitions,
+but coordinate via the same MenuController. Suppress normal time/date rendering
+without removing their layout slots; present the same ClockState in the expanded
+header. Calendar uses the existing bar layer/mask/reservation rather than a new
+popup. Pure local-noon civil arithmetic separates dates from presentation; Qt
+supplies localized labels. Reopen selects today; selection is session state only.
+Schema8 keeps all six preferences in Date & time, sharing formats with the bar.
+No provider integration or new bottom-bar capability. Live operator checks and
+focused regressions passed; [Calendar remains uncommitted for review](design/calendar-date-surface.md).
+
+
 ## 2026-10-04 — Application-only launcher
 
 Choose a separate temporary overlay for immediate search focus, consuming outside

@@ -1,6 +1,18 @@
 # MAGI — Research and Development
 
-## Application launcher — 2026-10-04, uncommitted review
+## Calendar / Date surface — 2026-10-04, uncommitted review
+
+The bar time/date now expand into a shared Calendar surface, absorbing their
+normal presentation until closing completes. Reuses the existing shared-surface
+lifecycle and bar window; no extra reservation. Local Gregorian month navigation,
+keyboard selection, locale labels and schema8 Date & time Settings are implemented.
+Automated Calendar, Settings, shared-status, Launcher, Clipboard and Notifications
+checks pass; operator live interaction checks passed. See the [review checkpoint
+and exact Git allowlist](design/calendar-date-surface.md) and [API evidence](research/calendar-apis.md).
+Baseline is the committed Launcher milestone `b895498`; no Calendar commit/push.
+
+
+## Application launcher — 2026-10-04, committed `b895498`
 
 First-party application-only launcher is implemented over baseline `c5bd0e2`.
 List and grid share GIO desktop discovery/launch, normalized token ranking and
@@ -32,7 +44,7 @@ review wording describes the checkpoint at the time.
 
 ## Planned future shell work
 
-Separate milestones: first-party Emoji Picker; status-bar Calendar/date panel;
+Separate future milestones: first-party Emoji Picker; event/agenda providers;
 MAGI lock screen replacing Hyprlock only after security review; broader Control
 Centre actions; and a later whole-shell Settings/visual/composition pass.
 Hyprlock remains the current lock screen. None is implemented in this retirement.

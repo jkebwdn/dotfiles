@@ -21,3 +21,6 @@ NotificationBackend 1.0 NotificationBackend.qml
 NotificationRecord 1.0 NotificationRecord.qml
 singleton Launcher 1.0 Launcher.qml
 singleton LauncherIcons 1.0 LauncherIcons.qml
+singleton ClockState 1.0 ClockState.qml
+singleton Calendar 1.0 Calendar.qml
+CalendarModel 1.0 CalendarModel.qml

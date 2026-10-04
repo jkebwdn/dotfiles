@@ -1,6 +1,12 @@
 # MAGI research index
 
-Current milestone: [Legacy shell retirement](legacy-shell-retirement-checkpoint.md),
+Current milestone: [Calendar / Date surface](../design/calendar-date-surface.md),
+uncommitted over Launcher `b895498`. [API evidence](calendar-apis.md) records the
+clock, locale and anchoring sources. Operator interaction checks and automated
+regressions pass; provider integrations remain deferred.
+
+
+Earlier milestone: [Legacy shell retirement](legacy-shell-retirement-checkpoint.md),
 2026-10-04, from pushed `a5cce6b`. Bounded package/configuration/documentation
 cleanup; wl-clipboard and old cliphist history preserved. See the checkpoint for
 runtime results and operator-review state. No commit/push.

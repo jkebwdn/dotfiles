@@ -106,7 +106,7 @@ Scope {
         } catch (exception) { state.error = String(exception); return false }
     }
     function setValue(section, key, value) {
-        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher"].indexOf(section) < 0) return false
+        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         // Fill missing defaults, but retain unknown fields and diagnosed raw values.
         if (next[section] === undefined) next[section] = Schema.defaults()[section]
@@ -211,7 +211,7 @@ Scope {
     function addControl(module) { return addEntry("controls", module) }
     function removeControl(key) { return removeEntry("controls", key) }
     function resetSection(section) {
-        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher"].indexOf(section) < 0) return false
+        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         next[section] = Schema.defaults()[section]
         return commit(next)

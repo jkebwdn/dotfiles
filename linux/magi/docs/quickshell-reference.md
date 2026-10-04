@@ -1,5 +1,16 @@
 # MAGI — Quickshell Technical Reference
 
+## Calendar API checkpoint (2026-10-04)
+
+SystemClock.Minutes supplies one shared Date; Qt locale methods provide weekday
+and month labels. TransformWatcher keeps mapToItem anchoring reactive. Calendar
+reuses SharedStatusSurface and the existing Bar PanelWindow; no native Calendar
+window or additional reservation. Real Qt6.11 fixtures validate locale indices,
+formatting, model navigation and Settings persistence; live Hyprland checks verify
+48px reservation and no new layer. See [versioned API evidence and remaining
+compatibility checks](research/calendar-apis.md).
+
+
 ## Launcher API checkpoint (2026-10-04)
 
 Installed Quickshell0.3.1 and Hyprland0.56.2 remain the target. The launcher uses

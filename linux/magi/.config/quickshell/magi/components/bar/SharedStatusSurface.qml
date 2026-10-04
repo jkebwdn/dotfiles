@@ -11,6 +11,7 @@ Item {
     id: root
 
     property bool combined: false
+    property int headerAlignment: Qt.AlignRight
     property Component statusContent: null
     property var modules: []
     property var requestedModule: null
@@ -225,7 +226,7 @@ Item {
     Loader {
         id: statusLoader
         sourceComponent: root.statusContent
-        x: root.width - width - 12 * root.expansion
+        x: root.headerAlignment === Qt.AlignLeft ? 12 * root.expansion : root.width - width - 12 * root.expansion
         y: 8 * root.expansion
         z: 2
         // Intrinsic row size stays independent of the growing surface.
