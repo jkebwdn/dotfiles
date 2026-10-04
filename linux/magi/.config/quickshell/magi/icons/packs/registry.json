@@ -166,6 +166,11 @@
           "kind": "glyph",
           "text": "󰌙"
         },
+        "clipboard": {"kind": "glyph", "text": "󰅌"},
+        "pin": {"kind": "glyph", "text": "󰐃"},
+        "delete": {"kind": "glyph", "text": "󰆴"},
+        "image": {"kind": "glyph", "text": "󰋩"},
+        "file": {"kind": "glyph", "text": "󰈔"},
         "missing": {
           "kind": "glyph",
           "text": "?"

@@ -62,4 +62,4 @@ with tempfile.TemporaryDirectory(prefix='magi-settings-') as temp:
         checked = '\n'.join(line for line in output.splitlines()
                             if 'ERROR quickshell.ipc: Failed to start IPC server' not in line)
         assert result.returncode == 0 and 'RESULT: 0 failures' in output and 'ERROR' not in checked and 'FAIL:' not in checked
-        assert json.loads(configfile.read_text())['schemaVersion']==5
+        assert json.loads(configfile.read_text())['schemaVersion']==6

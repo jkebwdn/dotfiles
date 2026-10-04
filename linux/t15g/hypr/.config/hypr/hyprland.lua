@@ -41,7 +41,6 @@ hl.config({
 
 hl.on("hyprland.start", function()
     hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
-    hl.exec_cmd('bash -c "wl-paste --watch cliphist store &"')
     hl.exec_cmd("hyprpaper")
     hl.exec_cmd("hypridle")
     hl.exec_cmd("hyprmon")
@@ -250,6 +249,12 @@ hl.bind(
     hl.dsp.exec_cmd("rofi -show drun")
 )
 
+-- First-party MAGI clipboard history; SUPER+V remains the floating toggle.
+hl.bind(
+    SUPER .. " + SHIFT + V",
+    hl.dsp.exec_cmd("quickshell ipc -c magi call clipboard toggle")
+)
+
 
 ----------------------------------------------------------------
 -- MFTrunk - Connectivity Hub
@@ -355,6 +360,18 @@ hl.window_rule({
     float = true,
     center = true,
     size = "940 720",
+})
+
+-- Clipboard is a normal focused-on-open window, without a keyboard grab.
+hl.window_rule({
+    name = "magi-clipboard-window",
+    match = {
+        class = "^org\\.quickshell$",
+        title = "^MAGI Clipboard$",
+    },
+    float = true,
+    center = true,
+    size = "540 660",
 })
 
 hl.bind(

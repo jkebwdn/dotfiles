@@ -1,5 +1,22 @@
 # MAGI — Quickshell Technical Reference
 
+## Clipboard0.3.1 — inspected/tested 2026-10-03
+
+Installed qmltypes and the official v0.3.1 core header expose `clipboardText` only;
+the official0.3 docs warn that Wayland reads require a focused Quickshell window.
+There is no first-party background MIME history API in this installed version.
+Sources, version details and compatibility constraints are recorded in the
+[Clipboard checkpoint](research/clipboard-manager-checkpoint.md).
+
+Production uses existing `Process` with `stdinEnabled`, `write`, `SplitParser.read`
+for structured messages from MAGI's backend. Its data-control helper uses installed
+protocol XML, not private Quickshell APIs. Isolated service imports do not activate
+capture. Existing `FloatingWindow`, plus a class+title Hyprland rule as used by
+Settings, provides a normal floating surface with540×660 initial geometry. The
+first Exclusive layer-shell experiment was corrected after operator feedback:
+keyboard capture prevented typing elsewhere until closed. There is now no new
+layer, full-output mask or reservation. Primary selection is not captured.
+
 ## Notifications0.3.1 — inspected/tested 2026-10-03
 
 Detailed evidence and limitations are in the

@@ -3,6 +3,25 @@
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 
+## Clipboard Manager — 2026-10-04, ready for final review
+
+First-party Clipboard now uses an exact-offer Wayland capture helper, a bounded
+MAGI-owned Python model and a normal540×660 floating desktop window. Text, safe
+HTML-derived text, PNG/JPEG and URI lists support search, restore, pins, deletion
+and clear-unpinned. `SUPER+SHIFT+V` opens it; the legacy cliphist watcher startup
+is removed without reading/importing/removing its database. History defaults to
+session-only; schema6 adds explicit opt-in disk persistence and privacy controls.
+
+Initial clipboard contents are skipped; sensitive hints are rejected before
+reading. Unmarked sensitive content cannot be identified reliably. Automated
+model/schema/UI and harmless live-protocol checks pass. Current runtime retains
+notification ownership, one1920×1080 main layer and48px reservation. Operator
+interaction and corrected nonmodal focus checks passed. The old live cliphist
+watcher is stopped; its installed service is disabled/inactive, with no startup
+route in the current configuration. Existing cliphist history remains untouched.
+Final milestone review is pending. See [design](design/clipboard-manager.md)
+and [checkpoint](research/clipboard-manager-checkpoint.md). No commit/push.
+
 ## Permanent notification ownership — 2026-10-03, operator-accepted
 
 MAGI now activates its accepted first-party NotificationServer directly from the
@@ -18,7 +37,7 @@ notification produced a toast/history entry; Centre and DND checks pass. The
 fresh runtime log is INFO-only, one main1920×1080 layer remains, and reservation
 is exactly48px. See the
 [permanent ownership checkpoint](research/permanent-notification-ownership-checkpoint.md)
-for exact state and rollback. Operator review passed; Clipboard is not started.
+for exact state and rollback. Operator review passed; committed at `1598e12`.
 
 ## Notifications + Toasts — 2026-10-03, operator-accepted implementation
 
@@ -39,7 +58,7 @@ checkpoint records the earlier owner/PIDs and upstream action-label limitation.
 At that temporary checkpoint SwayNC had failed after a competing start; the
 permanent tracked mask above now supersedes that live state. Plain-text body
 markup polish, disk history and multi-output/fractional-scale remain follow-ups.
-The accepted implementation is committed at `f3bdd43`; Clipboard is not started.
+The accepted implementation is committed at `f3bdd43`; Clipboard follows above.
 
 ## Visual/state/morph sprint — 2026-10-03, accepted
 

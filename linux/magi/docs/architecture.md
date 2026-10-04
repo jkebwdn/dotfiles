@@ -1,5 +1,32 @@
 # MAGI — Architecture
 
+## Clipboard Manager — 2026-10-03
+
+`ShellRoot` activates `Clipboard` only in production after Settings readiness.
+The singleton owns one JSON-lines Python backend; presentation cannot capture or
+store data itself. `clipboard_capture.c`, built against installed ext-data-control
+v1, skips initial selections and rejects sensitive-marked offers before requesting
+bytes. It supplies exact-offer bounded MIME payloads through a private framed pipe.
+Python owns IDs, hashing, pins, count/byte eviction, search, thumbnails and optional
+versioned SQLite persistence. wl-copy restores bytes through stdin with an explicit
+MIME type. cliphist is neither a dependency nor a history source.
+
+`ClipboardWindow` is a centred, bounded FloatingWindow, matched by class+title with
+a narrow Hyprland float/centre rule. Search gains focus on opening; clicking another
+client releases typing focus while Clipboard can stay visible. It owns no bar
+reservation or desktop-sized catcher. `ClipboardContent` renders text and thumbnails;
+it uses shared theme roles/radii and IconRegistry, with new Legacy fallback roles.
+The existing output fullscreen monitor closes/suppresses it. Shared menus,
+Notification Centre and Settings close it on opening. Model state outlives visibility.
+
+Schema6 adds clipboard preferences through the established SettingsStore writer.
+Memory-only is default, including pins; QML/process restart clears session history.
+Opt-in persistent payloads live outside dotfiles in a private SQLite store; runtime
+thumbnails are cleaned on shutdown/restart. Initial and re-enabled selection is
+skipped, not backfilled. SUPER+SHIFT+V invokes service IPC, SUPER+V remains floating.
+See [privacy/limits](design/clipboard-manager.md) and
+[runtime evidence](research/clipboard-manager-checkpoint.md).
+
 ## Permanent notification ownership — 2026-10-03
 
 Production `ShellRoot.Component.onCompleted` invokes the existing idempotent

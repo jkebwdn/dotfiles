@@ -1,5 +1,35 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-03 — first-party Clipboard boundary and privacy
+
+Quickshell0.3.1's text-only, focus-limited clipboard cannot implement the requested
+background MIME history. Use one small MAGI ext-data-control capture helper and a
+Python history worker behind a JSON-lines service, with wl-copy only for restoring
+explicit payloads via stdin. This avoids importing cliphist's existing private
+database and lets the initial/sensitive offers be rejected before any byte request.
+
+Choose memory-only history by default, optional versioned private SQLite storage,
+count/byte/image limits and explicit clear/erase controls. No application identity
+is available; sensitive hints are best-effort and pause remains necessary for
+unmarked secrets. HTML-only offers are converted to plain text; actual plain
+alternatives are preferred. wl-copy advertises plain aliases even for supplied
+HTML, so that live fixture is literal plain text; HTML conversion is model-tested.
+
+Clipboard gets its own compact window and search/keyboard interface, reusing the
+palette, icon and fullscreen services. SUPER+SHIFT+V is conflict-free; SUPER+V
+keeps its current floating action. Remove only the legacy cliphist watcher startup.
+Guard restore/pin/delete while search results belong to an older query, preventing
+rapid typing+Enter from acting on a stale selection. Operator reports core
+interaction checks working; final whole-shell visual review remains separate.
+The operator then reported that the initial layer's Exclusive keyboard mode blocked
+typing in other windows. Replace it with a normal FloatingWindow and a narrow
+class+title Hyprland rule, preserving focused search on open and standard desktop
+focus switching while it stays open. No fullscreen input mask or bar change.
+The operator passed that correction. The2026-10-04 resume audit confirms the old
+cliphist watcher was successfully stopped and its packaged service is disabled/
+inactive with no startup enablement. Its existing database was left untouched.
+See the Clipboard checkpoint for final tests, runtime evidence and exact path scope.
+
 ## 2026-10-03 — MAGI permanently owns desktop notifications
 
 Activate the existing NotificationServer synchronously from production ShellRoot

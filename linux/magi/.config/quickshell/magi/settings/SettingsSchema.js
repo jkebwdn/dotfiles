@@ -6,7 +6,7 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 5,
+    return {schemaVersion: 6,
         appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null}},
             visual: {statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
@@ -19,6 +19,8 @@ function defaults() {
         icons: {pack: "magi-legacy", modulePacks: {}, overrides: {global: {}, modules: {}}},
         profile: {displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
         media: {enabled: true, preferredPlayer: null, emptyState: "collapse"},
+        clipboard: {enabled: true, historyLimit: 100, persistHistory: false,
+            includeImages: true, includeFiles: true},
         notifications: {enabled: true, toastsEnabled: true, dnd: false,
             fallbackTimeout: 5000, maxVisible: 3, historyLimit: 100,
             showBody: true, criticalBypassDnd: true},
@@ -52,7 +54,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 5) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 6) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -93,6 +95,15 @@ function analyze(input) {
                 : typeof value !== "boolean") {
             valid(false, "notifications." + key, null)
             effective.notifications[key] = notificationDefaults[key]
+        }
+    }
+    const clipboardDefaults = defaults().clipboard
+    for (const key of Object.keys(clipboardDefaults)) {
+        const value = effective.clipboard[key]
+        if (key === "historyLimit" ? !Number.isInteger(value) || value < 10 || value > 200
+                : typeof value !== "boolean") {
+            valid(false, "clipboard." + key, null)
+            effective.clipboard[key] = clipboardDefaults[key]
         }
     }
     const r = a.roundness

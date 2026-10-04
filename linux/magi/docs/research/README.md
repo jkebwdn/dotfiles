@@ -1,6 +1,12 @@
 # MAGI research index
 
-Current milestone: [Permanent notification ownership](permanent-notification-ownership-checkpoint.md),
+Current milestone: [First-party Clipboard Manager](clipboard-manager-checkpoint.md),
+2026-10-04. Implementation and operator interaction/nonmodal-focus checks passed.
+Final host audit confirms the legacy watcher stopped, no startup relaunch route,
+preserved notification ownership and48px reservation. Focused tests pass; exact
+32-path allowlist documented. Ready for final review; uncommitted/unpushed.
+
+Previous milestone: [Permanent notification ownership](permanent-notification-ownership-checkpoint.md),
 2026-10-03. MAGI auto-activation, SwayNC race removal and a clean process restart
 are validated; package/configuration-preserving rollback is documented. Operator
 review passed and the checkpoint is accepted.

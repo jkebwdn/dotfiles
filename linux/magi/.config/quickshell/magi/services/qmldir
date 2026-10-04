@@ -11,6 +11,7 @@ singleton AssetManager 1.0 AssetManager.qml
 singleton Media 1.0 Media.qml
 singleton QuickActions 1.0 QuickActions.qml
 singleton Notifications 1.0 Notifications.qml
+singleton Clipboard 1.0 Clipboard.qml
 singleton AirplaneMode 1.0 AirplaneMode.qml
 singleton Caffeine 1.0 Caffeine.qml
 singleton ActionConfirmation 1.0 ActionConfirmation.qml
