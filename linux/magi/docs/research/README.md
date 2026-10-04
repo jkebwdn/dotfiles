@@ -1,10 +1,13 @@
 # MAGI research index
 
-Current milestone: [First-party Clipboard Manager](clipboard-manager-checkpoint.md),
-2026-10-04. Implementation and operator interaction/nonmodal-focus checks passed.
-Final host audit confirms the legacy watcher stopped, no startup relaunch route,
-preserved notification ownership and48px reservation. Focused tests pass; exact
-32-path allowlist documented. Ready for final review; uncommitted/unpushed.
+Current milestone: [Legacy shell retirement](legacy-shell-retirement-checkpoint.md),
+2026-10-04, from pushed `a5cce6b`. Bounded package/configuration/documentation
+cleanup; wl-clipboard and old cliphist history preserved. See the checkpoint for
+runtime results and operator-review state. No commit/push.
+
+The [Clipboard Manager checkpoint](clipboard-manager-checkpoint.md) records the
+preceding implementation and accepted interaction/nonmodal-focus checks;
+committed at `a5cce6b`. Its original review wording is retained as historical evidence.
 
 Previous milestone: [Permanent notification ownership](permanent-notification-ownership-checkpoint.md),
 2026-10-03. MAGI auto-activation, SwayNC race removal and a clean process restart

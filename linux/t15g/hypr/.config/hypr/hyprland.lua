@@ -168,36 +168,6 @@ hl.animation({
 
 
 ----------------------------------------------------------------
--- SWAYNC LAYER POLISH
-----------------------------------------------------------------
-
-hl.layer_rule({
-    name = "swaync-control-center",
-
-    match = {
-        namespace = "swaync-control-center",
-    },
-
-    blur         = true,
-    ignore_alpha = 0.08,
-    no_anim      = true,
-})
-
-
-hl.layer_rule({
-    name = "swaync-notification-window",
-
-    match = {
-        namespace = "swaync-notification-window",
-    },
-
-    blur         = true,
-    ignore_alpha = 0.12,
-    no_anim      = true,
-})
-
-
-----------------------------------------------------------------
 -- KEYBINDS
 ----------------------------------------------------------------
 

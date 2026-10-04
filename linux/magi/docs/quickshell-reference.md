@@ -36,7 +36,8 @@ externally; MAGI keeps production construction gated until approved handoff.
 The permanent-ownership close-out supersedes that migration gate: production
 ShellRoot now calls the existing idempotent activation method on completion. A
 private-bus fixture and clean live process restart prove automatic ownership.
-SwayNC's packaged D-Bus unit is masked so retry/activation cannot race startup.
+The 2026-10-04 retirement removes SwayNC's package and D-Bus activation files;
+the earlier temporary mask is retired. See the [host checkpoint](research/legacy-shell-retirement-checkpoint.md).
 
 Tagged [notification.cpp](https://github.com/quickshell-mirror/quickshell/blob/v0.3.1/src/services/notifications/notification.cpp)
 stores wire timeout directly in milliseconds despite a seconds comment in the

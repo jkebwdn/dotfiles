@@ -1,5 +1,18 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-04 — retire the superseded shell stack
+
+Retire Waybar, swaync-git, Noctalia and cliphist using pacman package removal
+without recursive dependency removal or an orphan purge. Unstow deployed legacy
+configuration before deleting its repository package. The systemd Stow package
+contains only SwayNC mask/greeting machinery, so retire it entirely after package
+removal and reload the user manager. Remove the obsolete SwayNC layer rules only.
+Keep wl-clipboard, all shared dependencies, Hypridle/Hyprlock and existing cliphist
+database contents. The pre-existing generated SwayNC greeting diff is superseded
+by intentional whole-package deletion; unrelated dirty files remain untouched.
+Earlier dated rollback decisions remain historical. No MAGI feature/QML changes,
+restart, commit or push. [Audit/validation/checkpoint](research/legacy-shell-retirement-checkpoint.md).
+
 ## 2026-10-03 — first-party Clipboard boundary and privacy
 
 Quickshell0.3.1's text-only, focus-limited clipboard cannot implement the requested

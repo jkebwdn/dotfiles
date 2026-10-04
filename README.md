@@ -1,151 +1,87 @@
 # dotfiles
 
-Personal dotfiles and system configuration for my Linux, macOS, and Windows machines.
-
-The repository is organised by operating system and machine, allowing each system to maintain its own configuration while keeping everything together in a single version-controlled repository.
-
-Configurations are primarily managed using Stow.
-
----
+My personal desktop and terminal configuration, organised by platform and machine.
+Linux and macOS packages are managed with GNU Stow; the Windows configuration is
+maintained manually. These are working machine configurations, with hardware and
+personal preferences to review before reusing them.
 
 ## Systems
 
-### Linux — ThinkPad T15g
+### Arch Linux — ThinkPad T15g
 
-Arch Linux workstation running Hyprland.
+The current desktop is **Arch Linux + Hyprland + MAGI**.
+[MAGI](linux/magi/README.md) is my Quickshell shell layer: a bar/status surface,
+Control Centre, Settings, notifications and Clipboard Manager. Its README covers
+features, dependencies, deployment and future work.
 
-Current configuration includes:
+Hypridle and Hyprlock handle idle management and locking; Hyprpaper supplies the
+wallpaper. Rofi remains the application launcher, and Hyprmon manages monitor
+profiles. The terminal workflow uses Ghostty, Neovim, Yazi and btop. MFTrunk is a
+separate terminal utility for system controls and diagnostics.
 
-- Hyprland
-- MAGI / Quickshell
-- Waybar
-- Ghostty
-- Neovim
-- SwayNC
-- Yazi
-  - Yatline
-  - Custom theme
-- btop
-- Hyprmon
-- MFTrunk
-- systemd user services
+### macOS — Mac mini
 
-This is currently the most complete configuration in the repository.
+The [Mac mini configuration](macos/mac-mini/) uses Yabai and skhd for tiling and
+shortcuts, SketchyBar for the bar, and JankyBorders for window borders. Ghostty,
+Neovim and Fastfetch have their own macOS packages.
 
-### macOS
+### Windows — Dell Inspiron 7501
 
-macOS configurations are maintained separately from Linux rather than attempting to keep identical configurations across platforms.
+The [Windows configuration](Windows/Dell-Inspiron-7501/README.md) uses Komorebi,
+Komorebi Bar and whkd on the work laptop. It is deployed by copying the relevant
+files manually; the machine README records destinations and setup details.
 
-Current tooling includes:
-
-- Yabai
-- Skhd
-- SketchyBar
-- JankyBorders
-- Ghostty
-- Neovim
-
-The setup follows the same general keyboard-driven workflow as the Linux environment while remaining native to macOS.
-
-### Windows
-
-Windows configuration is currently focused around a keyboard-driven tiling workflow using:
-
-- Komorebi
-- Komorebi Bar
-- whkd
-
-Further configuration will be migrated into the repository over time.
-
----
-
-## Repository Structure
+## Repository layout
 
 ```text
 dotfiles/
 ├── linux/
-│   ├── magi/
-│   └── t15g/
-│       ├── ghostty/
-│       ├── hypr/
-│       ├── hyprmon/
-│       ├── mftrunk/
-│       ├── nvim/
-│       ├── rofi/
-│       ├── swaync/
-│       ├── systemd/
-│       ├── waybar/
-│       └── yazi/
+│   ├── magi/                 # MAGI shell, tests and documentation
+│   └── t15g/                 # Hyprland and application Stow packages
 ├── macos/
-└── windows/
+│   └── mac-mini/             # macOS Stow packages
+└── Windows/
+    └── Dell-Inspiron-7501/   # Manually deployed Windows configuration
 ```
 
-Each package mirrors its destination relative to the home directory so it can be managed independently using GNU Stow.
+A Stow package mirrors its destination beneath the home directory. For example,
+`linux/t15g/hypr/.config/hypr/` is linked as `~/.config/hypr/`.
 
-For example:
+## Setup and restoration
 
-```text
-linux/t15g/hypr/.config/hypr/
+Install the platform's applications first, then clone this repository to
+`~/dotfiles`. Review the machine-specific files with `nvim`, particularly monitor
+layouts, paths and keybinds. Back up existing configuration before linking files.
+This repository supplies configuration rather than a complete OS installer.
+
+For the T15g application packages, preview the links before applying them:
+
+```bash
+cd ~/dotfiles/linux/t15g
+stow --simulate --verbose --target="$HOME" hypr ghostty nvim rofi yazi
+stow --target="$HOME" hypr ghostty nvim rofi yazi
 ```
 
-is linked to:
-
-```text
-~/.config/hypr/
-```
-
----
-
-## GNU Stow
-
-Packages can be linked individually from the relevant machine directory.
-
-For example:
+Deploy MAGI from the Linux package directory:
 
 ```bash
 cd ~/dotfiles/linux
-stow magi
-
-cd ~/dotfiles/linux/t15g
-
-stow hypr
-stow systemd
-stow waybar
-stow ghostty
-stow yazi
-
-systemctl --user daemon-reload
+stow --simulate --verbose --target="$HOME" magi
+stow --target="$HOME" magi
 ```
 
-On the T15g, the `systemd` package declaratively masks `swaync.service` so the
-installed SwayNC D-Bus service cannot race MAGI for desktop notification ownership.
-It also installs the optional SwayNC greeting service/timer definitions, but does
-not enable the timer. SwayNC and its configuration remain available for rollback.
+MAGI's package-local ignore rules keep documentation, development fixtures and
+agent files out of the deployment. See its
+[installation instructions](linux/magi/README.md#installation-and-development)
+for dependencies and session integration. Use the same Stow workflow from
+`macos/mac-mini` for selected macOS packages. Use
+`stow --delete --target="$HOME" PACKAGE` from the relevant package directory to
+unlink a package before retiring it.
 
-This keeps configuration files inside the Git repository while exposing them at the locations expected by each application.
+On Arch, start from a working Hyprland session and provision the backends listed
+in MAGI's README. Hyprland starts MAGI at login. Hypridle and Hyprlock configuration
+is currently machine-local and must be restored separately; those files are not
+tracked here. Keep separate backups of local preferences and application data.
 
----
-
-## MFTrunk
-
-MFTrunk is a custom terminal-based system control utility developed for the Linux configuration.
-
-It currently provides controls and information for:
-
-- Wi-Fi
-- Bluetooth
-- Audio
-- Battery
-- VPN
-- Diagnostics
-- Power
-
-The aim is to provide a lightweight, terminal-native control centre that integrates naturally with the rest of the desktop environment.
-
----
-
-## Notes
-
-This repository is continuously evolving as the configurations for each machine are refined and migrated.
-
-The Linux T15g configuration is currently the most complete, with the macOS and Windows environments being progressively consolidated into the same repository structure.
+Detailed MAGI architecture and migration evidence live in its
+[documentation index](linux/magi/docs/README.md).

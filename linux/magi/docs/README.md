@@ -2,6 +2,27 @@
 
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
+For the project overview, features and deployment, see the [MAGI README](../README.md).
+
+## Legacy shell retirement — 2026-10-04
+
+Current shell: **Arch + Hyprland + MAGI**, based on pushed `a5cce6b`.
+MAGI owns the 48px bar/status surface, Control Centre, Settings, notification
+D-Bus service/toasts/history/DND and first-party Clipboard Manager. The bounded
+retirement checkpoint records package/configuration removal, preserved cliphist
+history, retained wl-clipboard, runtime checks and the exact Git allowlist:
+[operator checkpoint](research/legacy-shell-retirement-checkpoint.md).
+Earlier dated entries below are historical evidence; package-preserving SwayNC
+rollback and the installed cliphist service described there are superseded by
+this retirement. Clipboard was committed at `a5cce6b`; its earlier uncommitted
+review wording describes the checkpoint at the time.
+
+## Planned future shell work
+
+Separate milestones: first-party Emoji Picker; status-bar Calendar/date panel;
+MAGI lock screen replacing Hyprlock only after security review; broader Control
+Centre actions; and a later whole-shell Settings/visual/composition pass.
+Hyprlock remains the current lock screen. None is implemented in this retirement.
 
 ## Clipboard Manager — 2026-10-04, ready for final review
 

@@ -98,12 +98,12 @@ maxVisible, historyLimit, showBody, criticalBypassDnd. No per-app rules.
 Host receives an explicit screen; initial presentation follows the existing bar's
 output. Model has no window ownership, allowing output routing later without
 duplicating the notification server. Multi-output/fractional scaling unverified.
-MAGI is the intended startup owner, with SwayNC masked but installed and preserved.
-Server construction automatically attempts ownership and retries when an existing
-owner exits. Production ShellRoot constructs it on completion; Hyprland no longer
-starts SwayNC or its greeting script, the greeting timer is disabled, and the
-packaged D-Bus service is masked. Test protocol changes on a private bus first.
-The server backend remains process-global once constructed. Rollback after
-ownership requires reverting automatic activation and restarting MAGI before
-starting SwayNC; unloading QML alone does not release the name. Current owner and
-exact procedure are in the permanent-ownership checkpoint.
+MAGI is the startup owner. Server construction automatically attempts ownership
+and retries when an existing owner exits. Production ShellRoot constructs it on
+completion. The 2026-10-04 retirement removes SwayNC and its activation/mask/
+greeting infrastructure. Test protocol changes on a private bus first.
+The server backend remains process-global once constructed; unloading QML alone
+does not release the name. The earlier package-preserving rollback procedure in
+the permanent-ownership checkpoint is historical and now requires reinstalling
+and configuring SwayNC before a separately reviewed ownership handoff.
+See the [retirement checkpoint](../research/legacy-shell-retirement-checkpoint.md).

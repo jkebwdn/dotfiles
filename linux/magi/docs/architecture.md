@@ -34,14 +34,19 @@ Production `ShellRoot.Component.onCompleted` invokes the existing idempotent
 without making arbitrary singleton importers claim D-Bus and without delayed IPC
 or persisted approval state. A clean process restart proves automatic ownership.
 
-Hyprland starts `quickshell -c magi` but no longer starts SwayNC or its greeting
-script. `SUPER+N` invokes MAGI's Centre. The Stow-managed systemd package resolves
-the SwayNC user unit through a tracked relative link to a package-local `/dev/null`
-mask target. Its linked greeting timer has no enablement links, eliminating client/timer
-activation races while retaining package/configuration for rollback. QuickActions
-uses Settings as its only DND state and has no SwayNC query path. Operational
-evidence and rollback are in the
-[ownership checkpoint](research/permanent-notification-ownership-checkpoint.md).
+Hyprland starts `quickshell -c magi`; `SUPER+N` invokes MAGI's Centre.
+QuickActions uses Settings as its only DND state and has no SwayNC query path.
+The 2026-10-04 retirement supersedes the package-preserving rollback: Waybar,
+SwayNC, Noctalia and cliphist are retired, together with their legacy deployment
+and SwayNC-only mask/greeting Stow package. wl-clipboard remains required for
+MAGI restore and other desktop tools; existing cliphist history is preserved.
+The subsequent hygiene pass also retired HyprPanel, AGS, Matugen and awww;
+Hyprpaper remains the active wallpaper backend.
+Hypridle, Hyprlock and Hyprpaper retain their existing responsibilities.
+See the [retirement checkpoint](research/legacy-shell-retirement-checkpoint.md)
+for actual host evidence; the earlier
+[ownership checkpoint](research/permanent-notification-ownership-checkpoint.md)
+remains historical migration/rollback evidence.
 
 ## Notifications milestone — 2026-10-03, operator-accepted implementation
 
