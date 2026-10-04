@@ -1,7 +1,7 @@
 # MAGI
 
 MAGI is a first-party Quickshell desktop shell for my Arch Linux + Hyprland setup.
-It brings the bar, system controls, Settings, notifications and clipboard history
+It brings the bar, system controls, Settings, application launching, notifications and clipboard history
 into one interface with shared themes and icons.
 
 ## Current status
@@ -22,15 +22,29 @@ behaviour still need broader testing. Hyprlock remains the current lock screen.
 - Control Centre with configurable primary tiles, secondary actions, sliders,
   ordering and columns; available actions reflect the machine's backends.
 - A separate Settings application for appearance, profile, bar, Control Centre,
-  icons, notifications and clipboard preferences.
+  icons, launcher, notifications and clipboard preferences.
 - Semantic themes/palettes, configurable visual roles and a custom icon system
   with bundled packs, overrides and fallback icons.
 - First-party notification ownership, toasts, history, Notification Centre and DND.
+- An application launcher with searchable desktop entries, list/grid layouts and keyboard navigation.
 - A first-party Clipboard Manager with text, image and file-URI support.
 - MPRIS media information and playback controls, with optional profile/media regions.
 - Wi-Fi scanning/connection/password entry, Bluetooth status/device controls,
   PipeWire volume, brightness and battery integration.
 - Fullscreen-aware notification and Clipboard behaviour.
+
+## Application launcher
+
+`SUPER+SPACE` opens MAGI's application launcher; `SUPER+CTRL+SPACE` opens the
+retained Rofi fallback. Type to filter installed applications, use arrows to
+select, Enter to launch, and Escape or an outside click to close. Settings →
+Launcher selects list/grid, dimensions, icons, labels and optional local artwork.
+Search includes names, generic names and keywords, with session-only frequency
+weighting. Right-click an app to hide it from both layouts and search. Restore it
+under Settings → Launcher → Hidden applications; resetting Launcher restores all
+hidden applications. See the [launcher checkpoint](docs/design/application-launcher.md)
+for architecture, validation and limitations. GIO and python-gobject handle desktop
+metadata and launch semantics; Ghostty is supported for terminal applications.
 
 ## Clipboard
 
@@ -78,7 +92,7 @@ For the current Arch setup, provide:
 
 - Hyprland, Quickshell and GNU Stow.
 - NetworkManager, BlueZ, PipeWire/WirePlumber and UPower for system integrations.
-- Python, python-gobject and gdk-pixbuf2 for the clipboard/settings helpers and
+- Python, python-gobject and gdk-pixbuf2 for the clipboard/settings/launcher helpers and
   image previews; wl-clipboard for clipboard restoration; brightnessctl for brightness.
 - A C compiler (`base-devel`), Wayland and wayland-protocols for the clipboard
   capture helper's build on first use. The required ext-data-control protocol

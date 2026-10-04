@@ -1,5 +1,15 @@
 # MAGI — Quickshell Technical Reference
 
+## Launcher API checkpoint (2026-10-04)
+
+Installed Quickshell0.3.1 and Hyprland0.56.2 remain the target. The launcher uses
+PanelWindow + overlay layer + temporary Exclusive keyboard focus with
+ExclusionMode.Ignore. DesktopEntry.execute() is not used because the versioned
+documentation explicitly omits terminal and field-code handling. GIO provides
+both discovery and launch instead. Hidden-app context menus use Qt6.11
+Controls Menu with explicit Popup.Item, contained in the existing layer. See [source evidence and compatibility](research/application-launcher-apis.md).
+
+
 ## Clipboard0.3.1 — inspected/tested 2026-10-03
 
 Installed qmltypes and the official v0.3.1 core header expose `clipboardText` only;

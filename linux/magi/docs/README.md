@@ -1,5 +1,18 @@
 # MAGI — Research and Development
 
+## Application launcher — 2026-10-04, uncommitted review
+
+First-party application-only launcher is implemented over baseline `c5bd0e2`.
+List and grid share GIO desktop discovery/launch, normalized token ranking and
+session frequency. Schema7 adds a Launcher Settings page with layout, size,
+icons/labels and optional image controls. `SUPER+SPACE` toggles the zero-reservation
+focus overlay; `SUPER+CTRL+SPACE` retains Rofi. Operator launch/focus/dismissal
+checks passed; Neovim-in-Ghostty and grid foundation are now operator-accepted.
+Hidden applications persist by desktop ID, with contextual Hide and Settings
+Restore; an application-icon resolver separates lookup from layout. See [implementation and validation](design/application-launcher.md)
+and [API evidence](research/application-launcher-apis.md).
+
+
 MAGI is a modular Quickshell environment for Arch Linux and Hyprland.
 This directory records implementation evidence, decisions and proposed research.
 For the project overview, features and deployment, see the [MAGI README](../README.md).

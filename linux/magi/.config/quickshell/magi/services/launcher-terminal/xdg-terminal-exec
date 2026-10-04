@@ -1,0 +1,8 @@
+#!/usr/bin/python3
+"""Private GIO adapter for the session's Ghostty; never installed on global PATH."""
+import os
+import sys
+
+terminal = os.environ.pop("MAGI_LAUNCHER_TERMINAL")
+os.environ["PATH"] = os.environ.pop("MAGI_LAUNCHER_PATH")
+os.execv(terminal, [terminal, "-e", *sys.argv[1:]])

@@ -211,11 +211,17 @@ hl.bind(
 
 
 ----------------------------------------------------------------
--- Rofi
+-- MAGI applications (Rofi remains available as a fallback)
 ----------------------------------------------------------------
 
 hl.bind(
     SUPER .. " + SPACE",
+    hl.dsp.exec_cmd("quickshell ipc -c magi call launcher toggle")
+)
+
+-- Manual fallback while evaluating the first-party launcher.
+hl.bind(
+    SUPER .. " + CTRL + SPACE",
     hl.dsp.exec_cmd("rofi -show drun")
 )
 

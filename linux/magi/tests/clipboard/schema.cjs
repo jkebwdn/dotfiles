@@ -4,7 +4,7 @@ const context = vm.createContext({});
 for (const name of ['SettingsSchema.js', 'SettingsMigrations.js'])
     vm.runInContext(fs.readFileSync(base + name, 'utf8'), context);
 const run = expression => JSON.parse(JSON.stringify(vm.runInContext(expression, context)));
-assert.equal(run('migrate({schemaVersion:5,custom:7}).schemaVersion'), 6);
+assert.equal(run('migrate({schemaVersion:5,custom:7}).schemaVersion'), 7);
 assert.equal(run('migrate({schemaVersion:5,custom:7}).custom'), 7);
 assert.equal(run('analyze(migrate({schemaVersion:5})).effective.clipboard.persistHistory'), false);
 for (const value of [10, 100, 200])

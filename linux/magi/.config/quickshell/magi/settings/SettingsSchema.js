@@ -6,7 +6,7 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 6,
+    return {schemaVersion: 7,
         appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null}},
             visual: {statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
@@ -19,6 +19,11 @@ function defaults() {
         icons: {pack: "magi-legacy", modulePacks: {}, overrides: {global: {}, modules: {}}},
         profile: {displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
         media: {enabled: true, preferredPlayer: null, emptyState: "collapse"},
+        launcher: {enabled: true, hiddenIds: [], layout: "list", panelWidth: 420, gridWidth: 720,
+            rowHeight: 56, iconSize: 32, visibleRows: 6, gridColumns: 5,
+            showLabels: true, showSubtitles: true, showIcons: true,
+            position: "center", headerEnabled: false, headerImage: "",
+            headerPosition: "top", backgroundEnabled: false, backgroundImage: ""},
         clipboard: {enabled: true, historyLimit: 100, persistHistory: false,
             includeImages: true, includeFiles: true},
         notifications: {enabled: true, toastsEnabled: true, dnd: false,
@@ -54,7 +59,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 6) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 7) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -96,6 +101,27 @@ function analyze(input) {
             valid(false, "notifications." + key, null)
             effective.notifications[key] = notificationDefaults[key]
         }
+    }
+    const launcherDefaults = defaults().launcher
+    const launcherRanges = {panelWidth:[320,800], gridWidth:[420,1200], rowHeight:[40,96],
+        iconSize:[20,64], visibleRows:[3,12], gridColumns:[3,8]}
+    const launcherEnums = {layout:["list","grid"], position:["center","top"], headerPosition:["top","bottom"]}
+    for (const key of Object.keys(launcherDefaults)) {
+        const value = effective.launcher[key], range = launcherRanges[key], values = launcherEnums[key]
+        const good = key === "hiddenIds" ? Array.isArray(value) && value.every(id =>
+            typeof id === "string" && id.length > 8 && id.length <= 1024
+            && id.endsWith(".desktop") && !/[\/\\\u0000-\u001f\u007f]/.test(id))
+            && new Set(value).size === value.length
+            : range ? Number.isInteger(value) && value >= range[0] && value <= range[1]
+            : values ? values.indexOf(value) >= 0
+            : key === "headerImage" || key === "backgroundImage"
+                ? typeof value === "string" && value.length <= 4096 && (value === "" || value[0] === "/")
+                : typeof value === "boolean"
+        if (!good) { valid(false, "launcher." + key, null); effective.launcher[key] = launcherDefaults[key] }
+    }
+    // Always leave a way to identify applications.
+    if (!effective.launcher.showIcons && !effective.launcher.showLabels) {
+        valid(false, "launcher.showLabels", null); effective.launcher.showLabels = true
     }
     const clipboardDefaults = defaults().clipboard
     for (const key of Object.keys(clipboardDefaults)) {

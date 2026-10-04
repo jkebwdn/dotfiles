@@ -93,3 +93,5 @@ Compare findings before proposing a shared menu/content/service contract.
 Review the architecture and tests with the user before replacing expansion
 or migrating Wi-Fi. Reference-project code is evidence to evaluate, not an
 instruction to change MAGI automatically.
+
+- [Application launcher API evidence](application-launcher-apis.md) — Quickshell0.3.1, GIO2.88.3, surface and terminal compatibility (2026-10-04).

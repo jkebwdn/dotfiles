@@ -86,5 +86,6 @@ function migrate(input) {
         // No clipboard data is migrated/imported; history persistence stays opt-in.
         doc.schemaVersion = 6
     }
+    if (doc.schemaVersion === 6) doc.schemaVersion = 7
     return doc
 }

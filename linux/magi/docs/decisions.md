@@ -1,5 +1,25 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-04 — Application-only launcher
+
+Choose a separate temporary overlay for immediate search focus, consuming outside
+dismissal and zero reserved space. Share one model and delegate between list and
+grid; avoid a provider/command framework. Use GIO for metadata visibility and
+execution rather than Quickshell0.3.1's limited DesktopEntry.execute(). Add a
+private Ghostty terminal adapter because GLib2.88's fallback list lacks it.
+Keep schema7 preferences in the existing writer; keep frequency in memory.
+Replace SUPER+SPACE with MAGI and retain Rofi on SUPER+CTRL+SPACE. The existing
+bar, Wi-Fi, notification and Clipboard implementations retain their ownership.
+Tests and operator checks are recorded in the [launcher checkpoint](design/application-launcher.md).
+Follow-up: store exact user-hidden IDs in additive schema7 preferences, filter
+before ranking, and provide a contextual Hide plus Settings Restore. Reset
+Launcher deliberately clears hidden IDs and says so in the UI. No inferred
+blacklists. Extract application icon lookup behind `LauncherIcons.resolve` without
+adding an icon-pack subsystem. Operator accepted Neovim-in-Ghostty and grid as a
+functional foundation; broad grid redesign is excluded.
+No commit/push is authorized by this implementation checkpoint.
+
+
 ## 2026-10-04 — retire the superseded shell stack
 
 Retire Waybar, swaync-git, Noctalia and cliphist using pacman package removal

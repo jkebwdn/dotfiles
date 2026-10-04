@@ -1,5 +1,21 @@
 # MAGI — Architecture
 
+## Application launcher (2026-10-04)
+
+`services/Launcher.qml` owns application selection and state, `LauncherSearch.js`
+owns pure scoring, and `launcher_backend.py` delegates XDG metadata/execution to
+GIO. The private terminal adapter supports installed Ghostty without parsing Exec.
+`components/launcher` separates the overlay, content/layout and item rendering.
+User-hidden desktop IDs live in Launcher preferences and are excluded before
+ranking for both views; Settings resolves display names and restores IDs even
+when the app is uninstalled. `LauncherIcons.resolve(app)` supplies a presentation
+object to delegates, leaving a desktop-ID override point for future icon packs.
+The output-local overlay reserves no space and takes keyboard focus only while
+open. It is independent of Clipboard and the shared expandable bar host. Schema7
+and the existing Settings writer own visual preferences. See the
+[launcher specification](design/application-launcher.md) for settings and limits.
+
+
 ## Clipboard Manager — 2026-10-03
 
 `ShellRoot` activates `Clipboard` only in production after Settings readiness.
