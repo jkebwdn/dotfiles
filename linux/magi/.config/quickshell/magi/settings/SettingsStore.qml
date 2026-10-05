@@ -106,12 +106,15 @@ Scope {
         } catch (exception) { state.error = String(exception); return false }
     }
     function setValue(section, key, value) {
-        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar"].indexOf(section) < 0) return false
+        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         // Fill missing defaults, but retain unknown fields and diagnosed raw values.
         if (next[section] === undefined) next[section] = Schema.defaults()[section]
         if (!Schema.object(next[section]) || ["__proto__", "constructor", "prototype"].indexOf(key) >= 0) return false
         next[section][key] = value
+        // Reducing/zeroing the limit deliberately erases older Emoji history atomically.
+        if (section === "emoji" && key === "recentLimit" && Number.isInteger(value) && value >= 0 && value <= 60)
+            next.emoji.recents = data.emoji.recents.slice(0, value)
         return commit(next)
     }
     function setVisual(key, value) {
@@ -211,7 +214,7 @@ Scope {
     function addControl(module) { return addEntry("controls", module) }
     function removeControl(key) { return removeEntry("controls", key) }
     function resetSection(section) {
-        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar"].indexOf(section) < 0) return false
+        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         next[section] = Schema.defaults()[section]
         return commit(next)

@@ -24,3 +24,4 @@ singleton LauncherIcons 1.0 LauncherIcons.qml
 singleton ClockState 1.0 ClockState.qml
 singleton Calendar 1.0 Calendar.qml
 CalendarModel 1.0 CalendarModel.qml
+singleton Emoji 1.0 Emoji.qml

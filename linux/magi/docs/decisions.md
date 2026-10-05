@@ -1,5 +1,19 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-05 — Emoji as an independent, Hub-ready subsystem
+
+Use pinned Unicode 17.0 fully-qualified data with license and reproducible
+stdlib generation. Keep normalized deterministic search separate from reusable
+content and temporary overlay host. Reuse clipboard handoff; do not add a capture
+service or fragile paste injection. Persist bounded deduplicated Recents through
+schema 9 Settings, with clear/reset and atomic limit reduction. Keep skin-tone
+variants intact in results; defer a variant chooser. No Launcher coupling or Hub
+extraction. Future Hub modes: Apps, Notifications, Emoji, Clipboard; CC/Calendar
+stay separate. Baseline is committed Calendar `4f4205d`; Emoji stays uncommitted.
+Same-turn double selection uses an immediate busy flag: Quickshell Process.running
+updates asynchronously, so it cannot alone guard the selected sequence snapshot.
+A regression covers copy completion after closing/reopening. See [review checkpoint](design/emoji-picker.md).
+
 ## 2026-10-04 — Shared time/date → Calendar
 
 Reuse SharedStatusSurface's animation/focus lifecycle with one optional header
@@ -9,7 +23,7 @@ without removing their layout slots; present the same ClockState in the expanded
 header. Calendar uses the existing bar layer/mask/reservation rather than a new
 popup. Pure local-noon civil arithmetic separates dates from presentation; Qt
 supplies localized labels. Reopen selects today; selection is session state only.
-Schema8 keeps all six preferences in Date & time, sharing formats with the bar.
+Schema 8 keeps all six preferences in Date & time, sharing formats with the bar.
 No provider integration or new bottom-bar capability. Live operator checks and
 focused regressions passed; [Calendar remains uncommitted for review](design/calendar-date-surface.md).
 
@@ -19,7 +33,7 @@ focused regressions passed; [Calendar remains uncommitted for review](design/cal
 Choose a separate temporary overlay for immediate search focus, consuming outside
 dismissal and zero reserved space. Share one model and delegate between list and
 grid; avoid a provider/command framework. Use GIO for metadata visibility and
-execution rather than Quickshell0.3.1's limited DesktopEntry.execute(). Add a
+execution rather than Quickshell 0.3.1's limited DesktopEntry.execute(). Add a
 private Ghostty terminal adapter because GLib2.88's fallback list lacks it.
 Keep schema7 preferences in the existing writer; keep frequency in memory.
 Replace SUPER+SPACE with MAGI and retain Rofi on SUPER+CTRL+SPACE. The existing
@@ -49,7 +63,7 @@ restart, commit or push. [Audit/validation/checkpoint](research/legacy-shell-ret
 
 ## 2026-10-03 — first-party Clipboard boundary and privacy
 
-Quickshell0.3.1's text-only, focus-limited clipboard cannot implement the requested
+Quickshell 0.3.1's text-only, focus-limited clipboard cannot implement the requested
 background MIME history. Use one small MAGI ext-data-control capture helper and a
 Python history worker behind a JSON-lines service, with wl-copy only for restoring
 explicit payloads via stdin. This avoids importing cliphist's existing private
@@ -101,7 +115,7 @@ See [the durable migration checkpoint](research/permanent-notification-ownership
 
 ## 2026-10-03 — First-party notifications, gated daemon handoff
 
-Build on `d539b9b` using Quickshell0.3.1 NotificationServer and native action/close
+Build on `d539b9b` using Quickshell 0.3.1 NotificationServer and native action/close
 APIs. No handwritten notification D-Bus server. Retain bounded text snapshots in
 memory after expiry, invalidating native actions and image-provider URLs on close.
 Default100 records, maximum500; transients skip history. Disk persistence is a
@@ -137,7 +151,7 @@ single-output live checklist are accepted. Permanent migration is not authorized
 Native geometry exposed conflicting exclusiveZone/exclusionMode setters; notification
 panels now set only Ignore, measuring y62 with no additional reservation.
 Post-acceptance snapshot confirms fullscreenfalse, main layer alpha1, no idle toast/
-Centre layers and unchanged48px reservation. SwayNC's competing start failed;
+Centre layers and unchanged 48px reservation. SwayNC's competing start failed;
 MAGI remains owner. Screenshots show sender `<i>` tags literally under intentional
 PlainText rendering; safe markup handling is polish follow-up, not silently added.
 See [the checkpoint](research/notifications-toasts-checkpoint.md).

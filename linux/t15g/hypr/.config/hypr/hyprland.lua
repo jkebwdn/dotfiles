@@ -225,6 +225,12 @@ hl.bind(
     hl.dsp.exec_cmd("rofi -show drun")
 )
 
+-- Long-term Emoji shortcut; future Hub will open directly in Emoji mode.
+hl.bind(
+    SUPER .. " + period",
+    hl.dsp.exec_cmd("quickshell ipc -c magi call emoji toggle")
+)
+
 -- First-party MAGI clipboard history; SUPER+V remains the floating toggle.
 hl.bind(
     SUPER .. " + SHIFT + V",

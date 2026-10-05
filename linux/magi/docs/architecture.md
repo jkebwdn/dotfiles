@@ -1,5 +1,21 @@
 # MAGI — Architecture
 
+## Emoji Picker and future Hub boundary (2026-10-05)
+
+`EmojiSearch.js` owns pure metadata preparation, normalized ranking, category and
+Recents helpers; `Emoji` owns data/query/selection and copy completion. Reusable
+`EmojiContent` consumes this service without window APIs. `EmojiWindow` temporarily
+supplies overlay focus and dismissal, following Launcher with no reserved space.
+The shell coordinates surface exclusion and fullscreen suppression. Clipboard
+restore and Emoji share `clipboard_backend.copy_payload`; no new watcher.
+Schema 9 persists modest Emoji preferences and bounded Recents in the existing store.
+
+The dedicated host will be replaced/absorbed by **MAGI Hub** presentation. Apps,
+Notifications, Emoji and Clipboard remain distinct subsystems; their shortcuts
+open Hub directly in the requested mode. Control Centre and Calendar remain
+separate anchored surfaces. No Hub or subsystem extraction is implemented now.
+See [Emoji contract, validation and limitations](design/emoji-picker.md).
+
 ## Calendar / Date surface (2026-10-04)
 
 `ClockState` owns one SystemClock and the shared time/date formats. `CalendarMath`
@@ -9,7 +25,7 @@ provides civil arithmetic, `CalendarModel` exposes selection/grid/navigation, an
 geometry with opacity0 while the shared surface is active; closing restores them.
 `CalendarSurface` inherits SharedStatusSurface with optional left header alignment,
 leaving the status cluster's default unchanged. The existing Bar PanelWindow owns
-input, focus, stacking and the sole48px reservation. Schema8 adds Date & time Settings.
+input, focus, stacking and the sole48px reservation. Schema 8 adds Date & time Settings.
 Current placement support is left/centre/right within the top bar. See the
 [checkpoint](design/calendar-date-surface.md) for interactions, validation and limits.
 
@@ -86,7 +102,7 @@ milestone context. [Current design](design/notifications-toasts.md) and
 the earlier deferred Bluetooth/state-style statements.
 
 `Notifications` owns a `NotificationModel` independently of any bar delegate or
-window. `NotificationBackend` wraps Quickshell0.3.1 NotificationServer; per-live-ID
+window. `NotificationBackend` wraps Quickshell 0.3.1 NotificationServer; per-live-ID
 `NotificationRecord` observers coalesce replacement changes and copy bounded display
 metadata. The model handles expiry, read/dismiss, actual action lookup, bounded
 history (default100), stable toast IDs and exit retention. Closed objects/actions

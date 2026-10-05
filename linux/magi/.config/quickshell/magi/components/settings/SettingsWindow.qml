@@ -52,7 +52,7 @@ FloatingWindow {
                     }
                     Label { text: "Settings"; color: Theme.Theme.subtext; Layout.bottomMargin: 20 }
                     Repeater {
-                        model: ["Appearance", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Icons"]
+                        model: ["Appearance", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Icons"]
                         SettingsButton {
                             id: navigationButton
                             required property string modelData
@@ -84,6 +84,7 @@ FloatingWindow {
                         : Services.SettingsWindowState.page === "Date & time" ? calendar
                         : Services.SettingsWindowState.page === "Notifications" ? notifications
                         : Services.SettingsWindowState.page === "Clipboard" ? clipboard
+                        : Services.SettingsWindowState.page === "Emoji" ? emoji
                         : Services.SettingsWindowState.page === "Launcher" ? launcher
                         : Services.SettingsWindowState.page === "Icons" ? icons : centre
                 }
@@ -122,6 +123,7 @@ FloatingWindow {
     Component { id: centre; Pages.ControlCentrePage { outputWidth: window.outputWidth } }
     Component { id: icons; Pages.IconsPage {} }
     Component { id: notifications; Pages.NotificationsPage {} }
+    Component { id: emoji; Pages.EmojiPage {} }
     Component { id: launcher; Pages.LauncherPage {} }
     Component { id: clipboard; Pages.ClipboardPage {} }
 }

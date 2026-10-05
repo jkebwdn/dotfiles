@@ -1,7 +1,7 @@
 # MAGI
 
 MAGI is a first-party Quickshell desktop shell for my Arch Linux + Hyprland setup.
-It brings the bar, system controls, Settings, application launching, Calendar, notifications and clipboard history
+It brings the bar, system controls, Settings, application launching, Calendar, Emoji, notifications and clipboard history
 into one interface with shared themes and icons.
 
 ## Current status
@@ -32,6 +32,22 @@ behaviour still need broader testing. Hyprlock remains the current lock screen.
 - Wi-Fi scanning/connection/password entry, Bluetooth status/device controls,
   PipeWire volume, brightness and battery integration.
 - Fullscreen-aware notification and Clipboard behaviour.
+
+## Emoji Picker
+
+`SUPER+.` opens the first-party Emoji Picker. Type a name, navigate with arrows,
+then Enter or click to copy the complete emoji; paste normally in your app.
+Escape or an outside click closes. The compact category selector includes
+Recently Used; search spans all categories. Ctrl+Left/Right switches categories.
+
+Unicode Emoji 17.0 supplies 3,944 complete sequences, including skin-tone and ZWJ
+variants. Recently Used is bounded and persisted through MAGI Settings. Settings
+→ Emoji controls enablement, columns, size, categories, recent limit and whether
+selection closes. No automatic paste or dedicated skin-tone chooser in v1.
+
+The reusable content and independent search/service are ready for a future Hub;
+the current dedicated host is temporary. See the [Emoji checkpoint and exact
+review allowlist](docs/design/emoji-picker.md) and [data provenance](.config/quickshell/magi/data/emoji/README.md).
 
 ## Calendar / Date surface
 
@@ -153,8 +169,9 @@ retirement state is recorded in the
 
 ## Roadmap
 
-- First-party Emoji Picker.
-- Calendar/date surface opened from the bar's time/date.
+- Shared MAGI Hub for Apps, Notifications, Emoji and Clipboard; direct shortcuts
+  open their requested mode. Control Centre and Calendar remain separate.
+- Optional event/agenda providers for Calendar.
 - A wider Control Centre action catalogue.
 - A first-party MAGI lock screen, replacing Hyprlock only after a separate security review.
 - Whole-shell Settings, visual and composition refinement.

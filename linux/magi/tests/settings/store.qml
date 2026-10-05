@@ -27,7 +27,7 @@ ShellRoot {
                 if (Quickshell.env("MAGI_TEST_INVALID") === "1") {
                     test.check(store.saveState === "invalid" && store.data.appearance.roundness.master === 1, "invalid fallback")
                     test.check(store.resetSection("appearance"), "explicit repair")
-                } else test.check(store.data.schemaVersion === 8 && store.saveState === "saved", "safe initial load")
+                } else test.check(store.data.schemaVersion === 9 && store.saveState === "saved", "safe initial load")
                 if (Quickshell.env("MAGI_TEST_LEGACY") === "1")
                     test.check(store.data.bar.left.join(",") === "date,clock"
                         && store.data.bar.center.length === 0 && store.data.custom === 42,

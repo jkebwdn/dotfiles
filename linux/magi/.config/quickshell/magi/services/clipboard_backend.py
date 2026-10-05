@@ -23,6 +23,20 @@ DEFAULTS = dict(enabled=True, historyLimit=100, persistHistory=False,
                 includeImages=True, includeFiles=True)
 
 
+def copy_payload(mime, payload):
+    """One safe Wayland handoff shared by history restore and shell text producers."""
+    subprocess.run(["wl-copy", "--type", mime], input=payload,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=3, check=True)
+
+
+def copy_text_request(stream):
+    request = json.loads(stream.readline(16384))
+    text = request.get("text")
+    if not isinstance(text, str) or not text or len(text.encode("utf-8")) > 8192 or "\0" in text:
+        raise ValueError("Invalid text handoff")
+    copy_payload("text/plain;charset=utf-8", text.encode("utf-8"))
+
+
 def preferences(raw):
     result = dict(DEFAULTS)
     for key, default in DEFAULTS.items():
@@ -354,8 +368,7 @@ class Worker:
             entry = self.history.get(command.get("id"))
             if not entry:
                 raise ValueError("Entry no longer available")
-            subprocess.run(["wl-copy", "--type", entry["mime"]], input=entry["payload"],
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=3, check=True)
+            copy_payload(entry["mime"], entry["payload"])
             entry["timestamp"] = time.time()
             self.history.save()
             self.emit(restored=True)
@@ -417,6 +430,9 @@ class Worker:
 
 
 def main():
+    if sys.argv[1:] == ["--copy-text"]:
+        copy_text_request(sys.stdin)
+        return
     os.umask(0o077)
     runtime = Path(os.environ["XDG_RUNTIME_DIR"]) / "magi-clipboard"
     runtime.mkdir(mode=0o700, exist_ok=True)

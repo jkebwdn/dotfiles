@@ -3,7 +3,7 @@ const c=vm.createContext({});
 for(const f of ['SettingsSchema','SettingsMigrations']) vm.runInContext(fs.readFileSync('.config/quickshell/magi/settings/'+f+'.js','utf8'),c);
 const old={schemaVersion:7,launcher:{hiddenIds:['a.desktop'],layout:'grid'},custom:42};
 const migrated=c.analyze(c.migrate(old));
-assert.equal(migrated.effective.schemaVersion,8);assert.equal(migrated.effective.custom,42);
+assert.equal(migrated.effective.schemaVersion,9);assert.equal(migrated.effective.custom,42);
 assert.equal(migrated.effective.launcher.hiddenIds[0],'a.desktop');assert.equal(migrated.effective.launcher.layout,'grid');
 assert.equal(migrated.effective.calendar.timeFormat,'24h');assert.equal(migrated.effective.calendar.dateFormat,'numeric');
 assert.equal(c.analyze(c.defaults()).errors.length,0);

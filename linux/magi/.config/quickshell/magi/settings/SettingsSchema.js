@@ -6,7 +6,7 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 8,
+    return {schemaVersion: 9,
         appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null}},
             visual: {statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
@@ -21,6 +21,8 @@ function defaults() {
         media: {enabled: true, preferredPlayer: null, emptyState: "collapse"},
         calendar: {firstDay: "locale", showWeekNumbers: false, showAdjacentDays: true,
             density: "comfortable", timeFormat: "24h", dateFormat: "numeric"},
+        emoji: {enabled: true, gridColumns: 8, emojiSize: 28, showCategories: true,
+            recentLimit: 24, recents: [], closeOnSelect: true},
         launcher: {enabled: true, hiddenIds: [], layout: "list", panelWidth: 420, gridWidth: 720,
             rowHeight: 56, iconSize: 32, visibleRows: 6, gridColumns: 5,
             showLabels: true, showSubtitles: true, showIcons: true,
@@ -61,7 +63,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 8) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 9) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -113,6 +115,17 @@ function analyze(input) {
             valid(false, "calendar." + key, null); effective.calendar[key] = calendarDefaults[key]
         }
     }
+    const emojiDefaults = defaults().emoji
+    const emojiRanges = {gridColumns:[4,12], emojiSize:[20,48], recentLimit:[0,60]}
+    for (const key of Object.keys(emojiDefaults)) {
+        const value = effective.emoji[key], range = emojiRanges[key]
+        const good = key === "recents" ? Array.isArray(value) && value.length <= 60
+            && value.every(id => typeof id === "string" && id.length <= 160 && /^[0-9A-F]{4,6}(?:-[0-9A-F]{4,6})*$/.test(id))
+            && new Set(value).size === value.length
+            : range ? Number.isInteger(value) && value >= range[0] && value <= range[1] : typeof value === "boolean"
+        if (!good) { valid(false, "emoji." + key, null); effective.emoji[key] = emojiDefaults[key] }
+    }
+    effective.emoji.recents = effective.emoji.recents.slice(0, effective.emoji.recentLimit)
     const launcherDefaults = defaults().launcher
     const launcherRanges = {panelWidth:[320,800], gridWidth:[420,1200], rowHeight:[40,96],
         iconSize:[20,64], visibleRows:[3,12], gridColumns:[3,8]}

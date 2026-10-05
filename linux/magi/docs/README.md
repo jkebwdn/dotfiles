@@ -1,15 +1,31 @@
 # MAGI — Research and Development
 
-## Calendar / Date surface — 2026-10-04, uncommitted review
+## Emoji Picker — 2026-10-05, uncommitted operator review
+
+`SUPER+.` opens the new compact first-party Emoji Picker. Unicode 17.0 supplies
+3,944 complete sequences; deterministic search spans nine categories, with
+persistent bounded Recents. Independent model/search/service and reusable
+EmojiContent sit inside a temporary zero-reservation host. Schema 9 adds Emoji
+Settings; selection reuses the existing clipboard path and closes for normal paste.
+Automated Emoji and focused regressions pass; the operator confirmed shortcut,
+search, selection/paste, dismissal and focus restoration. See the [checkpoint,
+remaining checks and exact allowlist](design/emoji-picker.md) and
+[API/data evidence](research/emoji-picker-apis.md).
+
+Future Hub is documentation only: Apps, Notifications, Emoji, Clipboard, with
+direct shortcuts selecting modes. Control Centre and Calendar remain separate.
+
+## Calendar / Date surface — 2026-10-04, committed `4f4205d`
 
 The bar time/date now expand into a shared Calendar surface, absorbing their
 normal presentation until closing completes. Reuses the existing shared-surface
 lifecycle and bar window; no extra reservation. Local Gregorian month navigation,
-keyboard selection, locale labels and schema8 Date & time Settings are implemented.
+keyboard selection, locale labels and schema 8 Date & time Settings are implemented.
 Automated Calendar, Settings, shared-status, Launcher, Clipboard and Notifications
 checks pass; operator live interaction checks passed. See the [review checkpoint
 and exact Git allowlist](design/calendar-date-surface.md) and [API evidence](research/calendar-apis.md).
-Baseline is the committed Launcher milestone `b895498`; no Calendar commit/push.
+Calendar was committed as `4f4205dd021a44ce88acad3869799edfcc243ab2`, verified
+locally at Emoji milestone start. Its earlier checkpoint retains historical review wording.
 
 
 ## Application launcher — 2026-10-04, committed `b895498`
@@ -44,7 +60,7 @@ review wording describes the checkpoint at the time.
 
 ## Planned future shell work
 
-Separate future milestones: first-party Emoji Picker; event/agenda providers;
+Separate future milestones: shared MAGI Hub; event/agenda providers;
 MAGI lock screen replacing Hyprlock only after security review; broader Control
 Centre actions; and a later whole-shell Settings/visual/composition pass.
 Hyprlock remains the current lock screen. None is implemented in this retirement.
@@ -81,7 +97,7 @@ A final clean MAGI process restart automatically reacquired
 `org.freedesktop.Notifications` as PID143717 without IPC activation. One live
 notification produced a toast/history entry; Centre and DND checks pass. The
 fresh runtime log is INFO-only, one main1920×1080 layer remains, and reservation
-is exactly48px. See the
+is exactly 48px. See the
 [permanent ownership checkpoint](research/permanent-notification-ownership-checkpoint.md)
 for exact state and rollback. Operator review passed; committed at `1598e12`.
 
@@ -99,7 +115,7 @@ This section records the earlier temporary handoff; it is superseded for startup
 ownership by the permanent-ownership checkpoint above.
 The operator reports all checks passed and supplied Centre/toast screenshots;
 pointer/fullscreen recovery, Settings, Bluetooth and state styling are accepted.
-Latest runtime retains one1920×1080 main layer and exactly48px reservation. The
+Latest runtime retains one1920×1080 main layer and exactly 48px reservation. The
 checkpoint records the earlier owner/PIDs and upstream action-label limitation.
 At that temporary checkpoint SwayNC had failed after a competing start; the
 permanent tracked mask above now supersedes that live state. Plain-text body

@@ -1,5 +1,14 @@
 # MAGI — Quickshell Technical Reference
 
+## Emoji API checkpoint (2026-10-05)
+
+On installed Quickshell 0.3.1, Emoji reuses Launcher's Exclusive overlay focus and
+ExclusionMode.Ignore pattern. FileView loads generated local Unicode metadata;
+Process passes a JSON-line on stdin to the existing clipboard helper. Content and
+search have no layer-shell dependencies. Exact sequence and real-component tests
+pass; operator focus/dismissal/copy checks pass. See [versioned API/data evidence](research/emoji-picker-apis.md)
+and [checkpoint](design/emoji-picker.md). The temporary host reserves no space.
+
 ## Calendar API checkpoint (2026-10-04)
 
 SystemClock.Minutes supplies one shared Date; Qt locale methods provide weekday
@@ -13,7 +22,7 @@ compatibility checks](research/calendar-apis.md).
 
 ## Launcher API checkpoint (2026-10-04)
 
-Installed Quickshell0.3.1 and Hyprland0.56.2 remain the target. The launcher uses
+Installed Quickshell 0.3.1 and Hyprland0.56.2 remain the target. The launcher uses
 PanelWindow + overlay layer + temporary Exclusive keyboard focus with
 ExclusionMode.Ignore. DesktopEntry.execute() is not used because the versioned
 documentation explicitly omits terminal and field-code handling. GIO provides
@@ -98,7 +107,7 @@ After removing exclusiveZone, the live host measures y62 and bar reservation rem
 
 ## State, progress and image masking — inspected 2026-10-02
 
-Quickshell0.3.1 [ObjectModel.values](https://quickshell.org/docs/v0.3.1/types/Quickshell/ObjectModel/)
+Quickshell 0.3.1 [ObjectModel.values](https://quickshell.org/docs/v0.3.1/types/Quickshell/ObjectModel/)
 is a reactive list. [HyprlandWorkspace](https://quickshell.org/docs/v0.3.1/types/Quickshell.Hyprland/HyprlandWorkspace/)
 raw `lastIpcObject` does not refresh automatically. Workspaces.qml therefore uses
 native id/name objects, filters positive numeric workspaces and sorts the list;

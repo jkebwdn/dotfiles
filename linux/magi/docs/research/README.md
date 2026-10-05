@@ -1,9 +1,13 @@
 # MAGI research index
 
-Current milestone: [Calendar / Date surface](../design/calendar-date-surface.md),
-uncommitted over Launcher `b895498`. [API evidence](calendar-apis.md) records the
-clock, locale and anchoring sources. Operator interaction checks and automated
-regressions pass; provider integrations remain deferred.
+Current milestone: [First-party Emoji Picker](../design/emoji-picker.md),
+uncommitted over committed Calendar `4f4205d`. [API/data evidence](emoji-picker-apis.md)
+records Unicode 17.0 provenance/license and Quickshell 0.3.1 host/clipboard decisions.
+Operator interaction checks and automated focused regressions pass. Future Hub is
+documented only; the dedicated Emoji host is temporary.
+
+Previous milestone: [Calendar / Date surface](../design/calendar-date-surface.md),
+committed `4f4205d`, with [API evidence](calendar-apis.md).
 
 
 Earlier milestone: [Legacy shell retirement](legacy-shell-retirement-checkpoint.md),
@@ -100,4 +104,4 @@ Review the architecture and tests with the user before replacing expansion
 or migrating Wi-Fi. Reference-project code is evidence to evaluate, not an
 instruction to change MAGI automatically.
 
-- [Application launcher API evidence](application-launcher-apis.md) — Quickshell0.3.1, GIO2.88.3, surface and terminal compatibility (2026-10-04).
+- [Application launcher API evidence](application-launcher-apis.md) — Quickshell 0.3.1, GIO2.88.3, surface and terminal compatibility (2026-10-04).
