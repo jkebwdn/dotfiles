@@ -10,6 +10,8 @@ import "../settings" as SettingsUI
 Pane {
     id: root
     required property var service
+    property bool embedded: false
+    property alias searchField: search
     property int selectedIndex: -1
     property string selectedId: ""
     padding: 18
@@ -20,10 +22,11 @@ Pane {
     palette.highlight: Theme.Theme.accent
     palette.highlightedText: Theme.Theme.accentText
     background: Rectangle {
-        color: Theme.Theme.background
+        color: root.embedded ? "transparent" : Theme.Theme.background
         radius: Theme.Theme.radius("surface", 18, width, height)
-        border.color: Theme.Theme.border; border.width: 1
+        border.color: Theme.Theme.border; border.width: root.embedded ? 0 : 1
     }
+    function focusSearch() { search.forceActiveFocus() }
     function reconcile() {
         const found = service.rows.findIndex(e => e.id === selectedId)
         select(found >= 0 ? found : Math.min(Math.max(0, selectedIndex), service.rows.length - 1))
@@ -78,6 +81,7 @@ Pane {
             id: search
             objectName: "clipboardSearch"
             Layout.fillWidth: true; Layout.preferredHeight: 42
+            text: root.service.query
             placeholderText: "Search clipboard…"
             color: Theme.Theme.text
             placeholderTextColor: Theme.Theme.subtext
@@ -86,7 +90,7 @@ Pane {
             selectByMouse: true
             maximumLength: 512
             leftPadding: 12
-            onTextChanged: root.service.query = text
+            onTextEdited: root.service.query = text
             Keys.priority: Keys.BeforeItem
             Keys.onPressed: event => root.navigate(event)
             background: Rectangle {

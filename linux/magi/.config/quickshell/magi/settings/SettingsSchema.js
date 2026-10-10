@@ -34,7 +34,7 @@ function defaults() {
             fallbackTimeout: 5000, maxVisible: 3, historyLimit: 100,
             showBody: true, criticalBypassDnd: true},
         bar: {left: ["clock", "date"], center: ["workspaces"],
-            right: ["volume", "wifi", "bluetooth", "battery", "notifications", "controlcentre"]},
+            right: ["volume", "wifi", "bluetooth", "battery", "controlcentre"]},
         controlCentre: {columns: 4, actionColumns: 6, sections: {
             profile: true, quickControls: true, sliders: true, actions: true, media: true
         }, controls: [

@@ -33,16 +33,14 @@ Scope {
     readonly property string helper: Qt.resolvedUrl("launcher_backend.py").toString().replace(/^file:\/\//, "")
     onResultsChanged: selected = 0
     onPreferencesChanged: { if (!preferences.enabled) close() }
-    function open() {
-        if (!preferences.enabled) return
-        MenuController.close()
-        Notifications.centreOpen = false
-        Clipboard.opened = false
-        query = ""; selected = 0; error = ""; opened = true
+    onOpenedChanged: Hub.requestVisibility("apps", opened)
+    function prepare() {
+        query = ""; selected = 0; error = ""
         refresh()
     }
-    function close() { opened = false }
-    function toggle() { if (opened) close(); else open() }
+    function open() { Hub.open("apps") }
+    function close() { Hub.closeMode("apps") }
+    function toggle() { Hub.toggle("apps") }
     function move(delta) { selected = Math.max(0, Math.min(results.length - 1, selected + delta)) }
     function launch(index) {
         if (busy || index < 0 || index >= results.length) return

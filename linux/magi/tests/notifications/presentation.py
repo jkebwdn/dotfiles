@@ -7,7 +7,7 @@ with tempfile.TemporaryDirectory(prefix='magi-notification-ui-') as tmp:
     stage=Path(tmp); config=stage/'config'; shutil.copytree(root/'.config/quickshell/magi',config)
     # Qt offscreen has no layer-shell backend. Substitute only the native window
     # wrapper; exercise production content, animation and Region bindings intact.
-    for name in ['ToastHost.qml','NotificationCentre.qml']:
+    for name in ['ToastHost.qml']:
         path=config/'components/notifications'/name
         text=path.read_text().replace('PanelWindow {','FloatingWindow {')
         text='\n'.join(line for line in text.splitlines() if not any(token in line for token in

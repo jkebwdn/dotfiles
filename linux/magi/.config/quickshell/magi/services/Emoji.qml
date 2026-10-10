@@ -26,19 +26,19 @@ Scope {
     onQueryChanged: message = ""
     onPreferencesChanged: { if (!preferences.enabled) close() }
     onSuppressedChanged: { if (suppressed) close() }
-    function open() {
-        if (!Settings.ready || !preferences.enabled || suppressed) return
-        MenuController.close()
-        Notifications.centreOpen = false
-        Clipboard.opened = false
-        Launcher.close()
+    onOpenedChanged: {
+        // Invalidate an asynchronous copy whenever this mode loses its session.
+        if (!opened) session++
+        Hub.requestVisibility("emoji", opened)
+    }
+    function prepare() {
         session++
         query = ""; selected = 0; error = ""; message = ""
         category = preferences.recentLimit && preferences.recents.some(id => entries.some(e => e.id === id)) ? "Recently Used" : "All"
-        opened = true
     }
-    function close() { opened = false; session++ }
-    function toggle() { if (opened) close(); else open() }
+    function open() { Hub.open("emoji") }
+    function close() { Hub.closeMode("emoji") }
+    function toggle() { Hub.toggle("emoji") }
     function move(delta) { selected = Math.max(0, Math.min(results.length - 1, selected + delta)) }
     function chooseCategory(value) { category = value; query = "" }
     function choose(index) {

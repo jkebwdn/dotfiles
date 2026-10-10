@@ -1,5 +1,17 @@
 # MAGI — Quickshell Technical Reference
 
+## Hub host checkpoint (2026-10-06)
+
+Quickshell0.3.1 `PanelWindow` + `ExclusionMode.Ignore` + Exclusive layer keyboard
+focus now belongs to one `HubWindow`; the input Region excludes the48px bar.
+Persistent child content swaps visibility without replacing the native layer.
+Native Hyprland0.56.2 tests verify stable layer identity, restored application
+focus, menu handoffs, fullscreen suppression/recovery and unchanged48px reservation.
+Offscreen QtTest covers actual selector/interior/outside pointer events; this is
+not a native pointer acceptance claim. See [versioned source evidence, test scope
+and limitations](design/magi-hub.md). Earlier dedicated-host entries below are
+historical API checkpoints.
+
 ## Emoji API checkpoint (2026-10-05)
 
 On installed Quickshell 0.3.1, Emoji reuses Launcher's Exclusive overlay focus and

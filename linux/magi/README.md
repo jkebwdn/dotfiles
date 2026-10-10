@@ -31,7 +31,23 @@ behaviour still need broader testing. Hyprlock remains the current lock screen.
 - MPRIS media information and playback controls, with optional profile/media regions.
 - Wi-Fi scanning/connection/password entry, Bluetooth status/device controls,
   PipeWire volume, brightness and battery integration.
-- Fullscreen-aware notification and Clipboard behaviour.
+- Fullscreen-aware utility Hub and notification toasts.
+
+## MAGI Hub
+
+One shared utility window contains **Apps → Notifications → Emoji → Clipboard**.
+Its upper-right icons switch modes; F6 reaches the selector with the keyboard.
+Direct shortcuts select their mode immediately: `SUPER+SPACE`, `SUPER+N`,
+`SUPER+.`, and `SUPER+SHIFT+V`, respectively. Repeating a mode's shortcut closes
+Hub; another mode's shortcut switches within the same window. Escape or an outside
+click closes it. Searches stay local to each mode, and switching retains their
+state until Hub closes. Existing size preferences still apply.
+
+Control Centre and Calendar remain separate bar-anchored surfaces and hand off
+with Hub. Notification toasts and clipboard capture remain independent. The
+permanent notification bell is retired; no Hub bar icon is added. Rofi remains
+on `SUPER+CTRL+SPACE`. No new Hub Settings section or preference migration.
+See the [Hub architecture, validation and review checkpoint](docs/design/magi-hub.md).
 
 ## Emoji Picker
 
@@ -45,9 +61,8 @@ variants. Recently Used is bounded and persisted through MAGI Settings. Settings
 → Emoji controls enablement, columns, size, categories, recent limit and whether
 selection closes. No automatic paste or dedicated skin-tone chooser in v1.
 
-The reusable content and independent search/service are ready for a future Hub;
-the current dedicated host is temporary. See the [Emoji checkpoint and exact
-review allowlist](docs/design/emoji-picker.md) and [data provenance](.config/quickshell/magi/data/emoji/README.md).
+The reusable content now lives in Hub; the independent data/search/copy service
+is unchanged. See the historical [Emoji checkpoint](docs/design/emoji-picker.md) and [data provenance](.config/quickshell/magi/data/emoji/README.md).
 
 ## Calendar / Date surface
 
@@ -169,8 +184,6 @@ retirement state is recorded in the
 
 ## Roadmap
 
-- Shared MAGI Hub for Apps, Notifications, Emoji and Clipboard; direct shortcuts
-  open their requested mode. Control Centre and Calendar remain separate.
 - Optional event/agenda providers for Calendar.
 - A wider Control Centre action catalogue.
 - A first-party MAGI lock screen, replacing Hyprlock only after a separate security review.

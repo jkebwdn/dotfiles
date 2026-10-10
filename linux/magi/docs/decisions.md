@@ -1,5 +1,26 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-06 — One utility host; preserve subsystem ownership
+
+Consolidate Apps, Notifications, Emoji and Clipboard into `Hub`/`HubWindow` with
+four explicit persistent content items. Reuse accepted exclusive overlay focus,
+preserve mode-aware sizes and Launcher preferences, and keep anchored CC/Calendar
+outside Hub. Preserve old service/IPC visibility contracts through guarded
+synchronization. Keep notification activation, toast presentation and clipboard
+capture independent of window lifetime. Remove the four old hosts after native
+window/focus validation; retire the bell without migrating runtime settings.
+
+Native checks confirm one stable layer address across mode changes and natural
+previous-app focus restoration after dismissal; no focus-target cache is needed.
+Mode changes preserve queries inside a session. Leaving Emoji invalidates pending
+copy completion. Shared geometry adds only a48px selector row. No new Settings page.
+
+During first live reload the new directory's implicit HubContent lookup failed;
+an explicit local `qmldir` and import, followed by the normal source reload,
+resolved it without restarting the process. Offscreen QtTest teardown must defer
+quit until its handler returns. Settings reset expectations now omit the retired
+bell. See [the milestone checkpoint](design/magi-hub.md) for evidence and limits.
+
 ## 2026-10-05 — Emoji as an independent, Hub-ready subsystem
 
 Use pinned Unicode 17.0 fully-qualified data with license and reproducible

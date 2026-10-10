@@ -38,7 +38,11 @@ ShellRoot {
         }
     }
     UI.ToastHost { id: host; service: service; suppressed: service.fullscreen }
-    UI.NotificationCentre { id: centre; service: service; suppressed: service.fullscreen }
+    FloatingWindow {
+        id: centre; visible: service.centreOpen && !service.fullscreen
+        implicitWidth: 410; implicitHeight: 640
+        UI.NotificationContent { anchors.fill: parent; service: service }
+    }
     Timer {
         interval: 450; running: true; repeat: true
         onTriggered: {

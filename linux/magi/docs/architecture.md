@@ -1,20 +1,45 @@
 # MAGI — Architecture
 
-## Emoji Picker and future Hub boundary (2026-10-05)
+## MAGI Hub utility presentation (2026-10-06)
 
-`EmojiSearch.js` owns pure metadata preparation, normalized ranking, category and
-Recents helpers; `Emoji` owns data/query/selection and copy completion. Reusable
-`EmojiContent` consumes this service without window APIs. `EmojiWindow` temporarily
-supplies overlay focus and dismissal, following Launcher with no reserved space.
-The shell coordinates surface exclusion and fullscreen suppression. Clipboard
-restore and Emoji share `clipboard_backend.copy_payload`; no new watcher.
-Schema 9 persists modest Emoji preferences and bounded Recents in the existing store.
+`Hub` owns open state, active mode and menu/Settings handoff. Its `publish()`
+keeps legacy service visibility properties synchronized; existing service methods
+request Hub directly. `ShellRoot` owns one `HubWindow` with Exclusive overlay
+focus, zero reservation, a bar-excluding input mask and outside dismissal.
+`HubContent` supplies shared background, mode-aware preferred geometry and an
+upper-right selector: Apps → Notifications → Emoji → Clipboard. Four persistent
+content items share that native host; only the active item is visible. Modes own
+their own search and actions. No combined backend, omnibox or provider registry.
 
-The dedicated host will be replaced/absorbed by **MAGI Hub** presentation. Apps,
-Notifications, Emoji and Clipboard remain distinct subsystems; their shortcuts
-open Hub directly in the requested mode. Control Centre and Calendar remain
-separate anchored surfaces. No Hub or subsystem extraction is implemented now.
-See [Emoji contract, validation and limitations](design/emoji-picker.md).
+Launcher, Emoji, Clipboard and Notifications retain their model/service ownership.
+`NotificationContent` extracts the previous Centre UI; `ToastHost` stays separate.
+Shell startup still activates notification D-Bus ownership and clipboard capture,
+independent of Hub visibility. All four old utility host types and the permanent
+notification bar control are retired. Settings sections/preferences are retained;
+old bell placement IDs are ignored for presentation without rewriting settings.
+
+Direct shortcuts toggle their selected mode or switch from another mode in place.
+Mode switches retain queries and content instances; reopening resets searches.
+Apps/Emoji/Clipboard focus search; Notifications focuses history content. F6 reaches
+the selector. Escape/outside click releases the exclusive layer to the previous
+application. There is no stored per-mode application-focus target to overwrite.
+Mode geometry preserves Launcher list/grid/position settings, Emoji columns/size
+and historical Clipboard/Notification sizes, adding48px of shared chrome.
+
+Control Centre and Calendar remain separate anchored families. Hub closes their
+selection and waits for existing bar collapse/interaction readiness. Their opening
+closes Hub immediately. Fullscreen closes Hub and suppresses direct requests;
+recovery requires a new explicit request. The bar still reserves exactly48px.
+See [implementation, tests, compatibility and operator checks](design/magi-hub.md).
+
+## Emoji subsystem
+
+`EmojiSearch.js` owns metadata preparation, normalized ranking and Recents helpers;
+`Emoji` owns data/query/selection and copy completion. `EmojiContent` has no native
+window dependency. Clipboard restoration and Emoji share
+`clipboard_backend.copy_payload`; no new watcher. Schema9 retains Emoji preferences
+and bounded Recents. Leaving Emoji invalidates its pending copy session so a stale
+completion cannot close another Hub mode. See [original contract](design/emoji-picker.md).
 
 ## Calendar / Date surface (2026-10-04)
 
@@ -35,13 +60,13 @@ Current placement support is left/centre/right within the top bar. See the
 `services/Launcher.qml` owns application selection and state, `LauncherSearch.js`
 owns pure scoring, and `launcher_backend.py` delegates XDG metadata/execution to
 GIO. The private terminal adapter supports installed Ghostty without parsing Exec.
-`components/launcher` separates the overlay, content/layout and item rendering.
+`components/launcher` owns content/layout and item rendering; Hub owns its window.
 User-hidden desktop IDs live in Launcher preferences and are excluded before
 ranking for both views; Settings resolves display names and restores IDs even
 when the app is uninstalled. `LauncherIcons.resolve(app)` supplies a presentation
 object to delegates, leaving a desktop-ID override point for future icon packs.
-The output-local overlay reserves no space and takes keyboard focus only while
-open. It is independent of Clipboard and the shared expandable bar host. Schema7
+The shared Hub overlay reserves no space and takes keyboard focus only while
+open. Launcher remains independent of other subsystem backends. Schema7
 and the existing Settings writer own visual preferences. See the
 [launcher specification](design/application-launcher.md) for settings and limits.
 
@@ -57,13 +82,12 @@ Python owns IDs, hashing, pins, count/byte eviction, search, thumbnails and opti
 versioned SQLite persistence. wl-copy restores bytes through stdin with an explicit
 MIME type. cliphist is neither a dependency nor a history source.
 
-`ClipboardWindow` is a centred, bounded FloatingWindow, matched by class+title with
-a narrow Hyprland float/centre rule. Search gains focus on opening; clicking another
-client releases typing focus while Clipboard can stay visible. It owns no bar
-reservation or desktop-sized catcher. `ClipboardContent` renders text and thumbnails;
-it uses shared theme roles/radii and IconRegistry, with new Legacy fallback roles.
-The existing output fullscreen monitor closes/suppresses it. Shared menus,
-Notification Centre and Settings close it on opening. Model state outlives visibility.
+`ClipboardContent` renders history within Hub and owns search, selection, pins,
+delete/clear and restore requests. The old floating host is retired. Clipboard now
+shares Hub's exclusive focus and outside-dismiss behaviour; leaving the content
+area dismisses Hub rather than leaving a floating viewer open behind another app.
+Model/capture state outlives visibility. The existing narrow Hyprland rule for the
+retired clipboard title is harmless and left untouched in this milestone.
 
 Schema6 adds clipboard preferences through the established SettingsStore writer.
 Memory-only is default, including pins; QML/process restart clears session history.
@@ -109,20 +133,19 @@ history (default100), stable toast IDs and exit retention. Closed objects/action
 are never retained for invocation. Expired snapshots remain in memory; dismissed,
 client-closed and transient notifications leave history. No disk history store.
 
-`ToastHost` and `NotificationCentre` are separate top-layer windows with zero
-reservation, explicitly on the existing bar's screen. Toasts use one stack and a
-union of animated card rectangles, with no keyboard focus or desktop-wide catcher.
-The Centre uses a bounded scrolling surface and OnDemand focus. Neither enters
-SharedStatusSurface or its module registry. The configurable bar bell opens the
-Centre, closing status selection; opening a status menu closes the Centre.
-`FullscreenMonitor` refreshes Hyprland raw client/monitor state on relevant events;
-true compositor fullscreen on the target output suppresses every toast and closes
-the Centre. The established bar fullscreen behavior remains compositor-owned.
+`ToastHost` remains a separate top-layer window with zero reservation on the bar's
+screen. Toasts use one stack and animated card input regions, without keyboard
+focus or a desktop-wide catcher. `NotificationContent` hosts Centre history inside
+Hub. Opening its mode still updates `centreOpen`, marking existing history read
+and applying the existing toast policy; switching away restores normal policy.
+Neither enters SharedStatusSurface or the module registry. FullscreenMonitor
+suppresses toasts and Hub on the target output. The bar's existing fullscreen
+behaviour remains compositor-owned.
 
-Settings schema5 adds notification preferences and the bell placement. QuickActions
-remains the DND action interface and shares `Settings.data.notifications.dnd` with
-both views. `serverActivated` describes backend construction, not D-Bus proof;
-runtime ownership is verified externally with `busctl`.
+Notification preferences and QuickActions DND remain unchanged. The bar bell and
+its placement UI/default are retired; existing saved placement IDs are tolerated.
+`serverActivated` describes construction, not D-Bus proof; external `busctl`
+inspection remains the ownership check.
 
 Bluetooth `barVisible` now follows connectedCount>0, while registry/service/detail
 ownership stays unchanged. Collapsed rows animate reflow; the right-row move

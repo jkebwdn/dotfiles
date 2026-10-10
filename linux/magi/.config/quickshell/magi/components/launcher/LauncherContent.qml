@@ -5,6 +5,7 @@ import "../../theme" as Theme
 Rectangle {
     id: root
     required property var service
+    property bool embedded: false
     readonly property var preferences: service.preferences
     readonly property bool grid: preferences.layout === "grid"
     readonly property int columns: grid ? Math.min(preferences.gridColumns, Math.max(1, Math.floor((width - 32) / 90))) : 1
@@ -61,9 +62,9 @@ Rectangle {
             onTriggered: root.service.hide(root.contextId)
         }
     }
-    color: Qt.rgba(Theme.Theme.background.r, Theme.Theme.background.g, Theme.Theme.background.b, 1)
+    color: root.embedded ? "transparent" : Qt.rgba(Theme.Theme.background.r, Theme.Theme.background.g, Theme.Theme.background.b, 1)
     radius: Theme.Theme.radius("surface", 22, width, height)
-    border.color: Theme.Theme.border; border.width: 1
+    border.color: Theme.Theme.border; border.width: root.embedded ? 0 : 1
     clip: true
     Image {
         anchors.fill: parent; anchors.margins: 12

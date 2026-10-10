@@ -14,7 +14,6 @@ import "../../plugins/bar/battery" as BatteryPlugin
 import "../../modules" as Modules
 import "../../services" as MagiServices
 import "../../theme" as MagiTheme
-import "../notifications" as NotificationsUI
 import "../calendar" as CalendarUI
 
 PanelWindow {
@@ -114,8 +113,12 @@ PanelWindow {
     function syncPlacement() {
         if (MagiServices.MenuController.activeMenu !== "" || statusSurface.phase !== 0 || calendarSurface.phase !== 0
                 || registry.interactionBusy || registry.presentationBusy) return
-        if (JSON.stringify(placement) !== JSON.stringify(MagiServices.Settings.data.bar))
-            placement = MagiServices.Settings.data.bar
+        const next = {
+            left: MagiServices.Settings.data.bar.left.filter(id => id !== "notifications"),
+            center: MagiServices.Settings.data.bar.center.filter(id => id !== "notifications"),
+            right: MagiServices.Settings.data.bar.right.filter(id => id !== "notifications")
+        }
+        if (JSON.stringify(placement) !== JSON.stringify(next)) placement = next
     }
     Connections {
         target: MagiServices.Settings
@@ -151,7 +154,6 @@ PanelWindow {
         "wifi": wifiComponent,
         "bluetooth": bluetoothComponent,
         "battery": batteryComponent,
-        "notifications": notificationsComponent,
         "controlcentre": controlCentreComponent
     })
 
@@ -216,7 +218,6 @@ PanelWindow {
 
         ModulePill { module: registry.modules.controlcentre }
     }
-    Component { id: notificationsComponent; NotificationsUI.NotificationIndicator {} }
 
     IpcHandler {
         target: "magi"

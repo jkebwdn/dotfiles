@@ -32,16 +32,11 @@ Scope {
         error = ""
         worker.write(JSON.stringify(request) + "\n")
     }
-    function toggle() {
-        if (fullscreen) return
-        opened = !opened
-        if (opened) {
-            MenuController.close()
-            Notifications.centreOpen = false
-            query = ""
-            start()
-        }
-    }
+    onOpenedChanged: Hub.requestVisibility("clipboard", opened)
+    function prepare() { query = ""; start() }
+    function open() { Hub.open("clipboard") }
+    function close() { Hub.closeMode("clipboard") }
+    function toggle() { Hub.toggle("clipboard") }
     function restore(id) {
         if (!ready || restoring || query !== renderedQuery) return
         restoring = true
@@ -104,6 +99,7 @@ Scope {
     }
     IpcHandler {
         target: "clipboard"
+        function open(): void { root.open() }
         function toggle(): void { root.toggle() }
         function close(): void { root.opened = false }
         function status(): string {

@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix="magi-clipboard-ui-") as temporary:
                XDG_RUNTIME_DIR=str(runtime), XDG_STATE_HOME=str(stage / "state"))
     env.pop("WAYLAND_DISPLAY", None)
     env.pop("DISPLAY", None)
-    for name in ("content.qml", "service.qml", "window.qml"):
+    for name in ("content.qml", "service.qml"):
         (config / "test.qml").write_text(Path(__file__).with_name(name).read_text()
             .replace("../../.config/quickshell/magi/", ""))
         result = subprocess.run(["quickshell", "-p", str(config / "test.qml"), "--no-color"],

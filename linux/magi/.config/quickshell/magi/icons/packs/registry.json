@@ -234,6 +234,16 @@
         "battery-low": {
           "kind": "glyph",
           "text": "󰁻"
+        },
+        "apps": {
+          "kind": "glyph",
+          "text": "▦",
+          "font": "sans-serif"
+        },
+        "emoji": {
+          "kind": "glyph",
+          "text": "☺",
+          "font": "sans-serif"
         }
       },
       "modules": {},
@@ -492,6 +502,16 @@
           "kind": "svg",
           "assetId": "bluetooth-on",
           "colorMode": "semantic"
+        },
+        "apps": {
+          "kind": "svg",
+          "assetId": "apps",
+          "colorMode": "semantic"
+        },
+        "emoji": {
+          "kind": "svg",
+          "assetId": "emoji",
+          "colorMode": "semantic"
         }
       },
       "modules": {},
@@ -542,7 +562,9 @@
         "wifi-low": "magi-default/wifi-low.svg",
         "wifi-medium": "magi-default/wifi-medium.svg",
         "wifi-on": "magi-default/wifi-on.svg",
-        "wifi": "magi-default/wifi.svg"
+        "wifi": "magi-default/wifi.svg",
+        "apps": "magi-default/hub-apps.svg",
+        "emoji": "magi-default/hub-emoji.svg"
       }
     }
   ]

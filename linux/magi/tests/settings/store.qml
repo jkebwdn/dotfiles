@@ -80,7 +80,7 @@ ShellRoot {
                 store.resetAll()
                 break
             case 8:
-                test.check(store.data.bar.right.length === 6 && store.saveState === "saved", "full reset persisted")
+                test.check(store.data.bar.right.length === 5 && store.saveState === "saved", "full reset persisted")
                 test.check(store.data.controlCentre.controls.map(e => e.accent).join(",") === "teal,blue,green,lavender", "full reset restores tile accents")
                 test.check(test.notifications >= 50, "live notifications")
                 store.reload()

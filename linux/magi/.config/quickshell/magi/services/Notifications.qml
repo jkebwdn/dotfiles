@@ -12,7 +12,10 @@ NotificationModel {
     property bool serverActivated: false
     property var backend: null
     Component { id: backendComponent; NotificationBackend { owner: root } }
-    onCentreOpenChanged: { if (centreOpen) MenuController.close() }
+    onCentreOpenChanged: Hub.requestVisibility("notifications", centreOpen)
+    function open() { Hub.open("notifications") }
+    function close() { Hub.closeMode("notifications") }
+    function toggle() { Hub.toggle("notifications") }
     function activateServer() {
         if (serverActivated) return
         backend = backendComponent.createObject(root)
@@ -21,7 +24,8 @@ NotificationModel {
     IpcHandler {
         target: "notifications"
         function activate(): void { root.activateServer() }
-        function toggle(): void { root.centreOpen = !root.centreOpen }
+        function open(): void { root.open() }
+        function toggle(): void { root.toggle() }
         function close(): void { root.centreOpen = false }
         function status(): string {
             return JSON.stringify({activated: root.serverActivated, count: root.history.length,

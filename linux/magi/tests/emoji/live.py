@@ -36,7 +36,7 @@ try:
         assert state('emoji')['opened'] and state('magi')['active'] == ''
         reservation()
         layers = hypr('layers')
-        overlays = [layer for output in layers.values() for layer in output['levels']['3'] if layer['namespace'] == 'magi-emoji']
+        overlays = [layer for output in layers.values() for layer in output['levels']['3'] if layer['namespace'] == 'magi-hub']
         assert len(overlays) == 1
         assert call('magi','open',view) == 'true'
         settle()
@@ -53,6 +53,6 @@ try:
     reservation()
     assert hypr('activewindow').get('address') == previous, 'Previous window did not regain focus'
     assert not subprocess.check_output(['hyprctl','configerrors'], text=True, timeout=5).strip()
-    print('Live Emoji overlay, immediate typing, arrows, Escape, reopen focus, Calendar/CC handoff, previous-app restoration, 48px reservation and Hyprland config health PASS')
+    print('Live Emoji in Hub, immediate typing, arrows, Escape, reopen focus, Calendar/CC handoff, previous-app restoration, 48px reservation and Hyprland config health PASS')
 finally:
     call('emoji','close'); call('magi','close')

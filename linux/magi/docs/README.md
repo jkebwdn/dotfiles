@@ -1,5 +1,19 @@
 # MAGI — Research and Development
 
+## MAGI Hub — 2026-10-06, uncommitted operator review
+
+Apps, Notifications, Emoji and Clipboard now share one utility host, while their
+services/models remain independent. Existing shortcuts/IPC select modes directly;
+the compact upper-right selector swaps retained content without replacing the
+native window. Control Centre/Calendar stay anchored and coordinated; toasts and
+capture remain independent. Four dedicated hosts and the permanent bell are retired.
+No schema migration or runtime settings edit. See the [source of truth, validation
+limits, review checklist and exact allowlist](design/magi-hub.md).
+
+Emoji baseline verified as committed `a007259a4f8e79cd8372d520ea2c9902cb2a3393`,
+`main` tracking `origin/main`, no divergence. The dated entries below retain their
+historical checkpoint wording; temporary-host/future-Hub wording is superseded.
+
 ## Emoji Picker — 2026-10-05, uncommitted operator review
 
 `SUPER+.` opens the new compact first-party Emoji Picker. Unicode 17.0 supplies
@@ -12,8 +26,8 @@ search, selection/paste, dismissal and focus restoration. See the [checkpoint,
 remaining checks and exact allowlist](design/emoji-picker.md) and
 [API/data evidence](research/emoji-picker-apis.md).
 
-Future Hub is documentation only: Apps, Notifications, Emoji, Clipboard, with
-direct shortcuts selecting modes. Control Centre and Calendar remain separate.
+The temporary Emoji host described in that checkpoint has since been absorbed
+into Hub; Control Centre and Calendar remain separate.
 
 ## Calendar / Date surface — 2026-10-04, committed `4f4205d`
 
@@ -60,7 +74,7 @@ review wording describes the checkpoint at the time.
 
 ## Planned future shell work
 
-Separate future milestones: shared MAGI Hub; event/agenda providers;
+Separate future milestones: event/agenda providers;
 MAGI lock screen replacing Hyprlock only after security review; broader Control
 Centre actions; and a later whole-shell Settings/visual/composition pass.
 Hyprlock remains the current lock screen. None is implemented in this retirement.

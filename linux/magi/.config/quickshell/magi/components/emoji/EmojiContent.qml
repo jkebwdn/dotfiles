@@ -5,6 +5,7 @@ import "../../theme" as Theme
 Rectangle {
     id: root
     required property var service
+    property bool embedded: false
     readonly property var preferences: service.preferences
     readonly property int columns: Math.min(preferences.gridColumns, Math.max(1, Math.floor((width - 32) / (preferences.emojiSize + 20))))
     readonly property int cellSize: preferences.emojiSize + 24
@@ -29,9 +30,9 @@ Rectangle {
         else return false
         return true
     }
-    color: Qt.rgba(Theme.Theme.background.r, Theme.Theme.background.g, Theme.Theme.background.b, 1)
+    color: root.embedded ? "transparent" : Qt.rgba(Theme.Theme.background.r, Theme.Theme.background.g, Theme.Theme.background.b, 1)
     radius: Theme.Theme.radius("surface", 22, width, height)
-    border.color: Theme.Theme.border; border.width: 1
+    border.color: Theme.Theme.border; border.width: root.embedded ? 0 : 1
     clip: true
     MouseArea { anchors.fill: parent; onClicked: root.focusSearch() }
     TextField {
