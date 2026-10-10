@@ -1,4 +1,28 @@
 // MAGI's preference schema, not system or menu-session state.
+// Shared stable catalogue data: validation and runtime rendering use one list.
+function controlDefinitions() {
+    return [
+        {id:"wifi", label:"Wi-Fi", icon:"wifi", accent:"teal", detail:"wifi", presentations:["tile","detail"]},
+        {id:"bluetooth", label:"Bluetooth", icon:"bluetooth", accent:"blue", detail:"bluetooth", presentations:["tile","detail"]},
+        {id:"power-saver", label:"Low Power", icon:"power-saver", accent:"green", detail:"", presentations:["tile"]},
+        {id:"airplane-mode", label:"Airplane", icon:"airplane-mode", accent:"lavender", detail:"", presentations:["tile"]},
+        {id:"battery", label:"Battery status", icon:"battery", accent:"red", detail:"", presentations:["tile"]},
+        {id:"settings", route:"settings", label:"Settings", icon:"settings", accent:"lavender", detail:"", presentations:["tile","action"]},
+        {id:"volume", label:"Volume", icon:"volume", accent:"peach", detail:"", presentations:["slider"]},
+        {id:"brightness", label:"Brightness", icon:"brightness", accent:"yellow", detail:"", presentations:["slider"]},
+        {id:"vpn", label:"VPN", icon:"vpn", accent:"blue", detail:"", presentations:["tile","action"]},
+        {id:"dnd", label:"Do Not Disturb", icon:"dnd", accent:"lavender", detail:"", presentations:["tile","action"]},
+        {id:"caffeine", label:"Caffeine", icon:"caffeine", accent:"yellow", detail:"", presentations:["tile","action"]},
+        {id:"lock", route:"system", label:"Lock", icon:"lock", accent:"blue", detail:"", presentations:["action"]},
+        {id:"hibernate", route:"system", label:"Hibernate", icon:"hibernate", accent:"peach", detail:"", presentations:["action"], danger:true, confirmation:true},
+        {id:"shutdown", route:"system", label:"Shutdown", icon:"shutdown", accent:"red", detail:"", presentations:["action"], danger:true, confirmation:true},
+        {id:"reboot", label:"Reboot", icon:"reboot", accent:"red", presentations:["action"], route:"system", danger:true, confirmation:true},
+        {id:"apps", label:"Applications", icon:"apps", accent:"lavender", presentations:["action"], route:"hub", mode:"apps"},
+        {id:"notifications", label:"Notifications", icon:"notifications", accent:"lavender", presentations:["action"], route:"hub", mode:"notifications"},
+        {id:"emoji", label:"Emoji", icon:"emoji", accent:"yellow", presentations:["action"], route:"hub", mode:"emoji"},
+        {id:"clipboard", label:"Clipboard", icon:"clipboard", accent:"blue", presentations:["action"], route:"hub", mode:"clipboard"}
+    ]
+}
 const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "controlcentre"]
 const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar"]
 const controlAccentRoles = ["red", "peach", "yellow", "green", "teal", "blue", "lavender"]
@@ -259,11 +283,7 @@ function analyze(input) {
     if (!Number.isInteger(cc.actionColumns) || cc.actionColumns < 1 || cc.actionColumns > 16) {
         valid(false, "controlCentre.actionColumns", 6); cc.actionColumns = 6
     }
-    const supportedByPresentation = {
-        tile: ["wifi", "bluetooth", "power-saver", "airplane-mode", "battery", "settings", "vpn", "dnd", "caffeine"],
-        slider: ["volume", "brightness"],
-        action: ["vpn", "dnd", "caffeine", "lock", "hibernate", "shutdown"]
-    }
+    const catalogue = controlDefinitions()
     for (const group of ["controls", "sliders", "actions"]) {
         const keys = [], modules = []
         const presentation = group === "controls" ? "tile" : group === "sliders" ? "slider" : "action"
@@ -276,7 +296,7 @@ function analyze(input) {
                 errors.push("Invalid/duplicate controlCentre." + group + " entry"); return false
             }
             keys.push(entry.key); modules.push(entry.module)
-            const supported = supportedByPresentation[presentation]
+            const supported = catalogue.filter(d => d.presentations.indexOf(presentation) >= 0).map(d => d.id)
             if (supported.indexOf(entry.module) < 0) { warnings.push("Unavailable CC module: " + entry.module); return false }
             if (group === "controls" && controlAccentRoles.indexOf(entry.accent) < 0) {
                 errors.push("controlCentre.controls." + entry.key + ".accent: invalid value")

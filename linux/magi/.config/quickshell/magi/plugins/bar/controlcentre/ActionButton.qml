@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls.Basic
 import "../../../components/controls" as Controls
 import "../../../theme" as Theme
 
@@ -15,6 +16,8 @@ Item {
     implicitHeight: 38
     Accessible.name: label
     Accessible.role: Accessible.Button
+    ToolTip.visible: pointer.containsMouse
+    ToolTip.text: label
     Controls.Icon {
         anchors.centerIn: parent
         role: root.icon

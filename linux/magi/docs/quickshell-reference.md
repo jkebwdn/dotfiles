@@ -1,5 +1,15 @@
 # MAGI — Quickshell Technical Reference
 
+## Control Centre catalogue checkpoint (2026-10-10)
+
+Installed Quickshell0.3.1 and Hyprland0.56.2 remain the target. No new native
+window/focus API: catalogue navigation reuses Hub.open and the existing collapse
+gate. All four routes pass a real SharedStatusSurface/HubContent fixture; the
+live Hub regression passes native focus restoration and48px reservation.
+Reboot extends the existing Process adapter with logind CanReboot and systemctl.
+Versioned API sources, local systemd262 evidence and test limitations are in the
+[catalogue checkpoint](design/control-centre-action-catalogue.md).
+
 ## Hub host checkpoint (2026-10-06)
 
 Quickshell0.3.1 `PanelWindow` + `ExclusionMode.Ignore` + Exclusive layer keyboard

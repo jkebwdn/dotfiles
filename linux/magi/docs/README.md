@@ -1,5 +1,16 @@
 # MAGI — Research and Development
 
+## Control Centre action catalogue — 2026-10-10, uncommitted review
+
+Hub consolidation baseline is committed at
+`b32b88a4cfb68755f00eb1a25148892cc4319cea`, `main` tracking `origin/main`,
+zero divergence at milestone start. Control Centre now offers optional Apps,
+Notifications, Emoji, Clipboard and confirmed Reboot. Shared catalogue data
+drives Settings validation and rendering, fixing secondary Settings rejection.
+Defaults, schema9, configured order and independent columns remain unchanged.
+See [audit, implementation, validation and exact allowlist](design/control-centre-action-catalogue.md).
+Earlier dated checkpoints below retain their historical review wording.
+
 ## MAGI Hub — 2026-10-06, uncommitted operator review
 
 Apps, Notifications, Emoji and Clipboard now share one utility host, while their
@@ -75,8 +86,8 @@ review wording describes the checkpoint at the time.
 ## Planned future shell work
 
 Separate future milestones: event/agenda providers;
-MAGI lock screen replacing Hyprlock only after security review; broader Control
-Centre actions; and a later whole-shell Settings/visual/composition pass.
+MAGI lock screen replacing Hyprlock only after security review; further system
+actions beyond this catalogue expansion; and a later whole-shell Settings/visual/composition pass.
 Hyprlock remains the current lock screen. None is implemented in this retirement.
 
 ## Clipboard Manager — 2026-10-04, ready for final review

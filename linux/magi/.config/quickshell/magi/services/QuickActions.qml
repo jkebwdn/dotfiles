@@ -16,9 +16,10 @@ Scope {
     property string vpnUuid: ""
     readonly property bool dndAvailable: Notifications.serverActivated
     readonly property bool dndActive: Settings.data.notifications.dnd
-    property bool lockAvailable: true
+    property bool lockAvailable: false
     property bool hibernateAvailable: false
-    property bool shutdownAvailable: true
+    property bool shutdownAvailable: false
+    property bool rebootAvailable: false
     property string error: ""
     property var queue: []
     property var activeRequest: null
@@ -54,9 +55,12 @@ Scope {
         return Notifications.serverActivated
             ? Settings.setValue("notifications", "dnd", !!enabled) : false
     }
+    function actionAvailable(name) {
+        return name === "lock" ? lockAvailable : name === "hibernate" ? hibernateAvailable
+            : name === "shutdown" ? shutdownAvailable : name === "reboot" ? rebootAvailable : false
+    }
     function execute(name) {
-        if (name === "lock" && !lockAvailable || name === "hibernate" && !hibernateAvailable
-                || name === "shutdown" && !shutdownAvailable) return false
+        if (!actionAvailable(name)) return false
         enqueue({op:"action", name:name}); return true
     }
     function apply(request, result) {
@@ -70,6 +74,7 @@ Scope {
         } else if (request.op === "action-status") {
             lockAvailable = !!result.lock; hibernateAvailable = !!result.hibernate
             shutdownAvailable = !!result.shutdown
+            rebootAvailable = !!result.reboot
         }
     }
     Component.onCompleted: refresh()

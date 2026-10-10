@@ -5,10 +5,10 @@
       "id": "magi-legacy",
       "label": "MAGI Legacy",
       "version": "1",
-      "description": "MAGI's complete fallback glyph pack.",
+      "description": "MAGI's complete fallback pack, with a semantic SVG for Reboot.",
       "parent": null,
       "font": "JetBrainsMono Nerd Font",
-      "attribution": "Existing MAGI glyph code points; uses the installed Nerd Font. No font or third-party artwork is redistributed.",
+      "attribution": "Existing MAGI glyph code points; uses the installed Nerd Font. Reboot SVG is original MAGI artwork. No font or third-party artwork is redistributed.",
       "roles": {
         "wifi": {
           "kind": "glyph",
@@ -130,6 +130,7 @@
           "kind": "glyph",
           "text": "󰐥"
         },
+        "reboot": {"kind": "svg", "assetId": "reboot", "colorMode": "semantic"},
         "media-play": {
           "kind": "glyph",
           "text": "󰐊"
@@ -247,7 +248,7 @@
         }
       },
       "modules": {},
-      "assets": {}
+      "assets": {"reboot": "magi-default/reboot.svg"}
     },
     {
       "id": "magi-default",

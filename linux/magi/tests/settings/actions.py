@@ -4,6 +4,9 @@ import importlib.util
 import os
 from pathlib import Path
 import tempfile
+import sys
+
+sys.dont_write_bytecode = True
 
 root = Path(__file__).resolve().parents[2]
 source = root / '.config/quickshell/magi/services/system_actions.py'
@@ -42,8 +45,15 @@ with tempfile.TemporaryDirectory(prefix='magi-actions-') as temporary:
 
     actions.shutil.which = lambda name: None
     os.environ['MAGI_ACTION_DRY_RUN'] = '1'
-    for name in ('lock', 'hibernate', 'shutdown'):
+    for name in ('lock', 'hibernate', 'shutdown', 'reboot'):
         checked = actions.execute_action(name)
         assert checked['ok'] and checked['dryRun']
     del os.environ['MAGI_ACTION_DRY_RUN']
+    assert not actions.execute_action('reboot')['ok']
+    assert not any(actions.action_status()[name] for name in ('lock', 'hibernate', 'shutdown', 'reboot'))
+    actions.shutil.which = lambda name: '/mock/' + name
+    actions.run = lambda command: Completed('s "yes"')
+    assert actions.action_status()['reboot']
+    actions.run = lambda command: Completed('s "no"')
+    assert not actions.action_status()['reboot']
     print('Power, VPN and dry-run destructive action boundaries PASS')

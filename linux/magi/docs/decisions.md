@@ -1,5 +1,17 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-10 — Expand catalogue without changing operator layouts
+
+Keep `ControlCatalog` and the existing three presentation types. Share its pure
+definitions through SettingsSchema rather than maintain separate allowlists;
+the audit found Settings was offered but rejected as a secondary action.
+Add four optional Hub routes and confirmed Reboot, preserving defaults/schema9.
+Reuse Hub's collapse/focus path and the current Hyprlock-through-loginctl route.
+Reboot uses the existing five-second second-activation safeguard, with visible
+hover confirmation text. Unknown/unavailable catalogue invocations do nothing.
+Defer screenshot capture coordination, Logout, Settings drag/drop and visual work.
+See [audit, tests and review scope](design/control-centre-action-catalogue.md).
+
 ## 2026-10-06 — One utility host; preserve subsystem ownership
 
 Consolidate Apps, Notifications, Emoji and Clipboard into `Hub`/`HubWindow` with

@@ -11,7 +11,14 @@ ShellRoot {
       onTriggered: {
         check(Modules.ControlCatalog.forPresentation("tile").length >= 8, "extensible primary catalogue")
         check(Modules.ControlCatalog.forPresentation("action").map(d => d.id).join(",")
-            === "settings,vpn,dnd,caffeine,lock,hibernate,shutdown", "secondary catalogue")
+            === "settings,vpn,dnd,caffeine,lock,hibernate,shutdown,reboot,apps,notifications,emoji,clipboard", "secondary catalogue")
+        Modules.ControlCatalog.primary("unknown")
+        Modules.ControlCatalog.primary("hibernate")
+        check(Services.QuickActions.executed.length === 0, "unknown and unavailable actions do nothing")
+        Modules.ControlCatalog.primary("reboot")
+        check(Services.QuickActions.executed.length === 0 && Services.ActionConfirmation.armedAction === "reboot", "reboot only arms on first click")
+        Modules.ControlCatalog.primary("reboot")
+        check(Services.QuickActions.executed.join(",") === "reboot", "reboot confirmed dispatch")
         check(!Modules.ControlCatalog.state("power-saver").available, "unavailable power backend is honest")
         check(!Modules.ControlCatalog.state("vpn").available, "unavailable VPN is honest")
         Services.Bluetooth.available = true

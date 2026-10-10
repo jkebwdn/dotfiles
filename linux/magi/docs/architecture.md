@@ -1,5 +1,16 @@
 # MAGI — Architecture
 
+## Control Centre catalogue expansion (2026-10-10)
+
+`SettingsSchema.controlDefinitions()` is the shared pure catalogue for validation
+and `ControlCatalog`. Definitions hold stable IDs, presentation eligibility,
+labels/icons, route metadata and confirmation flags. `ControlCatalog` retains
+reactive state and existing toggle adapters, with generic Hub/system/Settings
+routing. Settings enumerates it without a separate action allowlist. New actions
+are optional; schema9, persisted layouts and defaults do not change. Hub handoffs
+continue through `Hub.open()` and the existing `Bar.settingsReady` collapse gate.
+See [catalogue checkpoint](design/control-centre-action-catalogue.md).
+
 ## MAGI Hub utility presentation (2026-10-06)
 
 `Hub` owns open state, active mode and menu/Settings handoff. Its `publish()`

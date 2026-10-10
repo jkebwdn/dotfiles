@@ -30,7 +30,9 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
         property bool vpnAvailable: false; property bool vpnActive: false; property string vpnName: ""
         property bool dndAvailable: true; property bool dndActive: false; property bool lockAvailable: true
         property bool hibernateAvailable: false; property bool shutdownAvailable: true
-        function setPowerSaver(v) {root.powerSaver=v} function toggleVpn() {root.vpnActive=!root.vpnActive} function setDnd(v) { root.dndActive=v } function execute(v) {}''',
+        property bool rebootAvailable: true; property var executed: []
+        function actionAvailable(v) {return v === "lock" ? lockAvailable : v === "shutdown" ? shutdownAvailable : v === "reboot" ? rebootAvailable : v === "hibernate" ? hibernateAvailable : false}
+        function setPowerSaver(v) {root.powerSaver=v} function toggleVpn() {root.vpnActive=!root.vpnActive} function setDnd(v) { root.dndActive=v } function execute(v) {root.executed=root.executed.concat([v])}''',
       'AirplaneMode': '''property bool active: false; property bool priorWifi: false; property bool priorBluetooth: false
         function begin(w,b){root.priorWifi=w;root.priorBluetooth=b;root.active=true}
         function end(){const r={wifi:root.priorWifi,bluetooth:root.priorBluetooth};root.active=false;return r}
@@ -40,6 +42,11 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
     }
     for name,body in stubs.items():
         (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { id: root\n'+body+'\n}')
+    if len(sys.argv) > 1 and sys.argv[1] == 'catalogue':
+        path = config / 'components/hub/HubWindow.qml'
+        text = path.read_text().replace('PanelWindow {', 'FloatingWindow {\n    implicitWidth: 1280; implicitHeight: 900')
+        path.write_text('\n'.join(line for line in text.splitlines() if not any(token in line for token in
+            ['anchors { top: true;', 'exclusionMode:', 'WlrLayershell.'])))
     if len(sys.argv) > 1 and sys.argv[1] == 'anchored-layout.qml':
         # Test actual animation owners without creating offscreen native popups.
         (config/'components/bar/menu/AnchoredPopupHost.qml').write_text('''import QtQuick
@@ -51,7 +58,8 @@ Item {
     property Component menuContent: null; property Component fallbackContent: null
 }
 ''')
-    (config/'test.qml').write_text(Path(__file__).with_name(sys.argv[1] if len(sys.argv) > 1 else 'modules.qml').read_text().replace('../../.config/quickshell/magi/',''))
+    fixture = root / 'tests/hub/catalogue.qml' if len(sys.argv) > 1 and sys.argv[1] == 'catalogue' else Path(__file__).with_name(sys.argv[1] if len(sys.argv) > 1 else 'modules.qml')
+    (config/'test.qml').write_text(fixture.read_text().replace('../../.config/quickshell/magi/',''))
     runtime=stage/'runtime';runtime.mkdir(mode=0o700)
     env=dict(os.environ, QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime),XDG_STATE_HOME=str(stage/'state'))
     env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None)
@@ -61,6 +69,6 @@ Item {
     # exact platform warning is allowed for the normal-window harness.
     checked = '\n'.join(line for line in out.splitlines()
                         if 'ERROR quickshell.ipc: Failed to start IPC server' not in line)
-    if len(sys.argv) > 1 and sys.argv[1] == "window.qml":
+    if len(sys.argv) > 1 and sys.argv[1] in ("window.qml", "catalogue"):
         checked = checked.replace("  WARN: This plugin does not support setting window masks", "")
     assert p.returncode==0 and 'RESULT: 0 failures' in out and 'ERROR' not in checked and 'WARN' not in checked

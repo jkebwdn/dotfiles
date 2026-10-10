@@ -96,12 +96,15 @@ def can_login_action(method):
 
 def action_status():
     return {"available": True, "lock": bool(shutil.which("loginctl")),
-            "hibernate": can_login_action("CanHibernate"), "shutdown": can_login_action("CanPowerOff")}
+            "hibernate": bool(shutil.which("systemctl")) and can_login_action("CanHibernate"),
+            "shutdown": bool(shutil.which("systemctl")) and can_login_action("CanPowerOff"),
+            "reboot": bool(shutil.which("systemctl")) and can_login_action("CanReboot")}
 
 
 def execute_action(name):
     commands = {"lock": ["loginctl", "lock-session"],
-                "hibernate": ["systemctl", "hibernate"], "shutdown": ["systemctl", "poweroff"]}
+                "hibernate": ["systemctl", "hibernate"], "shutdown": ["systemctl", "poweroff"],
+                "reboot": ["systemctl", "reboot"]}
     if name not in commands: raise ValueError("Unknown system action")
     if os.environ.get("MAGI_ACTION_DRY_RUN") == "1": return {"ok": True, "dryRun": True, "command": commands[name]}
     executable = shutil.which(commands[name][0])
