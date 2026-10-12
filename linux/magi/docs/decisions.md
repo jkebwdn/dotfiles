@@ -1,5 +1,17 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-12 — MAGI controls wallpaper; hyprpaper renders
+
+Retain configured hyprpaper 0.8.4 and use its current runtime API, not historical
+preload commands. Explicit per-output apply avoids wildcard precedence. Keep
+selection/favourites/history in atomic XDG state, separate from Settings preferences.
+Use bounded asynchronous Qt images in virtualized delegates, without a disk cache
+or image-processing dependencies. Preserve all existing top-level shell surfaces.
+Native acceptance is pending due to inaccessible runtime sockets; automated tests
+are not a substitute for compositor reservation or visible desktop checks.
+See [implementation and evidence](design/wallpaper-manager.md).
+
+
 ## 2026-10-10 — Expand catalogue without changing operator layouts
 
 Keep `ControlCatalog` and the existing three presentation types. Share its pure

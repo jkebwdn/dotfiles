@@ -1,5 +1,15 @@
 # Settings architecture spike
 
+
+## Current addition: schema 10 Wallpaper preferences
+
+`wallpaper` adds `enabled`, explicit `directories` (up to 16 absolute/tilde roots)
+and `thumbnailSize` (160–320). Schema 9 migrates in memory without a startup write.
+The focused Wallpaper page uses the existing validation/save/reset store.
+Current selections, monitor mappings, favourites and recents live in separate XDG
+state, so preference reset does not erase them. See [Wallpaper checkpoint](wallpaper-manager.md).
+Earlier schema descriptions below retain their historical context.
+
 Status: **approved; S1–S7 foundation implemented through the action/icon-pack
 checkpoint on 2026-09-28**. See the
 [implementation record](../research/settings-foundation-checkpoint.md) for exact

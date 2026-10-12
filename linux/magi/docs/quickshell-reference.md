@@ -1,5 +1,15 @@
 # MAGI — Quickshell Technical Reference
 
+
+## Wallpaper APIs — 2026-10-12
+
+Installed Quickshell 0.3.1 / Qt 6.11.2 production-component tests validate
+`Process` JSON stdin/collectors, asynchronous `Image` with bounded `sourceSize`,
+`GridView` delegate virtualization and raw Hyprland monitor-event connections.
+Wallpaper reuses Hub's `PanelWindow`/exclusive-keyboard/ignore-exclusion pattern
+but owns a separate window. Offscreen wrapper tests cannot establish native focus
+or compositor reservation. [Versioned sources and test limits](design/wallpaper-manager.md#api-evidence-inspected-2026-10-12).
+
 ## Control Centre catalogue checkpoint (2026-10-10)
 
 Installed Quickshell0.3.1 and Hyprland0.56.2 remain the target. No new native

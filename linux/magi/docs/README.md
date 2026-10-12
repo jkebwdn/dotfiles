@@ -1,5 +1,16 @@
 # MAGI — Research and Development
 
+## Wallpaper Manager — 2026-10-12, uncommitted review
+
+Separate wallpaper tool/Settings page over configured hyprpaper 0.8.4, with a
+bounded PNG/JPEG library, virtualized thumbnails, confirmed runtime selection,
+per-monitor state, favourites and recents. Schema 10 adds focused preferences;
+wallpaper state lives separately in XDG state. Automated/offscreen checks pass;
+live compositor/renderer checks are blocked by this execution environment's socket
+access. No packages, theme orchestration, Hub modes or Hyprland configuration changes.
+See [checkpoint, limitations, native checklist and exact allowlist](design/wallpaper-manager.md).
+
+
 ## Control Centre action catalogue — 2026-10-10, uncommitted review
 
 Hub consolidation baseline is committed at

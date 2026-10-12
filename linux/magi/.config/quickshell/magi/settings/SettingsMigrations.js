@@ -89,5 +89,6 @@ function migrate(input) {
     if (doc.schemaVersion === 6) doc.schemaVersion = 7
     if (doc.schemaVersion === 7) doc.schemaVersion = 8
     if (doc.schemaVersion === 8) doc.schemaVersion = 9
+    if (doc.schemaVersion === 9) doc.schemaVersion = 10
     return doc
 }

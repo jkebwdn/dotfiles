@@ -1,5 +1,18 @@
 # MAGI — Architecture
 
+## Wallpaper subsystem — 2026-10-12
+
+`Wallpaper` owns selection/current state and serializes the library, backend and
+persistence workers. `wallpaper_library.py` scans explicit nonrecursive roots;
+`wallpaper_backend.py` isolates installed hyprpaper runtime IPC;
+`wallpaper_state.py` owns atomic XDG state, monitor restore and rollback.
+`WallpaperTile` / `WallpaperContent` render a lazy grid inside a separate
+zero-reservation `WallpaperWindow`. Settings schema 10 adds Wallpaper preferences.
+The manager is separate from Hub, Control Centre and Calendar. Future theme work
+can observe confirmed paths and `selectionChanged`, without coupling selection to
+theme propagation. [Checkpoint and current validation limits](design/wallpaper-manager.md).
+
+
 ## Control Centre catalogue expansion (2026-10-10)
 
 `SettingsSchema.controlDefinitions()` is the shared pure catalogue for validation

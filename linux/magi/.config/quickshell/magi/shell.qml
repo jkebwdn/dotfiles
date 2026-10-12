@@ -5,6 +5,7 @@ import "components/bar" as Bar
 import "components/settings" as SettingsUI
 import "components/notifications" as NotificationsUI
 import "components/hub" as HubUI
+import "components/wallpaper" as WallpaperUI
 import "services" as Services
 
 ShellRoot {
@@ -23,6 +24,7 @@ ShellRoot {
     Binding { target: Services.Hub; property: "suppressed"; value: fullscreen.suppressed }
     // Shared utility host; backend lifetimes remain above.
     HubUI.HubWindow { screen: bar.screen; readyToOpen: bar.settingsReady }
+    WallpaperUI.WallpaperWindow { screen: bar.screen; readyToOpen: bar.settingsReady }
     SettingsUI.SettingsApplication { readyToOpen: bar.settingsReady; outputWidth: bar.width }
     Bar.Bar {
         id: bar

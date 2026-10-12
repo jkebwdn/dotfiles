@@ -26,3 +26,4 @@ singleton Calendar 1.0 Calendar.qml
 CalendarModel 1.0 CalendarModel.qml
 singleton Emoji 1.0 Emoji.qml
 singleton Hub 1.0 Hub.qml
+singleton Wallpaper 1.0 Wallpaper.qml

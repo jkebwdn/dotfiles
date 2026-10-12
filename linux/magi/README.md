@@ -1,7 +1,7 @@
 # MAGI
 
 MAGI is a first-party Quickshell desktop shell for my Arch Linux + Hyprland setup.
-It brings the bar, system controls, Settings, application launching, Calendar, Emoji, notifications and clipboard history
+It brings the bar, system controls, Settings, application launching, Calendar, Emoji, wallpapers, notifications and clipboard history
 into one interface with shared themes and icons.
 
 ## Current status
@@ -27,6 +27,9 @@ behaviour still need broader testing. Hyprlock remains the current lock screen.
   with bundled packs, overrides and fallback icons.
 - First-party notification ownership, toasts, history, Notification Centre and DND.
 - An application launcher with searchable desktop entries, list/grid layouts and keyboard navigation.
+- A separate first-party Wallpaper Manager over hyprpaper: explicit libraries,
+  thumbnail grid, monitor assignments, favourites and recents. Implementation is
+  under review; [native validation is pending](docs/design/wallpaper-manager.md).
 - A first-party Clipboard Manager with text, image and file-URI support.
 - MPRIS media information and playback controls, with optional profile/media regions.
 - Wi-Fi scanning/connection/password entry, Bluetooth status/device controls,
