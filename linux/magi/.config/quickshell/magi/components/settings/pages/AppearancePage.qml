@@ -9,6 +9,7 @@ import "../../../icons" as Icons
 import "../../controls" as MagiControls
 Flickable {
     id: root
+    Component.onCompleted: Services.ThemeOrchestrator.refresh()
     contentHeight: content.implicitHeight + 48
     clip: true
     boundsBehavior: Flickable.StopAtBounds
@@ -45,6 +46,139 @@ Flickable {
             }
         }
         Label { visible: Theme.Theme.diagnostic.length > 0; text: Theme.Theme.diagnostic; color: Theme.Theme.warning }
+        Label { text: "System Theme"; font.bold: true }
+        Label {
+            text: Services.ThemeOrchestrator.summary || "External targets are opt-in. Review each integration before enabling Follow MAGI Theme."
+            color: Theme.Theme.subtext; wrapMode: Text.WordWrap; Layout.fillWidth: true
+        }
+        Label {
+            visible: Services.ThemeOrchestrator.error.length > 0
+            text: Services.ThemeOrchestrator.error; color: Theme.Theme.danger
+            wrapMode: Text.WordWrap; Layout.fillWidth: true
+        }
+        Repeater {
+            model: Services.ThemeOrchestrator.targets
+            ColumnLayout {
+                id: targetRow
+                required property var modelData
+                readonly property bool reviewing: Services.ThemeOrchestrator.plan !== null
+                    && Services.ThemeOrchestrator.plan.target === modelData.id
+                readonly property bool pending: Services.ThemeOrchestrator.busy
+                    && Services.ThemeOrchestrator.request !== null
+                    && Services.ThemeOrchestrator.request.target === modelData.id
+                Layout.fillWidth: true
+                RowLayout {
+                    Layout.fillWidth: true
+                    Label { text: targetRow.modelData.label; Layout.fillWidth: true }
+                    CheckBox {
+                        objectName: "followTheme-" + targetRow.modelData.id
+                        text: "Follow MAGI Theme"
+                        checked: targetRow.modelData.enabled || targetRow.reviewing || (targetRow.pending
+                            && ["plan", "enable", "resume"].indexOf(Services.ThemeOrchestrator.request.op) >= 0)
+                        enabled: !Services.ThemeOrchestrator.busy && targetRow.modelData.id !== "magi"
+                            && targetRow.modelData.available
+                        onClicked: {
+                            if (targetRow.reviewing) Services.ThemeOrchestrator.plan = null
+                            else if (targetRow.modelData.enabled) Services.ThemeOrchestrator.disable(targetRow.modelData.id)
+                            else if (targetRow.modelData.id === "zen" && !targetRow.modelData.confirmedProfile)
+                                Services.ThemeOrchestrator.preview("zen", profileInput.text)
+                            else Services.ThemeOrchestrator.follow(targetRow.modelData.id)
+                            checked = Qt.binding(() => targetRow.modelData.enabled || targetRow.reviewing
+                                || (targetRow.pending && ["plan", "enable", "resume"].indexOf(Services.ThemeOrchestrator.request.op) >= 0))
+                        }
+                    }
+                    SettingsUI.SettingsButton {
+                        visible: targetRow.modelData.enabled && targetRow.modelData.id !== "magi"
+                        text: "Retry"; enabled: !Services.ThemeOrchestrator.busy
+                        onClicked: Services.ThemeOrchestrator.retry(targetRow.modelData.id)
+                    }
+                    SettingsUI.SettingsButton {
+                        visible: !targetRow.modelData.enabled && targetRow.modelData.phase !== "disabled"
+                            && targetRow.modelData.id !== "magi" && !!targetRow.modelData.error
+                        text: "Remove hooks"; enabled: !Services.ThemeOrchestrator.busy
+                        onClicked: Services.ThemeOrchestrator.disable(targetRow.modelData.id)
+                    }
+                }
+                Label {
+                    objectName: "themeStatus-" + targetRow.modelData.id
+                    text: targetRow.pending ? "Working…" : targetRow.modelData.error ||
+                        (!targetRow.modelData.available ? "Unavailable — " + targetRow.modelData.reason :
+                         !targetRow.modelData.configured ? "Setup required — " + targetRow.modelData.reason :
+                         targetRow.reviewing ? "Confirm integration below to start following MAGI." :
+                         !targetRow.modelData.enabled && !targetRow.modelData.installed ?
+                            (targetRow.modelData.result === "Not enrolled" ? "Available — check Follow MAGI Theme to enroll" : targetRow.modelData.result) :
+                         !targetRow.modelData.enabled ? "Integration installed — updates paused" : targetRow.modelData.result) +
+                        (targetRow.modelData.publishedPalette ? " · " + targetRow.modelData.publishedPalette : "")
+                    color: targetRow.modelData.error ? Theme.Theme.danger :
+                        !targetRow.modelData.available ? Theme.Theme.muted :
+                        targetRow.modelData.enabled ? Theme.Theme.text : Theme.Theme.accent
+                    wrapMode: Text.WordWrap; Layout.fillWidth: true
+                }
+                RowLayout {
+                    visible: targetRow.modelData.id === "zen" && targetRow.modelData.enabled
+                    Layout.fillWidth: true
+                    Label {
+                        objectName: targetRow.modelData.id === "zen" ? "zenWorkspaceColor" : ""
+                        text: "Set this Zen workspace's base colour to " + Services.ThemeOrchestrator.zenWorkspaceColor
+                        wrapMode: Text.WordWrap; Layout.fillWidth: true
+                    }
+                    SettingsUI.SettingsButton {
+                        objectName: targetRow.modelData.id === "zen" ? "copyZenWorkspaceColor" : ""
+                        text: "Copy"
+                        enabled: !Services.ThemeOrchestrator.copyingZenColor
+                        onClicked: Services.ThemeOrchestrator.copyZenWorkspaceColor()
+                    }
+                    Label {
+                        text: Services.ThemeOrchestrator.copyMessage
+                        visible: text.length > 0
+                    }
+                }
+                TextField {
+                    id: profileInput
+                    visible: targetRow.modelData.id === "zen" && !targetRow.modelData.confirmedProfile
+                    Layout.fillWidth: true
+                    placeholderText: "Confirm the new Profile Directory from about:support"
+                }
+                ColumnLayout {
+                    id: review
+                    visible: targetRow.reviewing
+                    Layout.fillWidth: true
+                    onVisibleChanged: if (visible) Qt.callLater(() => {
+                        root.contentY = Math.max(0, Math.min(root.contentHeight - root.height,
+                            targetRow.mapToItem(content, 0, 0).y))
+                    })
+                    Label { text: "Enable " + targetRow.modelData.label + " integration?"; font.bold: true }
+                    Label {
+                        text: Services.ThemeOrchestrator.plan ? Services.ThemeOrchestrator.plan.boundary : ""
+                        Layout.fillWidth: true; wrapMode: Text.WordWrap
+                    }
+                    ScrollView {
+                        Layout.fillWidth: true; Layout.preferredHeight: 140
+                        TextArea {
+                            readOnly: true; wrapMode: TextEdit.Wrap
+                            text: targetRow.reviewing ? Services.ThemeOrchestrator.plan.edits.map(e => e.diff).join("\n") : ""
+                            font.family: "monospace"; font.pixelSize: 11
+                        }
+                    }
+                    RowLayout {
+                        SettingsUI.SettingsButton {
+                            objectName: "confirmTheme-" + targetRow.modelData.id
+                            text: "Enable Follow MAGI Theme"; enabled: !Services.ThemeOrchestrator.busy
+                            onClicked: Services.ThemeOrchestrator.enable()
+                        }
+                        SettingsUI.SettingsButton {
+                            objectName: "cancelTheme-" + targetRow.modelData.id
+                            text: "Cancel"; onClicked: Services.ThemeOrchestrator.plan = null
+                        }
+                    }
+                }
+            }
+        }
+        SettingsUI.SettingsButton {
+            text: Services.ThemeOrchestrator.busy ? "Updating targets…" : "Refresh targets"
+            enabled: !Services.ThemeOrchestrator.busy
+            onClicked: Services.ThemeOrchestrator.refresh()
+        }
         Label { text: "Icon pack"; font.bold: true }
         RowLayout {
             ComboBox {

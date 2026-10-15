@@ -1,5 +1,32 @@
 # MAGI — Research and Development
 
+Final v1 refinement: MAGI, border-only Hyprland, Ghostty reload, GTK/Thunar and
+Yazi are operator-accepted. Zen's operator-tested hybrid now has alias-only CSS,
+a dynamic workspace background recommendation and hex-only Copy in Settings.
+Fifteen focused tests, production pointer/Copy coverage, Settings and native
+terminal checks pass; repository diff whitespace is clean. Compositor IPC remains
+unavailable to this agent. See [acceptance, ownership and exact Git allowlist](design/theme-orchestrator.md).
+
+## Zen native theme investigation — 2026-10-15
+
+Read-only installed-source tracing identifies workspace-specific native base colour
+and a separate profile accent preference. Recommended hybrid/manual native route
+is recorded in [Zen native theme boundary](research/zen-native-theme-boundary.md);
+no adapter or browser state was changed by this investigation. The earlier
+unenrolled handoff state below is historical: the current Zen stylesheet has a
+MAGI integration import.
+
+## System Theme Orchestrator v1 — 2026-10-14, uncommitted review
+
+Enrollment follow-up: Follow MAGI now keeps pending opt-in visible and presents confirmation inside the target row. A real production-page pointer regression covers enrollment, failure and removal; Zen reuses its confirmed profile.
+
+Ten existing palettes remain canonical. Independent opt-in adapters, generated
+XDG storage, reviewed reversible hooks and per-target Settings status are implemented.
+Focused lifecycle, real QML/Settings and native terminal-parser tests pass. Native
+operator acceptance and enrollment have since advanced as recorded above. See [architecture, ownership, validation and exact Git
+allowlist](design/theme-orchestrator.md). The research checkpoint is unchanged.
+
+
 ## Wallpaper Manager — 2026-10-12, uncommitted review
 
 Separate wallpaper tool/Settings page over configured hyprpaper 0.8.4, with a

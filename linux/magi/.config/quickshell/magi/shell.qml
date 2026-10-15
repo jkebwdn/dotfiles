@@ -14,6 +14,7 @@ ShellRoot {
     Component.onCompleted: {
         Services.Notifications.activateServer()
         Services.Clipboard.activate()
+        Services.ThemeOrchestrator.activate()
     }
     NotificationsUI.FullscreenMonitor { id: fullscreen; screen: bar.screen }
     Binding { target: Services.Notifications; property: "fullscreen"; value: fullscreen.suppressed }

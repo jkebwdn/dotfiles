@@ -1,5 +1,23 @@
 # MAGI — Decisions and Debugging History
 
+Final v1 refinement: retain operator acceptance for MAGI, Hyprland, Ghostty, GTK/Thunar, Yazi and the tested Zen native-colour workflow. Implement minimal Zen aliases plus manual workspace colour/Copy UX; never modify native session storage. Correct only milestone-introduced Yazi comment whitespace and preserve its ownership rollback. Full validation and current limitations are recorded in the design document.
+
+## 2026-10-14 — Theme orchestration ownership and activation
+
+Enrollment UX correction: replace the off-screen shared preview with per-row confirmation and pending check state; report target-local errors and pause failed first activation. Reuse the exact operator-confirmed Zen profile. Add actual production-checkbox mouse tests instead of relying on direct service calls.
+
+Implement the committed coverage architecture with the existing ten-theme registry
+as canonical source, Python pure renderers and small independent adapters. Keep
+Follow MAGI enrollment preferences/ownership outside protected Settings JSON.
+Require concrete hook previews and compare-before-write removal; preserve edited
+hooks as conflicts. Publish per target and retain independent failures. Fastfetch
+has an ANSI inheritance adapter because its audited configuration needs no writer.
+GTK3 uses a generated named theme and matching GSettings owner, preserving GTK4
+CSS/icons/cursors. Zen remains installation-metadata resolved, explicitly
+profile-confirmed, with generated CSS requiring restart. Subsequent operator
+acceptance and the hybrid native-colour refinement are recorded above; see [design and validation](design/theme-orchestrator.md).
+
+
 ## 2026-10-12 — MAGI controls wallpaper; hyprpaper renders
 
 Retain configured hyprpaper 0.8.4 and use its current runtime API, not historical

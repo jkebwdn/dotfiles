@@ -1,5 +1,21 @@
 # MAGI — Architecture
 
+Zen hybrid refinement: generated CSS owns only existing menu aliases. Native workspace base remains manual; Settings derives its recommendation from the selected semantic background and reuses the clipboard helper. Hyprland owns only active/inactive borders; effect behaviour stays operator-owned.
+
+## System Theme Orchestrator v1 — 2026-10-14
+
+Enrollment follow-up: the production checkbox owns opt-in through a visible inline confirmation; installed-but-paused targets resume through ownership validation. Availability is independent of enrollment.
+
+ThemeRegistry's JSON feeds both reactive MAGI Theme and a validated semantic
+PaletteSnapshot. The shell-owned ThemeOrchestrator service serializes selection
+requests through a JSON Python worker; a centralized registry supplies independent
+probe, enrollment, render and activation adapters. Per-target atomic generation
+pointers and an XDG state journal separate publication from real activation and
+removal. Appearance exposes opt-in Follow MAGI with exact hook previews. Generated
+files never belong in Stow sources. See [the implementation contract and limits](design/theme-orchestrator.md).
+No bar/surface architecture or wallpaper selection coupling changed.
+
+
 ## Wallpaper subsystem — 2026-10-12
 
 `Wallpaper` owns selection/current state and serializes the library, backend and

@@ -1,5 +1,22 @@
 # MAGI — Quickshell Technical Reference
 
+Zen Copy uses the existing clipboard_backend.py --copy-text JSON/stdin boundary, as Emoji does. Production pointer tests capture the final wl-copy bytes for all ten palettes and verify reactive semantic background guidance; no second clipboard implementation or new Quickshell API was added.
+
+## Theme Orchestrator bridge — installed 0.3.1, 2026-10-14
+
+Enrollment pointer coverage now uses QtTest `mouseClick` on the real AppearancePage with an offscreen Window, validates viewport visibility of inline confirmation, and exercises the real Process backend in isolated XDG roots. Earlier service-only checks did not cover this interaction.
+
+The orchestrator reuses existing `Process`/`StdioCollector` stdin JSON and exit
+handling, `Connections` and `FileView.watchChanges` patterns. Installed API metadata
+was inspected in `/usr/lib/qt6/qml/Quickshell/Io/quickshell-io.qmltypes` (started,
+exited, write, stdinEnabled); existing SettingsStore demonstrates the file watcher.
+A real offscreen QML test verifies asynchronous worker results, theme selection,
+Follow persistence and newest-request handling. The Starship base watcher requests
+recomposition without changing the user's base. This does not require a new
+Quickshell API or native-window geometry. See [test commands and environment
+limitations](design/theme-orchestrator.md#validation-and-acceptance-limits).
+
+
 
 ## Wallpaper APIs — 2026-10-12
 
