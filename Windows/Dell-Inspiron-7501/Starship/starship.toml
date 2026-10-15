@@ -1,0 +1,70 @@
+
+# =========================================================
+# Starship — Black Metal / Khold
+# Dell Inspiron 7501
+# =========================================================
+
+
+# ---------------------------------------------------------
+# General
+# ---------------------------------------------------------
+
+palette = "black_metal"
+add_newline = false
+
+format = """
+$directory$git_branch$git_status
+$character"""
+
+
+# ---------------------------------------------------------
+# Colour Palette
+# ---------------------------------------------------------
+
+[palettes.black_metal]
+red = "#A26862"
+white = "#E8E8E8"
+muted = "#777777"
+dark = "#242424"
+
+
+# ---------------------------------------------------------
+# Directory
+# ---------------------------------------------------------
+
+[directory]
+style = "bold red"
+format = "[$path]($style)"
+truncation_length = 3
+truncate_to_repo = false
+home_symbol = "~"
+read_only = " [RO](muted)"
+
+
+# ---------------------------------------------------------
+# Git Branch
+# ---------------------------------------------------------
+
+[git_branch]
+symbol = ""
+style = "white"
+format = " [ $branch ]($style)"
+
+
+# ---------------------------------------------------------
+# Git Status
+# ---------------------------------------------------------
+
+[git_status]
+style = "red"
+format = "[$all_status$ahead_behind]($style)"
+
+
+# ---------------------------------------------------------
+# Prompt Character
+# ---------------------------------------------------------
+
+[character]
+success_symbol = "[❯](bold red)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold red)"
