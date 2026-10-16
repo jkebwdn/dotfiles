@@ -4,25 +4,24 @@ import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import "../../services" as Services
 import "../../theme" as Theme
-ColumnLayout {
+SettingsSection {
     id: root
-    required property string title
-    property string description: ""
     property var numbers: []
     property var colors: []
     readonly property var paletteRoles: ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "accent", "blue", "lavender", "green", "yellow", "peach", "red", "teal", "border"]
     Layout.fillWidth: true
-    spacing: 12
-    Label { text: root.title; font.bold: true }
-    Label { text: root.description; visible: text.length > 0; Layout.fillWidth: true; wrapMode: Text.WordWrap }
+    collapsible: true
     Repeater {
         model: root.numbers
-        RowLayout {
+        SettingsRow {
             id: numberRow
             required property var modelData
             Layout.fillWidth: true
-            Label { text: numberRow.modelData.label; Layout.preferredWidth: 200; wrapMode: Text.WordWrap }
-            Slider {
+            columns: 2
+            Label { text: numberRow.modelData.label; Layout.fillWidth: true; Layout.columnSpan: 2; wrapMode: Text.Wrap }
+            SettingsSlider {
+                objectName: "visualSetting-" + numberRow.modelData.key
+                Accessible.name: numberRow.modelData.label
                 Layout.fillWidth: true
                 from: numberRow.modelData.min; to: numberRow.modelData.max; stepSize: numberRow.modelData.step
                 value: Services.Settings.data.appearance.visual[numberRow.modelData.key]
@@ -39,12 +38,14 @@ ColumnLayout {
     }
     Repeater {
         model: root.colors
-        RowLayout {
+        SettingsRow {
             id: colorRow
             required property var modelData
             Layout.fillWidth: true
-            Label { text: colorRow.modelData.label; Layout.preferredWidth: 200 }
-            ComboBox {
+            columns: 2
+            Label { text: colorRow.modelData.label; Layout.fillWidth: true; Layout.columnSpan: 2; wrapMode: Text.Wrap }
+            SettingsSelector {
+                Accessible.name: colorRow.modelData.label
                 Layout.fillWidth: true
                 model: root.paletteRoles
                 currentIndex: model.indexOf(Services.Settings.data.appearance.visual[colorRow.modelData.key])

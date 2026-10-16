@@ -1,42 +1,56 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import ".." as SettingsUI
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import ".." as SettingsUI
 import "../../../services" as Services
 import "../../../theme" as Theme
-Flickable {
+SettingsUI.SettingsPage {
     id: root
-    contentHeight: content.implicitHeight + 48
-    clip: true
-    ScrollBar.vertical: ScrollBar {}
-    ColumnLayout {
-        id: content
-        x: 24; y: 24; width: root.width - 48
-        spacing: 16
-        Label { text: "Bar"; font.pixelSize: 26; font.bold: true }
-        Label { text: "Place modules and adjust their order. Hidden modules remain available in Control Centre.\nPlacement waits until menus and password/network interactions finish."; wrapMode: Text.WordWrap; Layout.fillWidth: true; color: Theme.Theme.subtext }
-        Repeater {
-            model: ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "controlcentre"]
-            RowLayout {
-                id: row
-                required property string modelData
-                readonly property string section: {
-                    const bar = Services.Settings.data.bar
-                    return ["left", "center", "right"].find(s => bar[s].indexOf(modelData) >= 0) || "hidden"
-                }
-                readonly property int position: section === "hidden" ? -1 : Services.Settings.data.bar[section].indexOf(modelData)
-                Layout.fillWidth: true
-                Label { text: row.modelData; Layout.fillWidth: true }
-                ComboBox {
-                    model: ["Hidden", "Left", "Centre", "Right"]
-                    currentIndex: ["hidden", "left", "center", "right"].indexOf(row.section)
-                    onActivated: index => Services.Settings.placeBar(row.modelData, ["hidden", "left", "center", "right"][index])
-                }
-                SettingsUI.SettingsButton { text: "↑"; Accessible.name: "Move earlier"; enabled: row.position > 0; onClicked: Services.Settings.moveBar(row.section,row.position,-1) }
-                SettingsUI.SettingsButton { text: "↓"; Accessible.name: "Move later"; enabled: row.position >= 0 && row.position < Services.Settings.data.bar[row.section].length - 1; onClicked: Services.Settings.moveBar(row.section,row.position,1) }
+    title: "Bar"
+    description: "Arrange modules across your bar. Modules in Available are hidden from the bar and remain available in Control Centre."
+    readonly property var knownModules: ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "controlcentre"]
+    readonly property var labels: ({clock:"Time", date:"Date", workspaces:"Workspaces", volume:"Volume",
+        wifi:"Wi-Fi", bluetooth:"Bluetooth", battery:"Battery", controlcentre:"Control Centre"})
+    function arrangedModules() {
+        const bar = Services.Settings.data.bar
+        // Include any already-configured schema-supported IDs without inventing defaults.
+        const ids = [...new Set(knownModules.concat(bar.left, bar.center, bar.right))]
+        const hidden = ids.filter(id => !["left", "center", "right"].some(l => bar[l].includes(id)))
+            .sort((a,b) => (labels[a] || a).localeCompare(labels[b] || b))
+        return ids.map(id => {
+            const lane = ["left", "center", "right"].find(l => bar[l].includes(id)) || "hidden"
+            return {key:id, label:labels[id] || id, lane:lane,
+                position:lane === "hidden" ? hidden.indexOf(id) : bar[lane].indexOf(id)}
+        })
+    }
+    function placeModule(id, lane, position) {
+        const bar = Services.Settings.data.bar
+        const from = ["left", "center", "right"].find(l => bar[l].includes(id)) || "hidden"
+        if (lane === "hidden") { if (from !== lane) Services.Settings.placeBar(id, "hidden"); return }
+        if (from !== lane && !Services.Settings.placeBar(id, lane)) return
+        // placeBar removes the ID from all regions and appends it to the destination.
+        // moveBar then places it at the dropped index, using the same validated writer.
+        const index = Services.Settings.data.bar[lane].indexOf(id)
+        if (index >= 0 && index !== position) Services.Settings.moveBar(lane, index, position - index)
+    }
+    SettingsUI.SettingsReorderBoard {
+        objectName: "barOrder"
+        viewport: root
+        rowHeight: 44
+        lanes: [{id:"left",label:"LEFT"}, {id:"center",label:"CENTRE"},
+            {id:"right",label:"RIGHT"}, {id:"hidden",label:"AVAILABLE · HIDDEN FROM BAR",ordered:false}]
+        entries: root.arrangedModules()
+        onMoveRequested: (key, lane, position) => root.placeModule(key, lane, position)
+        rowContent: Component {
+            Label {
+                text: parent.entry ? parent.entry.label : ""
+                color: Theme.Theme.text
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
             }
         }
-        SettingsUI.SettingsButton { text: "Reset bar placement"; onClicked: Services.Settings.resetSection("bar") }
     }
+    SettingsUI.SettingsHelp { text: "Bar placement updates when open menus and network/password interactions have finished." }
+    SettingsUI.SettingsButton { flat: true; text: "Reset bar placement"; onClicked: Services.Settings.resetSection("bar") }
 }

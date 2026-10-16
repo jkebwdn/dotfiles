@@ -455,3 +455,26 @@ focus/fullscreen compatibility remains separate. Isolated page/persistence
 checks pass; the offscreen Qt backend emits its known unsupported-window-mask
 warning, absent from production logs. No additional web research was performed.
 See the [checkpoint](research/settings-application-checkpoint.md) for exact scope.
+
+
+## Settings presentation verification — 2026-10-16
+
+This phase introduces no new Quickshell APIs. Existing FloatingWindow and Loader patterns remain; Qt Basic subclasses retain native signals and keyboard interaction. Production offscreen QtTest coverage exercises page navigation, focus, reset and persistence paths. The RoundedArtwork GPU mask is reused unchanged and still requires native visual acceptance. See [test evidence and limits](design/settings-phase2a.md).
+
+
+## Settings rendering evidence — Phase 2A.1
+
+Installed Qt Basic ComboBox/SpinBox customization points and QtTest grabImage/save were inspected on 2026-10-16 (Qt 6.11.2-2; Quickshell 0.3.1-1). The test resizes the backing QQuickWindow through the Window attached property and verifies actual content dimensions; implicit size changes alone did not resize the mapped window. Framebuffer renders remain software evidence, not native acceptance. See [checkpoint](design/settings-phase2a1.md).
+
+
+## Settings drag implementation — Phase 2A.2
+
+Inspected the installed `/usr/lib/qt6/qml/QtQuick/plugins.qmltypes` on 2026-10-16 (Qt declarative 6.11.2-2; Quickshell 0.3.1-1). MouseArea preventStealing and coordinate mapping support a handle-owned grab with viewport-space coordinates; Window active changes support cancellation. No new Quickshell API or external code/assets are introduced. Real production QtTest mouse/key events verify stable delegates, scrolling and canonical persistence at 720×500 and 940×720. Compositor input/fractional-scale acceptance remains native work; see [evidence and limits](design/settings-phase2a2.md).
+
+
+## Settings Escape ownership — Phase 2A.3
+
+On the installed Qt 6.11.2 / Quickshell 0.3.1 environment, production QtTest events verify Keys.AfterItem on the outer Settings Pane closes only after child handling: ComboBox popup, Dialog, a consuming text editor and active drag each retain Escape. Idle drag handles let Escape propagate. The existing Hyprland Lua binding maps Super+Q to window.close; no new Quickshell API or compositor binding is introduced. Native compositor-key dispatch remains unverified by offscreen tests. See [checkpoint](design/settings-phase2a3.md).
+
+
+Final Phase 2A.3 status labels use existing Qt Text.NoWrap/ElideRight presentation. Theme pointer coverage checks one-line labels at both Settings content widths, adapter wording normalization, full reload details and visible errors; no new Quickshell API is used.

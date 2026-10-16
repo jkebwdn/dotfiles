@@ -501,3 +501,26 @@ visibility will become connected-only without coupling service/detail availabili
 to bar placement. Primary and secondary controls will also share an inherited
 semantic icon-state style combining ON/OFF roles, signed palette shade and state
 strength/opacity. Neither change is part of the current implementation.
+
+
+## Settings presentation — 2026-10-16
+
+Settings remains a normal FloatingWindow. Settings-only metrics, page/section/row primitives and native Qt Basic subclasses own presentation; Theme still owns semantic colours/radii and Settings owns all writes. Visited page Loaders preserve local drafts; Appearance/Launcher refresh when revisited. Shared surfaces, services and schema are unchanged. See [Phase 2A](design/settings-phase2a.md).
+
+
+## Settings composition — Phase 2A.1
+
+The Phase 2A ownership model remains. SettingsNavigationItem extends SettingsButton; the existing native Qt Basic subclasses now own their visual backgrounds/indicators/popups. Theme still owns semantic colours and roundness; no service/runtime-surface boundary changed. See [composition checkpoint](design/settings-phase2a1.md).
+
+
+## Settings arrangement — Phase 2A.2
+
+SettingsReorderBoard owns stable visual delegates, transient drag previews, insertion feedback and viewport scrolling. SettingsDragHandle owns pointer and keyboard input. Pages alone translate move requests into the existing Settings APIs: moveControl/moveEntry for Control Centre, placeBar/moveBar for Bar. The existing arrays remain canonical; hover never writes configuration. No runtime surface or service ownership changes. See [interaction checkpoint](design/settings-phase2a2.md).
+
+
+## Settings configured-item presentation — Phase 2A.3
+
+Control Centre Settings derives configured rows from enabled records and Available from catalogue identities without an enabled record. Remove/re-add uses existing enabled-state APIs to retain stable identity, accent and position; visible reorder indices map to canonical arrays. No schema or runtime ownership changes. Theme target rows progressively disclose existing status; unhandled Escape bubbles to the Settings Pane after child handling. See [final refinement checkpoint](design/settings-phase2a3.md).
+
+
+The final Phase 2A.3 status refinement normalizes adapter result text only in the collapsed Application Themes label. Complete detail text and enrollment handlers remain unchanged; no backend status representation is introduced.

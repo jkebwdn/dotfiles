@@ -603,3 +603,28 @@ border shading and removal of the connected-device name from the compact bar.
    palette roles, signed shade adjustment and state strength/opacity. Containers or
    groups provide defaults; individual controls override only when needed. Do not
    duplicate complete state settings per button.
+
+
+## 2026-10-16 — Settings foundations and native checkpoint
+
+Reuse the existing palette/roundness and RoundedArtwork mask. Keep visual metrics scoped to Settings and retain native control semantics. Preserve visited Settings pages for explicit-save drafts; retain move buttons and stable keys rather than adding drag-and-drop. Automated checks pass; native acceptance and commit remain pending. See [Phase 2A](design/settings-phase2a.md).
+
+
+## 2026-10-16 — quiet Settings composition
+
+Use flat navigation with an active marker, compact native-control styling, and soft grouping only for configured Control Centre entities. Keep all settings visible and preserve native activation semantics. Remove schema details from routine save feedback. Correct the test fixture to resize the backing window rather than only implicit preferences. See [Phase 2A.1](design/settings-phase2a1.md).
+
+
+## 2026-10-16 — Settings direct arrangement
+
+Phase 2A.2 supersedes the earlier decision to defer drag ordering. Preserve stable keyed delegates across previews, and commit through page-owned existing writers on drop. Cancel stale previews when canonical order changes; do not persist hover or invent a second Bar model. Retain discoverable Alt+arrow/Home/End keyboard ordering and a derived Available lane. Native interaction acceptance remains pending. See [checkpoint](design/settings-phase2a2.md).
+
+
+## 2026-10-16 — final Settings feedback
+
+Remove redundant configured-row switches while preserving disabled records as Available. Keep the accepted drag system and use a 50px primary row. Use marker/text selection independently of focus. Collapse healthy theme diagnostics but expose errors/manual requirements and preserve enrollment handlers. Let child controls consume Escape before closing Settings; retain the existing Hyprland Super+Q binding.
+
+Future product direction favours integrating Wallpaper Manager into Wallpaper Settings; a future Hub mode remains conditional on later composition. The planned Hub selector is Apps, Clipboard, Notifications, Emoji and Settings. Wallpaper palette extraction/automation remain deferred behind the existing palette/orchestration boundary. See [scope and evidence](design/settings-phase2a3.md).
+
+
+Final Phase 2A.3 native feedback: use concise collapsed target states (Applied, Reload, Restart, Relaunch, Next launch, New shell, Manual step, Deferred, Error), with no wrapping. Unknown future wording falls back to Details rather than leaking adapter prose into the narrow column. Preserve full expandable status and automatic visibility for errors/setup/manual requirements.

@@ -18,10 +18,17 @@ FloatingWindow {
     visible: Services.SettingsWindowState.shown
     onVisibleChanged: { if (!visible) Services.SettingsWindowState.shown = false }
     Pane {
+        objectName: "settingsApplicationPane"
+        // Child controls/popups handle Escape first; only unhandled keys bubble here.
+        Keys.priority: Keys.AfterItem
+        Keys.onEscapePressed: event => {
+            Services.SettingsWindowState.shown = false
+            event.accepted = true
+        }
         anchors.fill: parent
         padding: 0
         font.family: "Noto Sans"
-        font.pixelSize: 14
+        font.pixelSize: SettingsMetrics.bodySize
         palette.window: Theme.Theme.background
         palette.windowText: Theme.Theme.text
         palette.base: Theme.Theme.background
@@ -44,68 +51,108 @@ FloatingWindow {
                 color: Theme.Theme.surface
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 18
+                    anchors.margins: 14
                     spacing: 12
                     RowLayout {
-                        MagiControls.Icon { role: "settings"; moduleId: "settings"; size: 24 }
-                        Label { text: "MAGI"; font.pixelSize: 24; font.bold: true }
+                        MagiControls.Icon { role: "settings"; moduleId: "settings"; size: SettingsMetrics.iconSize }
+                        Label { text: "MAGI"; font.pixelSize: 20; font.bold: true }
                     }
-                    Label { text: "Settings"; color: Theme.Theme.subtext; Layout.bottomMargin: 20 }
-                    Repeater {
-                        model: ["Appearance", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
-                        SettingsButton {
-                            id: navigationButton
-                            required property string modelData
-                            Layout.fillWidth: true
-                            text: modelData
-                            checked: Services.SettingsWindowState.page === modelData
-                            onClicked: Services.SettingsWindowState.page = modelData
-                            background: Rectangle {
-                                radius: Theme.Theme.radius("action", 8, width, height)
-                                color: navigationButton.checked ? Theme.Theme.elevated : "transparent"
+                    Label { text: "Settings"; color: Theme.Theme.subtext; Layout.bottomMargin: 12 }
+                    ScrollView {
+                        id: navigationScroll
+                        objectName: "settingsNavigation"
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        contentWidth: availableWidth
+                        clip: true
+                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                        ColumnLayout {
+                            width: parent.width
+                            spacing: 2
+                            Repeater {
+                                model: ["Appearance", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
+                                SettingsNavigationItem {
+                                    id: navigationButton
+                                    required property string modelData
+                                    objectName: "settingsNav-" + modelData
+                                    Layout.fillWidth: true
+                                    text: modelData
+                                    checked: Services.SettingsWindowState.page === modelData
+                                    onClicked: Services.SettingsWindowState.page = modelData
+                                    onActiveFocusChanged: if (activeFocus) {
+                                        const view = navigationScroll.contentItem
+                                        if (y < view.contentY) view.contentY = y
+                                        else if (y + height > view.contentY + view.height)
+                                            view.contentY = y + height - view.height
+                                    }
+                                }
                             }
                         }
                     }
-                    Item { Layout.fillHeight: true }
-                    Label { text: "Changes save automatically"; wrapMode: Text.WordWrap; Layout.fillWidth: true; color: Theme.Theme.subtext; font.pixelSize: 11 }
-                    SettingsButton { text: "Close"; Layout.fillWidth: true; onClicked: Services.SettingsWindowState.shown = false }
+                    SettingsButton { flat: true; text: "Close"; Layout.fillWidth: true; onClicked: Services.SettingsWindowState.shown = false }
                 }
             }
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 0
-                Loader {
+                Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    sourceComponent: Services.SettingsWindowState.page === "Appearance" ? appearance
-                        : Services.SettingsWindowState.page === "Profile" ? profile
-                        : Services.SettingsWindowState.page === "Bar" ? bar
-                        : Services.SettingsWindowState.page === "Date & time" ? calendar
-                        : Services.SettingsWindowState.page === "Notifications" ? notifications
-                        : Services.SettingsWindowState.page === "Clipboard" ? clipboard
-                        : Services.SettingsWindowState.page === "Wallpaper" ? wallpaper
-                        : Services.SettingsWindowState.page === "Emoji" ? emoji
-                        : Services.SettingsWindowState.page === "Launcher" ? launcher
-                        : Services.SettingsWindowState.page === "Icons" ? icons : centre
+                    Repeater {
+                        model: ["Appearance", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
+                        Loader {
+                            required property string modelData
+                            property bool visited: false
+                            readonly property bool selected: Services.SettingsWindowState.page === modelData
+                            anchors.fill: parent
+                            visible: selected
+                            active: visited || selected
+                            onSelectedChanged: if (selected) visited = true
+                            Component.onCompleted: if (selected) visited = true
+                            sourceComponent: modelData === "Appearance" ? appearance
+                                : modelData === "Profile" ? profile
+                                : modelData === "Bar" ? bar
+                                : modelData === "Date & time" ? calendar
+                                : modelData === "Notifications" ? notifications
+                                : modelData === "Clipboard" ? clipboard
+                                : modelData === "Wallpaper" ? wallpaper
+                                : modelData === "Emoji" ? emoji
+                                : modelData === "Launcher" ? launcher
+                                : modelData === "Icons" ? icons : centre
+                        }
+                    }
                 }
                 Rectangle {
                     Layout.fillWidth: true
-                    implicitHeight: footer.implicitHeight + 20
-                    color: Theme.Theme.surface
+                    implicitHeight: footer.implicitHeight + 16
+                    color: Theme.Theme.background
                     RowLayout {
                         id: footer
                         anchors.fill: parent
                         anchors.margins: 10
-                        Label {
+                        ScrollView {
+                            id: statusScroll
+                            objectName: "settingsSaveStatusScroll"
                             Layout.fillWidth: true
-                            wrapMode: Text.WordWrap
-                            text: Services.Settings.error || Services.Settings.diagnostics.join(" · ")
-                                || (Services.Settings.saveState === "saved"
-                                    ? "Saved · schema v" + Services.Settings.data.schemaVersion
-                                    : Services.Settings.saveState)
-                            color: Services.Settings.error ? Theme.Theme.red : Theme.Theme.subtext
-                            font.pixelSize: 12
+                            implicitHeight: Math.min(80, saveStatus.implicitHeight)
+                            contentWidth: availableWidth
+                            clip: true
+                            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                            Label {
+                                id: saveStatus
+                                objectName: "settingsSaveStatus"
+                                textFormat: Text.PlainText
+                                width: statusScroll.availableWidth
+                                wrapMode: Text.Wrap
+                                text: Services.Settings.error || Services.Settings.diagnostics.join(" · ")
+                                    || (Services.Settings.saveState === "saved"
+                                        ? "All changes saved"
+                                        : Services.Settings.saveState)
+                                color: Services.Settings.error ? Theme.Theme.red : Theme.Theme.text
+                                font.pixelSize: 11
+                                horizontalAlignment: Services.Settings.error || Services.Settings.diagnostics.length ? Text.AlignLeft : Text.AlignRight
+                            }
                         }
                         SettingsButton {
                             visible: Services.Settings.saveState === "conflict" || Services.Settings.saveState === "error"

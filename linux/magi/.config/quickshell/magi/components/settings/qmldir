@@ -1,0 +1,18 @@
+SettingsApplication 1.0 SettingsApplication.qml
+SettingsButton 1.0 SettingsButton.qml
+SettingsFocus 1.0 SettingsFocus.qml
+SettingsHelp 1.0 SettingsHelp.qml
+singleton SettingsMetrics 1.0 SettingsMetrics.qml
+SettingsNumber 1.0 SettingsNumber.qml
+SettingsPage 1.0 SettingsPage.qml
+SettingsRow 1.0 SettingsRow.qml
+SettingsSection 1.0 SettingsSection.qml
+SettingsSelector 1.0 SettingsSelector.qml
+SettingsSlider 1.0 SettingsSlider.qml
+SettingsTextField 1.0 SettingsTextField.qml
+SettingsToggle 1.0 SettingsToggle.qml
+SettingsWindow 1.0 SettingsWindow.qml
+VisualSettingsGroup 1.0 VisualSettingsGroup.qml
+SettingsNavigationItem 1.0 SettingsNavigationItem.qml
+SettingsDragHandle 1.0 SettingsDragHandle.qml
+SettingsReorderBoard 1.0 SettingsReorderBoard.qml

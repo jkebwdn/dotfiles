@@ -5,22 +5,18 @@ import QtQuick.Layouts
 import "../../../services" as Services
 import "../../../theme" as Theme
 import ".." as SettingsUI
-Flickable {
+SettingsUI.SettingsPage {
     id: root
+    onRevisited: Services.Launcher.refresh()
     Component.onCompleted: Services.Launcher.refresh()
-    contentHeight: content.implicitHeight + 48
-    clip: true
-    ScrollBar.vertical: ScrollBar {}
-    ColumnLayout {
-        id: content
-        x: 24; y: 24; width: root.width - 48; spacing: 14
-        Label { text: "Application Launcher"; font.pixelSize: 26; font.bold: true }
-        Label { text: "SUPER + SPACE · Search installed applications"; color: Theme.Theme.subtext }
+    title: "Application Launcher"
+    description: "SUPER + SPACE · Search installed applications"
+    SettingsUI.SettingsSection {
+        title: "Presentation"
         Repeater {
             model: [{key:"enabled",label:"Enable launcher"}, {key:"showIcons",label:"Show application icons"},
-                {key:"showLabels",label:"Show names"}, {key:"showSubtitles",label:"Show descriptions in list mode"},
-                {key:"headerEnabled",label:"Show header image"}, {key:"backgroundEnabled",label:"Show background image"}]
-            CheckBox {
+                {key:"showLabels",label:"Show names"}, {key:"showSubtitles",label:"Show descriptions in list mode"}]
+            SettingsUI.SettingsToggle {
                 required property var modelData
                 text: modelData.label; checked: Services.Settings.data.launcher[modelData.key]
                 onClicked: Services.Settings.setValue("launcher", modelData.key, checked)
@@ -28,35 +24,60 @@ Flickable {
         }
         Repeater {
             model: [{key:"layout",label:"Layout",values:["list","grid"]},
-                {key:"position",label:"Panel position",values:["center","top"]},
-                {key:"headerPosition",label:"Header position",values:["top","bottom"]}]
-            RowLayout {
+                {key:"position",label:"Panel position",values:["center","top"]}]
+            SettingsUI.SettingsRow {
                 required property var modelData
                 Layout.fillWidth: true
-                Label { text: parent.modelData.label; Layout.fillWidth: true }
-                ComboBox {
+                Label { text: parent.modelData.label; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                SettingsUI.SettingsSelector {
                     id: choice
                     readonly property var option: parent.modelData
+                    Accessible.name: option.label
                     model: option.values
                     currentIndex: option.values.indexOf(Services.Settings.data.launcher[option.key])
                     onActivated: Services.Settings.setValue("launcher", option.key, option.values[currentIndex])
                 }
             }
         }
+    }
+    SettingsUI.SettingsSection {
+        title: "Dimensions"
+        description: "List and grid sizes are configured independently."
         Repeater {
             model: [{key:"panelWidth",label:"List width",min:320,max:800}, {key:"gridWidth",label:"Grid width",min:420,max:1200},
                 {key:"rowHeight",label:"List row height",min:40,max:96}, {key:"iconSize",label:"Icon size",min:20,max:64},
                 {key:"visibleRows",label:"Visible rows (grid up to 3)",min:3,max:12}, {key:"gridColumns",label:"Grid columns",min:3,max:8}]
-            RowLayout {
+            SettingsUI.SettingsRow {
                 required property var modelData
                 Layout.fillWidth: true
-                Label { text: parent.modelData.label; Layout.fillWidth: true }
-                SpinBox {
+                Label { text: parent.modelData.label; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                SettingsUI.SettingsNumber {
                     readonly property var option: parent.modelData
+                Accessible.name: option.label
                     from: option.min; to: option.max
                     value: Services.Settings.data.launcher[option.key]
                     onValueModified: Services.Settings.setValue("launcher", option.key, value)
                 }
+            }
+        }
+    }
+    SettingsUI.SettingsSection {
+        title: "Artwork"
+        description: "Local images for the launcher header and background."
+        Repeater {
+            model: [{key:"headerEnabled",label:"Show header image"}, {key:"backgroundEnabled",label:"Show background image"}]
+            SettingsUI.SettingsToggle {
+                required property var modelData
+                text: modelData.label; checked: Services.Settings.data.launcher[modelData.key]
+                onClicked: Services.Settings.setValue("launcher", modelData.key, checked)
+            }
+        }
+        SettingsUI.SettingsRow {
+            Label { text: "Header position"; Layout.fillWidth: true }
+            SettingsUI.SettingsSelector {
+                model: ["top", "bottom"]
+                currentIndex: model.indexOf(Services.Settings.data.launcher.headerPosition)
+                onActivated: Services.Settings.setValue("launcher", "headerPosition", model[currentIndex])
             }
         }
         Repeater {
@@ -64,8 +85,8 @@ Flickable {
             ColumnLayout {
                 required property var modelData
                 Layout.fillWidth: true
-                Label { text: parent.modelData.label }
-                TextField {
+                SettingsUI.SettingsHelp { text: parent.modelData.label }
+                SettingsUI.SettingsTextField {
                     readonly property string settingKey: parent.modelData.key
                     Layout.fillWidth: true; placeholderText: "/home/…/image.png"
                     text: Services.Settings.data.launcher[settingKey]
@@ -73,15 +94,17 @@ Flickable {
                 }
             }
         }
-        Label { text: "Hidden applications"; font.pixelSize: 18; font.bold: true }
+    }
+    SettingsUI.SettingsSection {
+        title: "Hidden applications"
         Label {
-            Layout.fillWidth: true; wrapMode: Text.WordWrap
+            Layout.fillWidth: true; wrapMode: Text.Wrap
             text: "Right-click an application in the launcher to hide it. Hidden applications stay out of search in both layouts."
-            color: Theme.Theme.subtext
+            color: Theme.Theme.text
         }
         Label {
             visible: Services.Launcher.hiddenApplications.length === 0
-            text: "No hidden applications"; color: Theme.Theme.subtext
+            text: "No hidden applications"; color: Theme.Theme.text
         }
         Repeater {
             model: Services.Launcher.hiddenApplications
@@ -97,7 +120,7 @@ Flickable {
                     }
                     Label {
                         visible: !!hiddenRow.modelData.unavailable
-                        text: "Not currently available"; color: Theme.Theme.subtext
+                        text: "Not currently available"; color: Theme.Theme.text
                     }
                 }
                 SettingsUI.SettingsButton {
@@ -108,10 +131,11 @@ Flickable {
             }
         }
         Label {
-            Layout.fillWidth: true; wrapMode: Text.WordWrap
+            Layout.fillWidth: true; wrapMode: Text.Wrap
             text: "Resetting launcher settings also restores all hidden applications."
-            color: Theme.Theme.subtext
+            color: Theme.Theme.text
         }
-        SettingsUI.SettingsButton { text: "Reset launcher settings and restore hidden apps"; onClicked: Services.Settings.resetSection("launcher") }
     }
+    SettingsUI.SettingsButton { flat: true; text: "Reset launcher settings and restore hidden apps"; onClicked: Services.Settings.resetSection("launcher") }
+
 }

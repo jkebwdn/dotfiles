@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Window
+import QtQuick.Controls.Basic
 import QtTest
 import Quickshell
 import Quickshell.Io
@@ -11,7 +12,17 @@ ShellRoot {
     Window {
         id: window
         visible: true; width: 750; height: 720
-        Pages.AppearancePage { id: page; anchors.fill: parent }
+        color: Palette.Theme.background
+        Pane {
+            anchors.fill: parent; padding: 0
+            font.family: "Noto Sans"; font.pixelSize: 13
+            palette.window: Palette.Theme.background
+            palette.windowText: Palette.Theme.text
+            palette.text: Palette.Theme.text
+            palette.buttonText: Palette.Theme.text
+            background: Rectangle { color: Palette.Theme.background }
+            Pages.AppearancePage { id: page; anchors.fill: parent }
+        }
     }
     Process {
         id: editHook
@@ -56,8 +67,24 @@ ShellRoot {
             idle()
         }
         function test_enrollment() {
+            const labels = [
+                ["Applied — reactive palette", "Applied"],
+                ["Runtime update accepted; configerrors clear (visual check required)", "Applied"],
+                ["Reload required — :colorscheme magi; otherwise next launch", "Reload"],
+                ["Relaunch Thunar required; system scheme requested; GTK4 full palette deferred", "Relaunch"],
+                ["Next launch after terminal palette reload; inherits Ghostty ANSI", "Next launch"],
+                ["Next prompt in shells with MAGI environment; existing shells need a new shell", "New shell"],
+                ["CSS generated · Manual workspace colour required · Restart Zen after CSS changes", "Manual step"],
+                ["Restart application after changes", "Restart"],
+                ["Future adapter with a long status that should remain in details", "Details"]
+            ]
+            for (const pair of labels) compare(page.compactThemeResult(pair[0]), pair[1])
             verify(!control("follow", "qt").enabled, "deferred target is disabled")
             verify(findChild(page, "themeStatus-qt").text.indexOf("Unavailable") >= 0)
+            verify(!findChild(page, "themeStatus-qt").visible, "deferred detail is quiet")
+            const deferredDetails = findChild(page, "themeDetails-qt")
+            reveal(deferredDetails); mouseClick(deferredDetails)
+            verify(findChild(page, "themeStatus-qt").visible, "deferred reason remains available")
             verify(!control("follow", "ghostty").checked)
             clickFollow("ghostty")
             tryVerify(() => Services.ThemeOrchestrator.plan !== null)
@@ -72,11 +99,19 @@ ShellRoot {
             confirm("ghostty")
             verify(!control("follow", "ghostty").checked, "enrollment failure rolls checkbox back")
             verify(row("ghostty").error.indexOf("preview changed") >= 0, "useful enrollment error")
+            verify(findChild(page, "themeStatus-ghostty").visible, "errors are never collapsed")
+            compare(findChild(page, "themeSummary-ghostty").text, "Error")
 
             clickFollow("ghostty"); confirm("ghostty")
             verify(row("ghostty").enabled && row("ghostty").installed)
             verify(control("follow", "ghostty").checked)
             verify(findChild(page, "themeStatus-ghostty").text.indexOf("Reload required") >= 0)
+            verify(!findChild(page, "themeStatus-ghostty").visible, "healthy verbose detail is collapsed")
+            compare(findChild(page, "themeSummary-ghostty").text, "Reload")
+            const details = findChild(page, "themeDetails-ghostty")
+            reveal(details); mouseClick(details)
+            verify(findChild(page, "themeStatus-ghostty").visible, "full reload instructions remain available")
+            mouseClick(details)
             clickFollow("ghostty"); idle()
             verify(!control("follow", "ghostty").checked && !row("ghostty").installed)
 
@@ -105,6 +140,25 @@ ShellRoot {
                 reveal(copy); mouseClick(copy)
                 tryCompare(Services.ThemeOrchestrator, "copyingZenColor", false)
                 compare(Services.ThemeOrchestrator.copyMessage, "Copied")
+                if (["catppuccin-mocha", "catppuccin-frappe", "everforest-dark-hard", "everforest-light-hard"].includes(theme.id)) {
+                    for (const contentWidth of [530, 750]) {
+                        window.width = contentWidth
+                        wait(80)
+                        for (const target of Services.ThemeOrchestrator.targets) {
+                            const summary = findChild(page, "themeSummary-" + target.id)
+                            compare(summary.lineCount, 1, "collapsed status remains one line")
+                            verify(summary.text.length <= 13, "collapsed status uses concise labels")
+                            const follow = control("follow", target.id)
+                            const details = findChild(page, "themeDetails-" + target.id)
+                            const point = details.mapToItem(page, details.width, 0)
+                            verify(point.x <= page.width && follow.width >= 130, "target controls remain bounded")
+                        }
+                        page.contentY = Math.max(0, control("follow", "ghostty").mapToItem(page.contentItem, 0, 0).y - 60)
+                        wait(50)
+                        const directory = Quickshell.env("MAGI_SETTINGS_CAPTURES")
+                        if (directory) grabImage(window.contentItem).save(directory + "/targets-" + theme.id + "-" + contentWidth + ".png")
+                    }
+                }
             }
             clickFollow("zen"); idle()
             verify(!row("zen").installed)

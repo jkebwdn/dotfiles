@@ -4,74 +4,64 @@ import QtQuick.Controls.Basic
 import QtQuick.Dialogs
 import QtQuick.Layouts
 import ".." as SettingsUI
+import "../../controls" as Controls
 import "../../../services" as Services
 import "../../../theme" as Theme
 
-Flickable {
+SettingsUI.SettingsPage {
     id: root
     property int avatarRequest: 0
     property string importError: ""
-    contentHeight: content.implicitHeight + 48
-    clip: true
-    ScrollBar.vertical: ScrollBar {}
-    ColumnLayout {
-        id: content
-        x: 24; y: 24; width: root.width - 48
+    title: "Profile"
+    description: "Only information you configure here is shown by MAGI."
+    RowLayout {
         spacing: 16
-        Label { text: "Profile"; font.pixelSize: 26; font.bold: true }
-        Label {
-            text: "Only information you configure here is shown by MAGI."
-            color: Theme.Theme.subtext; wrapMode: Text.WordWrap; Layout.fillWidth: true
+        Controls.RoundedArtwork {
+            objectName: "profileAvatarPreview"
+            Layout.preferredWidth: 88; Layout.preferredHeight: 88
+            radius: Theme.Theme.radius("avatar", 44, width, height)
+            source: Services.AssetManager.assetUrl(Services.Settings.data.profile.avatar)
+            placeholder: "profile"
+            borderColor: Theme.Theme.border
+            borderWidth: 1
         }
-        RowLayout {
-            spacing: 16
-            Rectangle {
-                Layout.preferredWidth: 88; Layout.preferredHeight: 88; radius: 44; clip: true
-                color: Theme.Theme.elevated
-                Image {
-                    anchors.fill: parent
-                    source: Services.AssetManager.assetUrl(Services.Settings.data.profile.avatar)
-                    fillMode: Image.PreserveAspectCrop
-                    sourceSize: Qt.size(176, 176)
-                }
+        ColumnLayout {
+            SettingsUI.SettingsButton { text: "Choose avatar…"; onClicked: avatarDialog.open() }
+            SettingsUI.SettingsButton {
+                text: "Clear avatar"; enabled: Services.Settings.data.profile.avatar !== null
+                onClicked: Services.Settings.setValue("profile", "avatar", null)
             }
-            ColumnLayout {
-                SettingsUI.SettingsButton { text: "Choose avatar…"; onClicked: avatarDialog.open() }
-                SettingsUI.SettingsButton {
-                    text: "Clear avatar"; enabled: Services.Settings.data.profile.avatar !== null
-                    onClicked: Services.Settings.setValue("profile", "avatar", null)
-                }
-            }
-        }
-        Label { text: "Display name"; font.bold: true }
-        TextField {
-            Layout.fillWidth: true
-            text: Services.Settings.data.profile.displayName
-            maximumLength: 80
-            placeholderText: "Optional"
-            onTextEdited: Services.Settings.setValue("profile", "displayName", text)
-            onEditingFinished: Services.Settings.setValue("profile", "displayName", text.trim())
-        }
-        CheckBox {
-            text: "Use custom subtitle instead of time-of-day greeting"
-            checked: Services.Settings.data.profile.subtitleMode === "custom"
-            onToggled: Services.Settings.setValue("profile", "subtitleMode", checked ? "custom" : "greeting")
-        }
-        Label { text: "Saved custom subtitle"; font.bold: true }
-        TextField {
-            Layout.fillWidth: true
-            text: Services.Settings.data.profile.subtitle
-            maximumLength: 160
-            placeholderText: "Optional"
-            onTextEdited: Services.Settings.setValue("profile", "subtitle", text)
-            onEditingFinished: Services.Settings.setValue("profile", "subtitle", text.trim())
-        }
-        Label { visible: root.importError.length > 0; text: root.importError; color: Theme.Theme.red; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-        RowLayout {
-            SettingsUI.SettingsButton { text: "Open Control Centre"; onClicked: Services.MenuController.open("controlcentre") }
-            SettingsUI.SettingsButton { text: "Reset profile"; onClicked: Services.Settings.resetSection("profile") }
         }
     }
+    Label { text: "Display name"; font.bold: true }
+    SettingsUI.SettingsTextField {
+        Layout.fillWidth: true
+        text: Services.Settings.data.profile.displayName
+        maximumLength: 80
+        placeholderText: "Optional"
+        onTextEdited: Services.Settings.setValue("profile", "displayName", text)
+        onEditingFinished: Services.Settings.setValue("profile", "displayName", text.trim())
+    }
+    SettingsUI.SettingsToggle {
+        text: "Use custom subtitle instead of time-of-day greeting"
+        checked: Services.Settings.data.profile.subtitleMode === "custom"
+        onToggled: Services.Settings.setValue("profile", "subtitleMode", checked ? "custom" : "greeting")
+    }
+    Label { text: "Saved custom subtitle"; font.bold: true }
+    SettingsUI.SettingsTextField {
+        Layout.fillWidth: true
+        text: Services.Settings.data.profile.subtitle
+        maximumLength: 160
+        placeholderText: "Optional"
+        onTextEdited: Services.Settings.setValue("profile", "subtitle", text)
+        onEditingFinished: Services.Settings.setValue("profile", "subtitle", text.trim())
+    }
+    Label { visible: root.importError.length > 0; text: root.importError; color: Theme.Theme.red; wrapMode: Text.Wrap; Layout.fillWidth: true }
+    RowLayout {
+        SettingsUI.SettingsButton { text: "Open Control Centre"; onClicked: Services.MenuController.open("controlcentre") }
+        SettingsUI.SettingsButton { flat: true; text: "Reset profile"; onClicked: Services.Settings.resetSection("profile") }
+    }
+
     FileDialog {
         id: avatarDialog
         title: "Select a profile image"

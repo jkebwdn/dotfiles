@@ -421,3 +421,26 @@ without rewriting historical results.
 Supplementary references retained for later evaluation:
 [Quickshell Book](https://github.com/programmersd21/the_quickshell_book) and
 [Tony's tutorial](https://tonybtw.com/tutorial/quickshell/).
+
+
+## Settings Phase 2A — native review pending
+
+All eleven Settings pages now share page/control foundations, responsive rows and scrolling navigation. Automated production UI, persistence, Theme Orchestrator and 48-step shared-surface regressions pass. Operator state is unchanged; no commit/push or shell-surface redesign. See [exact changes, evidence and native checklist](design/settings-phase2a.md).
+
+
+## Settings Phase 2A.1 — composition review pending
+
+Phase 2A foundations are accepted. Settings now has flat navigation, compact styled controls, composed Control Centre/Icons/Launcher pages and quiet save feedback. Focused tests and software renders across five palettes pass; native operator screenshots remain the acceptance checkpoint. See [changes and evidence](design/settings-phase2a1.md).
+
+
+## Settings Phase 2A.2 — native interaction review pending
+
+The accepted uncommitted composition is retained. Control Centre now supports handle-based ordering; Bar has responsive Left/Centre/Right lanes plus Available. Shared Settings-only drag previews, keyboard alternatives and existing canonical writers preserve configuration semantics. Focused production interaction and existing regression checks pass; protected operator state is unchanged. See [implementation, exact paths and native checklist](design/settings-phase2a2.md). No commit/push or Phase 2B work.
+
+
+## Settings Phase 2A.3 — final native review pending
+
+Accepted Settings and drag foundations are retained. Sidebar selection is marker-only; Control Centre uses compact configured rows and Available while retaining disabled records; application-theme rows disclose healthy detail; unhandled Escape closes Settings. Existing Hyprland Super+Q is retained. Focused checks pass and all protected operator records match. See [exact changes, evidence and future Wallpaper direction](design/settings-phase2a3.md). No commit/push or Phase 2B implementation.
+
+
+Phase 2A.3 native review is accepted apart from the final application-theme status refinement. Collapsed rows now use short, single-line labels; full diagnostics remain in details and errors/setup failures stay visible. Final operator review remains pending.
