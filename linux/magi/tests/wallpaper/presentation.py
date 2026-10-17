@@ -7,6 +7,10 @@ import shutil
 import subprocess
 import tempfile
 root=Path(__file__).resolve().parents[2]
+production = root/'.config/quickshell/magi'
+assert 'WallpaperWindow' not in (production/'shell.qml').read_text()
+assert 'Services.Wallpaper.initialize()' in (production/'shell.qml').read_text()
+assert 'WallpaperUI.WallpaperContent' in (production/'components/settings/pages/WallpaperPage.qml').read_text()
 with tempfile.TemporaryDirectory(prefix='magi-wallpaper-ui-') as tmp:
     stage=Path(tmp); config=stage/'config'
     shutil.copytree(root/'.config/quickshell/magi',config)
@@ -17,9 +21,9 @@ with tempfile.TemporaryDirectory(prefix='magi-wallpaper-ui-') as tmp:
     png=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',1,1,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(b'\x00\x66\x88\xcc'))+chunk(b'IEND',b'')
     image=library/'test image.png'; image.write_bytes(png)
     (config/'settings.json').write_text(json.dumps({'schemaVersion':9,'wallpaper':{'directories':[str(library)]}}))
-    path=config/'components/wallpaper/WallpaperWindow.qml'
+    path=config/'components/hub/HubWindow.qml'
     text=path.read_text().replace('PanelWindow {','FloatingWindow {\n    implicitWidth: 1200; implicitHeight: 900')
-    text='\n'.join(line for line in text.splitlines() if not any(s in line for s in ['    anchors {','    exclusionMode:', '    WlrLayershell.', '    mask:']))
+    text='\n'.join(line for line in text.splitlines() if not any(s in line for s in ['    anchors {','    exclusionMode:', '    WlrLayershell.']))
     path.write_text(text)
     bin_dir=stage/'bin'; bin_dir.mkdir()
     (bin_dir/'hyprctl').write_text('''#!/usr/bin/env python3

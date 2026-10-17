@@ -1,7 +1,9 @@
+// Internal fallback only. Production shell routes Wallpaper into Hub Settings.
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import "../../services" as Services
+import "../../theme" as Theme
 PanelWindow {
     id: root
     readonly property var contentItem: content.item
@@ -21,7 +23,12 @@ PanelWindow {
         anchors.centerIn: parent
         width: Math.min(root.width - 32, 1000)
         height: Math.min(root.height - 128, 720)
-        sourceComponent: WallpaperContent {}
+        sourceComponent: WallpaperContent {
+            padding: 20
+            background: Rectangle { color: Theme.Theme.surface; radius: Theme.Theme.radius("surface", 11, width, height) }
+            Keys.priority: Keys.AfterItem
+            Keys.onEscapePressed: Services.Wallpaper.close()
+        }
         onLoaded: item.focusGrid()
     }
 }

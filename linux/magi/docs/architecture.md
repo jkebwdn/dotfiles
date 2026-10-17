@@ -1,5 +1,9 @@
 # MAGI — Architecture
 
+## Secondary surfaces — Phase 2D (2026-10-17)
+
+Calendar stays its own time/date-anchored shared surface and measures its content height. WallpaperContent now lives in the retained Settings Wallpaper page; Wallpaper IPC routes to Hub Settings. The shell initializes the wallpaper service directly for startup restore, without instantiating WallpaperWindow. Scanner/state/backend and confirmed selectionChanged remain independent. RoundedArtwork now supplies bounded asynchronous Wallpaper thumbnails; media remains in Control Centre. Schema 11 and the 48px reservation are unchanged. [Checkpoint](design/runtime-phase2d.md).
+
 ## Current Hub and Settings composition — Phase 2C (2026-10-17)
 
 One zero-reservation HubWindow owns five stable modes: apps, clipboard, notifications,

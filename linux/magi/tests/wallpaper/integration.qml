@@ -1,11 +1,10 @@
 import QtQuick
 import Quickshell
 import "../../.config/quickshell/magi/services" as Services
-import "../../.config/quickshell/magi/components/wallpaper" as UI
+import "../../.config/quickshell/magi/components/hub" as UI
 import "../../.config/quickshell/magi/components/settings/pages" as Pages
 ShellRoot {
-    UI.WallpaperWindow { id: window; readyToOpen: true }
-    FloatingWindow { visible: true; implicitWidth: 800; implicitHeight: 700; Pages.WallpaperPage { anchors.fill: parent } }
+    UI.HubWindow { id: window; readyToOpen: true }
     property int step: 0
     property int attempts: 0
     property int changed: 0

@@ -138,6 +138,8 @@ ShellRoot {
             Services.SettingsWindowState.page = "Wallpaper"; wait(50)
             compare(draft.text, "/tmp/unsaved-wallpaper-draft", "navigation retains explicit-save draft")
             verify(Services.Settings.data.wallpaper.directories.indexOf(draft.text) === -1, "navigation does not save draft")
+            findChild(page("Wallpaper"), "wallpaperLibrarySources").expanded = true
+            wait(30)
             const save = findChild(page("Wallpaper"), "settingsButton-Save directories")
             reveal(page("Wallpaper"), save); mouseClick(save)
             compare(Services.Settings.data.wallpaper.directories[0], draft.text, "explicit Save still writes directories")

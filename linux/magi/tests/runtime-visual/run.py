@@ -18,6 +18,8 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
     stage=Path(temporary);config=stage/'config'
     shutil.copytree(root/'.config/quickshell/magi',config)
     (config/'test-artwork.ppm').write_bytes(b'P6\n120 40\n255\n' + bytes([0,255,255]) * 120 * 40)
+    for name, w, h in [('square',64,64),('portrait',40,120)]:
+        (config/f'{name}.ppm').write_bytes(f'P6\n{w} {h}\n255\n'.encode() + bytes([255,120,20]) * w * h)
     (config/'settings.json').write_text('{"schemaVersion":10}')
     stubs['Battery'] += '\nproperty string statusText: "Unavailable"'
     # Replace only Hyprland input in the copied workspace presenter.
@@ -78,4 +80,4 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
                       and 'This plugin does not support setting window masks' not in line
                       and 'WARN: Unable to find hyprland socket. Cannot connect to hyprland.' not in line)
     print(checked)
-    assert result.returncode==0 and 'PASS' in output and ({'appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
+    assert result.returncode==0 and 'PASS' in output and ({'secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked

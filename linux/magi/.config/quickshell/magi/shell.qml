@@ -5,7 +5,6 @@ import "components/bar" as Bar
 import "components/settings" as SettingsUI
 import "components/notifications" as NotificationsUI
 import "components/hub" as HubUI
-import "components/wallpaper" as WallpaperUI
 import "services" as Services
 
 ShellRoot {
@@ -15,6 +14,8 @@ ShellRoot {
         Services.Notifications.activateServer()
         Services.Clipboard.activate()
         Services.ThemeOrchestrator.activate()
+        // Keep restore/topology ownership alive without a standalone manager window.
+        Services.Wallpaper.initialize()
     }
     NotificationsUI.FullscreenMonitor { id: fullscreen; screen: bar.screen }
     Binding { target: Services.Notifications; property: "fullscreen"; value: fullscreen.suppressed }
@@ -25,7 +26,6 @@ ShellRoot {
     Binding { target: Services.Hub; property: "suppressed"; value: fullscreen.suppressed }
     // Shared utility host; backend lifetimes remain above.
     HubUI.HubWindow { screen: bar.screen; readyToOpen: bar.settingsReady; previewSurface: bar.activeCombinedRegion }
-    WallpaperUI.WallpaperWindow { screen: bar.screen; readyToOpen: bar.settingsReady }
     SettingsUI.SettingsApplication {}
     Bar.Bar {
         id: bar

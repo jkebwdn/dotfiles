@@ -10,6 +10,11 @@ ShellRoot {
     TestCase {
         name: "HubActions"
         when: Services.Settings.ready && Services.Emoji.entries.length > 0
+        function collect(item, predicate) {
+            let found = predicate(item) ? [item] : []
+            for (const child of item.children || []) found = found.concat(collect(child, predicate))
+            return found
+        }
         function test_selection() {
             Services.Launcher.open()
             tryVerify(() => Services.Launcher.applications.length > 0)
@@ -72,6 +77,17 @@ ShellRoot {
             const clipboardUi = window.content.currentContent
             clipboardUi.select(0); clipboardUi.navigate({key:Qt.Key_Down,modifiers:0,accepted:false})
             compare(clipboardUi.selectedId,"hub-image")
+            tryVerify(() => collect(clipboardUi, i => i.placeholder === "image" && i.visible).length > 0)
+            const thumbnail = collect(clipboardUi, i => i.placeholder === "image" && i.visible)[0]
+            tryCompare(thumbnail, "status", Image.Ready)
+            compare(thumbnail.width, 106); compare(thumbnail.height, 106)
+            const image = findChild(thumbnail, "artworkSource")
+            const mask = findChild(thumbnail, "artworkMask")
+            const effect = findChild(thumbnail, "artworkEffect")
+            verify(image.clip && image.layer.enabled && !image.visible)
+            verify(effect.maskEnabled && effect.maskSource === mask)
+            compare(image.width, mask.width); compare(mask.radius, thumbnail.outerRadius)
+
             clipboardUi.navigate({key:Qt.Key_P,modifiers:Qt.ControlModifier,accepted:false})
             tryVerify(() => Services.Clipboard.rows[1].pinned)
             clipboardUi.navigate({key:Qt.Key_P,modifiers:Qt.ControlModifier,accepted:false})

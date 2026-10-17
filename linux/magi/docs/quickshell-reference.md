@@ -518,3 +518,13 @@ Typography/spacing additions use existing Qt Text font.pixelSize, ColumnLayout i
 
 
 2026-10-17 Notifications native follow-up: The final Notifications refinement uses existing Qt Column.implicitHeight and ListView.contentHeight with the retained virtualized NotificationCard delegate. No new Quickshell API or reservation. Focused Hub tests verify measured short histories and bounded scrolling; native screenshot review remains separate. [Checkpoint](design/runtime-phase2c.md#native-notifications-refinement--2026-10-17).
+
+
+## Phase 2D presentation verification — 2026-10-17
+
+No new Quickshell APIs or dependencies. Existing Column implicitHeight, retained Settings
+Loaders, GridView virtualization/keyboard, Qt Image sourceSize/asynchronous/cache, and
+RoundedArtwork's layered MultiEffect mask are reused. Production tests verify measured
+Calendar geometry, embedded Wallpaper routing and thumbnail delegate release, and media
+size/radius/capability bounds on the installed Qt/Quickshell runtime. Software captures
+cannot certify GPU mask edges or compositor dispatch. [Tests and native checkpoint](design/runtime-phase2d.md).

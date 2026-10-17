@@ -6,6 +6,10 @@ Item {
     id: root
     property int fillMode: Image.PreserveAspectCrop
     property url source
+    property alias asynchronous: image.asynchronous
+    property alias cache: image.cache
+    property alias sourceSize: image.sourceSize
+    readonly property int status: image.status
     property real radius: 10
     property real borderWidth: 2
     property color borderColor: Theme.Theme.rim

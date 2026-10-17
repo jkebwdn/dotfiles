@@ -1,5 +1,9 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-17 — Embed the canonical Wallpaper Manager
+
+Reuse WallpaperContent in Settings and retire its normal standalone host. Keep service startup independent of presentation, route legacy open/close through Hub Settings, retain explicit directory drafts and use the existing GPU mask for thumbnails. Calendar measures its header/grid rather than duplicating offsets. Media keeps its accepted geometry controls and persistent empty card. No backend expansion, new settings or further secondary scope. [Evidence and native limits](design/runtime-phase2d.md).
+
 ## 2026-10-17 — Phase 2C Hub anchor and canonical Settings
 
 Keep one Hub and independent utility models. Place a separate icon selector at two-thirds

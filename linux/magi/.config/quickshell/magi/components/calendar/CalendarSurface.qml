@@ -9,6 +9,7 @@ BarUI.SharedStatusSurface {
     property Item anchorItem: null
     property Item clockItem: null
     property Item dateItem: null
+    property real calendarContentHeight: 0
     readonly property bool absorbed: phase !== 0
     readonly property point origin: {
         const a = anchorWatch.transform, c = clockWatch.transform, d = dateWatch.transform
@@ -35,13 +36,17 @@ BarUI.SharedStatusSurface {
     QtObject {
         id: definition
         property int expandedWidth: 344
-        property int menuHeight: 134 + 6 * (root.service.preferences.density === "compact" ? 32 : 38)
+        property int menuHeight: Math.ceil(root.calendarContentHeight) + viewTopPadding + viewBottomPadding
         property int viewPadding: 12
         property int viewTopPadding: 6
         property int viewBottomPadding: 12
-        property real viewRadius: Theme.Theme.radiusMedium
+        property real viewRadius: Theme.Theme.radius("surface", 11, expandedWidth, menuHeight)
         property color viewSurfaceColor: Theme.Theme.surface
-        property Component menuContent: Component { CalendarContent { service: root.service } }
+        property Component menuContent: Component { CalendarContent {
+            service: root.service
+            onImplicitHeightChanged: root.calendarContentHeight = implicitHeight
+            Component.onCompleted: root.calendarContentHeight = implicitHeight
+        } }
     }
     statusContent: Component {
         Row {

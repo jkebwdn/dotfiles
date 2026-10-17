@@ -11,10 +11,9 @@ Scope {
     onDirectoriesKeyChanged: { scanPending = true; Qt.callLater(drain) }
     readonly property bool enabled: preferences.enabled
     onEnabledChanged: {
-        if (!enabled) close()
-        else if (initialized) { restorePending = true; Qt.callLater(drain) }
+        if (enabled && initialized) { restorePending = true; Qt.callLater(drain) }
     }
-    property bool opened: false
+    readonly property bool opened: Hub.opened && Hub.mode === "settings" && SettingsWindowState.page === "Wallpaper"
     property bool initialized: false
     property bool startupRetryAvailable: true
     property bool busy: false
@@ -57,14 +56,18 @@ Scope {
 
     function open() {
         if (!Settings.ready || !preferences.enabled) return
-        Hub.close(); MenuController.close()
         const saved = scope ? state.monitors[scope] : state.shared
         mode = saved ? saved.mode : "cover"
-        opened = true
+        SettingsWindowState.page = "Wallpaper"
+        SettingsWindowState.open()
+        prepare()
+    }
+    function prepare() {
+        if (!Settings.ready || !preferences.enabled) return
         if (!libraryLoaded) scanPending = true
         if (!busy) start({op:"status"})
     }
-    function close() { opened = false }
+    function close() { if (opened) Hub.closeMode("settings") }
     function refresh() { scanPending = true; drain() }
     function restore() { restorePending = true; drain() }
     function start(request) {
@@ -102,9 +105,6 @@ Scope {
     onMonitorsChanged: { if (scope && !monitors.some(m => m.name === scope)) scope = "" }
     Component.onCompleted: Qt.callLater(initialize)
     Connections { target: Settings; function onReadyChanged() { root.initialize() } }
-    Connections { target: SettingsWindowState; function onRequestedChanged() { if (SettingsWindowState.requested) root.close() } }
-    Connections { target: Hub; function onOpenedChanged() { if (Hub.opened) root.close() } }
-    Connections { target: MenuController; function onActiveMenuChanged() { if (MenuController.activeMenu) root.close() } }
     Connections {
         target: Hyprland
         function onRawEvent(event) {

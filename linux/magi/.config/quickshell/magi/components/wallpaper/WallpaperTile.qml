@@ -2,6 +2,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
 import "../../theme" as Theme
+import "../controls" as Controls
+import "../settings" as SettingsUI
 Item {
     id: root
     required property var entry
@@ -13,36 +15,44 @@ Item {
     signal favouriteRequested()
     Rectangle {
         anchors.fill: parent; anchors.margins: 5
-        color: Theme.Theme.surface; radius: 10
-        border.width: root.current || root.selected || mouse.containsMouse ? 3 : 1
-        border.color: root.current ? Theme.Theme.accent : root.selected || mouse.containsMouse ? Theme.Theme.text : Theme.Theme.border
-        Image {
+        color: root.selected ? Theme.Theme.overlay : Theme.Theme.elevated
+        radius: Theme.Theme.radius("action", 8, width, height)
+        border.width: root.selected || root.current ? 2 : 1
+        border.color: root.selected ? Theme.Theme.focus : root.current ? Theme.Theme.accent : Theme.Theme.border
+        Controls.RoundedArtwork {
             id: preview
-            anchors.fill: parent; anchors.margins: 5
+            objectName: "wallpaperThumbnail"
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 5 }
+            height: Math.max(0, parent.height - 38)
             source: root.entry.url
             sourceSize: Qt.size(320, 200)
-            fillMode: Image.PreserveAspectCrop; asynchronous: true; cache: false
+            asynchronous: true; cache: false
+            borderWidth: 0
+            radius: Theme.Theme.radius("action", 6, width, height)
+            placeholder: "image"
         }
-        Label { anchors.centerIn: parent; text: preview.status === Image.Error ? "Image unavailable" : ""; color: Theme.Theme.subtext }
         MouseArea {
             id: mouse; anchors.fill: parent; hoverEnabled: true
             onClicked: root.chosen()
         }
-        Rectangle {
-            anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
-            height: 30; color: "#bf11111b"
-            visible: mouse.containsMouse || root.selected || root.current || preview.status === Image.Error
-            Label {
-                anchors.fill: parent; anchors.margins: 6
-                text: (root.current ? "✓  " : "") + root.entry.name
-                color: "white"; elide: Text.ElideMiddle
-                textFormat: Text.PlainText
-            }
+        Label {
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 8 }
+            text: (root.current ? "✓  " : "") + (preview.status === Image.Error ? "Image unavailable" : preview.status === Image.Loading ? "Loading…" : root.entry.name)
+            color: Theme.Theme.text; elide: Text.ElideMiddle
+            font.pixelSize: 11; textFormat: Text.PlainText
         }
-        ToolButton {
-            anchors.top: parent.top; anchors.right: parent.right
+        ToolTip.visible: mouse.containsMouse
+        ToolTip.delay: 600
+        ToolTip.text: root.entry.name + (root.current ? " · Current wallpaper" : "")
+        SettingsUI.SettingsButton {
+            objectName: "wallpaperFavourite"
+            anchors { top: parent.top; right: parent.right; margins: 8 }
+            width: 30; height: 30
             text: root.favourite ? "★" : "☆"
             Accessible.name: root.favourite ? "Remove favourite" : "Add favourite"
+            ToolTip.visible: hovered; ToolTip.text: Accessible.name
+            // A semantic backing keeps this action legible over any artwork.
+            background: Rectangle { radius: 8; color: Theme.Theme.surface; border.width: parent.activeFocus ? 1 : 0; border.color: Theme.Theme.focus }
             onClicked: root.favouriteRequested()
         }
     }

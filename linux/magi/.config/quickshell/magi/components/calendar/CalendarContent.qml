@@ -9,7 +9,9 @@ Item {
     readonly property var model: service.model
     readonly property real cellHeight: service.preferences.density === "compact" ? 32 : 38
     readonly property real weekWidth: service.preferences.showWeekNumbers ? 28 : 0
-    implicitHeight: 116 + 6 * cellHeight
+    implicitHeight: composition.implicitHeight
+    readonly property real gridTop: days.y
+    readonly property real gridBottom: days.y + days.height
     function requestInitialFocus() { root.forceActiveFocus() }
     function navigate(key) {
         if (key === Qt.Key_Escape) service.close()
@@ -25,97 +27,100 @@ Item {
     }
     Keys.onPressed: event => { event.accepted = navigate(event.key) }
     Column {
-        width: parent.width; spacing: 4
-        Text {
-            text: root.model.selectedWeekday
-            color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 13
+        id: composition
+        width: parent.width; spacing: 12
+        Row {
+            id: navigation
+            width: parent.width; height: 32; spacing: 4
+            SettingsUI.SettingsButton {
+                width: 28; height: 30; text: "‹"; Accessible.name: "Previous month"
+                palette.buttonText: Theme.Theme.text
+                onClicked: { root.model.moveMonths(-1); root.requestInitialFocus() }
+            }
+            Text {
+                width: parent.width - 28 * 2 - 58 - 12; height: 30
+                text: root.model.monthLabel; elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignHCenter
+                color: Theme.Theme.text; font.family: Theme.Theme.fontFamily; font.pixelSize: 14; font.bold: true
+            }
+            SettingsUI.SettingsButton {
+                width: 28; height: 30; text: "›"; Accessible.name: "Next month"
+                palette.buttonText: Theme.Theme.text
+                onClicked: { root.model.moveMonths(1); root.requestInitialFocus() }
+            }
+            SettingsUI.SettingsButton {
+                width: 58; height: 30; text: "Today"
+                palette.buttonText: Theme.Theme.text; font.family: Theme.Theme.fontFamily; font.pixelSize: 11
+                onClicked: { root.model.resetToday(); root.requestInitialFocus() }
+            }
         }
         Text {
             width: parent.width; elide: Text.ElideRight
-            text: root.model.selectedLabel
-            color: Theme.Theme.text; font.family: Theme.Theme.fontFamily; font.pixelSize: 20; font.bold: true
+            text: root.model.selectedWeekday + " · " + root.model.selectedLabel
+            color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 12
         }
-    }
-    Row {
-        id: navigation
-        y: 56; width: parent.width; height: 32; spacing: 4
-        SettingsUI.SettingsButton {
-            width: 28; height: 30; text: "‹"; Accessible.name: "Previous month"
-            palette.buttonText: Theme.Theme.text
-            onClicked: { root.model.moveMonths(-1); root.requestInitialFocus() }
-        }
-        Text {
-            width: parent.width - 28 * 2 - 58 - 12; height: 30
-            text: root.model.monthLabel; elide: Text.ElideRight
-            verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignHCenter
-            color: Theme.Theme.text; font.family: Theme.Theme.fontFamily; font.pixelSize: 13
-        }
-        SettingsUI.SettingsButton {
-            width: 28; height: 30; text: "›"; Accessible.name: "Next month"
-            palette.buttonText: Theme.Theme.text
-            onClicked: { root.model.moveMonths(1); root.requestInitialFocus() }
-        }
-        SettingsUI.SettingsButton {
-            width: 58; height: 30; text: "Today"
-            palette.buttonText: Theme.Theme.text; font.family: Theme.Theme.fontFamily; font.pixelSize: 11
-            onClicked: { root.model.resetToday(); root.requestInitialFocus() }
-        }
-    }
-    Row {
-        x: root.weekWidth; y: 94; width: parent.width - x
-        Repeater {
-            model: root.model.weekdayNames
-            Text {
-                required property string modelData
-                width: (root.width - root.weekWidth) / 7; height: 22
-                text: modelData; elide: Text.ElideRight; horizontalAlignment: Text.AlignHCenter
-                color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 11
-            }
-        }
-    }
-    Column {
-        y: 116; width: root.weekWidth
-        visible: root.weekWidth > 0
-        Repeater {
-            model: root.model.weekNumbers
-            Text {
-                required property var modelData
-                width: root.weekWidth; height: root.cellHeight
-                text: modelData.week; color: Theme.Theme.muted
-                font.family: Theme.Theme.fontFamily; font.pixelSize: 10
-                horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
-                Accessible.name: "ISO week " + modelData.week + ", " + modelData.year
-            }
-        }
-    }
-    Grid {
-        x: root.weekWidth; y: 116; width: parent.width - x; columns: 7
-        Repeater {
-            model: root.model.cells
-            Rectangle {
-                id: cell
-                required property var modelData
-                width: (root.width - root.weekWidth) / 7; height: root.cellHeight
-                radius: Theme.Theme.radius("action", 8, width, height)
-                color: !modelData.shown ? "transparent" : modelData.selected ? Theme.Theme.elevated
-                    : pointer.containsMouse ? Theme.Theme.overlay : "transparent"
-                border.width: modelData.today && modelData.shown ? 1 : 0
-                border.color: Theme.Theme.accent
-                Accessible.role: Accessible.Button
-                Accessible.name: modelData.date.toLocaleDateString(root.model.locale, Locale.LongFormat)
-                Accessible.ignored: !modelData.shown
-                Accessible.onPressAction: { root.model.select(modelData.date); root.requestInitialFocus() }
+        Row {
+            x: root.weekWidth; width: parent.width - x
+            Repeater {
+                model: root.model.weekdayNames
                 Text {
-                    anchors.centerIn: parent; visible: cell.modelData.shown
-                    text: cell.modelData.day
-                    color: cell.modelData.today ? Theme.Theme.accent : cell.modelData.inMonth ? Theme.Theme.text : Theme.Theme.muted
-                    font.family: Theme.Theme.fontFamily; font.pixelSize: 13
-                    font.bold: cell.modelData.today || cell.modelData.selected
+                    required property string modelData
+                    width: (root.width - root.weekWidth) / 7; height: 22
+                    text: modelData; elide: Text.ElideRight; horizontalAlignment: Text.AlignHCenter
+                    color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 11
                 }
-                MouseArea {
-                    id: pointer
-                    anchors.fill: parent; enabled: cell.modelData.shown; hoverEnabled: true
-                    onClicked: { root.model.select(cell.modelData.date); root.requestInitialFocus() }
+            }
+        }
+        Item {
+            id: days
+            width: parent.width; height: 6 * root.cellHeight
+            Column {
+                width: root.weekWidth
+                visible: root.weekWidth > 0
+                Repeater {
+                    model: root.model.weekNumbers
+                    Text {
+                        required property var modelData
+                        width: root.weekWidth; height: root.cellHeight
+                        text: modelData.week; color: Theme.Theme.subtext
+                        font.family: Theme.Theme.fontFamily; font.pixelSize: 10
+                        horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                        Accessible.name: "ISO week " + modelData.week + ", " + modelData.year
+                    }
+                }
+            }
+            Grid {
+                x: root.weekWidth; width: parent.width - x; columns: 7
+                Repeater {
+                    model: root.model.cells
+                    Rectangle {
+                        id: cell
+                        objectName: "calendarDay-" + modelData.day + (modelData.inMonth ? "" : "-adjacent")
+                        required property var modelData
+                        width: (root.width - root.weekWidth) / 7; height: root.cellHeight
+                        radius: Theme.Theme.radius("action", 8, width, height)
+                        color: !modelData.shown ? "transparent" : modelData.selected ? Theme.Theme.overlay
+                            : pointer.containsMouse ? Theme.Theme.overlay : "transparent"
+                        border.width: modelData.shown && (modelData.today || (modelData.selected && root.activeFocus)) ? 1 : 0
+                        border.color: modelData.selected && root.activeFocus ? Theme.Theme.focus : Theme.Theme.accent
+                        Accessible.role: Accessible.Button
+                        Accessible.name: modelData.date.toLocaleDateString(root.model.locale, Locale.LongFormat)
+                        Accessible.ignored: !modelData.shown
+                        Accessible.selected: modelData.selected
+                        Accessible.onPressAction: { root.model.select(modelData.date); root.requestInitialFocus() }
+                        Text {
+                            anchors.centerIn: parent; visible: cell.modelData.shown
+                            text: cell.modelData.day
+                            color: cell.modelData.today ? Theme.Theme.accent : cell.modelData.inMonth ? Theme.Theme.text : Theme.Theme.subtext
+                            font.family: Theme.Theme.fontFamily; font.pixelSize: 13
+                            font.bold: cell.modelData.today || cell.modelData.selected
+                        }
+                        MouseArea {
+                            id: pointer
+                            anchors.fill: parent; enabled: cell.modelData.shown; hoverEnabled: true
+                            onClicked: { root.model.select(cell.modelData.date); root.requestInitialFocus() }
+                        }
+                    }
                 }
             }
         }

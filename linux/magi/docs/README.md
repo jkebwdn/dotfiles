@@ -1,5 +1,9 @@
 # MAGI — Research and Development
 
+## Phase 2D secondary surfaces — native review pending (2026-10-17)
+
+Calendar composition, Settings-embedded canonical Wallpaper Manager and media polish are implemented over accepted Phase 2C. Wallpaper has no production standalone host or extra Hub mode. Shared masks and operator values are preserved. See [exact paths, tests, protected-state comparison and native checklist](design/runtime-phase2d.md).
+
 ## MAGI Hub — Phase 2C, native review pending (2026-10-17)
 
 Native follow-up: the operator accepts the Hub composition and integration. The final
