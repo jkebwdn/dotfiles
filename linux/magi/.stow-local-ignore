@@ -1,5 +1,5 @@
 # Project documentation and development fixtures; package-root paths only.
-^/(README\.md|AGENTS\.md|docs|tests|experiments)(/|$)
+^/(README\.md|AGENTS\.md|docs|tests|experiments|native)(/|$)
 
 # Repository metadata and local agent/tool state are not runtime configuration.
 ^/\.(git|agents|aws|codex)(/|$)
