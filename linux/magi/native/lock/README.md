@@ -73,3 +73,33 @@ turn on lock restoration or clear compositor lock state automatically.
 Hyprlock remains the production route through Hypridle/loginctl. This program
 has no PAM, credentials, Rust, keyboard listeners, main-shell IPC, DBus service,
 Settings access, final UI or system-service integration.
+
+## Phase 3 — isolated authentication proof
+
+**Operator accepted:** one real ordinary-user non-locking PAM success; automated
+tests cover the conversation/error paths. No combined locker integration yet.
+
+The separate [Rust authentication proof](auth/Cargo.toml) and
+[Phase 3 checkpoint](../../docs/design/lock-screen-phase3-pam-proof.md) do not
+change or integrate with the Phase 2 owner above. Hyprlock remains production.
+
+Build and test from the repository root (no authentication or session lock):
+
+```bash
+cargo build --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-build
+cargo test --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-build
+cargo build --locked --offline --release --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-release
+```
+
+The only Cargo dependency is pinned `libc` 0.2.179, already cached on the proof
+machine. Offline builds elsewhere require that dependency to be available first.
+The tests require private Unix socketpair traffic and a pseudo-terminal; a sandbox
+that denies these operations cannot run the suite. Tests use synthetic responses.
+One real-worker startup test sends Cancel **before HelloAck**, so it cannot enter
+PAM. Test-only child backends are absent from the worker binary.
+
+`magi-auth-harness` is a native Rust terminal parent using the same inherited-FD
+contract proposed for the future C++ owner. No QML is involved. Running it with
+no arguments refuses authentication. The checkpoint contains the exact gated,
+non-locking real-PAM procedure: **do not execute it without operator approval**.
+No install target, CMake integration, runtime routing or automatic retry is added.

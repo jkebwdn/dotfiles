@@ -1,0 +1,15 @@
+[package]
+name = "magi-lock-auth"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+libc = "=0.2.179"
+
+[profile.release]
+panic = "abort"
+overflow-checks = true
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
