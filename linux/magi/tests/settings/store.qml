@@ -27,13 +27,19 @@ ShellRoot {
                 if (Quickshell.env("MAGI_TEST_INVALID") === "1") {
                     test.check(store.saveState === "invalid" && store.data.appearance.roundness.master === 1, "invalid fallback")
                     test.check(store.resetSection("appearance"), "explicit repair")
-                } else test.check(store.data.schemaVersion === 10 && store.saveState === "saved", "safe initial load")
+                } else test.check(store.data.schemaVersion === 11 && store.saveState === "saved", "safe initial load")
                 if (Quickshell.env("MAGI_TEST_LEGACY") === "1")
                     test.check(store.data.bar.left.join(",") === "date,clock"
                         && store.data.bar.center.length === 0 && store.data.custom === 42,
                         "migration preserves order, empty placement and unknown fields")
                 test.check(store.setVisual("statusIconSize", 24) && store.setVisual("sliderFill", "blue"), "visual settings accepted")
                 test.check(!store.setVisual("statusIconSize", 90) && !store.setVisual("sliderFill", "not-a-role"), "visual bounds enforced")
+                for (const entry of [["primaryIconSize",48],["primaryContainerSize",96],["secondaryIconSize",36],["avatarSize",112],["mediaArtworkSize",48]])
+                    test.check(store.setVisual(entry[0], entry[1]), "CC appearance accepted " + entry[0])
+                for (const entry of [["profileGreetingSize",24],["profileWeatherSize",20],["profileThirdLineSize",10],["profileControlsGap",0],["controlsSlidersGap",48],["slidersActionsGap",7],["actionsMediaGap",31]])
+                    test.check(store.setVisual(entry[0], entry[1]), "type/gap accepted " + entry[0])
+                test.check(!store.setVisual("profileGreetingSize",16.5), "integer font size enforced")
+                store.setRoundness("avatar", .5); store.setRoundness("albumArt", 2)
                 test.check(store.setTheme("everforest-dark-hard"), "set theme")
                 test.check(store.editControl(store.data.controlCentre.controls[0].key, "accent", "red"), "semantic tile accent accepted")
                 test.check(!store.editControl(store.data.controlCentre.controls[0].key, "accent", "rosewater"), "unsupported tile accent rejected")
@@ -46,6 +52,11 @@ ShellRoot {
                 test.check(store.data.appearance.theme === "everforest-dark-hard", "save/reload")
                 test.check(store.data.appearance.visual.statusIconSize === 24 && store.data.appearance.visual.sliderFill === "blue", "visual persistence reload")
                 test.check(store.data.controlCentre.controls[0].accent === "red", "semantic tile accent persistence reload")
+                for (const entry of [["primaryIconSize",48],["primaryContainerSize",96],["secondaryIconSize",36],["avatarSize",112],["mediaArtworkSize",48]])
+                    test.check(store.data.appearance.visual[entry[0]] === entry[1], "CC size persisted " + entry[0])
+                test.check(store.data.appearance.roundness.roles.avatar === .5 && store.data.appearance.roundness.roles.albumArt === 2, "independent artwork roundness persisted")
+                for (const entry of [["profileGreetingSize",24],["profileWeatherSize",20],["profileThirdLineSize",10],["profileControlsGap",0],["controlsSlidersGap",48],["slidersActionsGap",7],["actionsMediaGap",31]])
+                    test.check(store.data.appearance.visual[entry[0]] === entry[1], "type/gap persisted " + entry[0])
                 store.setRoundness("master", 0.1)
                 store.save() // start a write, then supersede its in-flight snapshot
                 for (let i = 0; i < 50; i++) store.setRoundness("master", i / 25)
@@ -62,6 +73,11 @@ ShellRoot {
                 break
             case 5:
                 test.check(store.data.appearance.theme === "catppuccin-mocha" && store.data.bar.right.length === 2, "section reset isolation")
+                test.check(store.data.appearance.visual.primaryIconSize === 32 && store.data.appearance.visual.primaryContainerSize === 68
+                    && store.data.appearance.visual.secondaryIconSize === 32 && store.data.appearance.visual.avatarSize === 76
+                    && store.data.appearance.visual.mediaArtworkSize === 80 && store.data.appearance.roundness.roles.albumArt === null, "CC appearance resets")
+                for (const entry of [["profileGreetingSize",16],["profileWeatherSize",12],["profileThirdLineSize",11],["profileControlsGap",20],["controlsSlidersGap",20],["slidersActionsGap",20],["actionsMediaGap",20]])
+                    test.check(store.data.appearance.visual[entry[0]] === entry[1], "type/gap reset " + entry[0])
                 test.check(store.data.profile.displayName === "Ada" && store.data.profile.subtitle === "Ready"
                     && store.data.profile.avatar.indexOf("avatar:") === 0, "profile live state and persistence")
                 test.check(!store.setRoundness("master", -5), "reject invalid edit")

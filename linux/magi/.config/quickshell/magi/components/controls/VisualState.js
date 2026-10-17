@@ -1,7 +1,7 @@
 function greeting(hour) {
-    return hour >= 5 && hour < 12 ? "Good morning"
-        : hour >= 12 && hour < 18 ? "Good afternoon"
-        : hour >= 18 && hour < 23 ? "Good evening" : "Good night"
+    return hour >= 5 && hour < 12 ? "Good Morning"
+        : hour >= 12 && hour < 18 ? "Good Afternoon"
+        : hour >= 18 && hour < 23 ? "Good Evening" : "Good Night"
 }
 function progress(position, duration, supported) {
     return supported && isFinite(position) && isFinite(duration) && duration > 0

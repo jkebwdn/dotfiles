@@ -6,10 +6,11 @@ import QtQuick.Layouts
 import "../../../services" as Services
 import "../../../theme" as Theme
 import "../../../modules" as Modules
+import "../../../settings/SettingsSchema.js" as Schema
 SettingsUI.SettingsPage {
     id: root
     property real outputWidth: 1920
-    readonly property int effectiveColumns: Math.max(1, Math.min(Services.Settings.data.controlCentre.columns, Math.floor((outputWidth - 56 + 18) / 78)))
+    readonly property int effectiveColumns: Math.max(1, Math.min(Services.Settings.data.controlCentre.columns, Math.floor((outputWidth - 56 + 12) / (Theme.RenderTokens.tileSize + 12))))
     title: "Control Centre"
     description: "Arrange the controls and actions shown in your Control Centre."
     function arrangedEntries(group) {
@@ -36,6 +37,97 @@ SettingsUI.SettingsPage {
         if (from < 0 || from === to) return
         if (group === "controls") Services.Settings.moveControl(key, to - from)
         else Services.Settings.moveEntry(group, key, to - from)
+    }
+    SettingsUI.SettingsButton {
+        objectName: "controlCentrePreview"
+        text: Services.SettingsWindowState.controlCentrePreview ? "Close preview" : "Preview Control Centre"
+        onClicked: Services.SettingsWindowState.toggleControlCentrePreview()
+    }
+    SettingsUI.SettingsSection {
+        title: "Appearance"
+        collapsible: true
+        SettingsUI.VisualSettingsGroup {
+            title: "Primary tiles"; collapsible: false
+            description: "Tile shades use the configured accent. Icon references select semantic roles; off shade adjusts that role and off strength controls opacity."
+            numbers: [
+                {key:"primaryIconSize",label:"Primary icon size",min:16,max:48,step:1},
+                {key:"primaryContainerSize",label:"Primary icon container size",min:60,max:96,step:1},
+                {key:"tileBackgroundShade",label:"Tile background shade",min:-1,max:1,step:.02,shade:true},
+                {key:"tileBorderShade",label:"Tile border shade",min:-1,max:1,step:.02,shade:true},
+                {key:"tileBorderWidth",label:"Tile border width",min:0,max:6,step:.5},
+                {key:"controlOffShade",label:"Off shade",min:-1,max:1,step:.02,shade:true},
+                {key:"controlOffOpacity",label:"Off colour strength",min:0,max:1,step:.05}]
+            colors: [{key:"controlOn",label:"On tone reference"},{key:"controlOff",label:"Off tone reference"}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Secondary actions"; collapsible: false
+            numbers: [{key:"secondaryIconSize",label:"Secondary action icon size",min:16,max:36,step:1},
+                {key:"secondaryOffShade",label:"Off shade",min:-1,max:1,step:.02,shade:true},
+                {key:"secondaryOffOpacity",label:"Off strength",min:0,max:1,step:.05}]
+            colors: [{key:"secondaryOn",label:"On role"},{key:"secondaryOff",label:"Off role"}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Sliders"; collapsible: false
+            numbers: [{key:"sliderBorderWidth",label:"Border width",min:0,max:5,step:.5}]
+            colors: [{key:"sliderTrack",label:"Empty track"},{key:"sliderFill",label:"Fill"},{key:"sliderBorder",label:"Border"}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Profile and media"; collapsible: false
+            numbers: [{key:"avatarSize",label:"Profile avatar size",min:48,max:112,step:1},
+                {key:"avatarBorderWidth",label:"Avatar border",min:0,max:5,step:.5},
+                {key:"mediaArtworkSize",label:"Album artwork size",min:48,max:112,step:1}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Profile typography"; collapsible: false
+            numbers: [{key:"profileGreetingSize",label:"Greeting font size",min:12,max:24,step:1},
+                {key:"profileWeatherSize",label:"Weather/status font size",min:10,max:20,step:1},
+                {key:"profileThirdLineSize",label:"Optional third-line font size",min:10,max:20,step:1}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Section spacing"; collapsible: false
+            description: "When sections are hidden, the preceding visible section supplies one gap."
+            numbers: [{key:"profileControlsGap",label:"Profile → Primary",min:0,max:48,step:1},
+                {key:"controlsSlidersGap",label:"Primary → Sliders",min:0,max:48,step:1},
+                {key:"slidersActionsGap",label:"Sliders → Secondary",min:0,max:48,step:1},
+                {key:"actionsMediaGap",label:"Secondary → Media",min:0,max:48,step:1}]
+        }
+        Repeater {
+            model: [{id:"avatar",label:"Avatar corner roundness"},{id:"albumArt",label:"Album artwork corner roundness"}]
+            RowLayout {
+                id: artRadius
+                required property var modelData
+                readonly property var setting: Services.Settings.data.appearance.roundness.roles[modelData.id]
+                Layout.fillWidth: true
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Label { text: artRadius.modelData.label; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                    SettingsUI.SettingsSlider {
+                        objectName: "artRoundness-" + artRadius.modelData.id
+                        Accessible.name: artRadius.modelData.label
+                        Layout.fillWidth: true
+                        from: 0; to: 2; stepSize: .05
+                        value: artRadius.setting === null ? Services.Settings.data.appearance.roundness.master : artRadius.setting
+                        onMoved: Services.Settings.setRoundness(artRadius.modelData.id, value)
+                    }
+                }
+                Label { text: artRadius.setting === null ? "Master" : Number(artRadius.setting).toFixed(2) }
+                SettingsUI.SettingsButton { text: "Default"; onClicked: Services.Settings.setRoundness(artRadius.modelData.id, null) }
+            }
+        }
+        SettingsUI.SettingsHelp { text: "Corners: square (0), rounded square (1), rounder (2). Default follows Master." }
+        SettingsUI.SettingsButton {
+            flat: true; text: "Reset Control Centre appearance"
+            onClicked: {
+                const defaults = Schema.defaults().appearance
+                // Reset only the visual settings owned by this page.
+                const visual = Schema.clone(Services.Settings.data.appearance.visual)
+                for (const key of Object.keys(defaults.visual))
+                    if (key !== "statusIconSize") visual[key] = defaults.visual[key]
+                Services.Settings.setValue("appearance", "visual", visual)
+                Services.Settings.setRoundness("avatar", null)
+                Services.Settings.setRoundness("albumArt", null)
+            }
+        }
     }
     SettingsUI.SettingsSection {
         title: "Layout"
@@ -197,7 +289,7 @@ SettingsUI.SettingsPage {
                 onClicked: root.addConfigured("actions",addAction.model[addAction.currentIndex].id) }
         }
     }
-    SettingsUI.SettingsButton { text: "Preview Control Centre"; onClicked: Services.MenuController.open("controlcentre") }
+
     SettingsUI.SettingsButton { flat: true; text: "Reset Control Centre"; onClicked: Services.Settings.resetSection("controlCentre") }
 
 }

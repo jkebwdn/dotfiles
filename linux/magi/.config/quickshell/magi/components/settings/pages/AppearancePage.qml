@@ -255,7 +255,7 @@ SettingsUI.SettingsPage {
         Repeater {
             model: [{id:"master",label:"Master"},{id:"barPill",label:"Bar pills"},
                 {id:"surface",label:"Expanded surfaces"},{id:"controlTile",label:"Control Centre tiles"},
-                {id:"slider",label:"Sliders"},{id:"action",label:"Buttons / actions"},{id:"avatar",label:"Avatar"}]
+                {id:"slider",label:"Sliders"},{id:"action",label:"Buttons / actions"}]
             GridLayout {
                 columns: 3
                 id: radiusRow
@@ -276,37 +276,8 @@ SettingsUI.SettingsPage {
         }
         SettingsUI.VisualSettingsGroup {
             collapsible: false
-            title: "Status and controls"
-            description: "Tile shades: − lighter · 0 original palette accent · + darker. Border and background use the same accent."
-            numbers: [{key:"statusIconSize",label:"Status icon size",min:16,max:28,step:1},
-                {key:"tileBackgroundShade",label:"Primary tile background shade",min:-1,max:1,step:.02,shade:true},
-                {key:"tileBorderShade",label:"Primary tile border shade",min:-1,max:1,step:.02,shade:true},
-                {key:"tileBorderWidth",label:"Primary tile border width",min:0,max:6,step:.5}]
-        }
-        SettingsUI.VisualSettingsGroup {
-            collapsible: false
-            title: "Primary icon states"
-            numbers: [{key:"controlOffShade",label:"Off shade",min:-1,max:1,step:.02,shade:true},
-                {key:"controlOffOpacity",label:"Off strength",min:0,max:1,step:.05}]
-            colors: [{key:"controlOn",label:"On role"},{key:"controlOff",label:"Off role"}]
-        }
-        SettingsUI.VisualSettingsGroup {
-            collapsible: false
-            title: "Secondary icon states"
-            numbers: [{key:"secondaryOffShade",label:"Off shade",min:-1,max:1,step:.02,shade:true},
-                {key:"secondaryOffOpacity",label:"Off strength",min:0,max:1,step:.05}]
-            colors: [{key:"secondaryOn",label:"On role"},{key:"secondaryOff",label:"Off role"}]
-        }
-        SettingsUI.VisualSettingsGroup {
-            collapsible: false
-            title: "Sliders"
-            numbers: [{key:"sliderBorderWidth",label:"Border width",min:0,max:5,step:.5}]
-            colors: [{key:"sliderTrack",label:"Empty track"},{key:"sliderFill",label:"Fill"},{key:"sliderBorder",label:"Border"}]
-        }
-        SettingsUI.VisualSettingsGroup {
-            collapsible: false
-            title: "Profile"
-            numbers: [{key:"avatarBorderWidth",label:"Avatar border",min:0,max:5,step:.5}]
+            title: "Status icons"
+            numbers: [{key:"statusIconSize",label:"Status icon size",min:16,max:28,step:1}]
         }
     }
     SettingsUI.SettingsButton { flat: true; text: "Reset appearance"; onClicked: Services.Settings.resetSection("appearance") }

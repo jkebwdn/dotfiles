@@ -444,3 +444,30 @@ Accepted Settings and drag foundations are retained. Sidebar selection is marker
 
 
 Phase 2A.3 native review is accepted apart from the final application-theme status refinement. Collapsed rows now use short, single-line labels; full diagnostics remain in details and errors/setup failures stay visible. Final operator review remains pending.
+
+
+## Runtime visual Phase 2B — native operator review pending
+
+From committed Settings baseline `7afd1c6`, Bar optional utilities, workspace roundness, Control Centre/profile/media composition and Wi-Fi/Bluetooth presentation are updated. Existing hosts, services, catalogue and 48px reservation remain. Focused automated checks pass; native clipping, palette, positioning and input acceptance remain pending. No commit/push. See [checkpoint, exact paths and native checklist](design/runtime-phase2b.md).
+
+
+Phase 2B native-feedback correction restores configured primary tile accents, rounded-square avatars and bare slider icons. Shared artwork now masks inside the frame and uses a smooth alpha threshold. Relevant regressions pass; native edge review remains pending. [Corrective paths and validation](design/runtime-phase2b.md#native-feedback-corrective-pass--2026-10-17).
+
+
+Phase 2B appearance follow-up adds accent-derived primary icon ink, bounded Control Centre appearance controls (schema 11), and a pinned preview of the real runtime surface. No commit/push; native review remains pending. [Appearance/preview checkpoint](design/runtime-phase2b.md#control-centre-appearance-and-pinned-preview--2026-10-17).
+
+
+Phase 2B live tuning now preserves the Settings-session preview across every page, with a compact global close affordance. Primary accent tone/shade/strength edits no longer snap through a contrast search. Accepted schema 11 geometry/masking/sliders remain. [Live-tuning checkpoint](design/runtime-phase2b.md#settings-session-live-tuning-correction--2026-10-17).
+
+
+The operator selected 7afd1c6 as the exact primary Control Centre colour reference. The old controlInk/stateColor path is restored; HSL primaryIconInk is removed. Size/roundness, masking and Settings-wide preview remain. [Exact colour restoration checkpoint](design/runtime-phase2b.md#exact-7afd1c6-colour-restoration--2026-10-17).
+
+
+Final Phase 2B tuning adds three independent profile font sizes and four explicit section gaps under Control Centre → Appearance. Schema 11 is retained; restored colours and Settings-wide preview are unchanged. [Final tuning checkpoint](design/runtime-phase2b.md#final-profile-typography-and-section-gap-tuning--2026-10-17).
+
+
+Phase 2B native acceptance is complete. Bar / Control Centre / Profile / Network,
+restored 7afd1c6 colour semantics, Settings-wide preview, and final Schema 11
+typography/spacing controls form the accepted baseline. Operator-tuned settings
+and runtime integrations remain local and excluded from the source commit.
+[Accepted checkpoint and path allowlist](design/runtime-phase2b.md#native-acceptance-and-source-checkpoint).

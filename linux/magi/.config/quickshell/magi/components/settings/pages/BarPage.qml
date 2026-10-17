@@ -9,9 +9,9 @@ SettingsUI.SettingsPage {
     id: root
     title: "Bar"
     description: "Arrange modules across your bar. Modules in Available are hidden from the bar and remain available in Control Centre."
-    readonly property var knownModules: ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "controlcentre"]
+    readonly property var knownModules: ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre"]
     readonly property var labels: ({clock:"Time", date:"Date", workspaces:"Workspaces", volume:"Volume",
-        wifi:"Wi-Fi", bluetooth:"Bluetooth", battery:"Battery", controlcentre:"Control Centre"})
+        wifi:"Wi-Fi", bluetooth:"Bluetooth", battery:"Battery", notifications:"Notifications", clipboard:"Clipboard", controlcentre:"Control Centre"})
     function arrangedModules() {
         const bar = Services.Settings.data.bar
         // Include any already-configured schema-supported IDs without inventing defaults.

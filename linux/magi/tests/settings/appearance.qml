@@ -11,10 +11,11 @@ ShellRoot {
     property string expected: ""
     Controls.IconSlider { id: slider; width: 136 }
     Controls.ActionChip { id: action }
-    Centre.ControlTile { id: tile }
+    Centre.ControlTile { id: tile; active: true }
     readonly property string selectedAccent: Services.Settings.data.controlCentre.controls[0].accent
     Centre.ControlTile {
         id: configuredTile
+        active: true
         activeColor: MagiTheme.Theme.primaryAccent(test.selectedAccent, "teal")
     }
     function near(a, b) { return Math.abs(a.r-b.r) < .005 && Math.abs(a.g-b.g) < .005 && Math.abs(a.b-b.b) < .005 }
@@ -39,7 +40,7 @@ ShellRoot {
                     test.check(test.near(tile.color, test.mixed(base, theme.shadeDark, .28)), "live palette background " + role)
                     test.check(test.near(tile.border.color, test.mixed(base, theme.shadeDark, .48)), "same-accent darker border " + role)
                 }
-                test.check(theme.controlOn.toString() === theme.text.toString(), "on icon stays Text across palettes")
+                test.check(theme.controlOn.toString() === theme.text.toString(), "canonical ON role across palettes")
                 for (const group of ["primary", "secondary"]) {
                     test.check(Qt.colorEqual(theme.stateColor(group, true), theme.text), group + " inherits ON role")
                     test.check(theme.stateColor(group, false).a < 1, group + " inherits OFF strength")
@@ -79,7 +80,7 @@ ShellRoot {
                 test.check(tile.radius === 10 && MagiTheme.RenderTokens.sliderRadius === 10
                     && action.radius === 13 && MagiTheme.Theme.barPillRadius === 8, "default radius restoration")
                 test.check(MagiTheme.RenderTokens.controlWidth === 320 && MagiTheme.RenderTokens.controlBodyHeight === 208
-                    && slider.implicitHeight === 48 && tile.implicitWidth === 60, "geometry unchanged")
+                    && slider.implicitHeight === 48 && tile.implicitWidth === 68, "runtime tile geometry; slider baseline preserved")
                 test.check(MagiTheme.Theme.statusIconSize === 18, "fresh/reset icon size is 18")
                 Services.Settings.setTheme("future-uninstalled")
                 test.expected = "catppuccin-mocha"
@@ -89,7 +90,10 @@ ShellRoot {
                 Services.Settings.setTheme("catppuccin-mocha")
                 break
             case 6:
-                test.check(test.near(tile.color, MagiTheme.Theme.primaryTileColor(tile.activeColor)), "off primary tile retains color")
+                tile.active = false
+                test.check(test.near(tile.color, MagiTheme.Theme.primaryTileColor(tile.activeColor))
+                    && test.near(tile.border.color, MagiTheme.Theme.primaryTileRim(tile.activeColor)), "off tile retains configured accent and rim")
+                tile.active = true
                 test.check(MagiTheme.Theme.controlInk(false,false,true,false).toString() === MagiTheme.Theme.controlOn.toString(), "non-toggle bright")
                 test.check(MagiTheme.Theme.controlInk(true,false,true,false).a < .5, "off toggle recedes")
                 test.check(MagiTheme.Theme.controlInk(true,true,true,false).toString() === MagiTheme.Theme.controlOn.toString(), "on toggle bright")
@@ -121,7 +125,7 @@ ShellRoot {
                 Services.Settings.setVisual("secondaryOffOpacity", .3)
                 break
             case 10:
-                test.check(test.near(MagiTheme.Theme.stateColor("primary", false), Qt.alpha(MagiTheme.Theme.shadeDark, .7)), "primary dark endpoint and strength")
+                test.check(test.near(MagiTheme.Theme.stateColor("primary", false), Qt.alpha(MagiTheme.Theme.shadeDark, .7)), "canonical primary dark endpoint and alpha strength")
                 test.check(test.near(MagiTheme.Theme.stateColor("secondary", false), Qt.alpha(MagiTheme.Theme.shadeLight, .3)), "secondary light endpoint and strength")
                 test.check(Qt.colorEqual(MagiTheme.Theme.stateColor("secondary", true), MagiTheme.Theme.text), "secondary off preferences do not alter ON")
                 console.log("RESULT: " + test.failures + " failures; 10 palettes and live appearance")

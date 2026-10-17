@@ -44,12 +44,14 @@ PanelWindow {
     }
     readonly property Item activeCombinedRegion:
         combinedMode && statusSurface.revealedHeight > 0 ? statusSurface : null
-    readonly property bool catcherEnabled: combinedMenuActive
+    readonly property bool previewPinned: MagiServices.SettingsWindowState.controlCentrePreview
+        && MagiServices.MenuController.activeMenu === "controlcentre"
+    readonly property bool catcherEnabled: combinedMenuActive && !previewPinned
     readonly property bool combinedKeyboardEnabled:
         MagiServices.Calendar.opened || (activeExpandablePill !== null && activeExpandablePill.menuKeyboardFocus)
 
     function closeActiveCombinedMenu() {
-        if (combinedMenuActive)
+        if (combinedMenuActive && !previewPinned)
             MagiServices.MenuController.close()
     }
 
@@ -114,9 +116,9 @@ PanelWindow {
         if (MagiServices.MenuController.activeMenu !== "" || statusSurface.phase !== 0 || calendarSurface.phase !== 0
                 || registry.interactionBusy || registry.presentationBusy) return
         const next = {
-            left: MagiServices.Settings.data.bar.left.filter(id => id !== "notifications"),
-            center: MagiServices.Settings.data.bar.center.filter(id => id !== "notifications"),
-            right: MagiServices.Settings.data.bar.right.filter(id => id !== "notifications")
+            left: MagiServices.Settings.data.bar.left,
+            center: MagiServices.Settings.data.bar.center,
+            right: MagiServices.Settings.data.bar.right
         }
         if (JSON.stringify(placement) !== JSON.stringify(next)) placement = next
     }
@@ -154,8 +156,13 @@ PanelWindow {
         "wifi": wifiComponent,
         "bluetooth": bluetoothComponent,
         "battery": batteryComponent,
+        "notifications": notificationsComponent,
+        "clipboard": clipboardComponent,
         "controlcentre": controlCentreComponent
     })
+
+    Component { id: notificationsComponent; UtilityPill { mode: "notifications"; label: "Notifications" } }
+    Component { id: clipboardComponent; UtilityPill { mode: "clipboard"; label: "Clipboard" } }
 
     Component {
         id: clockComponent
@@ -268,6 +275,7 @@ PanelWindow {
     }
     Item {
         id: clickCatcher
+        objectName: "statusDismissCatcher"
 
         anchors.fill: parent
         visible: bar.catcherEnabled

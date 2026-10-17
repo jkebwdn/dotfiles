@@ -9,10 +9,16 @@ QtObject {
     readonly property int controlBodyHeight: 208
     readonly property int padding: 14
     readonly property real outerRadius: Theme.radius("surface", 11, controlWidth, controlBodyHeight)
-    readonly property int tileSize: 60
+    readonly property real avatarSize: Theme.visual.avatarSize
+    readonly property real mediaArtworkSize: Theme.visual.mediaArtworkSize
+    readonly property real profileHeight: Math.max(84, avatarSize)
+    readonly property real mediaHeight: Math.max(100, mediaArtworkSize + 20)
+    readonly property real tileSize: Theme.visual.primaryContainerSize
     readonly property real tileRadius: Theme.radius("controlTile", 10, tileSize, tileSize)
     readonly property real tileBorder: Theme.visual.tileBorderWidth
-    readonly property int tileIconSize: 32
+    readonly property real tileIconSize: Theme.visual.primaryIconSize
+    readonly property real actionIconSize: Theme.visual.secondaryIconSize
+    readonly property real actionSize: Math.max(38, actionIconSize + 6)
     readonly property int tileSliderGap: 24
     readonly property int sliderHeight: 48
     readonly property int sliderGap: 20

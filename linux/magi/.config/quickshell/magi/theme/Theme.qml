@@ -53,6 +53,19 @@ QtObject {
     }
     function primaryTileColor(accentColor) { return shadeAccent(accentColor, visual.tileBackgroundShade) }
     function primaryTileRim(accentColor) { return shadeAccent(accentColor, visual.tileBorderShade) }
+    function luminance(c) {
+        function linear(v) { return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4) }
+        return 0.2126 * linear(c.r) + 0.7152 * linear(c.g) + 0.0722 * linear(c.b)
+    }
+    function contrast(a, b) {
+        const x = luminance(a), y = luminance(b)
+        return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)
+    }
+    function legibleInk(fill, preferred) {
+        const painted = Qt.tint(fill, preferred)
+        if (contrast(fill, painted) >= 3) return preferred
+        return contrast(fill, text) >= contrast(fill, background) ? text : background
+    }
     function onColor(role) {
         return roles["on" + role.charAt(0).toUpperCase() + role.slice(1)] || text
     }

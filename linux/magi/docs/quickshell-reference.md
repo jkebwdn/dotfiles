@@ -478,3 +478,23 @@ On the installed Qt 6.11.2 / Quickshell 0.3.1 environment, production QtTest eve
 
 
 Final Phase 2A.3 status labels use existing Qt Text.NoWrap/ElideRight presentation. Theme pointer coverage checks one-line labels at both Settings content widths, adapter wording normalization, full reload details and visible errors; no new Quickshell API is used.
+
+
+## Runtime presentation API verification — 2026-10-17
+
+No new Quickshell API is introduced. Installed QtQuick/Effects metadata confirms the existing layer and MultiEffect properties; installed Quickshell Networking metadata confirms WifiDevice.scannerEnabled. Qt 6.11.2 [Image documentation](https://doc.qt.io/qt-6.11/qml-qtquick-image.html) states that PreserveAspectCrop can paint beyond its bounds without clip. The [MultiEffect documentation](https://doc.qt.io/qt-6.11/qml-qtquick-effects-multieffect.html) describes hidden source items, layered texture sources and alpha masks. RoundedArtwork now explicitly clips and layers its source before the existing mask. This addresses source texture bounds; native edge quality remains unverified. No external code/assets were reused. Offscreen tests exercise existing focus/Keys and retained Loader dismissal; compositor pointer grabs and focus restoration still require operator review. See [Phase 2B evidence](design/runtime-phase2b.md).
+
+
+2026-10-17 mask correction: inspected Qt 6.11 [QQuickMultiEffectPrivate::updateMaskThresholdSpread](https://raw.githubusercontent.com/qt/qtdeclarative/6.11/src/effects/qquickmultieffect.cpp) and its [fragment shader](https://raw.githubusercontent.com/qt/qtdeclarative/6.11/src/effects/data/shaders/multieffect.frag). Defaults produce a nearly zero-width lower smoothstep; faint antialiased mask pixels become opaque. Threshold 0.5 with spread 1 spans approximately alpha 0–1. RoundedArtwork combines this with an inset inner image/mask contour, separate from the frame. Existing installed Qt 6.11.2 properties suffice; no source code/assets copied (upstream dual commercial/LGPL/GPL). Software tests cover geometry and source isolation; native GPU/fractional-scale edge appearance remains an operator check. [Corrective checkpoint](design/runtime-phase2b.md#native-feedback-corrective-pass--2026-10-17).
+
+
+The appearance follow-up uses existing Qt colour conversion/HSL, input Region, Connections, and retained Loader patterns; no new Quickshell API. Production offscreen tests exercise accent hue/contrast, variable geometry and Settings-owned preview lifecycle. Native layer-shell input regions, focus and GPU antialiasing remain operator checks. Installed versions remain Qt 6.11.2 / Quickshell 0.3.1. [Appearance/preview checkpoint](design/runtime-phase2b.md#control-centre-appearance-and-pinned-preview--2026-10-17).
+
+
+Live-tuning correction uses existing Qt HSL colour properties, Settings session signals and footer controls; no new runtime API. Production tests observe actual Icon colours and navigate actual Settings pages. Offscreen results cannot certify compositor focus or GPU masking edges. [Live-tuning checkpoint](design/runtime-phase2b.md#settings-session-live-tuning-correction--2026-10-17).
+
+
+Colour restoration uses existing 7afd1c6 Qt colour/alpha and Icon rendering APIs without additions. An isolated Git-source oracle compares exact resolved RGBA for 600 production tile pairs. Native screenshot quality remains outside the offscreen test claim. [Exact colour restoration checkpoint](design/runtime-phase2b.md#exact-7afd1c6-colour-restoration--2026-10-17).
+
+
+Typography/spacing additions use existing Qt Text font.pixelSize, ColumnLayout implicitHeight and Item positions. Production tests check font properties, text bounds and section geometry; no new Quickshell API. Native font appearance and edge quality still require operator review. [Final tuning checkpoint](design/runtime-phase2b.md#final-profile-typography-and-section-gap-tuning--2026-10-17).

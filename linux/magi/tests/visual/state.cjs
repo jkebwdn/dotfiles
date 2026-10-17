@@ -23,7 +23,7 @@ assert.deepEqual(ids([...input,ws(10)]),[1,2,3,10]);
 input[0].name='special:move';assert.deepEqual(ids(input),[2,3]);
 console.log('PASS: battery/volume/signal boundaries; normal workspace filtering, sorting, creation, removal, rename, one/two workspaces');
 const visual=load('components/controls/VisualState.js');
-for(const [hour,text] of [[0,'night'],[4,'night'],[5,'morning'],[11,'morning'],[12,'afternoon'],[17,'afternoon'],[18,'evening'],[22,'evening'],[23,'night']]) assert.equal(visual.greeting(hour),'Good '+text);
+for(const [hour,text] of [[0,'night'],[4,'night'],[5,'morning'],[11,'morning'],[12,'afternoon'],[17,'afternoon'],[18,'evening'],[22,'evening'],[23,'night']]) assert.equal(visual.greeting(hour),'Good '+text[0].toUpperCase()+text.slice(1));
 assert.equal(visual.progress(10,100,true),.1); assert.equal(visual.progress(0,0,true),-1); assert.equal(visual.progress(10,100,false),-1); assert.equal(visual.progress(200,100,true),1);
 const perimeter=visual.perimeter(70,70,10,1); assert.deepEqual(perimeter[0],perimeter.at(-1)); assert(perimeter.every(p=>p.every(v=>isFinite(v)&&v>=1&&v<=69)));
 console.log('PASS: local-hour greetings; real-only progress, rounded bounded perimeter');

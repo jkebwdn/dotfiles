@@ -37,7 +37,7 @@ Rectangle {
                 implicitWidth: 28
                 implicitHeight: MagiTheme.Theme.barPillHeight
 
-                radius: MagiTheme.Theme.radiusSmall
+                radius: root.radius
 
                 color: isActive
                     ? MagiTheme.Theme.accent

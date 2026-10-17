@@ -9,7 +9,7 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
     stubs={
       'Network': '''property bool connected: false; property bool wifiEnabled: true; property bool wifiHardwareEnabled: true
         property string icon: "wifi"; property string ssid: ""; property int signalStrength: 0
-        property var activeNetwork: null; property var availableNetworks: []
+        property var wifiDevice: null; property var activeNetwork: null; property var availableNetworks: []
         property bool scanning: false; property int knownCalls: 0; property int openCalls: 0; property int passwordCalls: 0
         function setScanning(v) {root.scanning=v} function setWifiEnabled(v) {root.wifiEnabled=v} function connectKnown(n) {root.knownCalls++}
         function connectOpen(n) {root.openCalls++} function connectWithPassword(n,p) {root.passwordCalls++}''',

@@ -21,21 +21,24 @@ Column {
     }
     Item {
         width: parent.width; height: 30
-        Text {
-            anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
-            text: Services.Network.wifiEnabled ? "Wi-Fi" : "Wireless is off"
-            color: Theme.Theme.text; font.family: Theme.Theme.fontFamily; font.pixelSize: 13; font.bold: true
+        Controls.CompactToggle {
+            id: radioToggle
+            anchors.left: parent.left
+            Accessible.name: "Wi-Fi"
+            checked: Services.Network.wifiEnabled
+            enabled: Services.Network.wifiHardwareEnabled
+            onToggled: { Services.Network.setWifiEnabled(checked); root.controller.resetTransientState() }
         }
-        Controls.ActionChip {
-            anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-            moduleId: "wifi"; label: Services.Network.wifiEnabled ? "On" : "Off"
-            active: Services.Network.wifiEnabled; available: Services.Network.wifiHardwareEnabled
-            onTriggered: { Services.Network.setWifiEnabled(!Services.Network.wifiEnabled); root.controller.resetTransientState() }
+        Text {
+            anchors.left: radioToggle.right; anchors.leftMargin: 8; anchors.verticalCenter: parent.verticalCenter
+            text: Services.Network.wifiEnabled ? (Services.Network.wifiDevice !== null && Services.Network.wifiDevice.scannerEnabled ? "Scanning…" : "Wireless enabled") : "Wireless is off"
+            color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 11
         }
     }
+
     Rectangle {
         id: connected
-        width: parent.width; height: 64
+        width: parent.width; height: 72
         visible: Services.Network.connected && Services.Network.wifiEnabled
         radius: Theme.Theme.radiusMedium; color: Theme.Theme.elevated
         Controls.Icon {
@@ -46,20 +49,20 @@ Column {
         Column {
             anchors { left: connectedIcon.right; leftMargin: 10; right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
             spacing: 4
-            Text { width: parent.width; text: Services.Network.ssid; font.pixelSize: 13; font.bold: true; color: Theme.Theme.text; elide: Text.ElideRight }
+            Text { width: parent.width; text: Services.Network.ssid; font.pixelSize: 14; font.bold: true; color: Theme.Theme.text; elide: Text.ElideRight }
             Text { text: "Connected · " + Services.Network.signalStrength + "%"; font.pixelSize: 10; color: Theme.Theme.subtext }
         }
     }
     Text {
         id: listHeading
         visible: Services.Network.wifiEnabled
-        text: "Nearby networks"; font.pixelSize: 10; color: Theme.Theme.muted
+        text: "Nearby networks"; font.pixelSize: 12; color: Theme.Theme.muted
     }
     Flickable {
         id: list
         width: parent.width
         height: Math.max(48, root.controller.menuHeight - root.controller.viewTopPadding - root.controller.viewBottomPadding
-            - 30 - 24 - listHeading.height - (connected.visible ? 76 : 0))
+            - 30 - 24 - listHeading.height - (connected.visible ? 84 : 0))
         visible: Services.Network.wifiEnabled
         contentHeight: networkColumn.implicitHeight; contentWidth: width
         clip: true; boundsBehavior: Flickable.StopAtBounds
@@ -70,6 +73,12 @@ Column {
                 if (row.y < list.contentY) list.contentY = row.y
                 list.returnToBounds()
             })
+        }
+        Text {
+            width: parent.width
+            visible: root.controller.listCount === 0
+            text: Services.Network.wifiDevice !== null && Services.Network.wifiDevice.scannerEnabled ? "Searching for nearby networks…" : "No other networks found"
+            color: Theme.Theme.subtext; font.pixelSize: 12; wrapMode: Text.WordWrap
         }
         Column {
             id: networkColumn
@@ -86,13 +95,18 @@ Column {
                     readonly property int strength: Math.round(modelData.signalStrength * 100)
                     width: networkColumn.width
                     visible: !modelData.connected
-                    height: visible ? 44 + (authenticating ? 124 : failed ? 38 : 0) : 0
+                    height: visible ? 52 + (authenticating ? 124 : failed ? 38 : 0) : 0
                     radius: Theme.Theme.radiusSmall
                     color: authenticating ? Theme.Theme.elevated : hover.hovered ? Theme.Theme.overlay : "transparent"
+                    activeFocusOnTab: visible && !root.controller.connecting
+                    Keys.onReturnPressed: root.controller.selectNetwork(modelData)
+                    Keys.onSpacePressed: root.controller.selectNetwork(modelData)
+                    border.width: activeFocus ? 1 : 0
+                    border.color: Theme.Theme.focus
                     function focusAuthentication() { auth.requestInputFocus(); list.showRow(row) }
                     onAuthenticatingChanged: { if (authenticating) focusAuthentication() }
                     Item {
-                        width: parent.width; height: 44
+                        width: parent.width; height: 52
                         Controls.Icon {
                             id: signal
                             x: 8; anchors.verticalCenter: parent.verticalCenter; size: 22
@@ -102,23 +116,23 @@ Column {
                         Column {
                             anchors { left: signal.right; leftMargin: 10; right: percentage.left; rightMargin: 10; verticalCenter: parent.verticalCenter }
                             spacing: 3
-                            Text { width: parent.width; text: row.modelData.name; font.pixelSize: 11; color: Theme.Theme.text; elide: Text.ElideRight }
+                            Text { width: parent.width; text: row.modelData.name; font.pixelSize: 13; color: Theme.Theme.text; elide: Text.ElideRight }
                             Text {
                                 text: row.pending ? "Connecting…" : row.modelData.known ? "Saved" : row.modelData.security === WifiSecurityType.Open ? "Open" : "Secured"
-                                font.pixelSize: 9; color: row.pending ? Theme.Theme.accent : Theme.Theme.muted
+                                font.pixelSize: 11; color: row.pending ? Theme.Theme.accent : Theme.Theme.muted
                             }
                         }
-                        Text { id: percentage; anchors.right: parent.right; anchors.rightMargin: 8; anchors.verticalCenter: parent.verticalCenter; text: row.strength + "%"; font.pixelSize: 9; color: Theme.Theme.muted }
+                        Text { id: percentage; anchors.right: parent.right; anchors.rightMargin: 8; anchors.verticalCenter: parent.verticalCenter; text: row.strength + "%"; font.pixelSize: 11; color: Theme.Theme.muted }
                         TapHandler { enabled: !row.modelData.connected && !root.controller.connecting; onTapped: root.controller.selectNetwork(row.modelData) }
                     }
                     WifiAuthentication {
                         id: auth
-                        x: 10; y: 48; width: parent.width - 20
+                        x: 10; y: 56; width: parent.width - 20
                         controller: root.controller; network: row.modelData
                         visible: row.authenticating
                     }
                     Text {
-                        x: 10; y: 44; width: parent.width - 20
+                        x: 10; y: 52; width: parent.width - 20
                         visible: row.failed && !row.authenticating
                         text: root.controller.connectionError; wrapMode: Text.WordWrap; color: Theme.Theme.danger; font.pixelSize: 10
                     }

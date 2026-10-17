@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls.Basic
 import "../../../components/controls" as Controls
 import "../../../theme" as MagiTheme
 
@@ -24,6 +25,14 @@ Rectangle {
     color: MagiTheme.Theme.primaryTileColor(activeColor)
     border.width: MagiTheme.RenderTokens.tileBorder
     border.color: rimColor
+    activeFocusOnTab: available && interactive
+    Accessible.role: Accessible.Button
+    Keys.onSpacePressed: if (available && interactive) primaryTriggered()
+    Keys.onReturnPressed: if (available && interactive) primaryTriggered()
+    Keys.onMenuPressed: if (available && interactive) secondaryTriggered()
+    ToolTip.visible: hover.hovered
+    ToolTip.text: Accessible.name
+    HoverHandler { id: hover }
     Accessible.name: title + (subtitle.length ? ": " + subtitle : "")
 
     Controls.Icon {

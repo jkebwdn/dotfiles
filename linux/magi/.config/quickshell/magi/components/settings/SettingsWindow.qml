@@ -131,6 +131,14 @@ FloatingWindow {
                         id: footer
                         anchors.fill: parent
                         anchors.margins: 10
+                        SettingsButton {
+                            objectName: "settingsCloseControlCentrePreview"
+                            visible: Services.SettingsWindowState.controlCentrePreview
+                            flat: true
+                            text: "CC preview active · Close"
+                            Accessible.name: "Close Control Centre preview"
+                            onClicked: Services.SettingsWindowState.closePreview()
+                        }
                         ScrollView {
                             id: statusScroll
                             objectName: "settingsSaveStatusScroll"

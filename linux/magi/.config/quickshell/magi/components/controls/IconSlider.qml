@@ -13,6 +13,16 @@ Item {
     signal valueMoved(real value)
     implicitHeight: MagiTheme.RenderTokens.sliderHeight
     opacity: interactive ? 1 : 0.45
+    activeFocusOnTab: interactive
+    Accessible.role: Accessible.Slider
+    Accessible.name: moduleId
+    Keys.onLeftPressed: if (interactive) valueMoved(Math.max(0, value - 0.05))
+    Keys.onRightPressed: if (interactive) valueMoved(Math.min(1, value + 0.05))
+    Keys.onPressed: event => {
+        if (interactive && (event.key === Qt.Key_Home || event.key === Qt.Key_End)) {
+            valueMoved(event.key === Qt.Key_Home ? 0 : 1); event.accepted = true
+        }
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -35,7 +45,7 @@ Item {
             radius: parent.radius
             color: "transparent"
             border.width: MagiTheme.RenderTokens.sliderBorder
-            border.color: MagiTheme.Theme.sliderRim
+            border.color: root.activeFocus ? MagiTheme.Theme.focus : MagiTheme.Theme.sliderRim
         }
     }
     Icon {
@@ -43,7 +53,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         role: root.icon
             moduleId: root.moduleId
-        color: MagiTheme.Theme.text
+        color: MagiTheme.Theme.legibleInk(MagiTheme.Theme.sliderTrack, MagiTheme.Theme.text)
         size: MagiTheme.RenderTokens.sliderIconSize
     }
     MouseArea {

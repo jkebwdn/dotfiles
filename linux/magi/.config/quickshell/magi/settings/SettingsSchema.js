@@ -23,17 +23,20 @@ function controlDefinitions() {
         {id:"clipboard", label:"Clipboard", icon:"clipboard", accent:"blue", presentations:["action"], route:"hub", mode:"clipboard"}
     ]
 }
-const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "controlcentre"]
-const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar"]
+const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre"]
+const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar", "albumArt"]
 const controlAccentRoles = ["red", "peach", "yellow", "green", "teal", "blue", "lavender"]
 const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "green",
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 10,
+    return {schemaVersion: 11,
         appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
-            roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null}},
-            visual: {statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
+            roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null}},
+            visual: {profileGreetingSize: 16, profileWeatherSize: 12, profileThirdLineSize: 11,
+                profileControlsGap: 20, controlsSlidersGap: 20, slidersActionsGap: 20, actionsMediaGap: 20,
+                primaryIconSize: 32, primaryContainerSize: 68, secondaryIconSize: 32,
+                avatarSize: 76, mediaArtworkSize: 80, statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
                 tileBorderWidth: 4, controlOn: "text",
                 controlOff: "background", controlOffOpacity: 0.28, controlOffShade: 0,
                 secondaryOn: "text", secondaryOff: "overlay", secondaryOffShade: 0,
@@ -88,7 +91,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 10) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 11) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -110,13 +113,17 @@ function analyze(input) {
     if (typeof a.theme !== "string" || !a.theme.length) { valid(false, "appearance.theme", ""); a.theme = "catppuccin-mocha" }
 
     const visualDefaults = defaults().appearance.visual
-    const numberRanges = {statusIconSize: [16, 28], tileBackgroundShade: [-1, 1],
+    const integerVisual = ["profileGreetingSize", "profileWeatherSize", "profileThirdLineSize",
+        "profileControlsGap", "controlsSlidersGap", "slidersActionsGap", "actionsMediaGap"]
+    const numberRanges = {profileGreetingSize: [12, 24], profileWeatherSize: [10, 20], profileThirdLineSize: [10, 20],
+        profileControlsGap: [0, 48], controlsSlidersGap: [0, 48], slidersActionsGap: [0, 48], actionsMediaGap: [0, 48], primaryIconSize: [16, 48], primaryContainerSize: [60, 96],
+        secondaryIconSize: [16, 36], avatarSize: [48, 112], mediaArtworkSize: [48, 112], statusIconSize: [16, 28], tileBackgroundShade: [-1, 1],
         tileBorderShade: [-1, 1], tileBorderWidth: [0, 6],
         controlOffOpacity: [0, 1], controlOffShade: [-1, 1], secondaryOffShade: [-1, 1],
         secondaryOffOpacity: [0, 1], sliderBorderWidth: [0, 5], avatarBorderWidth: [0, 5]}
     for (const key of Object.keys(visualDefaults)) {
         const value = a.visual[key], range = numberRanges[key]
-        const good = range ? typeof value === "number" && isFinite(value) && value >= range[0] && value <= range[1]
+        const good = range ? (integerVisual.indexOf(key) < 0 || Number.isInteger(value)) && typeof value === "number" && isFinite(value) && value >= range[0] && value <= range[1]
             : ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "accent",
                 "blue", "lavender", "green", "yellow", "peach", "red", "teal", "border"].indexOf(value) >= 0
         if (!good) { valid(false, "appearance.visual." + key, null); a.visual[key] = visualDefaults[key] }

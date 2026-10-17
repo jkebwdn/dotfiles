@@ -8,11 +8,11 @@ assert.equal(run('analyze(defaults()).errors').length, 0);
 assert.equal(run('analyze(migrate({palette:"everforest",barCenterPlugins:[],custom:7})).effective.appearance.theme'), 'everforest-dark-hard');
 assert.deepEqual(run('migrate({palette:"catppuccin",barCenterPlugins:[]}).bar.center'), []);
 assert.equal(run('migrate({palette:"catppuccin",custom:7}).custom'), 7);
-assert.equal(run('migrate({schemaVersion:1,appearance:{theme:"catppuccin-latte"}}).schemaVersion'), 10);
+assert.equal(run('migrate({schemaVersion:1,appearance:{theme:"catppuccin-latte"}}).schemaVersion'), 11);
 assert.deepEqual(run('analyze({schemaVersion:4}).effective.bar.center'), ['workspaces']);
 assert.equal(run('analyze({schemaVersion:4,appearance:{roundness:{master:-4}}}).effective.appearance.roundness.master'), 1);
 assert.equal(run('analyze({schemaVersion:4,appearance:{theme:"unknown"}}).effective.appearance.theme'), 'unknown');
-assert.equal(run('analyze({schemaVersion:11}).future'), true);
+assert.equal(run('analyze({schemaVersion:12}).future'), true);
 assert.deepEqual(run('analyze({schemaVersion:4,bar:{left:["wifi"],right:["wifi","bogus","volume"]}}).effective.bar.right'), ['volume']);
 assert.throws(() => run('analyze(JSON.parse(\'{"schemaVersion":1,"__proto__":{}}\'))'));
 assert.throws(() => run('migrate({palette:"catppuccin",appearance:{}})'));
@@ -35,7 +35,7 @@ const v3=run('migrate({schemaVersion:3,controlCentre:{controls:['
     + '{key:"wireless",module:"bluetooth",enabled:true,presentation:"tile"},'
     + '{key:"power-saver",module:"power-saver",enabled:true,presentation:"tile"},'
     + '{key:"airplane-mode",module:"airplane-mode",enabled:true,presentation:"tile"}]}})');
-assert.equal(v3.schemaVersion,10);
+assert.equal(v3.schemaVersion,11);
 assert.deepEqual(v3.controlCentre.controls.map(e=>e.accent),['teal','blue','green','lavender']);
 const customAccent=run('migrate({schemaVersion:3,controlCentre:{controls:['
     + '{key:"network",module:"wifi",accent:"red",enabled:true,presentation:"tile"}]}})');
@@ -44,7 +44,7 @@ const invalidAccent=run('analyze({schemaVersion:4,controlCentre:{controls:['
     + '{key:"network",module:"wifi",accent:"rosewater",enabled:true,presentation:"tile"}]}})');
 assert.equal(invalidAccent.effective.controlCentre.controls[0].accent,'teal');
 assert.ok(invalidAccent.errors.some(e=>e.includes('.accent')));
-console.log('Schema: v0→v10, defaults, validation, CC action and semantic-accent migration PASS');
+console.log('Schema: v0→v11, defaults, validation, CC action and semantic-accent migration PASS');
 
 assert.equal(run('defaults().appearance.visual.statusIconSize'), 18);
 assert.equal(run('analyze({schemaVersion:4,appearance:{visual:{statusIconSize:22}}}).effective.appearance.visual.statusIconSize'), 22);
@@ -55,3 +55,48 @@ for (const key of ['tileBackgroundShade','tileBorderShade']) {
         assert.equal(run(`analyze({schemaVersion:4,appearance:{visual:{${key}:${value}}}}).effective.appearance.visual.${key}`), run(`defaults().appearance.visual.${key}`));
 }
 console.log('Visual defaults, saved size preservation and signed shade validation PASS');
+
+for (const id of ['notifications', 'clipboard']) {
+    assert(!Object.values(run('defaults().bar')).flat().includes(id));
+    assert.deepEqual(run(`analyze({schemaVersion:10,bar:{left:[],center:[],right:["${id}"]}}).effective.bar.right`), [id]);
+}
+console.log('Optional Notifications/Clipboard Bar placements accepted; absent from defaults PASS');
+
+const geometry = {primaryIconSize:[16,32,48], primaryContainerSize:[60,68,96],
+    secondaryIconSize:[16,32,36], avatarSize:[48,76,112], mediaArtworkSize:[48,80,112]};
+for (const [key, values] of Object.entries(geometry)) {
+    assert.equal(run(`defaults().appearance.visual.${key}`), values[1]);
+    for (const value of values)
+        assert.equal(run(`analyze({schemaVersion:11,appearance:{visual:{${key}:${value}}}}).effective.appearance.visual.${key}`), value);
+    for (const value of [0, -1, values[2]+1, '"big"', 'null']) {
+        const result=run(`analyze({schemaVersion:11,appearance:{visual:{${key}:${value}}}})`);
+        assert.equal(result.effective.appearance.visual[key], values[1]);
+        assert(result.errors.some(e=>e.includes(key)));
+    }
+}
+const upgraded=run('analyze(migrate({schemaVersion:10,custom:42,appearance:{visual:{avatarSize:100,controlOn:"peach"},roundness:{roles:{action:1.5,avatar:.7}}}}))');
+assert.equal(upgraded.effective.schemaVersion,11);
+assert.equal(upgraded.effective.appearance.visual.avatarSize,100);
+assert.equal(upgraded.effective.appearance.visual.controlOn,'peach');
+assert.equal(upgraded.effective.appearance.roundness.roles.albumArt,1.5);
+assert.equal(upgraded.effective.appearance.roundness.roles.avatar,.7);
+assert.equal(upgraded.document.custom,42);
+assert.equal(run('migrate({schemaVersion:10,appearance:{roundness:{roles:{action:1.5,albumArt:.2}}}}).appearance.roundness.roles.albumArt'),.2);
+for (const role of ['avatar','albumArt']) {
+    for (const value of [0,1,2,null]) assert.equal(run(`analyze({schemaVersion:11,appearance:{roundness:{roles:{${role}:${value}}}}}).effective.appearance.roundness.roles.${role}`),value);
+    for (const value of [-1,3]) assert.equal(run(`analyze({schemaVersion:11,appearance:{roundness:{roles:{${role}:${value}}}}}).effective.appearance.roundness.roles.${role}`),null);
+}
+console.log('CC sizes, independent artwork roundness, v10 migration and preserved values PASS');
+
+for (const [key,def,min,max] of [["profileGreetingSize",16,12,24],["profileWeatherSize",12,10,20],["profileThirdLineSize",11,10,20],
+    ...["profileControlsGap","controlsSlidersGap","slidersActionsGap","actionsMediaGap"].map(k=>[k,20,0,48])]) {
+    assert.equal(run(`analyze(migrate({schemaVersion:10})).effective.appearance.visual.${key}`),def);
+    for (const value of [min,max,def]) {
+        assert.equal(run(`analyze({schemaVersion:11,appearance:{visual:{${key}:${value}}}}).effective.appearance.visual.${key}`),value);
+    }
+    for (const value of [min-1,max+1,min+.5]) {
+        assert(run(`analyze({schemaVersion:11,appearance:{visual:{${key}:${value}}}}).errors`).length);
+        assert.equal(run(`analyze({schemaVersion:11,appearance:{visual:{${key}:${value}}}}).effective.appearance.visual.${key}`),def);
+    }
+}
+console.log('Profile typography and section gaps: Schema 10→11 defaults, integer bounds PASS');

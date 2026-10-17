@@ -19,7 +19,7 @@ SettingsUI.SettingsPage {
         Controls.RoundedArtwork {
             objectName: "profileAvatarPreview"
             Layout.preferredWidth: 88; Layout.preferredHeight: 88
-            radius: Theme.Theme.radius("avatar", 44, width, height)
+            radius: Theme.Theme.radius("avatar", 10, width, height)
             source: Services.AssetManager.assetUrl(Services.Settings.data.profile.avatar)
             placeholder: "profile"
             borderColor: Theme.Theme.border
@@ -43,11 +43,11 @@ SettingsUI.SettingsPage {
         onEditingFinished: Services.Settings.setValue("profile", "displayName", text.trim())
     }
     SettingsUI.SettingsToggle {
-        text: "Use custom subtitle instead of time-of-day greeting"
+        text: "Show an optional third profile line"
         checked: Services.Settings.data.profile.subtitleMode === "custom"
         onToggled: Services.Settings.setValue("profile", "subtitleMode", checked ? "custom" : "greeting")
     }
-    Label { text: "Saved custom subtitle"; font.bold: true }
+    Label { text: "Optional third line"; font.bold: true }
     SettingsUI.SettingsTextField {
         Layout.fillWidth: true
         text: Services.Settings.data.profile.subtitle

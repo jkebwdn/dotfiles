@@ -628,3 +628,23 @@ Future product direction favours integrating Wallpaper Manager into Wallpaper Se
 
 
 Final Phase 2A.3 native feedback: use concise collapsed target states (Applied, Reload, Restart, Relaunch, Next launch, New shell, Manual step, Deferred, Error), with no wrapping. Unknown future wording falls back to Details rather than leaking adapter prose into the narrow column. Preserve full expandable status and automatic visibility for errors/setup/manual requirements.
+
+
+## 2026-10-17 — Runtime visual Phase 2B
+
+Restore explicit optional Notifications placement and add optional Clipboard through Hub.toggle; neither is a default Bar icon. Reuse profile keys for greeting/name plus weather slot and optional third line. Use the same pill radius for workspace cells, bound cropped artwork before masking, and correct component ink against actual shaded fills without palette changes. Fit secondary action cells independently of primary columns; retain all catalogue routes, service ownership, anchors, animations and 48px reservation. Native review remains required. See [checkpoint](design/runtime-phase2b.md).
+
+
+2026-10-17 native correction supersedes the initial neutral-off tile and circular-avatar choices. Restore accent fills/rims, rounded-square avatars and direct slider icons. Mask image content inside the frame and smooth mask alpha; preserve all layout and interaction contracts. [Evidence and review boundary](design/runtime-phase2b.md#native-feedback-corrective-pass--2026-10-17).
+
+
+Primary icon state roles now influence accent lightness instead of replacing configured accent hue. Preserve configurable off tone/strength and contrast against actual tile fill. Keep one Control Centre appearance UI location with a real pinned runtime preview; no duplicate preview component, decorative chip, persisted preview state or backend rewrite. [Appearance/preview checkpoint](design/runtime-phase2b.md#control-centre-appearance-and-pinned-preview--2026-10-17).
+
+
+Supersede page-scoped preview and automatic primary-icon contrast search: operator tuning requires continuous accent-derived tone/shade/strength changes and persistent preview across all Settings pages. Keep existing controls and schema 11; add only a compact global preview-close affordance. [Live-tuning checkpoint](design/runtime-phase2b.md#settings-session-live-tuning-correction--2026-10-17).
+
+
+Supersede earlier Phase 2B accent-hue interpretations with exact committed 7afd1c6 behaviour. Port only the colour path, remove primaryIconInk and tile-level opacity/focus-rim overrides, and test exact old/current production equivalence. Retain accepted non-colour improvements and current UI labels/keys. [Exact colour restoration checkpoint](design/runtime-phase2b.md#exact-7afd1c6-colour-restoration--2026-10-17).
+
+
+Use bounded integer profile sizes and explicit section gaps, defaulting to existing 16/12/11px text and 20px spacing. Hidden sections use the preceding visible section’s outgoing gap once, never summed skipped gaps. Retain Schema 11, exact restored colours, outer/internal padding and Settings-session preview. [Final tuning checkpoint](design/runtime-phase2b.md#final-profile-typography-and-section-gap-tuning--2026-10-17).

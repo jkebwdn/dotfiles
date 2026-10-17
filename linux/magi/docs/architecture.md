@@ -524,3 +524,23 @@ Control Centre Settings derives configured rows from enabled records and Availab
 
 
 The final Phase 2A.3 status refinement normalizes adapter result text only in the collapsed Application Themes label. Complete detail text and enrollment handlers remain unchanged; no backend status representation is introduced.
+
+
+## Runtime presentation Phase 2B — 2026-10-17
+
+Optional Notifications/Clipboard Bar pills route directly to the existing Hub; this supersedes the historical ignored-notifications-placement statement below. Defaults remain absent. Primary and secondary Control Centre grids remain independent, with secondary width fitting. Profile retains explicit Settings identity and a weatherSummary presentation input with an unavailable fallback; existing custom subtitle is now an optional third line. RoundedArtwork bounds its cropped source texture before the existing alpha mask. No service/backend or shared-surface lifecycle replacement; 48px reservation, separate Calendar, pending-operation ownership and Theme Orchestrator remain intact. [Implementation and native limits](design/runtime-phase2b.md).
+
+
+Phase 2B corrective presentation: primary fills retain assigned accents in all toggle states; profile/preview use the avatar role with a rounded-square reference. RoundedArtwork owns separate concentric frame/image contours and a smoothed alpha mask. Sliders have no icon backing. Host, service, Settings and interaction architecture is unchanged. [Corrective checkpoint](design/runtime-phase2b.md#native-feedback-corrective-pass--2026-10-17).
+
+
+Control Centre appearance is canonically edited on its own Settings page. Schema 11 stores bounded geometry and independent artwork roundness; RenderTokens supplies adaptive sizes. SettingsWindowState owns only the transient preview pin, while MenuController and the retained shared status surface keep runtime ownership. Pinned preview suppresses the outside catcher and initial focus transfer; page/window/menu exit clears it. [Appearance/preview checkpoint](design/runtime-phase2b.md#control-centre-appearance-and-pinned-preview--2026-10-17).
+
+
+Preview lifetime is Settings-session-wide: SettingsWindowState no longer clears it on page navigation. The global Settings footer can close the real retained surface. Settings close or incompatible menu ownership clears it. Primary icon hue/tone is independent of tile shading; no generic ink fallback or contrast search overrides manual tuning. [Live-tuning checkpoint](design/runtime-phase2b.md#settings-session-live-tuning-correction--2026-10-17).
+
+
+Primary Control Centre colour ownership is restored exactly to 7afd1c6: accent-derived tile fill/rim; controlInk/stateInk/stateColor selects icon semantic role, off shade and alpha strength. No HSL or contrast override in this path. Session-wide preview and all accepted geometry remain unchanged. [Exact colour restoration checkpoint](design/runtime-phase2b.md#exact-7afd1c6-colour-restoration--2026-10-17).
+
+
+ControlCentre uses SectionLayout.js to position visible sections and compute total height with one outgoing gap per visible predecessor. Hidden sections contribute no gaps/heights. ProfileHeader reports measured text/avatar height; seven validated appearance values drive typography and spacing through the existing SettingsStore. [Final tuning checkpoint](design/runtime-phase2b.md#final-profile-typography-and-section-gap-tuning--2026-10-17).

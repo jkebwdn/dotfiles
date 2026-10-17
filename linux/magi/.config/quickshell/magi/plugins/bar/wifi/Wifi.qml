@@ -25,7 +25,7 @@ MagiBar.ExpandableModule {
         return values.filter(n => !n.connected).length
     }
     readonly property real baseHeight: !MagiServices.Network.wifiEnabled ? 122
-        : 74 + (MagiServices.Network.connected ? 76 : 0) + Math.max(48, Math.min(6, listCount) * 48)
+        : 88 + (MagiServices.Network.connected ? 84 : 0) + Math.max(48, Math.min(6, listCount) * 56)
     menuId: "wifi"
     icon: !MagiServices.Network.wifiHardwareEnabled || !MagiServices.Network.wifiEnabled ? "wifi-off"
         : !MagiServices.Network.connected ? "wifi-disconnected" : signalIcon(MagiServices.Network.signalStrength)

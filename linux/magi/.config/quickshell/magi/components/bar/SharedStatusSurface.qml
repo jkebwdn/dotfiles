@@ -63,7 +63,7 @@ Item {
 
     function focusBody() {
         Qt.callLater(function() {
-            if (!root.interactive)
+            if (!root.interactive || MagiServices.SettingsWindowState.controlCentrePreview)
                 return
             for (let i = 0; i < bodies.count; ++i) {
                 const body = bodies.itemAt(i)

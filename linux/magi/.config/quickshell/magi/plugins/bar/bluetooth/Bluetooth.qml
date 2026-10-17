@@ -54,7 +54,7 @@ MagiBar.ExpandableModule {
     menuContent: Component {
         Column {
             width: parent ? parent.width : 0
-            spacing: 10
+            spacing: 12
 
             Item {
                 width: parent.width
@@ -62,9 +62,9 @@ MagiBar.ExpandableModule {
 
                 Column {
                     anchors {
-                        left: parent.left
-                        right: adapterToggle.left
-                        rightMargin: 10
+                        right: parent.right
+                        left: adapterToggle.right
+                        leftMargin: 8
                         verticalCenter: parent.verticalCenter
                     }
                     spacing: 1
@@ -92,25 +92,22 @@ MagiBar.ExpandableModule {
                             : "Turn on to connect devices"
                         color: MagiTheme.Theme.muted
                         font.family: MagiTheme.Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: 11
                         elide: Text.ElideRight
                     }
                 }
 
-                MagiControls.ActionChip {
-                    moduleId: "bluetooth"
+                MagiControls.CompactToggle {
+                    Accessible.name: "Bluetooth"
                     id: adapterToggle
 
                     anchors {
-                        right: parent.right
+                        left: parent.left
                         verticalCenter: parent.verticalCenter
                     }
-                    label: MagiServices.Bluetooth.enabled ? "On" : "Off"
-                    active: MagiServices.Bluetooth.enabled
-                    available: MagiServices.Bluetooth.available
-                    onTriggered: MagiServices.Bluetooth.setEnabled(
-                        !MagiServices.Bluetooth.enabled
-                    )
+                    checked: MagiServices.Bluetooth.enabled
+                    enabled: MagiServices.Bluetooth.available
+                    onToggled: MagiServices.Bluetooth.setEnabled(checked)
                 }
             }
 
@@ -119,9 +116,9 @@ MagiBar.ExpandableModule {
 
                 width: parent.width
                 visible: root.connectedDevice !== null
-                height: visible ? 58 : 0
+                height: visible ? 72 : 0
                 radius: MagiTheme.Theme.radiusMedium
-                color: MagiTheme.Theme.background
+                color: MagiTheme.Theme.elevated
 
                 Column {
                     anchors {
@@ -138,7 +135,7 @@ MagiBar.ExpandableModule {
                         text: root.connectedName
                         color: MagiTheme.Theme.text
                         font.family: MagiTheme.Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: 14
                         font.bold: true
                         elide: Text.ElideRight
                     }
@@ -151,7 +148,7 @@ MagiBar.ExpandableModule {
                             : "Connected"
                         color: MagiTheme.Theme.muted
                         font.family: MagiTheme.Theme.fontFamily
-                        font.pixelSize: 9
+                        font.pixelSize: 11
                         elide: Text.ElideRight
                     }
                 }
@@ -183,12 +180,12 @@ MagiBar.ExpandableModule {
                         verticalCenter: parent.verticalCenter
                     }
                     text: root.connectedDevice
-                        ? "OTHER DEVICES"
-                        : "KNOWN & NEARBY"
+                        ? "Other devices"
+                        : "Known & nearby"
                     color: MagiTheme.Theme.muted
                     font.family: MagiTheme.Theme.fontFamily
-                    font.pixelSize: 9
-                    font.letterSpacing: 0.8
+                    font.pixelSize: 11
+                    font.letterSpacing: 0
                 }
 
                 MagiControls.ActionChip {
@@ -211,13 +208,19 @@ MagiBar.ExpandableModule {
 
             Flickable {
                 width: parent.width
-                height: root.connectedDevice ? 176 : 244
+                height: root.connectedDevice ? 150 : 234
                 contentWidth: width
                 contentHeight: deviceColumn.implicitHeight
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 visible: MagiServices.Bluetooth.enabled
 
+                Text {
+                    width: parent.width
+                    visible: deviceColumn.implicitHeight === 0
+                    text: MagiServices.Bluetooth.discovering ? "Searching for devices…" : "No devices found. Scan to discover nearby devices."
+                    color: MagiTheme.Theme.subtext; font.pixelSize: 12; wrapMode: Text.WordWrap
+                }
                 Column {
                     id: deviceColumn
 
@@ -225,6 +228,7 @@ MagiBar.ExpandableModule {
                     spacing: 5
 
                     Repeater {
+                        id: deviceRows
                         model: MagiServices.Bluetooth.devices
 
                         delegate: Rectangle {
@@ -261,7 +265,7 @@ MagiBar.ExpandableModule {
 
                             width: deviceColumn.width
                             visible: !modelData.connected
-                            height: visible ? 44 : 0
+                            height: visible ? 52 : 0
                             radius: MagiTheme.Theme.radiusSmall
                             color: deviceHover.hovered
                                 ? MagiTheme.Theme.elevated
@@ -281,7 +285,7 @@ MagiBar.ExpandableModule {
                                 text: deviceRow.displayName
                                 color: MagiTheme.Theme.text
                                 font.family: MagiTheme.Theme.fontFamily
-                                font.pixelSize: 11
+                                font.pixelSize: 13
                                 font.bold: deviceRow.modelData.paired
                                     || deviceRow.modelData.bonded
                                 elide: Text.ElideRight
@@ -300,7 +304,7 @@ MagiBar.ExpandableModule {
                                     : deviceRow.deviceState
                                 color: MagiTheme.Theme.muted
                                 font.family: MagiTheme.Theme.fontFamily
-                                font.pixelSize: 9
+                                font.pixelSize: 11
                             }
 
                             MagiControls.ActionChip {

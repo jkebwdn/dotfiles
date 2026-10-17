@@ -22,7 +22,13 @@ Rectangle {
         : chipMouse.containsMouse
             ? MagiTheme.Theme.elevated
             : MagiTheme.Theme.background
-    border.width: 0
+    activeFocusOnTab: available
+    Accessible.role: Accessible.Button
+    Accessible.name: label
+    Keys.onSpacePressed: if (available) triggered()
+    Keys.onReturnPressed: if (available) triggered()
+    border.width: activeFocus ? 1 : 0
+    border.color: MagiTheme.Theme.focus
     opacity: root.available ? 1 : 0.55
 
     Row {

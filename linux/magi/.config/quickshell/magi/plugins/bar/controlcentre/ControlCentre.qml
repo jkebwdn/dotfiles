@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import "SectionLayout.js" as SectionLayout
 import "../../../components/bar" as MagiBar
 import "../../../components/controls" as Controls
 import "../../../services" as Services
@@ -32,28 +33,32 @@ MagiBar.ExpandableModule {
     readonly property bool showSliders: sections.sliders && sliders.length > 0
     readonly property bool showActions: sections.actions && actions.length > 0
     readonly property bool showMedia: sections.media && Services.Settings.data.media.enabled
-    readonly property real tileGap: 18
+    readonly property real tileGap: 12
     readonly property real availableWidth: barWindow ? Math.max(88, barWindow.width - 28) : 1200
     readonly property int columns: Math.max(1, Math.min(layout.columns,
         Math.floor((availableWidth - 2 * viewPadding + tileGap) / (Theme.RenderTokens.tileSize + tileGap))))
     readonly property int rows: Math.ceil(controls.length / columns)
     readonly property real gridHeight: rows ? rows * Theme.RenderTokens.tileSize + (rows - 1) * tileGap : 0
-    readonly property int actionColumns: Math.max(1, Math.min(layout.actionColumns, actions.length))
+    readonly property int actionColumns: Math.max(1, Math.min(layout.actionColumns, actions.length,
+        Math.max(1, Math.floor((expandedWidth - 2 * viewPadding + actionGap) / (Theme.RenderTokens.actionSize + actionGap)))))
     readonly property int actionRows: Math.ceil(actions.length / actionColumns)
     readonly property real actionGap: 8
-    readonly property real actionHeight: actionRows ? actionRows * 38 + (actionRows - 1) * actionGap : 0
+    readonly property real actionHeight: actionRows ? actionRows * Theme.RenderTokens.actionSize + (actionRows - 1) * actionGap : 0
     readonly property int visibleSections: (showProfile ? 1 : 0) + (showControls ? 1 : 0)
         + (showSliders ? 1 : 0) + (showActions ? 1 : 0) + (showMedia ? 1 : 0)
-    readonly property real naturalHeight: (showProfile ? 58 : 0)
-        + (showControls ? gridHeight : 0) + (showSliders ? 48 : 0)
-        + (showActions ? actionHeight : 0) + (showMedia ? 86 : 0)
-        + Math.max(0, visibleSections - 1) * 18
+    property real measuredProfileHeight: Theme.RenderTokens.profileHeight
+    readonly property var sectionLayout: SectionLayout.arrange(
+        [showProfile, showControls, showSliders, showActions, showMedia],
+        [measuredProfileHeight, gridHeight, Theme.RenderTokens.sliderHeight, actionHeight, Theme.RenderTokens.mediaHeight],
+        [Theme.Theme.visual.profileControlsGap, Theme.Theme.visual.controlsSlidersGap,
+         Theme.Theme.visual.slidersActionsGap, Theme.Theme.visual.actionsMediaGap])
+    readonly property real naturalHeight: sectionLayout.height
     readonly property real availableHeight: barWindow && hostMode === "combined" ? Math.max(80, barWindow.height - 90) : 700
-    expandedWidth: Math.min(availableWidth, Math.max(200,
+    expandedWidth: Math.min(availableWidth, Math.max(300,
         columns * Theme.RenderTokens.tileSize + (columns - 1) * tileGap + 2 * viewPadding))
     menuHeight: Math.min(availableHeight, Math.max(42, naturalHeight + viewTopPadding + viewBottomPadding))
     viewPadding: Theme.RenderTokens.padding
-    viewTopPadding: 6
+    viewTopPadding: 12
     viewBottomPadding: Theme.RenderTokens.padding
     viewRadius: Theme.RenderTokens.outerRadius
     viewSurfaceColor: Theme.Theme.surface
@@ -78,15 +83,20 @@ MagiBar.ExpandableModule {
             contentHeight: content.implicitHeight
             clip: true
             boundsBehavior: Flickable.StopAtBounds
-            Column {
+            Item {
                 id: content
                 width: parent.width
-                spacing: 18
+                implicitHeight: root.naturalHeight
                 ProfileHeader {
+                    y: root.sectionLayout.positions[0]
+                    onImplicitHeightChanged: root.measuredProfileHeight = implicitHeight
+                    Component.onCompleted: root.measuredProfileHeight = implicitHeight
                     width: parent.width
                     visible: root.showProfile
                 }
                 Grid {
+                    objectName: "runtimePrimarySection"
+                    y: root.sectionLayout.positions[1]
                     visible: root.showControls
                     columns: root.columns
                     columnSpacing: root.tileGap
@@ -113,6 +123,8 @@ MagiBar.ExpandableModule {
                     }
                 }
                 Row {
+                    objectName: "runtimeSliderSection"
+                    y: root.sectionLayout.positions[2]
                     visible: root.showSliders
                     width: parent.width
                     spacing: Theme.RenderTokens.sliderGap
@@ -131,6 +143,8 @@ MagiBar.ExpandableModule {
                     }
                 }
                 Grid {
+                    objectName: "runtimeActionSection"
+                    y: root.sectionLayout.positions[3]
                     visible: root.showActions
                     width: parent.width
                     columns: root.actionColumns
@@ -155,6 +169,8 @@ MagiBar.ExpandableModule {
                     }
                 }
                 MediaSection {
+                    objectName: "runtimeMediaSection"
+                    y: root.sectionLayout.positions[4]
                     width: parent.width
                     visible: root.showMedia
                 }
