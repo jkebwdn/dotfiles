@@ -1,5 +1,7 @@
 # First-party Wallpaper Manager — 2026-10-12
 
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
 Implementation checkpoint; uncommitted for operator review. Automated and offscreen
 checks pass. Native desktop validation is **pending**, because this execution
 environment cannot connect to the compositor/renderer sockets. This is not a

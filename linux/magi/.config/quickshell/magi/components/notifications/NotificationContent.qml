@@ -32,17 +32,6 @@ FocusScope {
             x: root.contentInset; y: root.contentInset; width: parent.width - 2 * root.contentInset; spacing: root.sectionSpacing
             RowLayout {
                 width: parent.width; spacing: 8
-                SettingsUI.SettingsToggle {
-                    objectName: "hubNotificationsEnabled"
-                    text: ""
-                    Accessible.name: "Notifications enabled"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
-                    ToolTip.text: checked ? "Disable notifications" : "Enable notifications"
-                    checked: root.service.preferences.enabled
-                    onClicked: Services.Settings.setValue("notifications", "enabled", checked)
-                }
-                Item { Layout.fillWidth: true }
                 Controls.IconButton {
                     objectName: "hubNotificationsDnd"
                     role: "dnd"; label: root.service.preferences.dnd ? "Disable Do Not Disturb" : "Enable Do Not Disturb"
@@ -51,6 +40,7 @@ FocusScope {
                     enabled: root.service.serverActivated
                     onClicked: Services.QuickActions.setDnd(!root.service.preferences.dnd)
                 }
+                Item { Layout.fillWidth: true }
                 Controls.IconButton {
                     objectName: "hubNotificationsClear"
                     role: "delete"; label: "Clear all notifications"

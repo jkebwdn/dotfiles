@@ -40,9 +40,11 @@ FocusScope {
             anchors.fill: parent
             spacing: 0
             Rectangle {
-                Layout.preferredWidth: 190
+                objectName: "settingsSidebar"
+                Layout.preferredWidth: 206
+                Layout.margins: 10
                 Layout.fillHeight: true
-                color: Theme.Theme.surface
+                color: Theme.Theme.elevated
                 radius: Theme.Theme.radius("surface", 11, width, height)
                 ColumnLayout {
                     anchors.fill: parent
@@ -65,14 +67,15 @@ FocusScope {
                             width: parent.width
                             spacing: 2
                             Repeater {
-                                model: ["Appearance", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
+                                model: ["Appearance", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
                                 SettingsNavigationItem {
                                     id: navigationButton
                                     required property string modelData
                                     objectName: "settingsNav-" + modelData
                                     Layout.fillWidth: true
+                                    iconRole: ({"Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image","Icons":"image"})[modelData]
                                     text: modelData
-                                    checked: Services.SettingsWindowState.page === modelData
+                                    checked: modelData === "Appearance" ? Services.SettingsWindowState.inAppearance : Services.SettingsWindowState.page === modelData
                                     onClicked: Services.SettingsWindowState.page = modelData
                                     onActiveFocusChanged: if (activeFocus) {
                                         const view = navigationScroll.contentItem
@@ -84,18 +87,73 @@ FocusScope {
                             }
                         }
                     }
-                    SettingsButton { flat: true; text: "Close"; Layout.fillWidth: true; onClicked: Services.SettingsWindowState.shown = false }
+                    Rectangle {
+                        objectName: "settingsSavePanel"
+                        Layout.fillWidth: true
+                        implicitHeight: statusColumn.implicitHeight + 16
+                        radius: Theme.Theme.radius("action", 8, width, height)
+                        color: Theme.Theme.surface
+                        ColumnLayout {
+                            id: statusColumn
+                            anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; margins: 8 }
+                            spacing: 6
+                            Label {
+                                objectName: "settingsSaveStatus"
+                                Layout.fillWidth: true
+                                textFormat: Text.PlainText; wrapMode: Text.Wrap
+                                maximumLineCount: 3; elide: Text.ElideRight
+                                text: Services.Settings.error || Services.Settings.diagnostics.join(" · ") || (Services.Settings.saveState === "saved" ? "All changes saved" : Services.Settings.saveState === "pending" ? "Saving…" : Services.Settings.saveState)
+                                color: Services.Settings.error ? Theme.Theme.red : Theme.Theme.subtext
+                                font.pixelSize: 11
+                                ToolTip.visible: statusHover.hovered
+                                ToolTip.text: text
+                                HoverHandler { id: statusHover }
+                            }
+                            SettingsButton {
+                                Layout.fillWidth: true
+                                visible: Services.Settings.saveState === "conflict" || Services.Settings.saveState === "error"
+                                text: "Reload from disk"
+                                onClicked: Services.Settings.discardAndReload()
+                            }
+                            SettingsButton {
+                                objectName: "settingsCloseControlCentrePreview"
+                                Layout.fillWidth: true
+                                visible: Services.SettingsWindowState.controlCentrePreview
+                                flat: true; text: "Close CC preview"
+                                Accessible.name: "Close Control Centre preview"
+                                onClicked: Services.SettingsWindowState.closePreview()
+                            }
+                        }
+                    }
                 }
             }
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 0
+                Flow {
+                    objectName: "appearanceNavigation"
+                    visible: Services.SettingsWindowState.inAppearance
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 16; Layout.rightMargin: 16
+                    spacing: 2
+                    Repeater {
+                        model: [{id:"theme",label:"Theme"},{id:"surfaces",label:"Surfaces"},{id:"bar",label:"Bar"},{id:"controlcentre",label:"Control Centre"},{id:"hub",label:"Hub"}]
+                        SettingsNavigationItem {
+                            required property var modelData
+                            subsection: true
+                            objectName: "appearanceNav-" + modelData.id
+                            text: modelData.label
+                            checked: Services.SettingsWindowState.appearanceSection === modelData.id
+                            onClicked: Services.SettingsWindowState.selectAppearance(modelData.id)
+                        }
+                    }
+                }
                 Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Repeater {
-                        model: ["Appearance", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
+                        model: ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
                         Loader {
                             required property string modelData
                             property bool visited: false
@@ -106,6 +164,7 @@ FocusScope {
                             onSelectedChanged: if (selected) visited = true
                             Component.onCompleted: if (selected) visited = true
                             sourceComponent: modelData === "Appearance" ? appearance
+                                : modelData === "Surfaces" ? surfaces : modelData === "Hub" ? hubAppearance
                                 : modelData === "Profile" ? profile
                                 : modelData === "Bar" ? bar
                                 : modelData === "Date & time" ? calendar
@@ -118,55 +177,12 @@ FocusScope {
                         }
                     }
                 }
-                Rectangle {
-                    Layout.fillWidth: true
-                    implicitHeight: footer.implicitHeight + 16
-                    color: Theme.Theme.background
-                    RowLayout {
-                        id: footer
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        SettingsButton {
-                            objectName: "settingsCloseControlCentrePreview"
-                            visible: Services.SettingsWindowState.controlCentrePreview
-                            flat: true
-                            text: "CC preview active · Close"
-                            Accessible.name: "Close Control Centre preview"
-                            onClicked: Services.SettingsWindowState.closePreview()
-                        }
-                        ScrollView {
-                            id: statusScroll
-                            objectName: "settingsSaveStatusScroll"
-                            Layout.fillWidth: true
-                            implicitHeight: Math.min(80, saveStatus.implicitHeight)
-                            contentWidth: availableWidth
-                            clip: true
-                            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                            Label {
-                                id: saveStatus
-                                objectName: "settingsSaveStatus"
-                                textFormat: Text.PlainText
-                                width: statusScroll.availableWidth
-                                wrapMode: Text.Wrap
-                                text: Services.Settings.error || Services.Settings.diagnostics.join(" · ")
-                                    || (Services.Settings.saveState === "saved"
-                                        ? "All changes saved"
-                                        : Services.Settings.saveState)
-                                color: Services.Settings.error ? Theme.Theme.red : Theme.Theme.text
-                                font.pixelSize: 11
-                                horizontalAlignment: Services.Settings.error || Services.Settings.diagnostics.length ? Text.AlignLeft : Text.AlignRight
-                            }
-                        }
-                        SettingsButton {
-                            visible: Services.Settings.saveState === "conflict" || Services.Settings.saveState === "error"
-                            text: "Discard edits and reload"
-                            onClicked: Services.Settings.discardAndReload()
-                        }
-                    }
-                }
+
             }
         }
     }
+    Component { id: surfaces; Pages.SurfacesPage {} }
+    Component { id: hubAppearance; Pages.HubPage {} }
     Component { id: appearance; Pages.AppearancePage {} }
     Component { id: profile; Pages.ProfilePage {} }
     Component { id: calendar; Pages.CalendarPage {} }

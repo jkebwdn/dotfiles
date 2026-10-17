@@ -27,3 +27,9 @@ for(const [hour,text] of [[0,'night'],[4,'night'],[5,'morning'],[11,'morning'],[
 assert.equal(visual.progress(10,100,true),.1); assert.equal(visual.progress(0,0,true),-1); assert.equal(visual.progress(10,100,false),-1); assert.equal(visual.progress(200,100,true),1);
 const perimeter=visual.perimeter(70,70,10,1); assert.deepEqual(perimeter[0],perimeter.at(-1)); assert(perimeter.every(p=>p.every(v=>isFinite(v)&&v>=1&&v<=69)));
 console.log('PASS: local-hour greetings; real-only progress, rounded bounded perimeter');
+for(const [hour,bucket] of [[0,'Night'],[4,'Night'],[5,'Morning'],[11,'Morning'],[12,'Afternoon'],[17,'Afternoon'],[18,'Evening'],[22,'Evening'],[23,'Night']]) {
+ assert.equal(visual.greeting(hour,'compact','jkebwdn'),bucket+', jkebwdn');
+ assert.equal(visual.greeting(hour,'friendly','JkEbWdN'),'Good '+bucket+' JkEbWdN');
+ assert.equal(visual.greeting(hour,'compact',''),bucket);
+}
+console.log('Compact/Friendly local greeting boundaries and exact display-name case PASS');

@@ -1,5 +1,7 @@
 # MAGI visual overhaul — Phase 2C native review checkpoint
 
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
 2026-10-17. Baseline: `398fe6c0c0240fa204f9cba3c29f2b323dc4539a`,
 `magi: overhaul bar and control centre surfaces`, on `main`.
 Implementation is uncommitted; native operator acceptance is pending.

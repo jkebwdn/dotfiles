@@ -82,6 +82,7 @@ Pane {
                 current: Services.Wallpaper.currentPath === modelData.path
                 favourite: Services.Wallpaper.state.favourites.indexOf(modelData.path) >= 0
                 selected: grid.currentIndex === index
+                keyboardFocused: selected && grid.activeFocus
                 onChosen: { grid.currentIndex = index; grid.forceActiveFocus(); Services.Wallpaper.choose(modelData.path) }
                 onFavouriteRequested: Services.Wallpaper.favourite(modelData.path)
             }

@@ -262,6 +262,10 @@ PanelWindow {
             MagiServices.MenuController.open(view)
             return true
         }
+        function toggle(view: string): void {
+            if (MagiServices.MenuController.activeMenu === view) MagiServices.MenuController.close()
+            else open(view)
+        }
         function close(): void { MagiServices.MenuController.close() }
     }
 
@@ -388,8 +392,8 @@ PanelWindow {
                 readonly property int visibleItems: children.filter(item => item.visible && item.width > 0).length
                 readonly property real itemWidths: children.reduce((sum, item) => sum + (item.visible ? item.width : 0), 0)
                 readonly property real compactWidth: itemWidths + Math.max(0, visibleItems - 1) * MagiTheme.Theme.barSectionSpacing
-                readonly property real expandedStatusWidth: itemWidths + Math.max(0, visibleItems - 1) * 12
-                spacing: MagiTheme.Theme.barSectionSpacing + (12 - MagiTheme.Theme.barSectionSpacing) * statusSurface.expansion
+                readonly property real expandedStatusWidth: itemWidths + Math.max(0, visibleItems - 1) * 4
+                spacing: MagiTheme.Theme.barSectionSpacing + (4 - MagiTheme.Theme.barSectionSpacing) * statusSurface.expansion
                 move: Transition {
                     enabled: !bar.combinedMode || statusSurface.phase === 0
                     NumberAnimation { properties: "x,y"; duration: 140; easing.type: Easing.OutCubic }

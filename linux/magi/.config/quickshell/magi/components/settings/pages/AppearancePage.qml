@@ -32,6 +32,7 @@ SettingsUI.SettingsPage {
     description: "Palette and shape changes preview immediately."
     Label { text: "Theme"; font.bold: true }
     SettingsUI.SettingsSelector {
+        Accessible.name: "Theme"
         Layout.fillWidth: true
         model: Theme.ThemeRegistry.themes
         textRole: "label"
@@ -56,8 +57,20 @@ SettingsUI.SettingsPage {
         }
     }
     SettingsUI.SettingsHelp { visible: Theme.Theme.diagnostic.length > 0; text: Theme.Theme.diagnostic; color: Theme.Theme.warning }
+    SettingsUI.SettingsHelp {
+        objectName: "applicationThemeAttention"
+        text: Services.ThemeOrchestrator.error || (Services.ThemeOrchestrator.targets.some(t => !!t.error || (t.enabled && /manual/i.test(t.result || "")))
+            ? "Application themes need attention · expand below for errors or manual steps." : "")
+        visible: text.length > 0
+        color: Theme.Theme.warning
+    }
     SettingsUI.SettingsSection {
-        title: "Application themes"
+        id: applicationThemes
+        objectName: "applicationThemesSummary"
+        collapsible: true
+        readonly property var supportedApplications: Services.ThemeOrchestrator.targets.filter(t => t.id !== "magi" && t.available)
+        title: "Application themes · " + supportedApplications.filter(t => t.enabled).length
+            + " of " + supportedApplications.length + " applications following MAGI"
         description: "Choose which applications follow MAGI. Expand a row for integration details."
         SettingsUI.SettingsHelp {
             visible: Services.ThemeOrchestrator.busy
@@ -246,39 +259,6 @@ SettingsUI.SettingsPage {
         visible: !Icons.IconRegistry.packs.some(p => p.id === Services.Settings.data.icons.pack)
         text: "Unknown icon pack; using MAGI Legacy."
         color: Theme.Theme.warning
-    }
-    SettingsUI.SettingsSection {
-        title: "Advanced appearance"
-        collapsible: true
-        Label { text: "Roundness"; font.bold: true }
-        Label { text: "Square (0) → reference (1) → rounder (2). Role defaults follow Master."; wrapMode: Text.Wrap; Layout.fillWidth: true; color: Theme.Theme.text }
-        Repeater {
-            model: [{id:"master",label:"Master"},{id:"barPill",label:"Bar pills"},
-                {id:"surface",label:"Expanded surfaces"},{id:"controlTile",label:"Control Centre tiles"},
-                {id:"slider",label:"Sliders"},{id:"action",label:"Buttons / actions"}]
-            GridLayout {
-                columns: 3
-                id: radiusRow
-                required property var modelData
-                readonly property var setting: modelData.id === "master" ? Services.Settings.data.appearance.roundness.master
-                    : Services.Settings.data.appearance.roundness.roles[modelData.id]
-                Layout.fillWidth: true
-                Label { text: radiusRow.modelData.label; Layout.fillWidth: true; Layout.columnSpan: 3; wrapMode: Text.Wrap }
-                SettingsUI.SettingsSlider {
-                    Layout.fillWidth: true
-                    from: 0; to: 2; stepSize: .05
-                    value: parent.setting === null ? Services.Settings.data.appearance.roundness.master : parent.setting
-                    onMoved: Services.Settings.setRoundness(parent.modelData.id, value)
-                }
-                Label { text: parent.setting === null ? "Default" : Number(parent.setting).toFixed(2); Layout.preferredWidth: 55 }
-                SettingsUI.SettingsButton { text: "Default"; onClicked: Services.Settings.setRoundness(parent.modelData.id, parent.modelData.id === "master" ? 1 : null) }
-            }
-        }
-        SettingsUI.VisualSettingsGroup {
-            collapsible: false
-            title: "Status icons"
-            numbers: [{key:"statusIconSize",label:"Status icon size",min:16,max:28,step:1}]
-        }
     }
     SettingsUI.SettingsButton { flat: true; text: "Reset appearance"; onClicked: Services.Settings.resetSection("appearance") }
 

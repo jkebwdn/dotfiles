@@ -61,7 +61,7 @@ for line in sys.stdin:
     if restored: Path(os.environ["MAGI_RESTORE_LOG"]).write_text(request["id"])
     print(json.dumps({"query":query,"rows":[entry for entry in rows if query.lower() in entry["preview"].lower()],"count":len(rows),"monitoring":True,"restored":restored}),flush=True)
 ''')
-    for fixture, marker in [("integration.qml", "Hub integration PASS"), ("pointer.qml", "Hub pointer selector"), ("actions.qml", "Hub actions PASS"), ("composition.qml", "Hub composition PASS"), ("notifications.qml", "Hub notification height PASS")]:
+    for fixture, marker in [("integration.qml", "Hub integration PASS"), ("pointer.qml", "Hub pointer selector"), ("actions.qml", "Hub actions PASS"), ("composition.qml", "Hub composition PASS"), ("notifications.qml", "Hub notification height PASS"), ("polish.qml", "Hub polish PASS")]:
         (config / "test.qml").write_text(Path(__file__).with_name(fixture).read_text().replace("../../.config/quickshell/magi/", ""))
         try:
             result = subprocess.run(["quickshell", "-p", str(config / "test.qml"), "--no-color"], env=env, capture_output=True, text=True, timeout=25)

@@ -16,6 +16,7 @@ ShellRoot {
         Services.ThemeOrchestrator.activate()
         // Keep restore/topology ownership alive without a standalone manager window.
         Services.Wallpaper.initialize()
+        Services.Weather.activate()
     }
     NotificationsUI.FullscreenMonitor { id: fullscreen; screen: bar.screen }
     Binding { target: Services.Notifications; property: "fullscreen"; value: fullscreen.suppressed }

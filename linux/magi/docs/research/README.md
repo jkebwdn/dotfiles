@@ -1,6 +1,14 @@
 # MAGI research index
 
-Current milestone: [First-party Emoji Picker](../design/emoji-picker.md),
+Current product documentation is the [MAGI README](../../README.md). The complete
+Phase 2E overhaul is natively accepted; see the [finalization checkpoint](../design/runtime-phase2e-finalization.md).
+The dated milestone status and proposed research below are historical records, not
+current runtime architecture or an instruction to resume research. Hub now retains
+Apps, Clipboard, Notifications, Emoji and Settings in one host.
+
+## Historical research and implementation sequence
+
+Historical milestone: [First-party Emoji Picker](../design/emoji-picker.md),
 uncommitted over committed Calendar `4f4205d`. [API/data evidence](emoji-picker-apis.md)
 records Unicode 17.0 provenance/license and Quickshell 0.3.1 host/clipboard decisions.
 Operator interaction checks and automated focused regressions pass. Future Hub is

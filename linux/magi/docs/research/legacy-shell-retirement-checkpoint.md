@@ -1,5 +1,7 @@
 # Legacy shell retirement — 2026-10-04
 
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
 Status: live retirement, automated validation and operator interaction checks
 passed; ready for operator review. No staging, commit or push. Baseline `a5cce6b` on `main`,
 matching the local `origin/main` ref; no network refetch was needed or performed.

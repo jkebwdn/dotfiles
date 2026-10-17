@@ -53,9 +53,8 @@ ShellRoot {
             const dnd = findChild(window.content.currentContent,"hubNotificationsDnd")
             mouseClick(dnd); verify(Services.Settings.data.notifications.dnd)
             mouseClick(dnd); verify(!Services.Settings.data.notifications.dnd)
-            const enabled = findChild(window.content.currentContent,"hubNotificationsEnabled")
-            mouseClick(enabled); verify(!Services.Settings.data.notifications.enabled)
-            mouseClick(enabled); verify(Services.Settings.data.notifications.enabled)
+            compare(findChild(window.content.currentContent,"hubNotificationsEnabled"), null)
+            verify(Services.Settings.data.notifications.enabled)
             test.sample.dismissed = false
             Services.Notifications.records = [test.sample]; wait(30)
             mouseClick(findChild(window.content.currentContent,"hubNotificationsClear"))

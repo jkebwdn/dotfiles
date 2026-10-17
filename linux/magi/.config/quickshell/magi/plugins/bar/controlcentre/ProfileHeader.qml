@@ -5,23 +5,26 @@ import "../../../components/controls/VisualState.js" as VisualState
 import "../../../services" as Services
 import "../../../theme" as Theme
 
-Item {
+Rectangle {
     id: root
+    color: Services.Settings.data.appearance.profileBackground.enabled ? Theme.Theme.roles[Services.Settings.data.appearance.profileBackground.role] : "transparent"
+    radius: Theme.Theme.radius("controlTile", 10, width, height)
     objectName: "runtimeProfile"
-    implicitHeight: Math.max(Theme.RenderTokens.profileHeight, profileText.implicitHeight)
-    // Future provider supplies a summary; no location or forecast is fabricated.
-    property string weatherSummary: ""
+    readonly property int contentPadding: Services.Settings.data.appearance.profileBackground.enabled ? 10 : 0
+    implicitHeight: Math.max(Theme.RenderTokens.avatarSize, profileText.implicitHeight) + contentPadding * 2
+    property string weatherSummary: Services.Weather.summary
     readonly property var profile: Services.Settings.data.profile
     property int localHour: new Date().getHours()
     Timer { interval: 60000; repeat: true; running: true; onTriggered: root.localHour = new Date().getHours() }
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 0
+        anchors.margins: root.contentPadding
         spacing: 14
         Controls.RoundedArtwork {
             objectName: "runtimeAvatar"
             Layout.preferredWidth: Theme.RenderTokens.avatarSize
             Layout.preferredHeight: Theme.RenderTokens.avatarSize
+            Layout.alignment: Qt.AlignVCenter
             radius: Theme.Theme.radius("avatar", 10, width, height)
             borderWidth: Theme.Theme.visual.avatarBorderWidth
             source: Services.AssetManager.assetUrl(root.profile.avatar)
@@ -29,17 +32,20 @@ Item {
         }
         ColumnLayout {
             id: profileText
+            Layout.fillHeight: false
+            objectName: "profileTextStack"
+            Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true
             Layout.minimumWidth: 0
             spacing: 2
             Text {
                 Layout.fillWidth: true
                 objectName: "profileGreeting"
-                text: VisualState.greeting(root.localHour) + (root.profile.displayName ? " " + root.profile.displayName : "")
+                text: VisualState.greeting(root.localHour, root.profile.greetingStyle, root.profile.displayName)
                 color: Theme.Theme.text
                 font.family: Theme.Theme.fontFamily
                 font.pixelSize: Theme.Theme.visual.profileGreetingSize
-                font.bold: true
+                font.weight: Theme.Theme.visual.profileGreetingWeight
                 elide: Text.ElideRight
                 visible: text.length > 0
             }
@@ -50,6 +56,7 @@ Item {
                 color: Theme.Theme.subtext
                 font.family: Theme.Theme.fontFamily
                 font.pixelSize: Theme.Theme.visual.profileWeatherSize
+                font.weight: Theme.Theme.visual.profileWeatherWeight
                 elide: Text.ElideRight
                 visible: text.length > 0
             }
@@ -61,6 +68,7 @@ Item {
                 color: Theme.Theme.subtext
                 font.family: Theme.Theme.fontFamily
                 font.pixelSize: Theme.Theme.visual.profileThirdLineSize
+                font.weight: Theme.Theme.visual.profileThirdLineWeight
                 elide: Text.ElideRight
             }
         }

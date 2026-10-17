@@ -10,6 +10,8 @@
       "font": "JetBrainsMono Nerd Font",
       "attribution": "Existing MAGI glyph code points; uses the installed Nerd Font. Reboot SVG is original MAGI artwork. No font or third-party artwork is redistributed.",
       "roles": {
+        "profile": {"kind":"glyph","text":""},
+        "calendar": {"kind":"glyph","text":""},
         "wifi": {
           "kind": "glyph",
           "text": "󰤨"

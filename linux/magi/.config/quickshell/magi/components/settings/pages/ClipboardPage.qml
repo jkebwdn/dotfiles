@@ -10,7 +10,7 @@ SettingsUI.SettingsPage {
     id: root
     property bool eraseArmed: false
     title: "Clipboard"
-    description: "SUPER + SHIFT + V opens history. New copies are collected; the clipboard already present at startup is skipped."
+    description: "SUPER + C opens history. New copies are collected; the clipboard already present at startup is skipped."
     Repeater {
         model: [{key:"enabled",label:"Collect clipboard history"},
             {key:"includeImages",label:"Include PNG and JPEG images"},
@@ -25,7 +25,7 @@ SettingsUI.SettingsPage {
     }
     Label {
         Layout.fillWidth: true; wrapMode: Text.Wrap
-        text: "History, including pins, is normally session-only. Persistence saves unencrypted clipboard data in your user storage. Turning it off removes MAGI's saved history; backups may retain it."
+        text: "Sensitive hints are respected; unmarked secrets cannot be detected. History, including pins, is normally session-only. Persistence saves unencrypted clipboard data in your user storage. Turning it off removes MAGI's saved history; backups may retain it."
         color: Theme.Theme.text
     }
     SettingsUI.SettingsRow {

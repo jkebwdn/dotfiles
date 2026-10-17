@@ -1,4 +1,44 @@
-# MAGI — Research and Development
+# MAGI documentation
+
+Phase 2E + 2E.1 + 2E.2 is **natively accepted**. The current shell includes the
+five-mode persistent Hub, Settings/Wallpaper integration, shared visual settings,
+first-party utility services, Profile/Media typography and opt-in live weather.
+The [MAGI README](../README.md) is the product/setup landing page.
+
+## Current references
+
+- [Final Phase 2E acceptance, documentation audit and exact allowlist](design/runtime-phase2e-finalization.md).
+- [Architecture](architecture.md), [decisions](decisions.md) and [Quickshell reference](quickshell-reference.md).
+- [Phase 2E.2 keys, weather service and focused validation](design/runtime-phase2e2.md).
+- [Phase 2E.1 interaction/presentation corrections and retirements](design/runtime-phase2e1.md).
+- [Phase 2E shared surfaces, retention and Settings restructure](design/runtime-phase2e.md).
+- [Research index](research/README.md) — dated source evidence, not the current product roadmap.
+
+The operator has accepted live weather, all eight shortcuts, light-theme presentation
+and the final visual/interaction behavior. Rofi was removed by the operator and is
+confirmed absent. MFTrunk and Rofi repository retirement is included.
+
+## Historical implementation notes
+
+The following entries retain their original implementation-time review status.
+Their “pending”, “uncommitted”, older schema and future-host wording is historical;
+the acceptance above supersedes it. Consult current references for runtime behavior.
+
+## Phase 2E.1 — native review pending (2026-10-17)
+
+Phase 2E.1 final feedback is implemented over the uncommitted Phase 2E tree. Hub is explicitly dismissed, Settings controls/sidebar are refined, cards measure natural content, and MFTrunk/Rofi runtime routes are retired. The operator subsequently removed Rofi; absence was verified in Phase 2E.2. [Exact paths, tests and native checkpoint](design/runtime-phase2e1.md).
+
+> Phase 2E.1: Hub uses Escape after child interactions; Super+Q is only an ordinary compositor application binding, not a Hub close requirement.
+
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
+## Phase 2E whole-shell reconciliation — native review pending (2026-10-17)
+
+Phase 2D is natively accepted at `b77e449`. Phase 2E adds shared borders, configurable
+Hub anchoring, Appearance subnavigation, compact theme enrollment summary, notification
+retention/hierarchy and final interaction polish. Schema 12 preserves operator tuning;
+48px reservation and accepted service ownership remain. No commit/push.
+[Checkpoint, exact paths, validation and native checklist](design/runtime-phase2e.md).
 
 ## Phase 2D secondary surfaces — native review pending (2026-10-17)
 

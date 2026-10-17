@@ -1,5 +1,7 @@
 # Theme Orchestrator coverage audit
 
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
 Date: **2026-10-13**. Status: **research only; awaiting operator review**.
 
 This audit identifies palette consumers on the current Arch/Hyprland installation. It does not implement Theme Orchestrator, change application configuration, reload applications, install packages, extract wallpaper palettes, or alter browser data. Only this report was created. The README and historical checkpoints were deliberately left unchanged.

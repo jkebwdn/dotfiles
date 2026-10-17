@@ -69,19 +69,27 @@ SettingsUI.SettingsPage {
         SettingsUI.VisualSettingsGroup {
             title: "Sliders"; collapsible: false
             numbers: [{key:"sliderBorderWidth",label:"Border width",min:0,max:5,step:.5}]
-            colors: [{key:"sliderTrack",label:"Empty track"},{key:"sliderFill",label:"Fill"},{key:"sliderBorder",label:"Border"}]
+            colors: [{key:"sliderTrack",label:"Track"},{key:"sliderFill",label:"Progress"},{key:"sliderBorder",label:"Outline"}]
         }
         SettingsUI.VisualSettingsGroup {
             title: "Profile and media"; collapsible: false
             numbers: [{key:"avatarSize",label:"Profile avatar size",min:48,max:112,step:1},
-                {key:"avatarBorderWidth",label:"Avatar border",min:0,max:5,step:.5},
-                {key:"mediaArtworkSize",label:"Album artwork size",min:48,max:112,step:1}]
+                {key:"avatarBorderWidth",label:"Profile image border width",min:0,max:5,step:.5},
+                {key:"mediaArtworkSize",label:"Album artwork size",min:48,max:112,step:1},
+                {key:"mediaProgressBorderWidth",label:"Album artwork progress border width",min:0,max:5,step:.5}]
         }
         SettingsUI.VisualSettingsGroup {
             title: "Profile typography"; collapsible: false
+            weights: [{key:"profileGreetingWeight",label:"Greeting weight"},{key:"profileWeatherWeight",label:"Weather/status weight"},{key:"profileThirdLineWeight",label:"Third-line weight"}]
             numbers: [{key:"profileGreetingSize",label:"Greeting font size",min:12,max:24,step:1},
                 {key:"profileWeatherSize",label:"Weather/status font size",min:10,max:20,step:1},
                 {key:"profileThirdLineSize",label:"Optional third-line font size",min:10,max:20,step:1}]
+        }
+        SettingsUI.VisualSettingsGroup {
+            title: "Media typography"; collapsible: false
+            numbers: [{key:"mediaTitleSize",label:"Media title font size",min:10,max:24,step:1},
+                {key:"mediaArtistSize",label:"Media artist font size",min:10,max:20,step:1}]
+            weights: [{key:"mediaTitleWeight",label:"Media title weight"},{key:"mediaArtistWeight",label:"Media artist weight"}]
         }
         SettingsUI.VisualSettingsGroup {
             title: "Section spacing"; collapsible: false
@@ -130,7 +138,22 @@ SettingsUI.SettingsPage {
         }
     }
     SettingsUI.SettingsSection {
+        title: "Profile and playback"
+        collapsible: true; expanded: true
+        SettingsUI.SettingsToggle { text: "Profile background"; checked: Services.Settings.data.appearance.profileBackground.enabled; onClicked: Services.Settings.setValue("appearance","profileBackground",Object.assign({},Services.Settings.data.appearance.profileBackground,{enabled:checked})) }
+        SettingsUI.SettingsRow {
+            Label { text: "Background colour"; Layout.fillWidth: true }
+            SettingsUI.SettingsSelector { Accessible.name: "Profile background colour"; model: ["background","surface","elevated","overlay","text","subtext","muted","accent","blue","lavender","green","yellow","peach","red","teal","border"]; currentIndex: model.indexOf(Services.Settings.data.appearance.profileBackground.role); onActivated: Services.Settings.setValue("appearance","profileBackground",Object.assign({},Services.Settings.data.appearance.profileBackground,{role:currentText})) }
+        }
+        SettingsUI.SettingsRow {
+            Label { text: "Playback controls"; Layout.fillWidth: true }
+            SettingsUI.SettingsSelector { model: ["Always","Only while playing","Hidden"]; currentIndex: ["always","active","hidden"].indexOf(Services.Settings.data.media.controlsVisibility); onActivated: Services.Settings.setValue("media","controlsVisibility",["always","active","hidden"][currentIndex]) }
+        }
+        SettingsUI.SettingsHelp { text: "Only while playing keeps controls available for active players, including paused media." }
+    }
+    SettingsUI.SettingsSection {
         title: "Layout"
+        collapsible: true; expanded: true
         RowLayout {
             Layout.fillWidth: true
             ColumnLayout {
@@ -149,6 +172,7 @@ SettingsUI.SettingsPage {
     }
     SettingsUI.SettingsSection {
         title: "Visible sections"
+        collapsible: true; expanded: true
         GridLayout {
             Layout.fillWidth: true
             columns: 2
@@ -173,6 +197,7 @@ SettingsUI.SettingsPage {
     }
     SettingsUI.SettingsSection {
         title: "Primary controls"
+        collapsible: true; expanded: true
         description: Services.Settings.data.controlCentre.controls.filter(e => e.enabled).length + " configured · remove to return to Available"
         SettingsUI.SettingsReorderBoard {
             objectName: "primaryOrder"
@@ -197,7 +222,6 @@ SettingsUI.SettingsPage {
                         currentIndex: model.findIndex(d => d.id === row.modelData.module)
                         onActivated: index => Services.Settings.setControlModule(row.modelData.key,model[index].id)
                     }
-                    Rectangle { width: 10; height: 10; radius: 5; color: Theme.Theme.roles[row.modelData.accent] || Theme.Theme.accent }
                     SettingsUI.SettingsSelector {
                         objectName: "controlAccent-" + row.modelData.key
                         Accessible.name: "Accent colour"
@@ -230,6 +254,7 @@ SettingsUI.SettingsPage {
     }
     SettingsUI.SettingsSection {
         title: "Sliders"
+        collapsible: true; expanded: true
         Repeater {
             model: Services.Settings.data.controlCentre.sliders
             SettingsUI.SettingsToggle {
@@ -246,6 +271,7 @@ SettingsUI.SettingsPage {
     }
     SettingsUI.SettingsSection {
         title: "Secondary actions"
+        collapsible: true; expanded: true
         description: Services.Settings.data.controlCentre.actions.filter(e => e.enabled).length + " configured · remove to return to Available"
         SettingsUI.SettingsReorderBoard {
             objectName: "secondaryOrder"

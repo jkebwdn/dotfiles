@@ -1,7 +1,10 @@
-function greeting(hour) {
-    return hour >= 5 && hour < 12 ? "Good Morning"
+function greeting(hour, style, name) {
+    const phrase = hour >= 5 && hour < 12 ? "Good Morning"
         : hour >= 12 && hour < 18 ? "Good Afternoon"
         : hour >= 18 && hour < 23 ? "Good Evening" : "Good Night"
+    if (style === undefined) return phrase // compatibility for existing callers
+    return (style === "friendly" ? phrase : phrase.slice(5))
+        + (name ? (style === "friendly" ? " " : ", ") + name : "")
 }
 function progress(position, duration, supported) {
     return supported && isFinite(position) && isFinite(duration) && duration > 0

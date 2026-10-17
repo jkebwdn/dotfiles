@@ -10,6 +10,34 @@ ShellRoot {
     property var firstDelegate: null
     property var thirdDelegate: null
     function check(ok, label) { if (!ok) { failures++; console.error("FAIL: " + label) } }
+    function retentionChecks() {
+        service.toasts.clear()
+        const now=Date.now()
+        function sample(id, age, urgency) {
+            return recordComponent.createObject(test,{notificationId:id, updatedAt:now-age*3600000,
+                data:{id:id,summary:"Retention",urgency:urgency,transient:false}})
+        }
+        for (const hours of [2,6,24,0]) {
+            service.preferences=Object.assign({},Schema.defaults().notifications,{retentionHours:hours,dnd:true})
+            const expired=sample(10, hours || 1000,1)
+            const fresh=sample(11, hours ? hours-.1 : 1000,1)
+            const critical=sample(12,1000,2)
+            const replaced=sample(13,0,1)
+            const toast=sample(14,1000,1)
+            service.records=[expired,fresh,critical,replaced,toast]
+            service.toasts.append({notificationId:14,exiting:false,exitAt:0})
+            service.prune(now)
+            test.check(expired.dismissed === (hours>0),"retention boundary " + hours)
+            test.check(!fresh.dismissed && !critical.dismissed && !replaced.dismissed,"fresh/replacement/critical retained " + hours)
+            test.check(!toast.dismissed && service.toastIndex(14)>=0,"toast lifetime independent " + hours)
+            test.check(!service.centreOpen,"pruning while Hub closed")
+            service.toasts.clear()
+            service.prune(now)
+            test.check(toast.dismissed === (hours>0),"expired toast history pruned after toast exit")
+            service.clear()
+            test.check(service.history.length===0,"Clear All includes critical and unlimited history")
+        }
+    }
     Services.NotificationModel {
         id: service
         property bool serverActivated: true
@@ -87,6 +115,7 @@ ShellRoot {
             case 5:
                 test.check(centre.visible && service.unread === 0, "centre opens and marks read")
                 service.centreOpen = false
+                test.retentionChecks()
                 console.log("RESULT: " + test.failures + " failures; real toast/centre geometry state")
                 Qt.quit()
             }

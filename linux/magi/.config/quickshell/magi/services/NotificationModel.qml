@@ -99,7 +99,18 @@ Scope {
         trimming = false
         collect()
     }
+    function prune(now) {
+        const hours = preferences.retentionHours === undefined ? 6 : preferences.retentionHours
+        if (!hours) return
+        for (const record of history.slice()) {
+            // Active toasts keep their independent timeout/hover lifecycle.
+            if (record.data.urgency === 2 || toastIndex(record.notificationId) >= 0) continue
+            if (now - record.updatedAt >= hours * 3600000) dismiss(record.notificationId)
+        }
+    }
+    Timer { interval: 60000; repeat: true; running: true; onTriggered: root.prune(Date.now()) }
     function reconcile() {
+        prune(Date.now())
         for (let i = 0; i < toastModel.count; ++i) {
             const record = find(toastModel.get(i).notificationId)
             if (!record || i >= Math.min(preferences.maxVisible, outputToastLimit)

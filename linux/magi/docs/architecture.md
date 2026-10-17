@@ -1,5 +1,28 @@
 # MAGI — Architecture
 
+> Phase 2E, including 2E.1/2E.2, is natively accepted. See the
+> [final acceptance and source allowlist](design/runtime-phase2e-finalization.md).
+> Dated earlier review status below is historical; final Hub persistence, Schema 12,
+> explicit-location weather and retired-tool state are the accepted baseline.
+
+## Phase 2E.2 service and shared-control additions
+
+Weather is a shell-activated singleton behind Profile, with explicit opt-in/location and a bounded stdlib helper/cache. CompactToggle now owns Settings and runtime switch behavior; Theme resolves one navigation accent. Profile/Media typography and border thickness bind into existing natural geometry. See [Phase 2E.2](design/runtime-phase2e2.md).
+
+## Phase 2E.1 — native review pending (2026-10-17)
+
+Phase 2E.1 changes only the accepted presentation/lifecycle contracts: Hub input covers its surfaces plus active child overlay, OnDemand keyboard eligibility permits normal app focus, and outside clicks never dismiss Hub. Anchored surfaces remain transient. Settings has an inset sidebar/status panel and two navigation levels; CC observes natural Profile and Media heights. Clipboard uses the existing shared card border family. Schema 12 and service ownership remain. [Checkpoint](design/runtime-phase2e1.md).
+
+## Whole-shell reconciliation — Phase 2E (2026-10-17)
+
+One SurfaceBorder primitive serves expanded surfaces and notification cards. Schema 12
+owns shared border styles, Hub anchor/selector appearance, media transport visibility,
+profile background and notification retention. Appearance embeds canonical Bar/CC pages
+with legacy route compatibility. NotificationModel owns history pruning independently of
+Hub visibility; no history disk persistence. Existing five-mode Hub, floating reservation,
+Settings-wide runtime preview, Calendar family and wallpaper lifecycle remain unchanged.
+[Implementation and validation checkpoint](design/runtime-phase2e.md).
+
 ## Secondary surfaces — Phase 2D (2026-10-17)
 
 Calendar stays its own time/date-anchored shared surface and measures its content height. WallpaperContent now lives in the retained Settings Wallpaper page; Wallpaper IPC routes to Hub Settings. The shell initializes the wallpaper service directly for startup restore, without instantiating WallpaperWindow. Scanner/state/backend and confirmed selectionChanged remain independent. RoundedArtwork now supplies bounded asynchronous Wallpaper thumbnails; media remains in Control Centre. Schema 11 and the 48px reservation are unchanged. [Checkpoint](design/runtime-phase2d.md).

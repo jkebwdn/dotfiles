@@ -54,7 +54,7 @@ Scope {
     }
     function closeMode(value) { if (opened && mode === value) close() }
     function toggle(value) { if (opened && mode === value) close(); else open(value) }
-    onSuppressedChanged: { if (suppressed) close() }
+    // Fullscreen temporarily suppresses presentation without dismissing the session.
     Connections {
         target: MenuController
         function onActiveMenuChanged() { if (MenuController.activeMenu && !(root.opened && root.mode === "settings"

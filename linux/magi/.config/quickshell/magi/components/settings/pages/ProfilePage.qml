@@ -42,6 +42,14 @@ SettingsUI.SettingsPage {
         onTextEdited: Services.Settings.setValue("profile", "displayName", text)
         onEditingFinished: Services.Settings.setValue("profile", "displayName", text.trim())
     }
+    SettingsUI.SettingsRow {
+        Label { text: "Greeting style"; Layout.fillWidth: true }
+        SettingsUI.SettingsSelector {
+            Accessible.name: "Greeting style"; model: ["Compact", "Friendly"]
+            currentIndex: Services.Settings.data.profile.greetingStyle === "friendly" ? 1 : 0
+            onActivated: Services.Settings.setValue("profile", "greetingStyle", currentIndex === 1 ? "friendly" : "compact")
+        }
+    }
     SettingsUI.SettingsToggle {
         text: "Show an optional third profile line"
         checked: Services.Settings.data.profile.subtitleMode === "custom"
@@ -55,6 +63,41 @@ SettingsUI.SettingsPage {
         placeholderText: "Optional"
         onTextEdited: Services.Settings.setValue("profile", "subtitle", text)
         onEditingFinished: Services.Settings.setValue("profile", "subtitle", text.trim())
+    }
+    SettingsUI.SettingsSection {
+        title: "Weather"; collapsible: true; expanded: true
+        SettingsUI.SettingsToggle {
+            text: "Enable weather"; checked: Services.Settings.data.weather.enabled
+            onToggled: Services.Settings.setValue("weather", "enabled", checked)
+        }
+        Label { text: "Weather location" }
+        SettingsUI.SettingsTextField {
+            id: weatherLocation
+            objectName: "weatherLocation"
+            Layout.fillWidth: true
+            text: Services.Settings.data.weather.location
+            maximumLength: 160
+            placeholderText: "City or postcode, optionally followed by country"
+        }
+        SettingsUI.SettingsButton {
+            text: "Save location"
+            enabled: weatherLocation.text.trim() !== Services.Settings.data.weather.location
+            onClicked: Services.Settings.setValue("weather", "location", weatherLocation.text.trim())
+        }
+        SettingsUI.SettingsRow {
+            Label { text: "Units"; Layout.fillWidth: true }
+            SettingsUI.SettingsSelector {
+                Accessible.name: "Weather units"; model: ["Metric", "Imperial"]
+                currentIndex: Services.Settings.data.weather.units === "imperial" ? 1 : 0
+                onActivated: Services.Settings.setValue("weather", "units", currentIndex === 1 ? "imperial" : "metric")
+            }
+        }
+        SettingsUI.SettingsHelp {
+            text: Services.Weather.refreshing ? "Updating weather…" : Services.Weather.diagnostic
+                || (Services.Weather.resolvedLocation ? "Weather for " + Services.Weather.resolvedLocation : "Set a location and enable weather.")
+        }
+        SettingsUI.SettingsHelp { text: "Weather by Open-Meteo; locations by GeoNames. Your saved location is sent only when enabled. Refreshes every 30 minutes." }
+        SettingsUI.SettingsButton { text: "Reset weather"; onClicked: Services.Settings.resetSection("weather") }
     }
     Label { visible: root.importError.length > 0; text: root.importError; color: Theme.Theme.red; wrapMode: Text.Wrap; Layout.fillWidth: true }
     RowLayout {

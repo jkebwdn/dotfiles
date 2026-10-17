@@ -80,14 +80,14 @@ Item {
 
     function reveal() {
         phase = 2
-        animate(vertical, revealedHeight, targetHeight, 140)
-        animate(fade, contentOpacity, 1, 90)
+        animate(vertical, revealedHeight, targetHeight, MagiTheme.Motion.control)
+        animate(fade, contentOpacity, 1, MagiTheme.Motion.micro)
     }
 
     function narrow() {
         phase = 6
-        animate(headerMotion, headerProgress, 0, 160)
-        animate(horizontal, animatedWidth, collapsedWidth, 160)
+        animate(headerMotion, headerProgress, 0, MagiTheme.Motion.contract)
+        animate(horizontal, animatedWidth, collapsedWidth, MagiTheme.Motion.contract)
     }
 
     function syncSelection() {
@@ -98,7 +98,7 @@ Item {
         if (!requestedOpen) {
             if (revealedHeight > 0) {
                 phase = 4
-                animate(fade, contentOpacity, 0, 70)
+                animate(fade, contentOpacity, 0, MagiTheme.Motion.exitFade)
             } else {
                 contentOpacity = 0
                 narrow()
@@ -106,18 +106,20 @@ Item {
             return
         }
 
-        animate(headerMotion, headerProgress, 1, 180)
+        animate(headerMotion, headerProgress, 1, MagiTheme.Motion.sharedElement)
         if (revealedHeight > 0) {
             // Keep the surface open, including when reversing a partial close.
             // Multiple requests during the fade resolve to the latest module.
             switchingView = true
             phase = 2
-            animate(fade, contentOpacity, 0, 70)
+            animate(fade, contentOpacity, 0, MagiTheme.Motion.exitFade)
         } else {
             displayedModule = requestedModule
             contentOpacity = 0
             phase = 1
-            animate(horizontal, animatedWidth, targetWidth, 180)
+            animate(horizontal, animatedWidth, targetWidth, MagiTheme.Motion.sharedElement)
+            animate(vertical, revealedHeight, targetHeight, MagiTheme.Motion.sharedElement)
+            animate(fade, contentOpacity, 1, MagiTheme.Motion.sharedElement)
         }
     }
 
@@ -129,9 +131,9 @@ Item {
         if (!combined || phase === 0)
             animatedWidth = collapsedWidth
         else if (phase === 6)
-            animate(horizontal, animatedWidth, collapsedWidth, 160)
+            animate(horizontal, animatedWidth, collapsedWidth, MagiTheme.Motion.contract)
         else if (requestedOpen)
-            animate(horizontal, animatedWidth, targetWidth, 180)
+            animate(horizontal, animatedWidth, targetWidth, MagiTheme.Motion.surface)
     }
     // targetWidth depends on collapsedWidth; apply the same settled-binding rule.
     onCollapsedWidthChanged: Qt.callLater(root.syncCompactWidth)
@@ -144,10 +146,10 @@ Item {
         if (phase !== 1 && phase !== 2 && phase !== 3)
             return
         if (animatedWidth !== targetWidth && (!horizontal.running || horizontal.to !== targetWidth))
-            animate(horizontal, animatedWidth, targetWidth, 180)
+            animate(horizontal, animatedWidth, targetWidth, MagiTheme.Motion.surface)
         if (phase !== 1 && revealedHeight !== targetHeight
                 && (!vertical.running || vertical.to !== targetHeight))
-            animate(vertical, revealedHeight, targetHeight, 140)
+            animate(vertical, revealedHeight, targetHeight, MagiTheme.Motion.control)
     }
     onTargetWidthChanged: Qt.callLater(root.retargetGeometry)
     onTargetHeightChanged: Qt.callLater(root.retargetGeometry)
@@ -197,11 +199,11 @@ Item {
             if (root.switchingView && root.requestedOpen) {
                 root.switchingView = false
                 root.displayedModule = root.requestedModule
-                root.animate(horizontal, root.animatedWidth, root.targetWidth, 180)
+                root.animate(horizontal, root.animatedWidth, root.targetWidth, MagiTheme.Motion.surface)
                 root.reveal()
             } else if (root.phase === 4) {
                 root.phase = 5
-                root.animate(vertical, root.revealedHeight, 0, 120)
+                root.animate(vertical, root.revealedHeight, 0, MagiTheme.Motion.retract)
             }
         }
     }
@@ -215,6 +217,11 @@ Item {
         color: root.presentation(root.displayedModule, "viewSurfaceColor",
             MagiTheme.Theme.surface)
 
+        Controls.SurfaceBorder {
+            objectName: "expandedSurfaceBorder"
+            surfaceId: root.displayedModule ? root.presentation(root.displayedModule,"menuId", "") : ""
+            radius: parent.radius
+        }
         // Blank space belongs to the surface, not to the outside catcher.
         MouseArea {
             anchors.fill: parent

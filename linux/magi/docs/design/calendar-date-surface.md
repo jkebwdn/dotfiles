@@ -1,5 +1,7 @@
 # Calendar / Date surface — operator review checkpoint
 
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
 2026-10-04. Baseline: `b8954987f785c0f9e9cf35f69c980a3980f6a389`
 (`magi: add first-party application launcher`). Implementation is uncommitted;
 no commit or push is authorized for this milestone. Operator live interaction

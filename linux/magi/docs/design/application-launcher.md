@@ -1,5 +1,7 @@
 # First-party application launcher
 
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
 Implementation checkpoint: 2026-10-04. Base `c5bd0e2`. Uncommitted operator
 review milestone; application launching only.
 

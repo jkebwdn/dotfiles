@@ -20,8 +20,10 @@ ShellRoot {
             verify(Services.Hub.opened, "interior padding consumes click")
             const parent = window.content.parent
             mouseClick(parent, 8, 80)
-            tryCompare(Services.Hub, "opened", false)
-            console.log("Hub pointer selector, interior consumption and outside dismissal PASS")
+            verify(Services.Hub.opened,"outside click keeps Hub open")
+            window.content.currentContent.searchField.forceActiveFocus(); keyClick(Qt.Key_Escape)
+            tryCompare(Services.Hub,"opened",false)
+            console.log("Hub pointer selector, interior consumption and outside persistence and explicit Escape PASS")
             finish.start()
         }
     }

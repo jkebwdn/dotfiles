@@ -8,27 +8,33 @@ import "../../../theme" as Theme
 Rectangle {
     id: root
     property var service: Services.Media
-    implicitHeight: Theme.RenderTokens.mediaHeight
+    readonly property int contentPadding: 10
+    implicitHeight: Math.max(Theme.RenderTokens.mediaArtworkSize, metadata.implicitHeight) + contentPadding * 2
     radius: Theme.Theme.radius("controlTile", 10, width, height)
     color: Theme.Theme.elevated
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: root.contentPadding
         spacing: 10
         Controls.RoundedArtwork {
             objectName: "runtimeAlbumArt"
             Layout.preferredWidth: Theme.RenderTokens.mediaArtworkSize
             Layout.preferredHeight: Theme.RenderTokens.mediaArtworkSize
+            Layout.alignment: Qt.AlignVCenter
             radius: Theme.Theme.radius("albumArt", 10, width, height)
             placeholder: "media-play"
             source: root.service.artworkUrl
             progress: root.service.available ? root.service.progress : -1
             borderColor: Theme.Theme.border
+            borderWidth: Theme.Theme.visual.mediaProgressBorderWidth
         }
         ColumnLayout {
+            id: metadata
+            Layout.fillHeight: false
+            objectName: "mediaMetadataStack"
+            Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true
             Layout.minimumWidth: 0
-            Layout.fillHeight: true
             spacing: 2
             Text {
                 objectName: "mediaTitle"
@@ -36,8 +42,8 @@ Rectangle {
                 text: root.service.available ? root.service.title || root.service.identity || "Media" : "Nothing playing"
                 color: Theme.Theme.text
                 font.family: Theme.Theme.fontFamily
-                font.pixelSize: 13
-                font.bold: true
+                font.pixelSize: Theme.Theme.visual.mediaTitleSize
+                font.weight: Theme.Theme.visual.mediaTitleWeight
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
                 ToolTip.visible: titleHover.hovered && truncated
@@ -49,29 +55,31 @@ Rectangle {
                 text: root.service.available ? root.service.artist || root.service.identity : "Your media will appear here"
                 color: Theme.Theme.subtext
                 font.family: Theme.Theme.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: Theme.Theme.visual.mediaArtistSize
+                font.weight: Theme.Theme.visual.mediaArtistWeight
+                objectName: "mediaArtist"
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
             }
-            Item { Layout.fillHeight: true }
             RowLayout {
                 Layout.alignment: Qt.AlignLeft
-                visible: root.service.available
+                visible: Services.Settings.data.media.controlsVisibility === "always"
+                    || Services.Settings.data.media.controlsVisibility === "active" && root.service.available
                 spacing: 8
                 Controls.MediaButton {
                     objectName: "mediaPrevious"
-                    icon: "media-previous"; moduleId: "media"; available: root.service.canPrevious
+                    icon: "media-previous"; moduleId: "media"; available: root.service.available && root.service.canPrevious
                     onTriggered: root.service.previous()
                 }
                 Controls.MediaButton {
                     objectName: "mediaToggle"
                     icon: root.service.playing ? "media-pause" : "media-play"
-                    moduleId: "media"; available: root.service.canToggle
+                    moduleId: "media"; available: root.service.available && root.service.canToggle
                     onTriggered: root.service.togglePlaying()
                 }
                 Controls.MediaButton {
                     objectName: "mediaNext"
-                    icon: "media-next"; moduleId: "media"; available: root.service.canNext
+                    icon: "media-next"; moduleId: "media"; available: root.service.available && root.service.canNext
                     onTriggered: root.service.next()
                 }
             }

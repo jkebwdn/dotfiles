@@ -90,7 +90,9 @@ ShellRoot {
                         compare(window.content.surface.color,Theme.Theme.surface)
                         compare(window.content.selectorPill.color,Theme.Theme.surface)
                         const button = window.content.modeButtons.itemAt(Services.Hub.modes.indexOf(mode))
-                        compare(button.background.color,Theme.Theme.overlay)
+                        verify(findChild(button,"hubSelectionDot") === null)
+                        compare(findChild(button,"hubModeIcon").color,Theme.Theme.accent)
+                        compare(button.background.color,button.hovered ? Theme.Theme.elevated : "#00000000")
                         const captures = Quickshell.env("MAGI_HUB_CAPTURES")
                         if (captures) grabImage(window.content).save(captures + "/" + palette + "-" + mode + ".png")
                         if (window.content.currentContent.searchField)
@@ -101,7 +103,9 @@ ShellRoot {
                 const settings = window.content.currentContent
                 verify(Services.SettingsWindowState.shown)
                 for (const page of ["Appearance","Profile","Bar","Date & time","Control Centre","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Icons"]) {
-                    const nav = findChild(settings,"settingsNav-"+page)
+                    const sub = ({Bar:"bar", "Control Centre":"controlcentre"})[page]
+                    if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
+                    const nav = findChild(settings,sub ? "appearanceNav-" + sub : "settingsNav-"+page)
                     nav.forceActiveFocus(); wait(20); keyClick(Qt.Key_Space); wait(40)
                     compare(Services.SettingsWindowState.page,page)
                 }
@@ -129,8 +133,8 @@ ShellRoot {
                 keyClick(Qt.Key_Escape); tryCompare(Services.Hub,"opened",false)
                 verify(!Services.SettingsWindowState.shown)
                 Services.SettingsWindowState.open(); wait(50)
-                mouseClick(window.contentItem,8,80); verify(!Services.Hub.opened && !Services.SettingsWindowState.shown)
-                console.log("Hub composition PASS: five modes, logical-output anchor, keyboard/pointer, shared roles, header mask, retained Settings pages, child Escape, outside close")
+                mouseClick(window.contentItem,8,80); verify(Services.Hub.opened && Services.SettingsWindowState.shown)
+                console.log("Hub composition PASS: five modes, logical-output anchor, keyboard/pointer, shared roles, header mask, retained Settings pages, child Escape, outside persistence")
             } catch (error) { console.error("FAIL:",error,error.stack) } finally { finish.start() }
         }
     }

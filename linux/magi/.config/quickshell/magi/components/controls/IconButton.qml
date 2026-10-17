@@ -20,7 +20,6 @@ Button {
     }
     contentItem: Controls.Icon {
         role: root.role; size: 16
-        color: root.highlightedState ? Theme.Theme.accent : Theme.Theme.stateColor("secondary", true)
-        opacity: root.enabled ? 1 : .4
+        color: !root.enabled ? Theme.Theme.subtext : root.highlightedState ? Theme.Theme.accent : Theme.Theme.stateColor("secondary", true)
     }
 }

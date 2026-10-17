@@ -39,7 +39,7 @@ ColumnLayout {
         }
         visible: root.collapsible
         Layout.fillWidth: true
-        text: (root.expanded ? "▾  " : "▸  ") + root.title
+        text: root.title + (root.expanded ? "  ▾" : "  ▸")
         checked: root.expanded
         onClicked: root.expanded = !root.expanded
     }

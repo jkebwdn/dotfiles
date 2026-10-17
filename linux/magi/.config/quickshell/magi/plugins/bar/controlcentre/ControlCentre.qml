@@ -46,10 +46,11 @@ MagiBar.ExpandableModule {
     readonly property real actionHeight: actionRows ? actionRows * Theme.RenderTokens.actionSize + (actionRows - 1) * actionGap : 0
     readonly property int visibleSections: (showProfile ? 1 : 0) + (showControls ? 1 : 0)
         + (showSliders ? 1 : 0) + (showActions ? 1 : 0) + (showMedia ? 1 : 0)
+    property real measuredMediaHeight: Theme.RenderTokens.mediaHeight
     property real measuredProfileHeight: Theme.RenderTokens.profileHeight
     readonly property var sectionLayout: SectionLayout.arrange(
         [showProfile, showControls, showSliders, showActions, showMedia],
-        [measuredProfileHeight, gridHeight, Theme.RenderTokens.sliderHeight, actionHeight, Theme.RenderTokens.mediaHeight],
+        [measuredProfileHeight, gridHeight, Theme.RenderTokens.sliderHeight, actionHeight, measuredMediaHeight],
         [Theme.Theme.visual.profileControlsGap, Theme.Theme.visual.controlsSlidersGap,
          Theme.Theme.visual.slidersActionsGap, Theme.Theme.visual.actionsMediaGap])
     readonly property real naturalHeight: sectionLayout.height
@@ -169,6 +170,8 @@ MagiBar.ExpandableModule {
                     }
                 }
                 MediaSection {
+                    onImplicitHeightChanged: root.measuredMediaHeight = implicitHeight
+                    Component.onCompleted: root.measuredMediaHeight = implicitHeight
                     objectName: "runtimeMediaSection"
                     y: root.sectionLayout.positions[4]
                     width: parent.width

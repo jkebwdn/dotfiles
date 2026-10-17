@@ -21,6 +21,6 @@ Item {
     ToolTip.delay: 500
     ToolTip.text: label
     Accessible.role: Accessible.Button
-    Icon { anchors.centerIn: parent; role: root.icon; moduleId: root.moduleId; size: 26; color: root.available ? Theme.Theme.text : Theme.Theme.muted; opacity: 1 }
+    Icon { anchors.centerIn: parent; role: root.icon; moduleId: root.moduleId; size: 26; color: root.available ? Theme.Theme.text : Theme.Theme.subtext; opacity: 1 }
     TapHandler { enabled: root.available; onTapped: root.triggered() }
 }

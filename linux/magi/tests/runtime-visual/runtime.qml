@@ -108,7 +108,7 @@ ShellRoot {
                 compare(findChild(profile, "runtimeAvatar").radius, Theme.Theme.radius("avatar", 10, 76, 76), "rounded-square avatar")
                 for (const hour of [0, 5, 12, 18, 23]) {
                     profile.localHour = hour
-                    verify(greeting.text.startsWith(hour === 5 ? "Good Morning" : hour === 12 ? "Good Afternoon" : hour === 18 ? "Good Evening" : "Good Night"))
+                    verify(greeting.text.startsWith(hour === 5 ? "Morning" : hour === 12 ? "Afternoon" : hour === 18 ? "Evening" : "Night"))
                 }
                 for (const line of ["", "An optional line", "X".repeat(160)]) {
                     Services.Settings.setValue("profile", "subtitle", line)

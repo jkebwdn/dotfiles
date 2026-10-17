@@ -62,7 +62,7 @@ ShellRoot {
             compare(bar.exclusiveZone, 48)
             bar.closeActiveCombinedMenu()
             compare(Services.MenuController.activeMenu, "controlcentre", "outside dismissal entry point ignores preview")
-            const disclosure = findChild(page, "settingsButton-▸  Appearance")
+            const disclosure = findChild(page, "settingsButton-Appearance  ▸")
             mouseClick(disclosure)
             // Real Settings interactions write the canonical preferences and update
             // the actual retained runtime objects, not a duplicate preview widget.
@@ -193,11 +193,30 @@ ShellRoot {
             reveal(page,preview); mouseClick(preview)
             tryCompare(cc,"phase",0)
             verify(!Services.SettingsWindowState.controlCentrePreview)
+            // New typography and border settings update the real pinned production card.
+            mouseClick(preview); tryCompare(cc,"phase",3)
+            for (const weight of [400,700]) {
+                for (const key of ["profileGreetingWeight","profileWeatherWeight","profileThirdLineWeight","mediaTitleWeight","mediaArtistWeight"])
+                    Services.Settings.setVisual(key,weight)
+                Services.Settings.setVisual("mediaTitleSize",weight===400?10:24)
+                Services.Settings.setVisual("mediaArtistSize",weight===400?10:20)
+                Services.Settings.setVisual("mediaProgressBorderWidth",weight===400?0:5)
+                wait(80)
+                for (const id of ["profileGreeting","profileWeather","profileThirdLine","mediaTitle","mediaArtist"])
+                    compare(findChild(body(),id).font.weight,weight)
+                compare(findChild(body(),"mediaTitle").font.pixelSize,weight===400?10:24)
+                compare(findChild(body(),"mediaArtist").font.pixelSize,weight===400?10:20)
+                compare(findChild(body(),"runtimeAlbumArt").borderWidth,weight===400?0:5)
+                verify(bar.previewPinned)
+            }
+            mouseClick(preview);tryCompare(cc,"phase",0)
             // The pin belongs to the Settings session, across every real page.
             mouseClick(preview); tryCompare(cc,"phase",3)
             const closePreview = findChild(settings.contentItem,"settingsCloseControlCentrePreview")
             for (const name of ["Appearance","Profile","Bar","Date & time","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Icons","Control Centre"]) {
-                const nav = findChild(settings.contentItem,"settingsNav-"+name)
+                const sub = ({Bar:"bar", "Control Centre":"controlcentre"})[name]
+                    if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
+                    const nav = findChild(settings.contentItem,sub ? "appearanceNav-" + sub : "settingsNav-"+name)
                 nav.forceActiveFocus(); wait(30); mouseClick(nav); wait(80)
                 compare(Services.SettingsWindowState.page,name)
                 compare(cc.phase,3); verify(bar.previewPinned && closePreview.visible)

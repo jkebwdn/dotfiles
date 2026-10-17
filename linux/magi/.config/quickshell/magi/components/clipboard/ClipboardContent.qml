@@ -12,6 +12,8 @@ Pane {
     id: root
     required property var service
     property bool embedded: false
+    implicitHeight: topActions.implicitHeight + (status.visible ? status.implicitHeight + 12 : 0)
+        + search.implicitHeight + 24 + padding * 2 + (history.count ? history.contentHeight : emptyState.implicitHeight + 24)
     property alias searchField: search
     property int selectedIndex: -1
     property string selectedId: ""
@@ -63,19 +65,9 @@ Pane {
     ColumnLayout {
         anchors.fill: parent
         spacing: 12
-        HubUI.HubSearchField {
-            id: search
-            objectName: "clipboardSearch"
-            Layout.fillWidth: true; Layout.preferredHeight: 46
-            text: root.service.query
-            placeholderText: "Search clipboard…"
-            maximumLength: 512
-            onTextEdited: root.service.query = text
-            Keys.priority: Keys.BeforeItem
-            Keys.onPressed: event => root.navigate(event)
-        }
 
         RowLayout {
+            id: topActions
             Layout.fillWidth: true
             SettingsUI.SettingsButton {
                 text: root.service.preferences.enabled ? "Pause collection" : "Resume collection"
@@ -88,6 +80,7 @@ Pane {
             }
         }
         Label {
+            id: status
             Layout.fillWidth: true
             visible: !!root.service.error || !root.service.monitoring
             text: root.service.error || (root.service.preferences.enabled ? "Starting clipboard capture…" : "Collection paused · history is still available")
@@ -96,6 +89,7 @@ Pane {
         }
         ListView {
             id: history
+            objectName: "clipboardHistory"
             Layout.fillWidth: true; Layout.fillHeight: true
             clip: true; spacing: 8
             boundsBehavior: Flickable.StopAtBounds
@@ -109,8 +103,7 @@ Pane {
                 height: modelData.category === "image" ? 132 : 100
                 radius: Theme.Theme.radius("surface", 11, width, height)
                 color: root.selectedId === modelData.id ? Theme.Theme.overlay : Theme.Theme.elevated
-                border.color: root.selectedId === modelData.id ? Theme.Theme.shadeAccent(Theme.Theme.accent, .25) : Theme.Theme.border
-                border.width: 1
+                Controls.SurfaceBorder { objectName: "clipboardCardBorder"; family: "notificationBorders"; surfaceId: "clipboard"; radius: parent.radius }
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
@@ -162,6 +155,7 @@ Pane {
                 }
             }
             Column {
+                id: emptyState
                 anchors.centerIn: parent
                 width: parent.width - 40; spacing: 10
                 visible: history.count === 0
@@ -180,10 +174,17 @@ Pane {
                 }
             }
         }
-        Label {
-            Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: (root.service.preferences.persistHistory ? "Saved on disk" : "Session only") + " · Sensitive hints are respected; unmarked secrets cannot be detected."
-            font.pixelSize: 10; color: Theme.Theme.subtext
+        HubUI.HubSearchField {
+            id: search
+            objectName: "clipboardSearch"
+            Layout.fillWidth: true; Layout.preferredHeight: 46
+            text: root.service.query
+            placeholderText: "Search clipboard…"
+            maximumLength: 512
+            onTextEdited: root.service.query = text
+            Keys.priority: Keys.BeforeItem
+            Keys.onPressed: event => root.navigate(event)
         }
+
     }
 }

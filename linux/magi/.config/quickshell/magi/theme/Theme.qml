@@ -13,6 +13,7 @@ QtObject {
     readonly property string iconPack: MagiServices.Settings.data.icons.pack
     readonly property var roundness: MagiServices.Settings.data.appearance.roundness
 
+    readonly property color navigationAccent: roles[MagiServices.Settings.data.appearance.navigationAccent] || accent
     readonly property var visual: MagiServices.Settings.data.appearance.visual
     readonly property real statusIconSize: visual.statusIconSize
     readonly property color controlOn: stateColor("primary", true)

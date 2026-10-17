@@ -42,6 +42,7 @@ else: sys.exit(1)
     current=stage/'current'; current.write_text(str(image))
     runtime=stage/'runtime'; runtime.mkdir(mode=0o700)
     env=dict(os.environ,QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime),
+        HOME=str(stage),XDG_CONFIG_HOME=str(stage/'xdg-config'),XDG_DATA_HOME=str(stage/'data'),XDG_CACHE_HOME=str(stage/'cache'),
         XDG_STATE_HOME=str(stage/'state'),PATH=str(bin_dir)+':'+os.environ['PATH'],MAGI_FAKE_CURRENT=str(current),
         MAGI_WALLPAPER_IMAGE=str(image),MAGI_WALLPAPER_ROOT=str(library))
     env.pop('WAYLAND_DISPLAY',None); env.pop('DISPLAY',None)
@@ -56,10 +57,14 @@ else: sys.exit(1)
     print('Wallpaper disk persistence and source immutability PASS')
 
     # New Quickshell process, same state directory; simulate hyprpaper reset.
+    # Reset was verified above; restore this disposable library for restart/grid checks.
+    preferences=json.loads((config/'settings.json').read_text())
+    preferences['wallpaper']['directories']=[str(library)]
+    (config/'settings.json').write_text(json.dumps(preferences))
     current.write_text('/previous/session/wallpaper.png')
     (config/'test.qml').write_text(Path(__file__).with_name('reload.qml').read_text().replace('../../.config/quickshell/magi/',''))
     result=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,text=True,capture_output=True,timeout=25)
     out=result.stdout+result.stderr; print(out)
-    assert result.returncode==0 and 'Wallpaper process restart, thumbnail decode, Enter, Escape and outside dismissal PASS' in out
+    assert result.returncode==0 and 'Wallpaper process restart, thumbnail decode, Enter, Escape and outside persistence PASS' in out
     assert 'FAIL' not in out and 'TypeError' not in out and 'ReferenceError' not in out
     assert current.read_text()==str(image)

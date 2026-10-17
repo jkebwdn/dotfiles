@@ -8,7 +8,7 @@ import ".." as SettingsUI
 SettingsUI.SettingsPage {
     id: root
     title: "Emoji Picker"
-    description: "SUPER + . · Search, choose, then paste"
+    description: "SUPER + E · Search, choose, then paste"
     Repeater {
         model: [{key:"enabled",label:"Enable Emoji Picker"}, {key:"showCategories",label:"Show category selector"},
             {key:"closeOnSelect",label:"Close after copying"}]

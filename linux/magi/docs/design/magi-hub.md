@@ -1,5 +1,7 @@
 # MAGI Hub — implementation checkpoint
 
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
 2026-10-06. Implemented and validated to the scope below; uncommitted operator review. Baseline verified locally:
 `a007259a4f8e79cd8372d520ea2c9902cb2a3393` (First-Party Emoji Picker),
 branch `main`, upstream `origin/main`, no divergence reported. Pre-existing

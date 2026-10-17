@@ -99,5 +99,7 @@ function migrate(input) {
         }
         doc.schemaVersion = 11
     }
+    // New visual/retention fields are default-filled without rewriting v11 values.
+    if (doc.schemaVersion === 11) doc.schemaVersion = 12
     return doc
 }

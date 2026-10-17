@@ -43,9 +43,8 @@ ShellRoot {
                 Services.Hub.open("notifications"); wait(80)
                 const content = window.content.currentContent
                 const history = findChild(content,"notificationHistory")
-                const toggle = findChild(content,"hubNotificationsEnabled")
-                compare(toggle.text, "")
-                compare(toggle.Accessible.name, "Notifications enabled")
+                compare(findChild(content,"hubNotificationsEnabled"), null)
+                verify(findChild(content,"hubNotificationsDnd") !== null)
                 for (const size of [Qt.size(1920,1080), Qt.size(1280,900), Qt.size(1024,768)]) {
                     window.contentItem.Window.window.width = size.width
                     window.contentItem.Window.window.height = size.height
@@ -57,7 +56,7 @@ ShellRoot {
                     verify(emptyHeight < 300, "empty history is compact")
                     verify(history.height > 0)
                     setHistory(1)
-                    verify(window.content.surface.height > emptyHeight, "one body-bearing card grows the surface")
+                    verify(window.content.surface.height < 300, "one compact card uses measured height")
                     setHistory(2)
                     const shortHeight = window.content.surface.height
                     verify(shortHeight > emptyHeight)
@@ -78,6 +77,8 @@ ShellRoot {
                     compare(window.content.surface.height,maximum)
                     verify(history.contentHeight > history.height, "full history overflows into the scroll view")
                     compare(window.content.selectorPill.mapToItem(window.contentItem,0,0),anchor)
+                    history.positionViewAtEnd(); wait(120)
+                    // Virtualized variable-height cards settle their final extent after creation.
                     history.positionViewAtEnd(); wait(120)
                     verify(history.contentY > 0 && history.atYEnd, "last notification remains reachable")
                     compare(window.content.surface.height,maximum, "scrolling cannot move the surface or selector")

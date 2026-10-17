@@ -1,5 +1,31 @@
 # MAGI — Quickshell Technical Reference
 
+> Phase 2E, including 2E.1/2E.2, is natively accepted. See the
+> [final acceptance and source allowlist](design/runtime-phase2e-finalization.md).
+> Dated earlier review status below is historical; final Hub persistence, Schema 12,
+> explicit-location weather and retired-tool state are the accepted baseline.
+
+## Phase 2E.2 verified patterns
+
+Production Qt Quick Switch owns both runtime and Settings toggles. Native Font weight values 400/700, bound Text implicitHeight, and existing RowLayout vertical centring are verified in offscreen production fixtures. Weather follows existing Quickshell.Io Process/StdioCollector conventions: stdin JSON, one worker, Timer watchdog and stale-config rejection. Official Open-Meteo endpoints were checked 2026-10-17; [API evidence and limits](design/runtime-phase2e2.md#weather-investigation-and-implementation). Native GPU quality remains unverified.
+
+## Phase 2E.1 — native review pending (2026-10-17)
+
+Production QtTest verifies Region unions for Hub content/selector and its temporary child Popup overlay, natural QtQuick.Layouts measurements/centres, role swatches, and sidebar save states. WlrKeyboardFocus.OnDemand is compositor-mediated; offscreen focus tests are not native direct-shortcut certification. Shared anchored lifecycle tests still pass. [Phase 2E.1 checkpoint](design/runtime-phase2e1.md).
+
+> Phase 2E.1: Hub uses Escape after child interactions; Super+Q is only an ordinary compositor application binding, not a Hub close requirement.
+
+## Phase 2E production checks — 2026-10-17
+
+Existing QtQuick Rectangle border overlays do not own input or affect layout. Existing
+RoundedArtwork masks now also serve the single leading notification preview. Retained
+status delegates interpolate with the shared surface; Hub growth uses production implicit
+heights and output-clamped anchor coordinates. NotificationModel's Timer is independent of
+presentation, with controlled timestamp tests and real private-bus protocol regressions.
+No new Quickshell API assumptions or backend ownership changes. Offscreen geometry checks
+do not establish native GPU mask/animation quality or compositor keybind dispatch.
+[Focused verification and native limits](design/runtime-phase2e.md).
+
 ## Hub Settings composition verification — Phase 2C (2026-10-17)
 
 Installed Quickshell 0.3.1 / Qt 6.11.2 metadata in
@@ -31,7 +57,7 @@ A real offscreen QML test verifies asynchronous worker results, theme selection,
 Follow persistence and newest-request handling. The Starship base watcher requests
 recomposition without changing the user's base. This does not require a new
 Quickshell API or native-window geometry. See [test commands and environment
-limitations](design/theme-orchestrator.md#validation-and-acceptance-limits).
+limitations](design/theme-orchestrator.md#validation-and-acceptance--final-v1-refinement).
 
 
 

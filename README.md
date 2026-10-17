@@ -9,15 +9,15 @@ personal preferences to review before reusing them.
 
 ### Arch Linux — ThinkPad T15g
 
-The current desktop is **Arch Linux + Hyprland + MAGI**.
+The [Linux setup](linux/README.md) uses **Arch Linux + Hyprland + MAGI**.
 [MAGI](linux/magi/README.md) is my Quickshell shell layer: a bar/status surface,
-Control Centre, Settings, notifications and Clipboard Manager. Its README covers
+Control Centre, five-mode utility Hub, Settings, Calendar and Wallpaper management. Its README covers
 features, dependencies, deployment and future work.
 
 Hypridle and Hyprlock handle idle management and locking; Hyprpaper supplies the
-wallpaper. Rofi remains the application launcher, and Hyprmon manages monitor
-profiles. The terminal workflow uses Ghostty, Neovim, Yazi and btop. MFTrunk is a
-separate terminal utility for system controls and diagnostics.
+wallpaper. MAGI Apps is the application launcher; Hyprmon manages monitor
+profiles. The terminal workflow uses Ghostty, Neovim, Yazi, Thunar and btop; Theme Orchestrator coordinates supported application palettes.
+Rofi and MFTrunk were retired during MAGI Phase 2E.1.
 
 ### macOS — Mac mini
 
@@ -58,8 +58,8 @@ For the T15g application packages, preview the links before applying them:
 
 ```bash
 cd ~/dotfiles/linux/t15g
-stow --simulate --verbose --target="$HOME" hypr ghostty nvim rofi yazi
-stow --target="$HOME" hypr ghostty nvim rofi yazi
+stow --simulate --verbose --target="$HOME" hypr ghostty nvim yazi
+stow --target="$HOME" hypr ghostty nvim yazi
 ```
 
 Deploy MAGI from the Linux package directory:

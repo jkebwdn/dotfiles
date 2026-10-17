@@ -24,16 +24,21 @@ function controlDefinitions() {
     ]
 }
 const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre"]
-const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar", "albumArt"]
+const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar", "albumArt", "hubSelector"]
 const controlAccentRoles = ["red", "peach", "yellow", "green", "teal", "blue", "lavender"]
 const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "green",
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 11,
-        appearance: {theme: "catppuccin-mocha", roundness: {master: 1,
-            roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null}},
-            visual: {profileGreetingSize: 16, profileWeatherSize: 12, profileThirdLineSize: 11,
+    return {schemaVersion: 12,
+        appearance: {navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
+            roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null}},
+            surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, hubContent:true, hubSelector:true},
+            notificationBorders: {role:"border", width:1, toasts:true, history:true, clipboard:true},
+            profileBackground: {enabled:false, role:"elevated"},
+            visual: {profileGreetingWeight: 700, profileWeatherWeight: 400, profileThirdLineWeight: 400,
+                mediaTitleSize: 13, mediaArtistSize: 11, mediaTitleWeight: 700, mediaArtistWeight: 400, mediaProgressBorderWidth: 2,
+                profileGreetingSize: 16, profileWeatherSize: 12, profileThirdLineSize: 11,
                 profileControlsGap: 20, controlsSlidersGap: 20, slidersActionsGap: 20, actionsMediaGap: 20,
                 primaryIconSize: 32, primaryContainerSize: 68, secondaryIconSize: 32,
                 avatarSize: 76, mediaArtworkSize: 80, statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
@@ -44,8 +49,10 @@ function defaults() {
                 sliderTrack: "elevated", sliderFill: "overlay", sliderBorder: "lavender",
                 sliderBorderWidth: 2, avatarBorderWidth: 2}},
         icons: {pack: "magi-legacy", modulePacks: {}, overrides: {global: {}, modules: {}}},
-        profile: {displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
-        media: {enabled: true, preferredPlayer: null, emptyState: "collapse"},
+        weather: {enabled: false, location: "", units: "metric"},
+        profile: {greetingStyle: "compact", displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
+        hub: {selectorPosition:"below", verticalPosition:2/3},
+        media: {controlsVisibility:"active", enabled: true, preferredPlayer: null, emptyState: "collapse"},
         calendar: {firstDay: "locale", showWeekNumbers: false, showAdjacentDays: true,
             density: "comfortable", timeFormat: "24h", dateFormat: "numeric"},
         wallpaper: {enabled: true, directories: ["~/Pictures/wallpapers"], thumbnailSize: 220},
@@ -58,7 +65,7 @@ function defaults() {
             headerPosition: "top", headerFit: "cover", headerRadius: 12, headerBorderWidth: 1, headerBorderRole: "border"},
         clipboard: {enabled: true, historyLimit: 100, persistHistory: false,
             includeImages: true, includeFiles: true},
-        notifications: {enabled: true, toastsEnabled: true, dnd: false,
+        notifications: {retentionHours:6, enabled: true, toastsEnabled: true, dnd: false,
             fallbackTimeout: 5000, maxVisible: 3, historyLimit: 100,
             showBody: true, criticalBypassDnd: true},
         bar: {left: ["clock", "date"], center: ["workspaces"],
@@ -91,7 +98,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 11) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 12) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -112,10 +119,45 @@ function analyze(input) {
     const a = effective.appearance
     if (typeof a.theme !== "string" || !a.theme.length) { valid(false, "appearance.theme", ""); a.theme = "catppuccin-mocha" }
 
+    const semanticRoles = ["background","surface","elevated","overlay","text","subtext","muted","accent","blue","lavender","green","yellow","peach","red","teal","border"]
+    for (const key of ["navigationAccent", "toggleStyle"]) {
+        const values = key === "navigationAccent" ? semanticRoles : ["pill", "filled", "minimal"]
+        if (values.indexOf(a[key]) < 0) { valid(false, "appearance." + key, null); a[key] = defaults().appearance[key] }
+    }
+    if (["compact", "friendly"].indexOf(effective.profile.greetingStyle) < 0) {
+        valid(false, "profile.greetingStyle", null); effective.profile.greetingStyle = "compact"
+    }
+    for (const key of Object.keys(defaults().weather)) {
+        const value = effective.weather[key]
+        const good = key === "enabled" ? typeof value === "boolean" : key === "units"
+            ? ["metric", "imperial"].indexOf(value) >= 0
+            : typeof value === "string" && value.length <= 160 && !/[\x00-\x1f]/.test(value)
+        if (!good) { valid(false, "weather." + key, null); effective.weather[key] = defaults().weather[key] }
+    }
+    for (const group of ["surfaceBorders", "notificationBorders", "profileBackground"]) {
+        const fallback = defaults().appearance[group]
+        for (const key of Object.keys(fallback)) {
+            const value = a[group][key]
+            const good = key === "role" ? semanticRoles.indexOf(value) >= 0
+                : key === "width" ? typeof value === "number" && isFinite(value) && value >= 0 && value <= 5
+                : typeof value === "boolean"
+            if (!good) { valid(false, "appearance." + group + "." + key, null); a[group][key] = fallback[key] }
+        }
+    }
+    if (["above","below"].indexOf(effective.hub.selectorPosition) < 0) {
+        valid(false,"hub.selectorPosition",null); effective.hub.selectorPosition = "below"
+    }
+    const position = effective.hub.verticalPosition
+    if (typeof position !== "number" || !isFinite(position) || position < .1 || position > .9) {
+        valid(false,"hub.verticalPosition",null); effective.hub.verticalPosition = 2/3
+    }
+    if (["always","active","hidden"].indexOf(effective.media.controlsVisibility) < 0) {
+        valid(false,"media.controlsVisibility",null); effective.media.controlsVisibility = "active"
+    }
     const visualDefaults = defaults().appearance.visual
-    const integerVisual = ["profileGreetingSize", "profileWeatherSize", "profileThirdLineSize",
+    const integerVisual = ["mediaTitleSize", "mediaArtistSize", "profileGreetingSize", "profileWeatherSize", "profileThirdLineSize",
         "profileControlsGap", "controlsSlidersGap", "slidersActionsGap", "actionsMediaGap"]
-    const numberRanges = {profileGreetingSize: [12, 24], profileWeatherSize: [10, 20], profileThirdLineSize: [10, 20],
+    const numberRanges = {mediaTitleSize:[10,24], mediaArtistSize:[10,20], mediaProgressBorderWidth:[0,5], profileGreetingSize: [12, 24], profileWeatherSize: [10, 20], profileThirdLineSize: [10, 20],
         profileControlsGap: [0, 48], controlsSlidersGap: [0, 48], slidersActionsGap: [0, 48], actionsMediaGap: [0, 48], primaryIconSize: [16, 48], primaryContainerSize: [60, 96],
         secondaryIconSize: [16, 36], avatarSize: [48, 112], mediaArtworkSize: [48, 112], statusIconSize: [16, 28], tileBackgroundShade: [-1, 1],
         tileBorderShade: [-1, 1], tileBorderWidth: [0, 6],
@@ -123,7 +165,7 @@ function analyze(input) {
         secondaryOffOpacity: [0, 1], sliderBorderWidth: [0, 5], avatarBorderWidth: [0, 5]}
     for (const key of Object.keys(visualDefaults)) {
         const value = a.visual[key], range = numberRanges[key]
-        const good = range ? (integerVisual.indexOf(key) < 0 || Number.isInteger(value)) && typeof value === "number" && isFinite(value) && value >= range[0] && value <= range[1]
+        const good = key.endsWith("Weight") ? [400,700].indexOf(value) >= 0 : range ? (integerVisual.indexOf(key) < 0 || Number.isInteger(value)) && typeof value === "number" && isFinite(value) && value >= range[0] && value <= range[1]
             : ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "accent",
                 "blue", "lavender", "green", "yellow", "peach", "red", "teal", "border"].indexOf(value) >= 0
         if (!good) { valid(false, "appearance.visual." + key, null); a.visual[key] = visualDefaults[key] }
@@ -132,7 +174,7 @@ function analyze(input) {
     const notificationRanges = {fallbackTimeout: [1000, 30000], maxVisible: [1, 4], historyLimit: [10, 500]}
     for (const key of Object.keys(notificationDefaults)) {
         const value = effective.notifications[key], range = notificationRanges[key]
-        if (range ? !Number.isInteger(value) || value < range[0] || value > range[1]
+        if (key === "retentionHours" ? [0,2,6,24].indexOf(value) < 0 : range ? !Number.isInteger(value) || value < range[0] || value > range[1]
                 : typeof value !== "boolean") {
             valid(false, "notifications." + key, null)
             effective.notifications[key] = notificationDefaults[key]

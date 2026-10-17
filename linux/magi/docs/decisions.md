@@ -1,5 +1,32 @@
 # MAGI — Decisions and Debugging History
 
+> Phase 2E, including 2E.1/2E.2, is natively accepted. See the
+> [final acceptance and source allowlist](design/runtime-phase2e-finalization.md).
+> Dated earlier review status below is historical; final Hub persistence, Schema 12,
+> explicit-location weather and retired-tool state are the accepted baseline.
+
+## Phase 2E.2 native feedback decisions
+
+Remain on Schema 12. Share navigation accent and toggle styles globally; use native 400/700 weights with Normal/Bold labels. Compact greetings retain local-hour boundaries. Add explicit-location Open-Meteo weather because the previous slot had no provider, with no automatic geolocation. Retain old notifications.enabled compatibility while removing only the Hub toggle. Reuse avatar border; add independent media width without changing progress. [Checkpoint](design/runtime-phase2e2.md).
+
+## Phase 2E.1 — native review pending (2026-10-17)
+
+Final operator feedback supersedes the earlier dot/retained-legacy-tool decisions: use accent icons/text for main navigation, pills for Appearance subsections, explicit Hub dismissal, measured cards, and shared Clipboard borders. Retire MFTrunk and Rofi by verified ownership; preserve unrelated dirty Hyprland integrations. Exact Rofi package removal requires operator sudo authentication. [Evidence, limits and native checks](design/runtime-phase2e1.md).
+
+> Phase 2E.1: Hub uses Escape after child interactions; Super+Q is only an ordinary compositor application binding, not a Hub close requirement.
+
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
+## 2026-10-17: reconcile the accepted shell generation
+
+Use shared semantic border overlays rather than per-surface systems; keep the selector
+anchor independent of mode dimensions in either direction. Reuse canonical Settings pages
+under Appearance and collapse application enrollment details without changing opt-in paths.
+Use one notification card hierarchy and service-owned history retention, exempting critical
+urgency and keeping active toast timeouts independent. Retain MFTrunk's advanced utilities
+on a non-conflicting shortcut. Preserve exact primary CC colours and protected local state.
+[Phase 2E decisions, limits and exact paths](design/runtime-phase2e.md).
+
 ## 2026-10-17 — Embed the canonical Wallpaper Manager
 
 Reuse WallpaperContent in Settings and retire its normal standalone host. Keep service startup independent of presentation, route legacy open/close through Hub Settings, retain explicit directory drafts and use the existing GPU mask for thumbnails. Calendar measures its header/grid rather than duplicating offsets. Media keeps its accepted geometry controls and persistent empty card. No backend expansion, new settings or further secondary scope. [Evidence and native limits](design/runtime-phase2d.md).

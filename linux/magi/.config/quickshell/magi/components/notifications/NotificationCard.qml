@@ -16,11 +16,10 @@ Rectangle {
         ? (entry.actions || []).filter(a => a.identifier !== "default").slice(0, historyCard ? 16 : 3) : []
     readonly property bool defaultAction: record && record.notification
         && (entry.actions || []).some(a => a.identifier === "default")
-    implicitHeight: content.implicitHeight + 28
+    implicitHeight: Math.max(64, content.implicitHeight) + 28
     color: root.historyCard ? Theme.Theme.elevated : Theme.Theme.surface
     radius: Theme.Theme.radius("surface", 12, width, height)
-    border.width: 1
-    border.color: entry.urgency === 2 ? Theme.Theme.danger : Theme.Theme.border
+    Controls.SurfaceBorder { z: 2; family: "notificationBorders"; surfaceId: root.historyCard ? "history" : "toasts"; radius: parent.radius }
     clip: true
     Accessible.name: (entry.appName || "") + ": " + (entry.summary || "")
     HoverHandler {
@@ -31,79 +30,71 @@ Rectangle {
         enabled: root.defaultAction
         onClicked: root.service.invoke(root.entry.id, "default")
     }
+    Item {
+        id: leading
+        objectName: "notificationLeadingVisual"
+        x: 14; y: 14; width: 64; height: 64
+        Controls.RoundedArtwork {
+            id: artwork
+            objectName: "notificationImage"
+            anchors.fill: parent
+            source: root.entry.image && /^(file:|image:\/\/)/.test(root.entry.image) ? root.entry.image : ""
+            sourceSize: Qt.size(128,128)
+            asynchronous: true; borderWidth: 0
+            radius: Theme.Theme.radius("action", 8, width, height)
+            visible: status === Image.Ready
+        }
+        Image {
+            id: appIcon
+            objectName: "notificationAppIcon"
+            anchors.fill: parent
+            source: {
+                const icon = root.entry.appIcon || ""
+                if (!icon) return ""
+                if (icon.startsWith("/")) return "file://" + icon
+                if (icon.startsWith("file:") || icon.startsWith("image://")) return icon
+                return icon.indexOf(":") < 0 ? Quickshell.iconPath(icon, true) : ""
+            }
+            sourceSize: Qt.size(128,128); fillMode: Image.PreserveAspectFit
+            visible: !artwork.visible && status === Image.Ready
+        }
+        Controls.Icon { anchors.centerIn: parent; role: "notifications"; size: 40; visible: !artwork.visible && !appIcon.visible; color: Theme.Theme.subtext }
+        ToolTip.visible: leadingHover.hovered
+        ToolTip.text: root.entry.appName || "Notification"
+        HoverHandler { id: leadingHover }
+    }
+    Controls.IconButton {
+        objectName: "notificationDismiss"
+        anchors { right: parent.right; top: parent.top; margins: 8 }
+        width: 24; height: 24
+        role: "close"; label: "Dismiss notification"
+        onClicked: root.service.dismiss(root.entry.id)
+    }
     Column {
         id: content
-        x: 14; y: 14; width: parent.width - 28
+        x: 90; y: 14; width: Math.max(0, parent.width - x - 36)
         spacing: 8
-        Row {
-            width: parent.width
-            spacing: 8
-            Item {
-                width: 20; height: 20
-                Image {
-                    id: appIcon
-                    anchors.fill: parent
-                    source: {
-                        const icon = root.entry.appIcon || ""
-                        if (!icon) return ""
-                        if (icon.startsWith("/")) return "file://" + icon
-                        if (icon.startsWith("file:") || icon.startsWith("image://")) return icon
-                        return icon.indexOf(":") < 0 ? Quickshell.iconPath(icon, true) : ""
-                    }
-                    sourceSize: Qt.size(40, 40)
-                    fillMode: Image.PreserveAspectFit
-                    visible: status === Image.Ready
-                }
-                Controls.Icon { anchors.centerIn: parent; role: "notifications"; size: 18; visible: !appIcon.visible; color: Theme.Theme.subtext }
-            }
-            Text {
-                width: parent.width - 60 - (root.historyCard ? 76 : 0); height: 20
-                text: root.entry.appName || "Notification"
-                textFormat: Text.PlainText
-                color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 11
-                elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter
-            }
-            Text {
-                visible: root.historyCard
-                width: visible ? 68 : 0; height: 20
-                text: root.record ? Qt.formatDateTime(new Date(root.record.updatedAt), "ddd HH:mm") : ""
-                color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 10
-                verticalAlignment: Text.AlignVCenter
-            }
-            Controls.IconButton {
-                width: 24; height: 20
-                objectName: "notificationDismiss"
-                role: "close"; label: "Dismiss notification"
-                onClicked: root.service.dismiss(root.entry.id)
-            }
-        }
         Text {
+            objectName: "notificationTitle"
             width: parent.width
-            text: root.entry.summary || ""
+            text: root.entry.summary || root.entry.appName || "Notification"
             textFormat: Text.PlainText
             color: Theme.Theme.text; font.family: Theme.Theme.fontFamily; font.pixelSize: 13; font.bold: true
             maximumLineCount: 2; wrapMode: Text.Wrap; elide: Text.ElideRight
-            visible: text.length > 0
         }
-        Row {
+        Text {
             width: parent.width
-            spacing: 10
-            Image {
-                id: artwork
-                width: visible ? 48 : 0; height: 48
-                source: root.entry.image && /^(file:|image:\/\/)/.test(root.entry.image) ? root.entry.image : ""
-                sourceSize: Qt.size(96, 96); fillMode: Image.PreserveAspectFit
-                visible: source.toString().length > 0 && status !== Image.Error
-            }
-            Text {
-                width: parent.width - (artwork.visible ? 58 : 0)
-                text: root.showBody ? (root.entry.body || "") : ""
-                visible: text.length > 0
-                textFormat: Text.PlainText
-                color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 12
-                maximumLineCount: root.historyCard ? 4 : 3; wrapMode: Text.Wrap; elide: Text.ElideRight
-            }
-            visible: artwork.visible || (root.showBody && !!root.entry.body)
+            text: root.showBody ? (root.entry.body || "") : ""
+            visible: text.length > 0
+            textFormat: Text.PlainText
+            color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 12
+            maximumLineCount: root.historyCard ? 4 : 3; wrapMode: Text.Wrap; elide: Text.ElideRight
+        }
+        Text {
+            visible: root.historyCard
+            width: parent.width
+            text: root.record ? Qt.formatDateTime(new Date(root.record.updatedAt), "ddd HH:mm") : ""
+            color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 11
         }
         Flow {
             width: parent.width; spacing: 6

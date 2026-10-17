@@ -1,5 +1,7 @@
 # Settings Phase 2A.3 native feedback checkpoint
 
+> Phase 2E.1: Hub uses Escape after child interactions; Super+Q is only an ordinary compositor application binding, not a Hub close requirement.
+
 2026-10-16. The accepted uncommitted Phase 2A, 2A.1 and 2A.2 work remains in place. This pass refines Settings selection, configured-item presentation, application-theme status and Escape handling. Native operator review remains the final checkpoint. Nothing is committed or pushed, and Phase 2B has not begun.
 
 ## Sidebar and configured controls

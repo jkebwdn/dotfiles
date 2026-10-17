@@ -1,5 +1,7 @@
 # System Theme Orchestrator — v1
 
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
 Implementation date: **2026-10-14**, refined **2026-10-15**. **Uncommitted operator
 review; accepted targets and remaining checks are recorded below.** Baseline: `6f36b52` (`docs: research MAGI theme
 orchestration`), following wallpaper checkpoint `f21d567`.

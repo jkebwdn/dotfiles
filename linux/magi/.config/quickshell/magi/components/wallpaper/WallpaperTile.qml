@@ -11,14 +11,16 @@ Item {
     property bool current: false
     property bool favourite: false
     property bool selected: false
+    property bool keyboardFocused: false
     signal chosen()
     signal favouriteRequested()
     Rectangle {
         anchors.fill: parent; anchors.margins: 5
-        color: root.selected ? Theme.Theme.overlay : Theme.Theme.elevated
+        color: root.current ? Theme.Theme.overlay : Theme.Theme.elevated
         radius: Theme.Theme.radius("action", 8, width, height)
-        border.width: root.selected || root.current ? 2 : 1
-        border.color: root.selected ? Theme.Theme.focus : root.current ? Theme.Theme.accent : Theme.Theme.border
+        border.width: root.current ? 3 : 1
+        border.color: root.current ? Theme.Theme.accent : mouse.containsMouse ? Theme.Theme.subtext : Theme.Theme.border
+        Rectangle { anchors.fill: parent; anchors.margins: 5; radius: Math.max(0,parent.radius-3); color:"transparent"; border.width: root.keyboardFocused ? 1 : 0; border.color: Theme.Theme.focus; z: 2 }
         Controls.RoundedArtwork {
             id: preview
             objectName: "wallpaperThumbnail"
@@ -37,7 +39,7 @@ Item {
         }
         Label {
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 8 }
-            text: (root.current ? "✓  " : "") + (preview.status === Image.Error ? "Image unavailable" : preview.status === Image.Loading ? "Loading…" : root.entry.name)
+            text: (root.current ? "Current · " : "") + (preview.status === Image.Error ? "Image unavailable" : preview.status === Image.Loading ? "Loading…" : root.entry.name)
             color: Theme.Theme.text; elide: Text.ElideMiddle
             font.pixelSize: 11; textFormat: Text.PlainText
         }

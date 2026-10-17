@@ -206,49 +206,41 @@ hl.bind(
 
 hl.bind(
     SUPER .. " + N",
-    hl.dsp.exec_cmd("quickshell ipc -c magi call notifications toggle")
+    hl.dsp.exec_cmd("quickshell ipc -c magi call hub toggle notifications")
 )
 
 
 ----------------------------------------------------------------
--- MAGI applications (Rofi remains available as a fallback)
+-- MAGI applications and Settings
 ----------------------------------------------------------------
 
 hl.bind(
     SUPER .. " + SPACE",
-    hl.dsp.exec_cmd("quickshell ipc -c magi call launcher toggle")
+    hl.dsp.exec_cmd("quickshell ipc -c magi call hub toggle apps")
 )
 
--- Manual fallback while evaluating the first-party launcher.
+-- Direct Emoji Hub route.
 hl.bind(
-    SUPER .. " + CTRL + SPACE",
-    hl.dsp.exec_cmd("rofi -show drun")
-)
-
--- Long-term Emoji shortcut; future Hub will open directly in Emoji mode.
-hl.bind(
-    SUPER .. " + period",
-    hl.dsp.exec_cmd("quickshell ipc -c magi call emoji toggle")
+    SUPER .. " + E",
+    hl.dsp.exec_cmd("quickshell ipc -c magi call hub toggle emoji")
 )
 
 -- First-party MAGI clipboard history; SUPER+V remains the floating toggle.
 hl.bind(
-    SUPER .. " + SHIFT + V",
-    hl.dsp.exec_cmd("quickshell ipc -c magi call clipboard toggle")
-)
-
-
-----------------------------------------------------------------
--- MFTrunk - Connectivity Hub
-----------------------------------------------------------------
-
-hl.bind(
     SUPER .. " + C",
-    hl.dsp.exec_cmd(
-        "ghostty --title=MFTrunk -e /home/jkebwdn/.local/bin/mftrunk"
-    )
+    hl.dsp.exec_cmd("quickshell ipc -c magi call hub toggle clipboard")
 )
 
+
+----------------------------------------------------------------
+-- MAGI anchored surfaces
+----------------------------------------------------------------
+
+hl.bind(SUPER .. " + M", hl.dsp.exec_cmd("quickshell ipc -c magi call magi toggle controlcentre"))
+hl.bind(SUPER .. " + W", hl.dsp.exec_cmd("quickshell ipc -c magi call magi toggle wifi"))
+hl.bind(SUPER .. " + B", hl.dsp.exec_cmd("quickshell ipc -c magi call magi toggle bluetooth"))
+
+hl.bind(SUPER .. " + S", hl.dsp.exec_cmd("quickshell ipc -c magi call hub open settings"))
 
 ----------------------------------------------------------------
 -- FOCUS NAVIGATION

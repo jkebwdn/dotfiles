@@ -1,5 +1,7 @@
 # MAGI visual / Settings overhaul — phase 1 audit and implementation plan
 
+> Phase 2E.1 supersedes legacy-tool references below: MFTrunk and Rofi are retired; MAGI Apps is the sole launcher route. Earlier references record historical state.
+
 Date inspected: **2026-10-15**. Baseline verified locally:
 `a6a2856aa849fdbc4b8cd7e26c12b58a5965720a` — `magi: add system theme orchestrator`.
 Status: **read-only investigation with this report as the sole authorized output**.

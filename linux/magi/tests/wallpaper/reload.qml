@@ -18,6 +18,7 @@ ShellRoot {
         name: "WallpaperReload"
         when: Services.Settings.ready && Services.Wallpaper.initialized && !Services.Wallpaper.busy
         function test_restore_and_interaction() {
+            try {
             const path = Quickshell.env("MAGI_WALLPAPER_IMAGE")
             compare(Services.Wallpaper.state.shared.path, path)
             compare(Services.Wallpaper.state.favourites[0], path)
@@ -38,6 +39,7 @@ ShellRoot {
             compare(thumbnail.sourceSize.width, 320)
             verify(find(thumbnail, "artworkSource").clip)
             verify(find(thumbnail, "artworkEffect").maskEnabled)
+            tryVerify(() => Services.Wallpaper.libraryLoaded && Services.Wallpaper.entries.length > 0)
             const originalEntries = Services.Wallpaper.entries
             for (const palette of ["catppuccin-mocha", "catppuccin-frappe", "everforest-dark-hard", "everforest-light-hard"]) {
                 Services.Settings.setTheme(palette)
@@ -102,8 +104,10 @@ ShellRoot {
             tryCompare(Services.Wallpaper, "opened", false)
             Services.Wallpaper.open(); tryCompare(window, "visible", true)
             mouseClick(window.content.parent, 8, 80)
-            tryCompare(Services.Wallpaper, "opened", false)
-            console.log("Wallpaper process restart, thumbnail decode, Enter, Escape and outside dismissal PASS")
+            verify(Services.Wallpaper.opened)
+            Services.Hub.close()
+            console.log("Wallpaper process restart, thumbnail decode, Enter, Escape and outside persistence PASS")
+            } catch(error) { console.error("FAIL:",error,error.stack) }
             finish.start()
         }
     }

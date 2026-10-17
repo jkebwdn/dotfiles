@@ -10,7 +10,7 @@ Scope {
         function open(): void { Services.SettingsWindowState.open() }
         function close(): void { Services.Hub.closeMode("settings") }
         function page(id: string): bool {
-            if (["Appearance", "Profile", "Bar", "Control Centre", "Icons", "Launcher", "Date & time", "Emoji", "Wallpaper", "Notifications", "Clipboard"].indexOf(id) < 0) return false
+            if (["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Control Centre", "Icons", "Launcher", "Date & time", "Emoji", "Wallpaper", "Notifications", "Clipboard"].indexOf(id) < 0) return false
             Services.SettingsWindowState.page = id
             return true
         }

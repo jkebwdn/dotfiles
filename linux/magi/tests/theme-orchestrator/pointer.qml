@@ -67,6 +67,11 @@ ShellRoot {
             idle()
         }
         function test_enrollment() {
+            const summary = findChild(page,"applicationThemesSummary")
+            verify(!summary.expanded, "application targets start collapsed")
+            const supported = Services.ThemeOrchestrator.targets.filter(t => t.id !== "magi" && t.available)
+            compare(summary.title,"Application themes · " + supported.filter(t => t.enabled).length + " of " + supported.length + " applications following MAGI")
+            summary.expanded = true; wait(50)
             const labels = [
                 ["Applied — reactive palette", "Applied"],
                 ["Runtime update accepted; configerrors clear (visual check required)", "Applied"],

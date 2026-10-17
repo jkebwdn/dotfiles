@@ -13,7 +13,7 @@ and removes the temporary config/runtime after exit. It creates no native
 window, uses no pointer injection and does not operate network/audio devices.
 Quickshell needs permission to create a temporary local IPC socket even here.
 
-The 44-step sequence checks normal open/close/reopen, switching without zero
+The 48-step sequence checks normal open/close/reopen, switching without zero
 height, rapid retargeting, reversal during widening/reveal/fade/retract/narrow,
 compact-width changes, same-turn request bursts and retained module bodies.
 Failures print phase/height/opacity and make the Python runner exit nonzero.

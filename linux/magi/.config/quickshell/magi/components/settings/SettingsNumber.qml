@@ -37,7 +37,8 @@ SpinBox {
     }
     background: Rectangle {
         radius: Theme.Theme.radius("action", 8, width, height)
-        color: Theme.Theme.surface
+        color: root.hovered ? Theme.Theme.overlay : Theme.Theme.elevated
+        border.width: 1; border.color: root.activeFocus ? Theme.Theme.focus : Theme.Theme.border
     }
     SettingsFocus {}
 }

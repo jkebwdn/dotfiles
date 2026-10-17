@@ -34,9 +34,10 @@ ShellRoot {
             for (const child of item.children) checkControls(child, pageItem)
         }
         function test_application() {
+            try {
             Services.SettingsWindowState.shown = true
             wait(100)
-            const names = ["Appearance", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
+            const names = ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
             for (const theme of ["catppuccin-mocha", "catppuccin-frappe", "everforest-dark-hard", "everforest-light-hard", "catppuccin-latte"]) {
                 Services.Settings.setTheme(theme)
                 for (const size of [Qt.size(720,500), Qt.size(940,720)]) {
@@ -47,14 +48,16 @@ ShellRoot {
                     tryCompare(window.contentItem, "width", size.width)
                     tryCompare(window.contentItem, "height", size.height)
                     for (const name of names) {
-                        const nav = findChild(window.contentItem, "settingsNav-" + name)
+                        const sub = ({Bar:"bar", "Control Centre":"controlcentre", Surfaces:"surfaces", Hub:"hub"})[name]
+                        if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
+                        const nav = findChild(window.contentItem, sub ? "appearanceNav-" + sub : "settingsNav-" + name)
                         verify(nav !== null)
                         nav.forceActiveFocus(Qt.TabFocusReason)
                         wait(30)
                         verify(nav.activeFocus, "navigation takes keyboard focus")
                         const navigation = findChild(window.contentItem, "settingsNavigation")
                         const navPoint = nav.mapToItem(navigation, 0, 0)
-                        verify(navPoint.y >= 0 && navPoint.y + nav.height <= navigation.height + 1, "focused navigation stays in viewport")
+                        verify(sub || (navPoint.y >= 0 && navPoint.y + nav.height <= navigation.height + 1), "focused navigation stays in viewport")
                         keyClick(Qt.Key_Space)
                         compare(Services.SettingsWindowState.page, name)
                         wait(30)
@@ -64,7 +67,7 @@ ShellRoot {
                         verify(current.body.width > 400 && current.body.width <= current.width, "bounded page width")
                         compare(current.boundsBehavior, Flickable.StopAtBounds)
                         verify(nav.checked, "selection remains distinct from focus")
-                        if (!nav.hovered) compare(nav.background.color, "#00000000", "selection has no fill")
+                        if (!nav.hovered) compare(nav.background.color, sub ? Theme.Theme.elevated : "#00000000", "navigation levels have distinct selection")
                         checkControls(current.body, current)
                         if (Quickshell.env("MAGI_SETTINGS_CAPTURES")
                                 && ["Control Centre", "Icons", "Launcher", "Appearance"].indexOf(name) >= 0) {
@@ -78,11 +81,9 @@ ShellRoot {
                     }
                 }
             }
-            Services.SettingsWindowState.page = "Appearance"; wait(50)
-            const advanced = findChild(page("Appearance"), "settingsButton-▸  Advanced appearance")
-            reveal(page("Appearance"), advanced); mouseClick(advanced)
-            const slider = findChild(page("Appearance"), "visualSetting-statusIconSize")
-            verify(slider.visible, "advanced controls remain reachable")
+            Services.SettingsWindowState.page = "Surfaces"; wait(50)
+            const slider = findChild(page("Surfaces"), "visualSetting-statusIconSize")
+            verify(slider.visible, "surface controls remain reachable")
             const iconSize = Services.Settings.data.appearance.visual.statusIconSize
             slider.forceActiveFocus(Qt.TabFocusReason); keyClick(Qt.Key_Right)
             compare(Services.Settings.data.appearance.visual.statusIconSize, iconSize + 1, "production slider writes existing visual setting")
@@ -159,12 +160,13 @@ ShellRoot {
             }
             tryCompare(Services.Settings, "saveState", "saved")
             const status = findChild(window.contentItem, "settingsSaveStatus")
-            const statusScroll = findChild(window.contentItem, "settingsSaveStatusScroll")
+            const statusPanel = findChild(window.contentItem, "settingsSavePanel")
             status.text = "Long diagnostic details ".repeat(200)
             wait(30)
-            verify(statusScroll.height <= 80 && status.implicitHeight > 80, "long footer remains scrollable and bounded")
+            verify(statusPanel.width < 200 && status.height <= 60, "sidebar diagnostic is compact and bounded")
             console.log("RESULT: 0 failures; all Settings pages, keyboard, palettes, reset and drafts")
             finish.start()
+            } catch (e) { console.error("FAIL: " + e + " " + e.stack); throw e }
         }
     }
 }

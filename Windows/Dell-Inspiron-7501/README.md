@@ -24,8 +24,8 @@ Repository files:
 
 ```text
 Komorebi/
-├── komorebi.json
-└── komorebi.bar.json
+├── Komorebi.json
+└── Komorebi.bar.json
 ```
 
 Live configuration:
@@ -49,6 +49,18 @@ Live configuration:
 ```text
 C:\Users\<username>\.config\whkdrc
 ```
+
+### Terminal configuration
+
+The separate Windows terminal stack includes:
+
+- [PowerShell profile](PowerShell/Microsoft.PowerShell_profile.ps1) — copy to the path reported by `$PROFILE`.
+- [Starship](Starship/starship.toml) — deploy to the configured Starship path (normally `~/.config/starship.toml`).
+- [Fastfetch](Fastfetch/config.jsonc) — deploy to `~/.config/fastfetch/config.jsonc`.
+- [Windows Terminal](WindowsTerminal/settings.json) — merge through Windows Terminal's Open JSON file action.
+
+Review machine-specific paths before copying. These are manual Windows configurations,
+independent of the Linux MAGI shell. Return to the [repository setup guide](../../README.md).
 
 ## Window Manager
 

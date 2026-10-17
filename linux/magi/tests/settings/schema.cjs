@@ -8,11 +8,11 @@ assert.equal(run('analyze(defaults()).errors').length, 0);
 assert.equal(run('analyze(migrate({palette:"everforest",barCenterPlugins:[],custom:7})).effective.appearance.theme'), 'everforest-dark-hard');
 assert.deepEqual(run('migrate({palette:"catppuccin",barCenterPlugins:[]}).bar.center'), []);
 assert.equal(run('migrate({palette:"catppuccin",custom:7}).custom'), 7);
-assert.equal(run('migrate({schemaVersion:1,appearance:{theme:"catppuccin-latte"}}).schemaVersion'), 11);
+assert.equal(run('migrate({schemaVersion:1,appearance:{theme:"catppuccin-latte"}}).schemaVersion'), 12);
 assert.deepEqual(run('analyze({schemaVersion:4}).effective.bar.center'), ['workspaces']);
 assert.equal(run('analyze({schemaVersion:4,appearance:{roundness:{master:-4}}}).effective.appearance.roundness.master'), 1);
 assert.equal(run('analyze({schemaVersion:4,appearance:{theme:"unknown"}}).effective.appearance.theme'), 'unknown');
-assert.equal(run('analyze({schemaVersion:12}).future'), true);
+assert.equal(run('analyze({schemaVersion:13}).future'), true);
 assert.deepEqual(run('analyze({schemaVersion:4,bar:{left:["wifi"],right:["wifi","bogus","volume"]}}).effective.bar.right'), ['volume']);
 assert.throws(() => run('analyze(JSON.parse(\'{"schemaVersion":1,"__proto__":{}}\'))'));
 assert.throws(() => run('migrate({palette:"catppuccin",appearance:{}})'));
@@ -35,7 +35,7 @@ const v3=run('migrate({schemaVersion:3,controlCentre:{controls:['
     + '{key:"wireless",module:"bluetooth",enabled:true,presentation:"tile"},'
     + '{key:"power-saver",module:"power-saver",enabled:true,presentation:"tile"},'
     + '{key:"airplane-mode",module:"airplane-mode",enabled:true,presentation:"tile"}]}})');
-assert.equal(v3.schemaVersion,11);
+assert.equal(v3.schemaVersion,12);
 assert.deepEqual(v3.controlCentre.controls.map(e=>e.accent),['teal','blue','green','lavender']);
 const customAccent=run('migrate({schemaVersion:3,controlCentre:{controls:['
     + '{key:"network",module:"wifi",accent:"red",enabled:true,presentation:"tile"}]}})');
@@ -44,7 +44,7 @@ const invalidAccent=run('analyze({schemaVersion:4,controlCentre:{controls:['
     + '{key:"network",module:"wifi",accent:"rosewater",enabled:true,presentation:"tile"}]}})');
 assert.equal(invalidAccent.effective.controlCentre.controls[0].accent,'teal');
 assert.ok(invalidAccent.errors.some(e=>e.includes('.accent')));
-console.log('Schema: v0→v11, defaults, validation, CC action and semantic-accent migration PASS');
+console.log('Schema: v0→v12, defaults, validation, CC action and semantic-accent migration PASS');
 
 assert.equal(run('defaults().appearance.visual.statusIconSize'), 18);
 assert.equal(run('analyze({schemaVersion:4,appearance:{visual:{statusIconSize:22}}}).effective.appearance.visual.statusIconSize'), 22);
@@ -75,7 +75,7 @@ for (const [key, values] of Object.entries(geometry)) {
     }
 }
 const upgraded=run('analyze(migrate({schemaVersion:10,custom:42,appearance:{visual:{avatarSize:100,controlOn:"peach"},roundness:{roles:{action:1.5,avatar:.7}}}}))');
-assert.equal(upgraded.effective.schemaVersion,11);
+assert.equal(upgraded.effective.schemaVersion,12);
 assert.equal(upgraded.effective.appearance.visual.avatarSize,100);
 assert.equal(upgraded.effective.appearance.visual.controlOn,'peach');
 assert.equal(upgraded.effective.appearance.roundness.roles.albumArt,1.5);
@@ -118,3 +118,48 @@ assert.equal(retired.effective.launcher.headerPosition,'bottom');
 assert(!Object.hasOwn(run('defaults().launcher'),'backgroundEnabled'));
 assert(!Object.hasOwn(run('defaults().launcher'),'backgroundImage'));
 console.log('Hub header fit/roundness/border validation and retired raw data preservation PASS');
+
+// Phase 2E: migration preserves existing tuning and rejects invalid new input.
+const v12 = run('analyze(migrate({schemaVersion:11,appearance:{visual:{primaryIconSize:27}},hub:{verticalPosition:.4}})).effective');
+assert.equal(v12.schemaVersion,12);
+assert.equal(v12.appearance.visual.primaryIconSize,27);
+assert.equal(v12.hub.verticalPosition,.4);
+assert.equal(v12.notifications.retentionHours,6);
+for (const hours of [0,2,6,24]) assert.equal(run(`analyze({schemaVersion:12,notifications:{retentionHours:${hours}}}).effective.notifications.retentionHours`),hours);
+for (const hours of [-1,3,48]) assert.equal(run(`analyze({schemaVersion:12,notifications:{retentionHours:${hours}}}).effective.notifications.retentionHours`),6);
+for (const family of ['surfaceBorders','notificationBorders']) {
+    for (const width of [0,1,5]) assert.equal(run(`analyze({schemaVersion:12,appearance:{${family}:{width:${width},role:"accent"}}}).effective.appearance.${family}.width`),width);
+    for (const width of [-1,6]) assert.equal(run(`analyze({schemaVersion:12,appearance:{${family}:{width:${width}}}}).effective.appearance.${family}.width`),1);
+    assert.equal(run(`analyze({schemaVersion:12,appearance:{${family}:{role:"bad"}}}).effective.appearance.${family}.role`),'border');
+}
+for (const value of ['always','active','hidden']) assert.equal(run(`analyze({schemaVersion:12,media:{controlsVisibility:"${value}"}}).effective.media.controlsVisibility`),value);
+for (const position of ['above','below']) assert.equal(run(`analyze({schemaVersion:12,hub:{selectorPosition:"${position}"}}).effective.hub.selectorPosition`),position);
+for (const fraction of [-1,2]) assert.equal(run(`analyze({schemaVersion:12,hub:{verticalPosition:${fraction}}}).effective.hub.verticalPosition`),2/3);
+assert(!run('defaults().bar.right').includes('notifications'));
+assert(!run('defaults().bar.right').includes('clipboard'));
+console.log('Schema 12 borders, Hub, media, retention, migration and optional Bar defaults PASS');
+
+assert.equal(run('defaults().appearance.notificationBorders.clipboard'),true);
+assert.equal(run('analyze({schemaVersion:12,appearance:{notificationBorders:{clipboard:false}}}).effective.appearance.notificationBorders.clipboard'),false);
+assert.equal(run('analyze({schemaVersion:12,appearance:{notificationBorders:{clipboard:7}}}).effective.appearance.notificationBorders.clipboard'),true);
+console.log('Schema 12 Clipboard card border enable validation PASS');
+// Phase 2E.2 stays inside the single 11→12 migration.
+const final = run('analyze(migrate({schemaVersion:11,appearance:{visual:{avatarBorderWidth:3,profileGreetingSize:22}},profile:{displayName:"jkebwdn"}})).effective');
+assert.equal(final.schemaVersion,12); assert.equal(final.appearance.visual.avatarBorderWidth,3);
+assert.equal(final.profile.greetingStyle,'compact'); assert.equal(final.profile.displayName,'jkebwdn');
+assert.deepEqual(JSON.parse(JSON.stringify(final.weather)),{enabled:false,location:'',units:'metric'});
+for(const key of ['profileGreetingWeight','profileWeatherWeight','profileThirdLineWeight','mediaTitleWeight','mediaArtistWeight']) {
+ for(const value of [400,700]) assert.equal(run(`analyze({schemaVersion:12,appearance:{visual:{${key}:${value}}}}).effective.appearance.visual.${key}`),value);
+ for(const value of [0,500,900,'"bold"']) assert(run(`analyze({schemaVersion:12,appearance:{visual:{${key}:${value}}}}).errors.length`) > 0);
+}
+for(const [key,range] of [['mediaTitleSize',[10,24]],['mediaArtistSize',[10,20]],['mediaProgressBorderWidth',[0,5]]]) {
+ for(const value of range) assert.equal(run(`analyze({schemaVersion:12,appearance:{visual:{${key}:${value}}}}).effective.appearance.visual.${key}`),value);
+ for(const value of [range[0]-1,range[1]+1]) assert(run(`analyze({schemaVersion:12,appearance:{visual:{${key}:${value}}}}).errors.length`) > 0);
+}
+assert(run('analyze({schemaVersion:12,appearance:{visual:{mediaTitleSize:12.5}}}).errors.length')>0);
+for(const toggleStyle of ['pill','filled','minimal']) assert.equal(run(`analyze({schemaVersion:12,appearance:{toggleStyle:"${toggleStyle}"}}).effective.appearance.toggleStyle`),toggleStyle);
+assert.equal(run('analyze({schemaVersion:12,appearance:{navigationAccent:"red"}}).effective.appearance.navigationAccent'),'red');
+assert.equal(run('analyze({schemaVersion:12,appearance:{navigationAccent:"#abcdef",toggleStyle:"bad"}}).effective.appearance.navigationAccent'),'accent');
+for(const units of ['metric','imperial']) assert.equal(run(`analyze({schemaVersion:12,weather:{units:"${units}",location:"Newark-on-Trent"}}).effective.weather.units`),units);
+assert(run('analyze({schemaVersion:12,weather:{enabled:1,location:123,units:"kelvin"},profile:{greetingStyle:"bad"}}).errors.length')===4);
+console.log('Schema 12 final navigation/toggles/profile/weather/media validation and old tuning preservation PASS');

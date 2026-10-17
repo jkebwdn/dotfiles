@@ -69,9 +69,9 @@ ShellRoot {
                 Services.Notifications.open(); test.exclusive("notifications")
                 test.check(!Services.Calendar.opened, "Calendar to Hub")
                 Services.Hub.suppressed = true
-                test.check(!window.visible && !Services.Hub.opened, "fullscreen closes")
-                for (const mode of Services.Hub.modes) { Services.Hub.open(mode); test.check(!Services.Hub.opened, "blocked over fullscreen") }
-                Services.Hub.suppressed = false; test.check(!window.visible, "no unsolicited recovery")
+                test.check(!window.visible && Services.Hub.opened, "fullscreen only suppresses presentation")
+                for (const mode of Services.Hub.modes) { Services.Hub.open(mode); test.check(Services.Hub.opened, "session retained over fullscreen") }
+                Services.Hub.suppressed = false; test.check(window.visible, "existing session resumes")
                 Services.Emoji.open(); test.exclusive("emoji"); break
             case 7:
                 test.check(window.content.currentContent.searchField.activeFocus, "recovery focus")

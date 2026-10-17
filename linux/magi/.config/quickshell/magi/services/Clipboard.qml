@@ -46,7 +46,7 @@ Scope {
     function remove(id) { if (ready && query === renderedQuery) send({op: "delete", id: id}) }
     function clear() { send({op: "clear"}) }
     function erase() { send({op: "erase"}) }
-    onFullscreenChanged: { if (fullscreen) opened = false }
+    // Hub owns presentation suppression; focus changes do not dismiss its session.
     onQueryChanged: searchDelay.restart()
     Timer { id: searchDelay; interval: 70; onTriggered: root.send({op: "search", query: root.query}) }
     Connections {

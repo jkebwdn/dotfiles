@@ -15,12 +15,12 @@ ShellRoot {
             check(!service.restoring)
             service.opened = true
             service.fullscreen = true
-            check(!service.opened)
+            check(service.opened)
             service.toggle()
             check(!service.opened)
             service.fullscreen = false
             check(!service.opened)
-            console.log("Clipboard service import isolation, stale-search guard, fullscreen close/recovery PASS")
+            console.log("Clipboard service import isolation, stale-search guard, fullscreen session retention PASS")
             Qt.quit()
         }
     }
