@@ -26,6 +26,66 @@ const wl_surface_listener wlSurfaceListener{
     [](void*, wl_surface*, std::uint32_t) {}
 };
 }
+
+bool WaylandOwner::ownsSurface(wl_surface* surface) const {
+    if (!surface) return false;
+    for (const auto& [id, output] : nativeOutputs_) { (void)id; if (output->surface == surface) return true; }
+    return false;
+}
+const wl_seat_listener WaylandOwner::seatListener{
+    [](void* data, wl_seat* seat, std::uint32_t capabilities) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+            if (!self.keyboard_) {
+                self.keyboard_ = wl_seat_get_keyboard(seat);
+                if (self.keyboard_) wl_keyboard_add_listener(self.keyboard_, &keyboardListener, &self);
+            }
+        } else if (self.keyboard_) {
+            self.focusedSurface_ = nullptr; self.input_.focus(false);
+            wl_keyboard_release(self.keyboard_); self.keyboard_ = nullptr;
+        }
+    },
+    [](void*, wl_seat*, const char*) {}
+};
+const wl_keyboard_listener WaylandOwner::keyboardListener{
+    [](void* data, wl_keyboard*, std::uint32_t format, int fd, std::uint32_t size) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        self.input_.keymap({}); self.haveModifiers_ = false;
+        if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1 || !size || size > 1024*1024) { close(fd); return; }
+        void* map = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0); close(fd);
+        if (map == MAP_FAILED) return;
+        const bool okay = self.input_.keymap({static_cast<const char*>(map), size});
+        munmap(map, size);
+        if (okay) qInfo("Native keyboard keymap initialized");
+        else qWarning("Native keyboard unavailable; remaining locked");
+        self.input_.focus(okay && self.ownsSurface(self.focusedSurface_) && self.controller_.state() == State::Locked);
+    },
+    [](void* data, wl_keyboard*, std::uint32_t, wl_surface* surface, wl_array* keys) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        self.haveModifiers_ = false;
+        self.focusedSurface_ = self.ownsSurface(surface) ? surface : nullptr;
+        std::span<const unsigned> held;
+        if (keys && keys->size <= 768*sizeof(unsigned) && keys->size % sizeof(unsigned) == 0)
+            held = {static_cast<const unsigned*>(keys->data), keys->size/sizeof(unsigned)};
+        self.input_.focus(self.focusedSurface_ && self.controller_.state() == State::Locked, held);
+    },
+    [](void* data, wl_keyboard*, std::uint32_t, wl_surface*) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        self.focusedSurface_ = nullptr; self.input_.focus(false);
+    },
+    [](void* data, wl_keyboard*, std::uint32_t, std::uint32_t, std::uint32_t key, std::uint32_t state) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        if (!self.stopping_ && self.controller_.state() == State::Locked && self.ownsSurface(self.focusedSurface_))
+            self.input_.key(key, state == WL_KEYBOARD_KEY_STATE_PRESSED);
+    },
+    [](void* data, wl_keyboard*, std::uint32_t, std::uint32_t depressed, std::uint32_t latched, std::uint32_t locked, std::uint32_t group) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        self.modifiers_ = {depressed, latched, locked, group}; self.haveModifiers_ = true;
+        self.input_.modifiers(depressed, latched, locked, group);
+    },
+    [](void*, wl_keyboard*, std::int32_t, std::int32_t) {} // No key repeat in this proof.
+};
+
 const wl_registry_listener WaylandOwner::registryListener{registryGlobal, registryRemove};
 const ext_session_lock_surface_v1_listener WaylandOwner::surfaceListener{surfaceConfigure};
 const ext_session_lock_v1_listener WaylandOwner::lockListener{lockConfirmed, lockFinished};
@@ -49,8 +109,19 @@ WaylandOwner::Buffer::~Buffer() {
     if (proxy) wl_buffer_destroy(proxy);
     if (mapping && mapping != MAP_FAILED) munmap(mapping, size);
 }
-WaylandOwner::WaylandOwner(unsigned seconds)
-    : developmentSeconds_(seconds), controller_(*this) {
+WaylandOwner::WaylandOwner(unsigned seconds, bool authenticate, std::string worker)
+    : authenticate_(authenticate), auth_(std::move(worker)), input_(auth_), developmentSeconds_(seconds), controller_(*this) {
+    auth_.changed = [this] {
+        if (stopping_ || repaintQueued_) return;
+        repaintQueued_ = true;
+        QTimer::singleShot(16, this, [this] {
+            repaintQueued_ = false;
+            if (!stopping_) { controller_.refresh(); flush(); }
+        });
+    };
+    auth_.succeeded = [this](std::uint64_t generation) {
+        if (!stopping_ && authenticate_ && controller_.authenticatedUnlock(auth_, generation)) flush();
+    };
     deadline_.setSingleShot(true);
     connect(&deadline_, &QTimer::timeout, this, [this] {
         stopFailure("Protocol deadline exceeded; disconnecting WITHOUT unlock");
@@ -140,6 +211,11 @@ void WaylandOwner::registryGlobal(void* data, wl_registry* registry, std::uint32
         self.manager_ = static_cast<ext_session_lock_manager_v1*>(wl_registry_bind(registry, id, &ext_session_lock_manager_v1_interface, 1));
         self.managerId_ = id;
         qInfo("ext-session-lock-v1 manager bound at version 1");
+    } else if (!std::strcmp(interface, wl_seat_interface.name) && self.authenticate_ && !self.seat_) {
+        if (version < 7) { self.stopFailure("wl_seat version >=7 required for native input"); return; }
+        self.seat_ = static_cast<wl_seat*>(wl_registry_bind(registry, id, &wl_seat_interface, 7));
+        self.seatId_ = id;
+        if (self.seat_) wl_seat_add_listener(self.seat_, &seatListener, &self);
     } else if (!std::strcmp(interface, wl_output_interface.name)) {
         if (self.nativeOutputs_.contains(id)) return;
         if (self.nativeOutputs_.size() >= 64) { self.stopFailure("Output registry resource limit exceeded"); return; }
@@ -165,6 +241,13 @@ void WaylandOwner::registryRemove(void* data, wl_registry*, std::uint32_t id) {
         else wl_output_destroy(output);
         self.nativeOutputs_.erase(it);
         qInfo() << "Output removed, registry id" << id;
+    } else if (id == self.seatId_) {
+        self.focusedSurface_ = nullptr; self.input_.focus(false);
+        if (self.keyboard_) wl_keyboard_release(self.keyboard_);
+        self.keyboard_ = nullptr;
+        if (self.seat_) wl_seat_release(self.seat_);
+        self.seat_ = nullptr; self.seatId_ = 0;
+        qWarning("Keyboard seat removed; remaining locked");
     } else if (id == self.managerId_ || id == self.compositorId_ || id == self.shmId_) {
         self.stopFailure("Required protocol global removed; no unlock requested");
     }
@@ -210,6 +293,7 @@ void WaylandOwner::removeSurface(std::uint32_t id) {
     auto it = nativeOutputs_.find(id);
     if (it == nativeOutputs_.end()) return;
     auto& output = *it->second;
+    if (focusedSurface_ == output.surface) { focusedSurface_ = nullptr; input_.focus(false); }
     if (output.lockSurface) ext_session_lock_surface_v1_destroy(output.lockSurface);
     if (output.surface) wl_surface_destroy(output.surface);
     output.lockSurface = nullptr;
@@ -226,7 +310,7 @@ void WaylandOwner::surfaceConfigure(void* data, ext_session_lock_surface_v1*,
     else if (output.configureLogs == 9) qInfo() << "Further configure logs suppressed for output" << output.id;
     self.controller_.configure(output.id, {serial, width, height});
 }
-FrameResult WaylandOwner::present(std::uint32_t id, Configure c) {
+FrameResult WaylandOwner::present(std::uint32_t id, Configure c, bool acknowledge) {
     const auto it = nativeOutputs_.find(id);
     if (it == nativeOutputs_.end() || !it->second->lockSurface || !validGeometry(c)) return FrameResult::Failed;
     // Never repaint memory until the compositor releases it. Keep at most two
@@ -258,19 +342,20 @@ FrameResult WaylandOwner::present(std::uint32_t id, Configure c) {
     const auto state = stateName(controller_.state());
     const QString notice = developmentSeconds_
         ? QString("UNSAFE DEVELOPMENT: automatic unlock %1 seconds after confirmation").arg(developmentSeconds_)
-        : QStringLiteral("NO AUTHENTICATION / NO UNLOCK — NOT FOR PRODUCTION USE");
+        : (authenticate_ ? QStringLiteral("AUTHENTICATION PROOF — NOT FOR PRODUCTION USE")
+                         : QStringLiteral("NO AUTHENTICATION / NO UNLOCK — NOT FOR PRODUCTION USE"));
     const bool rendered = Presentation::render(image, QString("Output registry id %1").arg(id),
-                                               QString::fromUtf8(state.data(), qsizetype(state.size())), notice);
+                                               QString::fromUtf8(state.data(), qsizetype(state.size())), notice, {}, auth_.presentation());
     auto& output = *it->second;
     if (!rendered) {
-        Presentation::fallback(image);
+        Presentation::fallback(image, auth_.presentation());
         if (!output.fallbackLogged) qWarning() << "Native solid fallback activated for output" << id;
         output.fallbackLogged = true;
     }
     // Surface-local dimensions are authoritative. Scale 1 and NORMAL buffer
     // transform are legal on HiDPI/rotated outputs; compositor maps the surface.
     // Native-resolution/fractional quality is deferred, coverage is not.
-    ext_session_lock_surface_v1_ack_configure(output.lockSurface, c.serial);
+    if (acknowledge) ext_session_lock_surface_v1_ack_configure(output.lockSurface, c.serial);
     wl_surface_set_buffer_scale(output.surface, 1);
     wl_surface_set_buffer_transform(output.surface, WL_OUTPUT_TRANSFORM_NORMAL);
     wl_surface_attach(output.surface, buffer->proxy, 0, 0);
@@ -303,8 +388,11 @@ void WaylandOwner::lockConfirmed(void* data, ext_session_lock_v1*) {
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     if (self.developmentSeconds_) self.developmentTimer_.start(int(self.developmentSeconds_ * 1000));
 #endif
-    // Existing proof images may say Acquiring: canonical status is this event,
-    // not QML. Future configured/hotplug frames show current native state.
+    if (self.authenticate_ && self.ownsSurface(self.focusedSurface_)) {
+        self.input_.focus(true);
+        if (self.haveModifiers_) self.input_.modifiers(self.modifiers_[0], self.modifiers_[1], self.modifiers_[2], self.modifiers_[3]);
+    }
+    self.controller_.refresh();
 }
 void WaylandOwner::lockFinished(void* data, ext_session_lock_v1*) {
     auto& self = *static_cast<WaylandOwner*>(data);
@@ -314,7 +402,19 @@ void WaylandOwner::lockFinished(void* data, ext_session_lock_v1*) {
 }
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
 void WaylandOwner::developmentUnlockAndSync() {
-    qWarning("UNSAFE DEVELOPMENT TIMER: explicitly requested unauthenticated unlock");
+    qWarning("UNSAFE DEVELOPMENT TIMER UNLOCK: authenticated acceptance FAILED");
+    auth_.cancel();
+    unlockAndSync();
+}
+#endif
+void WaylandOwner::authenticatedUnlockAndSync() {
+#if MAGI_LOCK_DEVELOPMENT_UNLOCK
+    developmentTimer_.stop();
+#endif
+    qInfo("AUTHENTICATED UNLOCK: current PAM Success");
+    unlockAndSync();
+}
+void WaylandOwner::unlockAndSync() {
     ext_session_lock_v1_unlock_and_destroy(lock_);
     lock_ = nullptr;
     sync_ = wl_display_sync(display_);
@@ -322,20 +422,15 @@ void WaylandOwner::developmentUnlockAndSync() {
     wl_callback_add_listener(sync_, &syncListener, this);
     deadline_.start(5000);
 }
-#endif
 void WaylandOwner::syncDone(void* data, wl_callback* callback, std::uint32_t) {
     auto& self = *static_cast<WaylandOwner*>(data);
     wl_callback_destroy(callback);
     self.sync_ = nullptr;
-#if MAGI_LOCK_DEVELOPMENT_UNLOCK
     if (!self.controller_.unlockSynced()) { self.stopFailure("Unexpected unlock sync"); return; }
     self.deadline_.stop();
     self.stopping_ = true;
-    qInfo("Development unlock processed by compositor; exiting");
+    qInfo("Explicit unlock processed by compositor; exiting");
     QCoreApplication::quit();
-#else
-    self.stopFailure("Unexpected sync completion");
-#endif
 }
 void WaylandOwner::disconnect() {
     stopping_ = true;
@@ -343,6 +438,9 @@ void WaylandOwner::disconnect() {
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     developmentTimer_.stop();
 #endif
+    auth_.changed = {}; auth_.succeeded = {}; auth_.cancel();
+    focusedSurface_ = nullptr; input_.focus(false);
+    dispose(keyboard_); dispose(seat_);
     reader_.reset(); writer_.reset();
     // Dispose every proxy locally before disconnect; never marshal cleanup
     // unlock/destroy requests on the lock object, even when confirmed.

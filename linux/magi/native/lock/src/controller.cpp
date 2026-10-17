@@ -1,4 +1,5 @@
 #include "controller.hpp"
+#include "auth_controller.hpp"
 namespace magi {
 std::string_view stateName(State state) {
     switch (state) {
@@ -96,8 +97,9 @@ bool Controller::configure(std::uint32_t id, Configure c) {
     return true;
 }
 void Controller::draw(std::uint32_t id, Output& output) {
-    if (!output.pending || !output.surface || output.failed) return;
-    const auto result = backend_.present(id, *output.pending);
+    if (!output.surface || output.failed || (!output.pending && !(output.dirty && output.committed))) return;
+    const bool acknowledge = output.pending.has_value();
+    const auto result = backend_.present(id, acknowledge ? *output.pending : *output.committed, acknowledge);
     if (result == FrameResult::Deferred) return;
     if (result == FrameResult::Failed) {
         output.failed = true;
@@ -108,13 +110,24 @@ void Controller::draw(std::uint32_t id, Output& output) {
         return;
     }
     output.fallback = result == FrameResult::Fallback;
-    output.committed = output.pending;
+    if (acknowledge) output.committed = output.pending;
     output.pending.reset();
+    output.dirty = false;
+}
+void Controller::refresh() {
+    if (state_ != State::Acquiring && state_ != State::Locked) return;
+    for (auto& [id, output] : outputs_) { output.dirty = true; draw(id, output); }
 }
 void Controller::bufferAvailable(std::uint32_t id) {
     if (state_ != State::Acquiring && state_ != State::Locked) return;
     auto it = outputs_.find(id);
     if (it != outputs_.end()) draw(id, it->second);
+}
+bool Controller::authenticatedUnlock(AuthController& auth, std::uint64_t generation) {
+    if (state_ != State::Locked || !confirmed_ || cleaned_ || !auth.consumeSuccess(generation)) return false;
+    state_ = State::Unlocking;
+    backend_.authenticatedUnlockAndSync();
+    return true;
 }
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
 bool Controller::developmentUnlock(bool enabled) {
@@ -123,11 +136,11 @@ bool Controller::developmentUnlock(bool enabled) {
     backend_.developmentUnlockAndSync();
     return true;
 }
+#endif
 bool Controller::unlockSynced() {
     if (state_ != State::Unlocking) return false;
     state_ = State::Idle;
     confirmed_ = false;
     return true;
 }
-#endif
 }

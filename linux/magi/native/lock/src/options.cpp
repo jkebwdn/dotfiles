@@ -6,6 +6,7 @@ Options parseOptions(std::span<const std::string_view> args) {
     for (const auto arg : args) {
         if (arg == "--help" && !result.help) result.help = true;
         else if (arg == "--build-info" && !result.buildInfo) result.buildInfo = true;
+        else if (arg == "--authenticate" && !result.authenticate) result.authenticate = true;
         else if (arg == "--acquire-session-lock" && !result.acquire) result.acquire = true;
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
         else if (arg.starts_with("--unsafe-development-unlock-after=")) {
@@ -22,8 +23,10 @@ Options parseOptions(std::span<const std::string_view> args) {
 #endif
         else { result.error = "Unknown or duplicate argument"; return result; }
     }
-    if ((result.help || result.buildInfo) && (result.acquire || result.developmentSeconds))
+    if ((result.help || result.buildInfo) && (result.acquire || result.developmentSeconds || result.authenticate))
         result.error = "Informational arguments cannot be combined with acquisition";
+    else if (result.authenticate && !result.acquire)
+        result.error = "Authentication requires explicit acquisition";
     else if (result.developmentSeconds && !result.acquire)
         result.error = "Development timer requires explicit acquisition";
     else if (!result.help && !result.buildInfo && !result.acquire)

@@ -6,13 +6,28 @@
 #include <QQuickRenderTarget>
 #include <QQuickWindow>
 #include <memory>
+#include <QPainter>
+#include <algorithm>
 
-static void initializeResources() { Q_INIT_RESOURCE(proof_qml); }
+static void initializeResources() {
+    static const bool initialized = [] { Q_INIT_RESOURCE(proof_qml); return true; }();
+    (void)initialized;
+}
 namespace magi {
 void Presentation::fallback(QImage& image) { image.fill(QColor("#181825")); }
-bool Presentation::render(QImage& image, const QString& output, const QString& state,
-                          const QString& notice, const QByteArray& testSource) {
+void Presentation::fallback(QImage& image, AuthPresentation auth) {
     fallback(image);
+    if (image.isNull()) return;
+    QPainter painter(&image);
+    painter.setPen(QColor("#cdd6f4"));
+    QFont font; font.setPixelSize(24); painter.setFont(font);
+    painter.drawText(image.rect(), Qt::AlignCenter | Qt::TextWordWrap,
+        QStringLiteral("MAGI LOCK\n") + QString::fromLatin1(authStateName(auth.state))
+        + (auth.caps ? QStringLiteral("\nCaps Lock") : QString()));
+}
+bool Presentation::render(QImage& image, const QString& output, const QString& state,
+                          const QString& notice, const QByteArray& testSource, AuthPresentation auth) {
+    fallback(image, auth);
     if (image.isNull()) return false;
     initializeResources();
     // Software render control uses public Qt APIs, no initialize/beginFrame/
@@ -38,6 +53,10 @@ bool Presentation::render(QImage& image, const QString& output, const QString& s
     item->setProperty("outputLabel", output);
     item->setProperty("nativeState", state);
     item->setProperty("developmentNotice", notice);
+    item->setProperty("characterCount", int(std::min(auth.count, 511u)));
+    item->setProperty("inputActive", auth.active);
+    item->setProperty("capsLock", auth.caps);
+    item->setProperty("authStatus", QString::fromLatin1(authStateName(auth.state)));
     item->setParentItem(window.contentItem());
     item->setWidth(image.width());
     item->setHeight(image.height());
@@ -45,7 +64,7 @@ bool Presentation::render(QImage& image, const QString& output, const QString& s
     control.sync();
     control.render();
     control.invalidate();
-    if (renderError) fallback(image);
+    if (renderError) fallback(image, auth);
     return !renderError;
 }
 }

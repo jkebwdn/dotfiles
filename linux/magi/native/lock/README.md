@@ -1,105 +1,97 @@
-# MAGI native session-lock protocol proof
+# MAGI native authenticated-lock proof
 
-**Phase 2, not a production locker. No authentication. No production routing.**
-The native compositor test has **not** run. Do not invoke acquisition without
-explicit operator approval for that specific run.
+**Phase 4 accepted: one real single-output authenticated unlock passed.**
+Hyprlock remains production. Do not acquire a session lock or use a real password
+without explicit approval for that specific run. No install/routing change exists.
 
-This standalone C++20/Qt application owns `ext-session-lock-v1` through libwayland.
-Qt Quick renders an embedded, inert proof scene offscreen into native-owned SHM
-pixels; it never creates an ordinary Wayland window. Native solid colour remains
-available without QML. See the [checkpoint](../../docs/design/lock-screen-phase2-protocol-proof.md)
-for ownership, failure limitations, source evidence and the manual test procedure.
+[Phase 2](../../docs/design/lock-screen-phase2-protocol-proof.md) accepted the native
+Wayland owner. [Phase 3](../../docs/design/lock-screen-phase3-pam-proof.md) accepted
+one independent ordinary-user PAM success. The
+[Phase 4 checkpoint](../../docs/design/lock-screen-phase4-authenticated-unlock.md)
+records their integration, accepted live result, synthetic evidence and remaining gates.
 
-## Build and automated tests (do not acquire a lock)
+The C++20 owner binds ext-session-lock-v1 and wl_seat/wl_keyboard on one native
+Wayland connection. xkbcommon translates keys directly into a bounded native
+credential buffer. QML renders offscreen and receives only presentation values.
+On submission, a single ordinary-user Rust child uses private inherited
+AF_UNIX/SOCK_SEQPACKET IPC and the existing `hyprlock` PAM service. Only the C++
+lock controller may authorize unlock for a current, validated successful attempt.
 
-From the repository root, using installed development libraries:
+## Offline builds and non-locking tests
 
-```bash
-cmake -S linux/magi/native/lock -B /tmp/magi-lock-build -G Ninja -DCMAKE_BUILD_TYPE=Debug
-cmake --build /tmp/magi-lock-build
-ctest --test-dir /tmp/magi-lock-build --output-on-failure
-/tmp/magi-lock-build/magi-lock-proof --build-info
-```
+Dependencies: C++20, CMake >=3.25, Ninja, pkg-config, Qt >=6.8 Core/Gui/Quick/Qml,
+wayland-client >=1.20, wayland-scanner/protocols >=1.25, xkbcommon >=1.0, Linux/glibc
+with closefrom spawn actions and explicit_bzero, PAM development library, Rust.
+Verified here: Qt 6.11.2, Wayland 1.26.0, xkbcommon 1.13.2, PAM 1.7.3,
+Rust/Cargo 1.99.1. Vulkan headers are optional and unused. Install nothing
+implicitly. The only Cargo dependency remains pinned libc 0.2.179.
 
-The default binary has **no unlock implementation**, so it is not suitable for
-an ordinary live test or deployment. Running it without arguments fails without
-connecting to Wayland. Help/build information also run without Qt initialization
-or a display connection. No test calls `WaylandOwner::start()`.
-
-To build the separate, explicitly unsafe development variant (still no lock):
-
-```bash
-cmake -S linux/magi/native/lock -B /tmp/magi-lock-dev-build -G Ninja \
-  -DCMAKE_BUILD_TYPE=Debug -DMAGI_LOCK_DEVELOPMENT_UNLOCK=ON
-cmake --build /tmp/magi-lock-dev-build
-ctest --test-dir /tmp/magi-lock-dev-build --output-on-failure
-```
-
-Dependencies: C++20 compiler, CMake >=3.25, Ninja (or another CMake generator),
-pkg-config, wayland-client >=1.20, wayland-scanner, wayland-protocols >=1.25 with
-`staging/ext-session-lock/ext-session-lock-v1.xml`, Qt >=6.8 Core/Gui/Quick/Qml,
-Linux memfd/mmap, Qt offscreen platform and software Quick renderer. Tested with
-Qt 6.11.2 and Wayland 1.26.0. Vulkan headers are optional and unused. Nothing needs
-to be installed on the audited machine. Missing required dependencies must be
-reported, not installed automatically.
-
-CMake generates `session-lock.h` and `session-lock.c` using the installed XML,
-inside the build directory. Generated protocol glue and binaries are not tracked.
-There is no install target. `native/` is excluded from the MAGI Stow package.
-
-## Proposed live command — APPROVAL REQUIRED, not executed
-
-First complete the checkpoint's save-work, TTY, Hyprlock and recovery preflight.
-Only the separate development binary is intended for this first test:
-
-```bash
-/tmp/magi-lock-dev-build/magi-lock-proof \
-  --acquire-session-lock --unsafe-development-unlock-after=60
-```
-
-This really locks the session. It prints its PID and protocol diagnostics. Its
-only development release is an **automatic timer 60 seconds after the compositor
-confirms `locked`**. No key, mouse action, signal, socket or QML method unlocks.
-The timer is explicitly unauthenticated; it is compiled out by default and must
-never be deployed. It is not a watchdog: a crashed/hung process cannot guarantee
-release. Do not attempt crash/signal tests in the first live run.
-
-SIGINT, SIGTERM, SIGUSR1, SIGKILL or a fatal error may leave the graphical session
-locked and unusable. From an authenticated TTY, `kill -TERM <printed-proof-pid>`
-terminates a wedged proof **without unlocking**. Ending the graphical session may
-be required; Hyprlock cannot necessarily take over a dead client's lock. Never
-turn on lock restoration or clear compositor lock state automatically.
-
-Hyprlock remains the production route through Hypridle/loginctl. This program
-has no PAM, credentials, Rust, keyboard listeners, main-shell IPC, DBus service,
-Settings access, final UI or system-service integration.
-
-## Phase 3 — isolated authentication proof
-
-**Operator accepted:** one real ordinary-user non-locking PAM success; automated
-tests cover the conversation/error paths. No combined locker integration yet.
-
-The separate [Rust authentication proof](auth/Cargo.toml) and
-[Phase 3 checkpoint](../../docs/design/lock-screen-phase3-pam-proof.md) do not
-change or integrate with the Phase 2 owner above. Hyprlock remains production.
-
-Build and test from the repository root (no authentication or session lock):
+From the repository root (these commands neither authenticate nor lock):
 
 ```bash
 cargo build --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-build
-cargo test --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-build
-cargo build --locked --offline --release --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-release
+cargo build --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase4 --example protocol_fixture
+
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-phase4-build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DMAGI_LOCK_AUTH_WORKER=/tmp/magi-auth-build/debug/magi-lock-auth \
+  -DMAGI_LOCK_AUTH_FIXTURE=/tmp/magi-auth-phase4/debug/examples/protocol_fixture
+cmake --build /tmp/magi-lock-phase4-build
+ctest --test-dir /tmp/magi-lock-phase4-build --output-on-failure
+
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-phase4-dev-build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug -DMAGI_LOCK_DEVELOPMENT_UNLOCK=ON \
+  -DMAGI_LOCK_AUTH_WORKER=/tmp/magi-auth-build/debug/magi-lock-auth \
+  -DMAGI_LOCK_AUTH_FIXTURE=/tmp/magi-auth-phase4/debug/examples/protocol_fixture
+cmake --build /tmp/magi-lock-phase4-dev-build
+ctest --test-dir /tmp/magi-lock-phase4-dev-build --output-on-failure
+
+cargo test --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase4
+cargo clippy --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase4 --all-targets -- -D warnings
+cargo fmt --manifest-path linux/magi/native/lock/auth/Cargo.toml --check
 ```
 
-The only Cargo dependency is pinned `libc` 0.2.179, already cached on the proof
-machine. Offline builds elsewhere require that dependency to be available first.
-The tests require private Unix socketpair traffic and a pseudo-terminal; a sandbox
-that denies these operations cannot run the suite. Tests use synthetic responses.
-One real-worker startup test sends Cancel **before HelloAck**, so it cannot enter
-PAM. Test-only child backends are absent from the worker binary.
+Tests require socketpair traffic and a pseudo-terminal; the agent sandbox blocks
+socket sends, so automated tests were permitted outside it. They use synthetic
+credentials only. No C++ test calls WaylandOwner::start(). The Rust startup gate
+test cancels before HelloAck, so it never enters PAM. The test fixture is a separate
+Cargo example using the real IPC library, not a fake mode in magi-lock-auth.
 
-`magi-auth-harness` is a native Rust terminal parent using the same inherited-FD
-contract proposed for the future C++ owner. No QML is involved. Running it with
-no arguments refuses authentication. The checkpoint contains the exact gated,
-non-locking real-PAM procedure: **do not execute it without operator approval**.
-No install target, CMake integration, runtime routing or automatic retry is added.
+CMake does not invoke Cargo or access the network. BUILD_TESTING requires the
+explicit prebuilt fixture path. The worker path is a build option, not a runtime
+socket/worker selector; empty means the packaged sibling `magi-lock-auth` next to
+the owner. A future package should install these in a trusted directory and exclude
+test fixtures. No machine-specific /tmp path is hardcoded into source defaults.
+Generated protocols and binaries remain in /tmp; native/ remains Stow-excluded.
+
+## Accepted real test — historical procedure, not authorization to repeat
+
+First complete the checkpoint's save-work, authenticated TTY recovery, current
+output/process, worker-hash and build-gate preflight. After explicit approval only:
+
+```bash
+/tmp/magi-lock-phase4-dev-build/magi-lock-proof \
+  --acquire-session-lock --authenticate --unsafe-development-unlock-after=180
+```
+
+This **really locks the session and enables real PAM**. Type the current account
+password once and press Enter. QML shows only bullets. Successful authentication
+must log `AUTHENTICATED UNLOCK`, cancel the emergency timer, and return to the desktop
+well before 180 seconds. No real wrong-password test or second attempt is included.
+
+If authentication fails, do not retry; wait for the development emergency timer.
+`UNSAFE DEVELOPMENT TIMER UNLOCK` means authenticated-unlock acceptance **failed**.
+The timer starts only on compositor confirmation, is explicitly runtime-gated,
+and is entirely absent from default builds. It is not a crash/hang watchdog;
+process death can leave the compositor locked. Keep the checkpoint's TTY recovery
+route available. Signals never authorize unlock. Do not run a destructive recovery
+test, change compositor restore policy, or assume Hyprlock can take over a dead owner.
+
+No-argument and informational invocations never connect to Wayland. `--authenticate`
+alone is rejected. Without it, legacy explicit protocol-proof acquisition remains
+possible but has no keyboard/PAM path. Default builds now include authenticated
+unlock, **not** the old Phase 2 no-unlock implementation; they still contain no
+unauthenticated timer. Do not use a default build for the first combined real test.
+
+Production lock actions, Hypridle/loginctl routing, PAM files, broad MAGI services,
+clipboard, Settings and final visual design remain outside this proof.

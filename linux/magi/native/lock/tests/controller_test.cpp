@@ -17,14 +17,15 @@ struct Fake final : Backend {
     bool requestLock() override { ++requests; events.emplace_back("request"); return requestOkay; }
     bool createSurface(uint32_t) override { ++creates; events.emplace_back("role"); return surfaceOkay; }
     void removeSurface(uint32_t) override { ++removes; events.emplace_back("surface removed"); }
-    FrameResult present(uint32_t, Configure c) override {
+    FrameResult present(uint32_t, Configure c, bool acknowledge = true) override {
         if (frameResult == FrameResult::Presented || frameResult == FrameResult::Fallback) {
-            events.emplace_back("prepare"); events.emplace_back("ack");
+            events.emplace_back("prepare"); if (acknowledge) events.emplace_back("ack");
             events.emplace_back("attach"); events.emplace_back("commit"); commits.push_back(c);
         }
         return frameResult;
     }
     void diagnostic(std::string_view) override {}
+    void authenticatedUnlockAndSync() override { ++unlocks; events.emplace_back("authenticated unlock"); }
     void disconnect() override { ++disconnects; events.emplace_back("disconnect"); }
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     void developmentUnlockAndSync() override { ++unlocks; events.emplace_back("unsafe unlock"); }

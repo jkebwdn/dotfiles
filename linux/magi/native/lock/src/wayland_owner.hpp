@@ -1,5 +1,7 @@
 #pragma once
 #include "controller.hpp"
+#include "auth_controller.hpp"
+#include "native_input.hpp"
 #include <QObject>
 #include <QSocketNotifier>
 #include <QTimer>
@@ -11,15 +13,16 @@
 namespace magi {
 class WaylandOwner final : public QObject, public Backend {
 public:
-    explicit WaylandOwner(unsigned developmentSeconds);
+    explicit WaylandOwner(unsigned developmentSeconds, bool authenticate, std::string worker);
     ~WaylandOwner() override;
     bool start(); // The ONLY entry point which can connect/request a real lock.
     bool requestLock() override;
     bool createSurface(std::uint32_t id) override;
     void removeSurface(std::uint32_t id) override;
-    FrameResult present(std::uint32_t id, Configure configure) override;
+    FrameResult present(std::uint32_t id, Configure configure, bool acknowledge = true) override;
     void diagnostic(std::string_view message) override;
     void disconnect() override;
+    void authenticatedUnlockAndSync() override;
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     void developmentUnlockAndSync() override;
 #endif
@@ -45,6 +48,10 @@ private:
         ~Buffer();
     };
     void flush();
+    void unlockAndSync();
+    bool ownsSurface(wl_surface* surface) const;
+    static const wl_seat_listener seatListener;
+    static const wl_keyboard_listener keyboardListener;
     void dispatch();
     void stopFailure(const char* message);
     void releaseBuffer(Buffer* buffer);
@@ -63,6 +70,16 @@ private:
     static const wl_callback_listener discoveryListener;
     static const wl_callback_listener syncListener;
     static const wl_buffer_listener bufferListener;
+    wl_seat* seat_ = nullptr;
+    wl_keyboard* keyboard_ = nullptr;
+    wl_surface* focusedSurface_ = nullptr;
+    std::uint32_t seatId_ = 0;
+    std::array<unsigned, 4> modifiers_{};
+    bool haveModifiers_ = false;
+    bool repaintQueued_ = false;
+    bool authenticate_;
+    AuthController auth_;
+    NativeInput input_;
     wl_display* display_ = nullptr;
     wl_registry* registry_ = nullptr;
     wl_compositor* compositor_ = nullptr;

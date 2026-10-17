@@ -7,6 +7,7 @@ struct Options {
     bool help = false;
     bool buildInfo = false;
     bool acquire = false;
+    bool authenticate = false;
     unsigned developmentSeconds = 0;
     std::string error;
 };

@@ -1,0 +1,16 @@
+# Structural regression: presentation has no input widget/handler or credential API.
+file(READ "${SOURCE}/qml/Proof.qml" qml)
+if(qml MATCHES "TextField|TextInput|Keys\\.|password|credential|unlock|Clipboard")
+    message(FATAL_ERROR "QML acquired an input/credential/unlock boundary")
+endif()
+file(READ "${SOURCE}/src/presentation.cpp" renderer)
+if(renderer MATCHES "credential\\.bytes|setContextProperty|setContextObject")
+    message(FATAL_ERROR "Presentation exposes a native security object or credential")
+endif()
+# Only allowed property names are assigned to the QML root.
+string(REGEX MATCHALL "setProperty\\(\"[^\"]+\"" properties "${renderer}")
+foreach(property IN LISTS properties)
+    if(NOT property MATCHES "\"(outputLabel|nativeState|developmentNotice|characterCount|inputActive|capsLock|authStatus)\"$")
+        message(FATAL_ERROR "Unexpected presentation property")
+    endif()
+endforeach()

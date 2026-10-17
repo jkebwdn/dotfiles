@@ -1,9 +1,20 @@
 #include "presentation.hpp"
+#include "controller.hpp"
 #include <QGuiApplication>
 #include <QQuickWindow>
 #include <QSGRendererInterface>
 #include <iostream>
 #include <vector>
+struct LockBackend final : magi::Backend {
+    int unlocks = 0;
+    bool requestLock() override { return true; }
+    bool createSurface(std::uint32_t) override { return true; }
+    void removeSurface(std::uint32_t) override {}
+    magi::FrameResult present(std::uint32_t, magi::Configure, bool) override { return magi::FrameResult::Fallback; }
+    void diagnostic(std::string_view) override {}
+    void disconnect() override {}
+    void authenticatedUnlockAndSync() override { ++unlocks; }
+};
 int main(int argc, char** argv) {
     QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
     QGuiApplication app(argc, argv);
@@ -29,5 +40,22 @@ int main(int argc, char** argv) {
     if (!magi::Presentation::render(portrait, "Rotated output", "Locked", "TEST")) return 6;
     QImage null;
     if (magi::Presentation::render(null, "", "", "")) return 7;
+    LockBackend backend;
+    magi::Controller lock(backend); lock.acquire(); lock.locked();
+    magi::Credential credential;
+    constexpr char secret[] = "MAGI_TEST_SECRET_7df1_PRESENTATION";
+    if (!credential.append({secret, sizeof(secret)-1})) return 8;
+    for (auto state : {magi::AuthState::Editing, magi::AuthState::Authenticating,
+                       magi::AuthState::Failed, magi::AuthState::WorkerError, magi::AuthState::Succeeded}) {
+        magi::AuthPresentation view{unsigned(credential.units()), true, true, state};
+        if (!magi::Presentation::render(image, "Output", "Locked", "TEST", {}, view)) return 9;
+        if (backend.unlocks || lock.state()!=magi::State::Locked) return 10;
+        if (magi::Presentation::render(image, "Output", "Locked", "TEST", "invalid QML", view)) return 11;
+        magi::Presentation::fallback(image, view);
+        unsigned textPixels=0;
+        for (auto pixel : pixels) { if (qAlpha(pixel)!=255) return 12; if (pixel!=background) ++textPixels; }
+        if (textPixels<100 || backend.unlocks || lock.state()!=magi::State::Locked) return 13;
+    }
+    credential.clear();
     std::cout << "Real offscreen QML/native-buffer render, invalid QML, wrong root and solid fallback passed\n";
 }

@@ -9,6 +9,8 @@
 #include <iostream>
 #include <string_view>
 #include <vector>
+#include <sys/resource.h>
+#include <unistd.h>
 
 int main(int argc, char** argv) {
     std::vector<std::string_view> arguments;
@@ -17,22 +19,27 @@ int main(int argc, char** argv) {
     if (!options.error.empty()) { std::cerr << options.error << '\n'; return 64; }
     if (options.buildInfo) {
         std::cout << "MAGI lock protocol proof; development-unlock="
-                  << MAGI_LOCK_DEVELOPMENT_UNLOCK << "; no authentication\n";
+                  << MAGI_LOCK_DEVELOPMENT_UNLOCK << "; native-authentication=1; explicit --authenticate required\n";
         return 0;
     }
     if (options.help) {
         std::cout << "MAGI lock protocol proof — NOT a production locker\n"
                      "--build-info  Offline build information; no display connection\n"
-                     "--acquire-session-lock  Acquire REAL lock; requires operator approval\n";
+                     "--acquire-session-lock  Acquire REAL lock; requires operator approval\n"
+                     "--authenticate  Enable native keyboard and private PAM worker\n";
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
         std::cout << "--unsafe-development-unlock-after=N  REQUIRED with acquisition in this\n"
                      "development build; auto-unlock N=10..300 seconds AFTER confirmation\n";
 #else
-        std::cout << "This build has NO UNLOCK/AUTHENTICATION. Do not run it on your session.\n";
+        std::cout << "This build has no unauthenticated unlock. Authenticated proof still requires approval.\n";
 #endif
         return 0;
     }
-    std::cerr << "REAL SESSION LOCK REQUESTED. This is a protocol proof, not authentication.\n";
+    std::cerr << "REAL SESSION LOCK REQUESTED. Explicit proof, not production routing.\n";
+    const rlimit coreLimit{0, 0};
+    if (setrlimit(RLIMIT_CORE, &coreLimit) || getuid() == 0 || getuid() != geteuid() || getgid() != getegid()) {
+        std::cerr << "Ordinary-user/core-limit validation failed\n"; return 64;
+    }
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     std::cerr << "WARNING: UNSAFE DEVELOPMENT UNLOCK ENABLED for " << options.developmentSeconds
               << " seconds after compositor confirmation. Never deploy.\n";
@@ -54,7 +61,11 @@ int main(int argc, char** argv) {
     QGuiApplication app(qtArgc, qtArgv);
     app.setQuitOnLastWindowClosed(false);
     qInfo() << "Protocol proof PID" << QCoreApplication::applicationPid();
-    magi::WaylandOwner owner(options.developmentSeconds);
+    const std::string configuredWorker = MAGI_LOCK_AUTH_WORKER;
+    const auto worker = configuredWorker.empty()
+        ? (QCoreApplication::applicationDirPath() + "/magi-lock-auth").toStdString() : configuredWorker;
+    if (options.authenticate && access(worker.c_str(), X_OK)) { qCritical("Auth worker unavailable; no lock requested"); return 64; }
+    magi::WaylandOwner owner(options.developmentSeconds, options.authenticate, worker);
     QTimer::singleShot(0, &app, [&owner] { if (!owner.start()) QCoreApplication::exit(2); });
     return app.exec();
 }
