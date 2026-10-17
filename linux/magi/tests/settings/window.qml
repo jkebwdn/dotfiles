@@ -1,13 +1,15 @@
 import QtQuick
 import Quickshell
 import "../../.config/quickshell/magi/components/settings" as UI
+import "../../.config/quickshell/magi/components/hub" as HubUI
 import "../../.config/quickshell/magi/services" as Services
 ShellRoot {
     id: test
     property int step: 0
     property int failures: 0
     function check(ok,label) { if (!ok) { failures++; console.error("FAIL: " + label) } }
-    UI.SettingsApplication { id: app; readyToOpen: true }
+    UI.SettingsApplication {}
+    HubUI.HubWindow { id: hub; readyToOpen: true }
     Timer {
         interval: 600; running: true; repeat: true
         onTriggered: {
@@ -42,15 +44,15 @@ ShellRoot {
                 break
             case 8:
                 Services.SettingsWindowState.shown = false
-                app.readyToOpen = false
+                hub.readyToOpen = false
                 Services.SettingsWindowState.open()
                 break
             case 9:
-                test.check(Services.SettingsWindowState.requested && !Services.SettingsWindowState.shown, "busy interaction defers window")
-                app.readyToOpen = true
+                test.check(Services.Hub.opened && !hub.visible, "busy interaction defers window")
+                hub.readyToOpen = true
                 break
             case 10:
-                test.check(Services.SettingsWindowState.shown, "deferred request opens when safe")
+                test.check(Services.SettingsWindowState.shown && hub.visible, "deferred request opens when safe")
                 console.log("RESULT: " + test.failures + " failures; Settings window integration")
                 Qt.quit()
             }

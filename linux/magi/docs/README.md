@@ -1,5 +1,22 @@
 # MAGI — Research and Development
 
+## MAGI Hub — Phase 2C, native review pending (2026-10-17)
+
+Native follow-up: the operator accepts the Hub composition and integration. The final
+Notifications-only refinement removes its remaining title and measures surface height
+from content up to 640px. One native Notifications screenshot remains; see the
+[refinement checkpoint](design/runtime-phase2c.md#native-notifications-refinement--2026-10-17).
+
+Apps, Clipboard, Notifications, Emoji and Settings now share one retained Hub host
+with a separate selector pill anchored at two-thirds of the logical output height.
+Canonical Settings content and the real pinned Control Centre preview are integrated;
+production Settings actions no longer create a standalone window. Shared search,
+header-only masked artwork and utility presentation refinements are implemented.
+Automated/offscreen checks pass; native screenshots, focus/input-region and GPU-edge
+review remain. No commit/push. See [architecture, exact paths, tests and native
+checkpoint](design/runtime-phase2c.md). Earlier dated architecture descriptions below
+record their original milestones and are superseded by this phase where noted.
+
 Final v1 refinement: MAGI, border-only Hyprland, Ghostty reload, GTK/Thunar and
 Yazi are operator-accepted. Zen's operator-tested hybrid now has alias-only CSS,
 a dynamic workspace background recommendation and hex-only Copy in Settings.

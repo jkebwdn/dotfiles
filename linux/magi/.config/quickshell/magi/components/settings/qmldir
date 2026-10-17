@@ -16,3 +16,4 @@ VisualSettingsGroup 1.0 VisualSettingsGroup.qml
 SettingsNavigationItem 1.0 SettingsNavigationItem.qml
 SettingsDragHandle 1.0 SettingsDragHandle.qml
 SettingsReorderBoard 1.0 SettingsReorderBoard.qml
+SettingsContent 1.0 SettingsContent.qml

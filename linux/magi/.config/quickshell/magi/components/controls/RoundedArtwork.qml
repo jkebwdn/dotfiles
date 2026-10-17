@@ -4,6 +4,7 @@ import "../../theme" as Theme
 import "VisualState.js" as VisualState
 Item {
     id: root
+    property int fillMode: Image.PreserveAspectCrop
     property url source
     property real radius: 10
     property real borderWidth: 2
@@ -28,7 +29,7 @@ Item {
             anchors.fill: parent
             source: root.source
             sourceSize: Qt.size(width * 2, height * 2)
-            fillMode: Image.PreserveAspectCrop
+            fillMode: root.fillMode
             clip: true
             layer.enabled: true
             visible: false

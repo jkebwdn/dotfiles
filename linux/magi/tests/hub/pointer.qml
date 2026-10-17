@@ -13,7 +13,7 @@ ShellRoot {
             Services.Launcher.open()
             tryCompare(window, "visible", true)
             wait(100)
-            mouseClick(window.content.modeButtons.itemAt(2))
+            mouseClick(window.content.modeButtons.itemAt(3))
             compare(Services.Hub.mode, "emoji")
             tryCompare(window.content.currentContent.searchField, "activeFocus", true)
             mouseClick(window.content, 6, 46)

@@ -17,7 +17,10 @@ QtObject {
         controlCentrePreview = true
         MenuController.open("controlcentre")
     }
-    onShownChanged: if (!shown) closePreview()
+    onShownChanged: if (!shown) {
+        closePreview()
+        Hub.closeMode("settings")
+    }
     property Connections menuWatch: Connections {
         target: MenuController
         function onActiveMenuChanged() {
@@ -26,6 +29,7 @@ QtObject {
     }
     function open() {
         requested = true
-        if (!controlCentrePreview) MenuController.close()
+        Hub.open("settings")
+        requested = false
     }
 }

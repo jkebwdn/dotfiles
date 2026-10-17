@@ -2,6 +2,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
 import "../../theme" as Theme
+import "../hub" as HubUI
+import "../controls" as Controls
 Rectangle {
     id: root
     required property var service
@@ -11,7 +13,7 @@ Rectangle {
     readonly property int columns: grid ? Math.min(preferences.gridColumns, Math.max(1, Math.floor((width - 32) / 90))) : 1
     readonly property int itemHeight: grid ? preferences.iconSize + 64 : preferences.rowHeight
     readonly property int headerHeight: preferences.headerEnabled && preferences.headerImage ? 150 : 0
-    readonly property int desiredHeight: 112 + headerHeight + (grid ? Math.min(3, preferences.visibleRows) : preferences.visibleRows) * itemHeight
+    readonly property int desiredHeight: 88 + headerHeight + (grid ? Math.min(3, preferences.visibleRows) : preferences.visibleRows) * itemHeight
     property alias searchField: search
     function focusSearch() { search.forceActiveFocus() }
     property string contextId: ""
@@ -62,46 +64,39 @@ Rectangle {
             onTriggered: root.service.hide(root.contextId)
         }
     }
-    color: root.embedded ? "transparent" : Qt.rgba(Theme.Theme.background.r, Theme.Theme.background.g, Theme.Theme.background.b, 1)
+    color: root.embedded ? "transparent" : Theme.Theme.surface
     radius: Theme.Theme.radius("surface", 22, width, height)
     border.color: Theme.Theme.border; border.width: root.embedded ? 0 : 1
     clip: true
-    Image {
-        anchors.fill: parent; anchors.margins: 12
-        visible: root.preferences.backgroundEnabled
-        source: visible && root.preferences.backgroundImage ? "file://" + root.preferences.backgroundImage : ""
-        sourceSize: Qt.size(root.width * 2, root.height * 2)
-        fillMode: Image.PreserveAspectCrop; opacity: 0.16
-    }
     // Catch panel whitespace so it cannot dismiss the launcher.
     MouseArea { anchors.fill: parent; onClicked: root.focusSearch() }
-    Image {
+    Controls.RoundedArtwork {
         id: header
+        objectName: "launcherHeaderArtwork"
         x: 12; width: parent.width - 24; height: root.headerHeight
         y: root.preferences.headerPosition === "top" ? 12 : parent.height - height - 12
         visible: height > 0
         source: visible ? "file://" + root.preferences.headerImage : ""
-        sourceSize: Qt.size(width * 2, height * 2); fillMode: Image.PreserveAspectCrop
+        fillMode: root.preferences.headerFit === "contain" ? Image.PreserveAspectFit : Image.PreserveAspectCrop
+        radius: root.preferences.headerRadius
+        borderWidth: root.preferences.headerBorderWidth
+        borderColor: Theme.Theme.roles[root.preferences.headerBorderRole]
+        placeholder: "image"
     }
-    TextField {
+    HubUI.HubSearchField {
         id: search
         x: 16; y: 16 + (root.preferences.headerPosition === "top" ? root.headerHeight : 0)
         width: parent.width - 32; height: 46
         placeholderText: "Search applications"
         text: root.service.query
         onTextEdited: root.service.query = text
-        color: Theme.Theme.text; placeholderTextColor: Theme.Theme.subtext
-        font.family: Theme.Theme.fontFamily; font.pixelSize: 15
-        selectionColor: Theme.Theme.accent; selectedTextColor: Theme.Theme.accentText
-        leftPadding: 14; rightPadding: 14
-        background: Rectangle { color: Theme.Theme.surface; radius: 12; border.width: 1; border.color: search.activeFocus ? Theme.Theme.accent : Theme.Theme.border }
         Keys.priority: Keys.BeforeItem
         Keys.onPressed: event => { event.accepted = root.navigate(event.key, event.modifiers) }
     }
     GridView {
         id: results
         x: 16; y: search.y + search.height + 14; width: parent.width - 32
-        height: Math.max(0, parent.height - y - 40 - (root.preferences.headerPosition === "bottom" ? root.headerHeight : 0))
+        height: Math.max(0, parent.height - y - (root.service.error || root.service.busy ? 40 : 16) - (root.preferences.headerPosition === "bottom" ? root.headerHeight : 0))
         clip: true; boundsBehavior: Flickable.StopAtBounds
         cellWidth: width / root.columns; cellHeight: root.itemHeight
         model: root.service.results
@@ -130,7 +125,8 @@ Rectangle {
     }
     Text {
         x: 20; y: results.y + results.height + 8; width: parent.width - 40
-        text: root.service.error || (root.service.busy ? "Opening…" : root.service.results.length + " applications  ·  Enter to open  ·  Esc to close")
+        visible: !!root.service.error || root.service.busy
+        text: root.service.error || (root.service.busy ? "Opening…" : "")
         elide: Text.ElideRight; color: root.service.error ? Theme.Theme.warning : Theme.Theme.subtext
         font.family: Theme.Theme.fontFamily; font.pixelSize: 11
     }

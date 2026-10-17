@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import "../../theme" as Theme
+import "../hub" as HubUI
 import "../../services" as Services
 import "../controls" as Controls
 import "../settings" as SettingsUI
@@ -14,7 +15,7 @@ Pane {
     property alias searchField: search
     property int selectedIndex: -1
     property string selectedId: ""
-    padding: 18
+    padding: 16
     font.family: Theme.Theme.fontFamily
     font.pixelSize: 12
     palette.text: Theme.Theme.text
@@ -22,7 +23,7 @@ Pane {
     palette.highlight: Theme.Theme.accent
     palette.highlightedText: Theme.Theme.accentText
     background: Rectangle {
-        color: root.embedded ? "transparent" : Theme.Theme.background
+        color: root.embedded ? "transparent" : Theme.Theme.surface
         radius: Theme.Theme.radius("surface", 18, width, height)
         border.color: Theme.Theme.border; border.width: root.embedded ? 0 : 1
     }
@@ -62,44 +63,18 @@ Pane {
     ColumnLayout {
         anchors.fill: parent
         spacing: 12
-        RowLayout {
-            Layout.fillWidth: true
-            Controls.Icon { role: "clipboard"; size: 22; color: Theme.Theme.accent }
-            Label { text: "Clipboard"; font.pixelSize: 19; font.bold: true; Layout.fillWidth: true }
-            Label { text: root.service.count; color: Theme.Theme.subtext }
-            ClipboardIconButton {
-                role: "settings"; label: "Clipboard settings"
-                onClicked: {
-                    root.service.opened = false
-                    Services.SettingsWindowState.page = "Clipboard"
-                    Services.SettingsWindowState.open()
-                }
-            }
-            ClipboardIconButton { role: "close"; label: "Close Clipboard (Escape)"; onClicked: root.service.opened = false }
-        }
-        TextField {
+        HubUI.HubSearchField {
             id: search
             objectName: "clipboardSearch"
-            Layout.fillWidth: true; Layout.preferredHeight: 42
+            Layout.fillWidth: true; Layout.preferredHeight: 46
             text: root.service.query
             placeholderText: "Search clipboard…"
-            color: Theme.Theme.text
-            placeholderTextColor: Theme.Theme.subtext
-            selectionColor: Theme.Theme.accent
-            selectedTextColor: Theme.Theme.accentText
-            selectByMouse: true
             maximumLength: 512
-            leftPadding: 12
             onTextEdited: root.service.query = text
             Keys.priority: Keys.BeforeItem
             Keys.onPressed: event => root.navigate(event)
-            background: Rectangle {
-                color: Theme.Theme.surface
-                radius: Theme.Theme.radius("action", 10, width, height)
-                border.color: search.activeFocus ? Theme.Theme.focus : Theme.Theme.border
-                border.width: 1
-            }
         }
+
         RowLayout {
             Layout.fillWidth: true
             SettingsUI.SettingsButton {
@@ -133,7 +108,7 @@ Pane {
                 width: history.width - 10
                 height: modelData.category === "image" ? 132 : 100
                 radius: Theme.Theme.radius("surface", 11, width, height)
-                color: root.selectedId === modelData.id ? Theme.Theme.elevated : Theme.Theme.surface
+                color: root.selectedId === modelData.id ? Theme.Theme.overlay : Theme.Theme.elevated
                 border.color: root.selectedId === modelData.id ? Theme.Theme.shadeAccent(Theme.Theme.accent, .25) : Theme.Theme.border
                 border.width: 1
                 MouseArea {
@@ -163,7 +138,7 @@ Pane {
                                 text: (card.modelData.pinned ? "Pinned · " : "") + (card.modelData.category === "files" ? "Files / URIs" : card.modelData.category === "image" ? "Image" : "Text")
                                 font.pixelSize: 10; color: card.modelData.pinned ? Theme.Theme.accent : Theme.Theme.subtext
                             }
-                            Label { text: Qt.formatDateTime(new Date(card.modelData.timestamp * 1000), "hh:mm"); font.pixelSize: 10; color: Theme.Theme.muted }
+                            Label { text: Qt.formatDateTime(new Date(card.modelData.timestamp * 1000), "hh:mm"); font.pixelSize: 10; color: Theme.Theme.subtext }
                         }
                         Text {
                             Layout.fillWidth: true; Layout.fillHeight: true
@@ -186,19 +161,28 @@ Pane {
                     }
                 }
             }
-            Label {
+            Column {
                 anchors.centerIn: parent
-                width: parent.width - 40
+                width: parent.width - 40; spacing: 10
                 visible: history.count === 0
-                text: root.service.query ? "No matching copies" : "A fresh clipboard\nCopy something to start your history."
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.WordWrap
-                color: Theme.Theme.subtext
+                Controls.Icon { anchors.horizontalCenter: parent.horizontalCenter; role: "clipboard"; size: 28; color: Theme.Theme.subtext }
+                Label {
+                    width: parent.width
+                    text: root.service.query ? "No matching copies" : "A fresh clipboard"
+                    horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap
+                    font.pixelSize: 14; font.bold: true; color: Theme.Theme.text
+                }
+                Label {
+                    width: parent.width
+                    text: root.service.query ? "Try a different search." : "Copy something to start your history."
+                    horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap
+                    color: Theme.Theme.subtext
+                }
             }
         }
         Label {
             Layout.fillWidth: true; wrapMode: Text.WordWrap
-            text: "↑ ↓ select   Enter copy   Ctrl+P pin   Ctrl+Delete remove\n" + (root.service.preferences.persistHistory ? "Saved on disk" : "Session only") + " · Sensitive hints are respected; unmarked secrets cannot be detected."
+            text: (root.service.preferences.persistHistory ? "Saved on disk" : "Session only") + " · Sensitive hints are respected; unmarked secrets cannot be detected."
             font.pixelSize: 10; color: Theme.Theme.subtext
         }
     }

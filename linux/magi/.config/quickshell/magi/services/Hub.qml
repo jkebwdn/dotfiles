@@ -11,7 +11,7 @@ Scope {
     property bool suppressed: false
     property bool synchronizing: false
     property var visited: ({})
-    readonly property var modes: ["apps", "notifications", "emoji", "clipboard"]
+    readonly property var modes: ["apps", "clipboard", "notifications", "emoji", "settings"]
 
     function available(value) {
         return modes.indexOf(value) >= 0 && !suppressed
@@ -25,6 +25,7 @@ Scope {
         Notifications.centreOpen = opened && mode === "notifications"
         Emoji.opened = opened && mode === "emoji"
         Clipboard.opened = opened && mode === "clipboard"
+        SettingsWindowState.shown = opened && mode === "settings"
         synchronizing = false
     }
     // Preserve legacy writable visibility properties as requests, not extra hosts.
@@ -35,7 +36,7 @@ Scope {
     }
     function open(value) {
         if (!available(value)) { publish(); return }
-        MenuController.close()
+        if (value !== "settings" || !SettingsWindowState.controlCentrePreview) MenuController.close()
         if (!opened) visited = ({})
         if (!visited[value]) {
             if (value === "apps") Launcher.prepare()
@@ -56,11 +57,8 @@ Scope {
     onSuppressedChanged: { if (suppressed) close() }
     Connections {
         target: MenuController
-        function onActiveMenuChanged() { if (MenuController.activeMenu) root.close() }
-    }
-    Connections {
-        target: SettingsWindowState
-        function onRequestedChanged() { if (SettingsWindowState.requested) root.close() }
+        function onActiveMenuChanged() { if (MenuController.activeMenu && !(root.opened && root.mode === "settings"
+                && SettingsWindowState.controlCentrePreview && MenuController.activeMenu === "controlcentre")) root.close() }
     }
     IpcHandler {
         target: "hub"

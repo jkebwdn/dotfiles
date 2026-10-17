@@ -1,5 +1,21 @@
 # MAGI — Decisions and Debugging History
 
+## 2026-10-17 — Phase 2C Hub anchor and canonical Settings
+
+Keep one Hub and independent utility models. Place a separate icon selector at two-thirds
+of logical output height and bound all content above it, preserving mode-specific sizes.
+Use stable mode IDs and shared semantic expanded-surface roles. Extract SettingsContent
+once; keep the former window only as an internal test wrapper. Production actions and
+legacy Settings IPC route to Hub Settings. Retain page instances, canonical persistence,
+arrangers and Theme Orchestrator. A Settings-owned real-CC preview is the only shared
+menu exception; subtract its scene rectangle from Hub input and clear it on session exit.
+
+Remove Launcher background rendering/editors and permanent footer hints without deleting
+unknown operator data; retain header artwork through the established mask with validated
+fit/radius/border settings. Consolidate search and accessible icon actions. No new global
+motion scheme, keybind map, notification ageing, Wallpaper mode or mftrunk removal.
+Native operator acceptance is pending. [Checkpoint](design/runtime-phase2c.md).
+
 Final v1 refinement: retain operator acceptance for MAGI, Hyprland, Ghostty, GTK/Thunar, Yazi and the tested Zen native-colour workflow. Implement minimal Zen aliases plus manual workspace colour/Copy UX; never modify native session storage. Correct only milestone-introduced Yazi comment whitespace and preserve its ownership rollback. Full validation and current limitations are recorded in the design document.
 
 ## 2026-10-14 — Theme orchestration ownership and activation
@@ -648,3 +664,6 @@ Supersede earlier Phase 2B accent-hue interpretations with exact committed 7afd1
 
 
 Use bounded integer profile sizes and explicit section gaps, defaulting to existing 16/12/11px text and 20px spacing. Hidden sections use the preceding visible section’s outgoing gap once, never summed skipped gaps. Retain Schema 11, exact restored colours, outer/internal padding and Settings-session preview. [Final tuning checkpoint](design/runtime-phase2b.md#final-profile-typography-and-section-gap-tuning--2026-10-17).
+
+
+2026-10-17 Notifications native follow-up: Following positive native review, remove the remaining Notifications toggle label and size its surface from production content, capped at the existing 640px tall size. Preserve the fixed selector anchor and existing scroll/actions semantics; do not redesign accepted Hub composition. [Checkpoint](design/runtime-phase2c.md#native-notifications-refinement--2026-10-17).

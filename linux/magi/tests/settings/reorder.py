@@ -2,6 +2,7 @@
 """Production Settings drag and keyboard ordering under QtTest; never use operator HOME/config/state."""
 from pathlib import Path
 import os
+import sys
 import shutil
 import subprocess
 import tempfile
@@ -11,7 +12,22 @@ with tempfile.TemporaryDirectory(prefix='magi-settings-reorder-') as tmp:
     config = stage/'shell'
     shutil.copytree(root/'.config/quickshell/magi', config)
     (config/'settings.json').write_text('{"schemaVersion":10}')
-    (config/'test.qml').write_text(Path(__file__).with_suffix('.qml').read_text().replace('../../.config/quickshell/magi/', ''))
+    fixture = Path(__file__).with_suffix('.qml').read_text().replace('../../.config/quickshell/magi/', '')
+    if '--hub' in sys.argv:
+        path = config/'components/hub/HubWindow.qml'
+        source = path.read_text().replace('PanelWindow {','FloatingWindow {\n    implicitWidth: 1280; implicitHeight: 900')
+        path.write_text('\n'.join(line for line in source.splitlines() if not any(token in line for token in
+            ['anchors { top: true;', 'exclusionMode:', 'WlrLayershell.'])))
+        fixture = fixture.replace('import "components/settings" as UI', 'import "components/settings" as UI\nimport "components/hub" as HubUI')
+        fixture = fixture.replace('UI.SettingsWindow { id: window }','HubUI.HubWindow { id: window }')
+        fixture = fixture.replace('Services.SettingsWindowState.shown = true','Services.SettingsWindowState.open()')
+        # Existing sizes exercise the content at its accepted minimum/default dimensions;
+        # the Hub host adds margins/selector and the reserved top strip.
+        fixture = fixture.replace('Window.window.width = size.width','Window.window.width = size.width + 48')
+        fixture = fixture.replace('Window.window.height = size.height','Window.window.height = (size.height + 92) * 1.5')
+        fixture = fixture.replace('waitFor(window.contentItem, "width", size.width)', 'waitFor(window.contentItem, "width", size.width + 48)')
+        fixture = fixture.replace('waitFor(window.contentItem, "height", size.height)', 'waitFor(window.contentItem, "height", (size.height + 92) * 1.5)')
+    (config/'test.qml').write_text(fixture)
     runtime = stage/'runtime'; runtime.mkdir(mode=0o700)
     env = dict(os.environ, HOME=str(stage), XDG_CONFIG_HOME=str(stage/'config'),
                XDG_DATA_HOME=str(stage/'data'), XDG_STATE_HOME=str(stage/'state'),

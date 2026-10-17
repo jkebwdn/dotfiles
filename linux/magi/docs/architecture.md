@@ -1,5 +1,28 @@
 # MAGI — Architecture
 
+## Current Hub and Settings composition — Phase 2C (2026-10-17)
+
+One zero-reservation HubWindow owns five stable modes: apps, clipboard, notifications,
+emoji and settings. Separate content/selector siblings grow content upward from a
+mode-independent logical-output selector anchor. Hub owns outer semantic surface/radius;
+services retain independent data. Four utility contents remain alive; SettingsContent
+loads once on first visit and retains the existing visited pages and canonical writer.
+SettingsApplication is IPC-only. SettingsWindow is an internal test wrapper, absent
+from production. All normal Settings entry points route to Hub Settings.
+
+SettingsWindowState owns the transient real-CC preview pin. Hub permits that one
+MenuController exception, subtracts the preview's tracked rectangle from its input
+region, and fits Settings content alongside it without moving the selector. Closing
+Hub/leaving Settings clears the pin; ordinary incompatible menu ownership is unchanged.
+Initial bar readiness still gates Hub, while an already mapped session survives preview
+opening/retraction. Exactly 48px remains the bar's sole reservation.
+
+HubSearchField unifies native search styling while utilities own key handling.
+RoundedArtwork owns header/thumbnail masks; additive Schema 11 header controls retain
+header position. Launcher backgrounds are no longer rendered/configured, and legacy raw
+keys remain preserved. See [dimensions, lifecycle, validation and native limits](design/runtime-phase2c.md).
+The earlier dated standalone-Settings/four-mode descriptions below are historical.
+
 Zen hybrid refinement: generated CSS owns only existing menu aliases. Native workspace base remains manual; Settings derives its recommendation from the selected semantic background and reuses the clipboard helper. Hyprland owns only active/inactive borders; effect behaviour stays operator-owned.
 
 ## System Theme Orchestrator v1 — 2026-10-14
@@ -544,3 +567,6 @@ Primary Control Centre colour ownership is restored exactly to 7afd1c6: accent-d
 
 
 ControlCentre uses SectionLayout.js to position visible sections and compute total height with one outgoing gap per visible predecessor. Hidden sections contribute no gaps/heights. ProfileHeader reports measured text/avatar height; seven validated appearance values drive typography and spacing through the existing SettingsStore. [Final tuning checkpoint](design/runtime-phase2b.md#final-profile-typography-and-section-gap-tuning--2026-10-17).
+
+
+2026-10-17 Notifications native follow-up: Notifications now measures its header/list or empty-state implicit height and caps the Hub surface at 640px (or available output height). Width, selector anchor and service ownership are unchanged. [Checkpoint](design/runtime-phase2c.md#native-notifications-refinement--2026-10-17).

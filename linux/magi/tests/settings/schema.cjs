@@ -100,3 +100,21 @@ for (const [key,def,min,max] of [["profileGreetingSize",16,12,24],["profileWeath
     }
 }
 console.log('Profile typography and section gaps: Schema 10→11 defaults, integer bounds PASS');
+
+// Phase 2C: header-only artwork is additive; retired raw preferences are preserved.
+for (const [key, def, good, bad] of [
+    ['headerRadius',12,[0,24,75],[-1,76,1.5]],
+    ['headerBorderWidth',1,[0,4,8],[-1,9,1.5]],
+    ['headerFit','cover',['cover','contain'],['stretch',false]],
+    ['headerBorderRole','border',['border','rim','accent','subtext'],['red','#fff',false]]
+]) {
+    assert.equal(run(`analyze({schemaVersion:11}).effective.launcher.${key}`),def);
+    for (const value of good) assert.equal(run(`analyze({schemaVersion:11,launcher:{${key}:${JSON.stringify(value)}}}).effective.launcher.${key}`),value);
+    for (const value of bad) assert(run(`analyze({schemaVersion:11,launcher:{${key}:${JSON.stringify(value)}}}).errors`).length);
+}
+const retired = run('analyze({schemaVersion:11,launcher:{backgroundEnabled:true,backgroundImage:"/tmp/old.png",headerPosition:"bottom"}})');
+assert.equal(retired.document.launcher.backgroundImage,'/tmp/old.png');
+assert.equal(retired.effective.launcher.headerPosition,'bottom');
+assert(!Object.hasOwn(run('defaults().launcher'),'backgroundEnabled'));
+assert(!Object.hasOwn(run('defaults().launcher'),'backgroundImage'));
+console.log('Hub header fit/roundness/border validation and retired raw data preservation PASS');

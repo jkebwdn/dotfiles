@@ -24,9 +24,9 @@ ShellRoot {
     NotificationsUI.ToastHost { screen: bar.screen; service: Services.Notifications; suppressed: fullscreen.suppressed }
     Binding { target: Services.Hub; property: "suppressed"; value: fullscreen.suppressed }
     // Shared utility host; backend lifetimes remain above.
-    HubUI.HubWindow { screen: bar.screen; readyToOpen: bar.settingsReady }
+    HubUI.HubWindow { screen: bar.screen; readyToOpen: bar.settingsReady; previewSurface: bar.activeCombinedRegion }
     WallpaperUI.WallpaperWindow { screen: bar.screen; readyToOpen: bar.settingsReady }
-    SettingsUI.SettingsApplication { readyToOpen: bar.settingsReady; outputWidth: bar.width }
+    SettingsUI.SettingsApplication {}
     Bar.Bar {
         id: bar
         // Change to "anchored" to use the PopupWindow fallback.

@@ -23,8 +23,7 @@ SettingsUI.SettingsPage {
             }
         }
         Repeater {
-            model: [{key:"layout",label:"Layout",values:["list","grid"]},
-                {key:"position",label:"Panel position",values:["center","top"]}]
+            model: [{key:"layout",label:"Layout",values:["list","grid"]}]
             SettingsUI.SettingsRow {
                 required property var modelData
                 Layout.fillWidth: true
@@ -63,9 +62,9 @@ SettingsUI.SettingsPage {
     }
     SettingsUI.SettingsSection {
         title: "Artwork"
-        description: "Local images for the launcher header and background."
+        description: "Local header artwork, inset within the Hub surface."
         Repeater {
-            model: [{key:"headerEnabled",label:"Show header image"}, {key:"backgroundEnabled",label:"Show background image"}]
+            model: [{key:"headerEnabled",label:"Show header image"}]
             SettingsUI.SettingsToggle {
                 required property var modelData
                 text: modelData.label; checked: Services.Settings.data.launcher[modelData.key]
@@ -81,7 +80,38 @@ SettingsUI.SettingsPage {
             }
         }
         Repeater {
-            model: [{key:"headerImage",label:"Header image — absolute local path"}, {key:"backgroundImage",label:"Background image — absolute local path"}]
+            model: [{key:"headerFit",label:"Image fit",values:["cover","contain"]},
+                {key:"headerBorderRole",label:"Border colour",values:["border","rim","accent","subtext"]}]
+            SettingsUI.SettingsRow {
+                required property var modelData
+                Layout.fillWidth: true
+                Label { text: parent.modelData.label; Layout.fillWidth: true }
+                SettingsUI.SettingsSelector {
+                    readonly property var option: parent.modelData
+                    Accessible.name: option.label
+                    model: option.values
+                    currentIndex: model.indexOf(Services.Settings.data.launcher[option.key])
+                    onActivated: Services.Settings.setValue("launcher", option.key, model[currentIndex])
+                }
+            }
+        }
+        Repeater {
+            model: [{key:"headerRadius",label:"Header corner roundness",max:75}, {key:"headerBorderWidth",label:"Header border width",max:8}]
+            SettingsUI.SettingsRow {
+                required property var modelData
+                Layout.fillWidth: true
+                Label { text: parent.modelData.label; Layout.fillWidth: true }
+                SettingsUI.SettingsNumber {
+                    readonly property var option: parent.modelData
+                    Accessible.name: option.label
+                    from: 0; to: option.max
+                    value: Services.Settings.data.launcher[option.key]
+                    onValueModified: Services.Settings.setValue("launcher", option.key, value)
+                }
+            }
+        }
+        Repeater {
+            model: [{key:"headerImage",label:"Header image — absolute local path"}]
             ColumnLayout {
                 required property var modelData
                 Layout.fillWidth: true

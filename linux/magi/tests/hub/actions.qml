@@ -36,8 +36,25 @@ ShellRoot {
             verify(card !== null)
             mouseClick(card, 100, 70)
             compare(test.invoked, true)
-            Services.Notifications.dismiss(9001)
+            // Presentation observes in-place record replacement without new ownership.
+            const updated = Object.assign({}, test.sample.data, {summary:"Updated history"})
+            test.sample.data = updated; wait(30)
+            compare(card.entry.summary,"Updated history")
+            mouseClick(findChild(card,"notificationAction-review")); verify(test.reviewed)
+            mouseClick(findChild(card,"notificationDismiss"))
             compare(Services.Notifications.history.length, 0)
+            // Only mark the synthetic service available; never create a DBus backend.
+            Services.Notifications.serverActivated = true
+            const dnd = findChild(window.content.currentContent,"hubNotificationsDnd")
+            mouseClick(dnd); verify(Services.Settings.data.notifications.dnd)
+            mouseClick(dnd); verify(!Services.Settings.data.notifications.dnd)
+            const enabled = findChild(window.content.currentContent,"hubNotificationsEnabled")
+            mouseClick(enabled); verify(!Services.Settings.data.notifications.enabled)
+            mouseClick(enabled); verify(Services.Settings.data.notifications.enabled)
+            test.sample.dismissed = false
+            Services.Notifications.records = [test.sample]; wait(30)
+            mouseClick(findChild(window.content.currentContent,"hubNotificationsClear"))
+            compare(Services.Notifications.history.length,0)
             Services.Hub.close()
             Services.Clipboard.activate()
             Services.Clipboard.open()
@@ -50,11 +67,31 @@ ShellRoot {
             content.navigate({key:Qt.Key_Return, modifiers:0, accepted:false})
             tryCompare(Services.Hub, "opened", false)
             compare(Services.Clipboard.error, "")
+            Services.Clipboard.open(); tryCompare(Services.Clipboard,"renderedQuery","")
+            tryCompare(Services.Clipboard,"count",3)
+            const clipboardUi = window.content.currentContent
+            clipboardUi.select(0); clipboardUi.navigate({key:Qt.Key_Down,modifiers:0,accepted:false})
+            compare(clipboardUi.selectedId,"hub-image")
+            clipboardUi.navigate({key:Qt.Key_P,modifiers:Qt.ControlModifier,accepted:false})
+            tryVerify(() => Services.Clipboard.rows[1].pinned)
+            clipboardUi.navigate({key:Qt.Key_P,modifiers:Qt.ControlModifier,accepted:false})
+            tryVerify(() => !Services.Clipboard.rows[1].pinned)
+            clipboardUi.navigate({key:Qt.Key_Delete,modifiers:Qt.ControlModifier,accepted:false})
+            tryCompare(Services.Clipboard,"count",2)
+            compare(clipboardUi.selectedId,"hub-files")
+            Services.Clipboard.pin("hub-files"); tryVerify(() => Services.Clipboard.rows[1].pinned)
+            Services.Clipboard.clear(); tryCompare(Services.Clipboard,"count",1)
+            compare(Services.Clipboard.rows[0].id,"hub-files")
+            Services.Clipboard.pin("hub-files"); tryVerify(() => !Services.Clipboard.rows[0].pinned)
+            Services.Clipboard.clear(); tryCompare(Services.Clipboard,"count",0)
+            compare(clipboardUi.selectedId,"")
             console.log("Hub actions PASS: desktop launch, exact emoji copy, notification history/default action/dismiss, clipboard search/restore dismissal")
             finish.start()
         }
     }
     property bool invoked: false
+    property bool reviewed: false
+    QtObject { id: reviewAction; property string identifier: "review"; function invoke() { test.reviewed = true } }
     QtObject {
         id: action
         property string identifier: "default"
@@ -62,7 +99,7 @@ ShellRoot {
     }
     QtObject {
         id: liveNotification
-        property var actions: [action]
+        property var actions: [action,reviewAction]
         function dismiss() { test.sample.dismissed = true }
     }
     property var sample: null
@@ -76,7 +113,7 @@ ShellRoot {
         property bool hovered: false
         property double updatedAt: Date.now()
         property int remaining: 0
-        property var data: ({id:9001, appName:"Hub fixture",summary:"Hub sample",body:"Synthetic notification",urgency:1,transient:false,actions:[{identifier:"default",text:"Open"}]})
+        property var data: ({id:9001, appName:"Hub fixture",summary:"Hub sample",body:"Synthetic notification",urgency:1,transient:false,actions:[{identifier:"default",text:"Open"},{identifier:"review",text:"Review"}]})
       }
     }
 }

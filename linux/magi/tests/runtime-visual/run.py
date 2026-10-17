@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Production runtime visual/interaction contracts; isolated adapters, no native quality claims."""
 import ast
+import json
 import sys
 import os
 from pathlib import Path
@@ -39,6 +40,10 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
     end=source.index('    implicitHeight:',start)
     source=source[:start]+"    property int exclusiveZone: fullSurface ? 48 : 0\n    implicitWidth: 1200\n"+source[end:]
     path.write_text(source)
+    path=config/'components/hub/HubWindow.qml'
+    source=path.read_text().replace('PanelWindow {','FloatingWindow {\n    implicitWidth: 1920; implicitHeight: 1080',1)
+    path.write_text('\n'.join(line for line in source.splitlines() if not any(token in line for token in
+        ['anchors { top: true;', 'exclusionMode:', 'WlrLayershell.'])))
     if len(sys.argv) > 1 and sys.argv[1] == 'colours.qml':
         # Read the oracle directly from the immutable committed tree, never from
         # current helper formulas. Relocate imports only to share identical inputs.
@@ -55,8 +60,14 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
         (reference/'ControlTile.qml').write_text(tile)
         # Sharing the renderer is valid only while it and its registry/data are
         # byte-for-byte equal to the known-good production implementation.
-        for name in ['components/controls/Icon.qml','icons/IconRegistry.qml','icons/packs/registry.json']:
+        for name in ['components/controls/Icon.qml','icons/IconRegistry.qml']:
             assert (root/'.config/quickshell/magi'/name).read_text() == old(name), name
+        # Phase 2C adds only the missing Legacy search glyph. Existing role data
+        # and the renderer must still match the immutable colour oracle exactly.
+        registry=json.loads((config/'icons/packs/registry.json').read_text())
+        search=registry['packs'][0]['roles'].pop('search')
+        assert search == {'kind':'glyph','text':''}
+        assert registry == json.loads(old('icons/packs/registry.json'))
     (config/'test.qml').write_text(Path(__file__).with_name(sys.argv[1] if len(sys.argv) > 1 else 'runtime.qml').read_text().replace('../../.config/quickshell/magi/',''))
     runtime=stage/'runtime';runtime.mkdir(mode=0o700)
     env=dict(os.environ,QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime),XDG_STATE_HOME=str(stage/'state'), HOME=str(stage), XDG_CONFIG_HOME=str(stage/'xdg-config'), XDG_DATA_HOME=str(stage/'data'), XDG_CACHE_HOME=str(stage/'cache'))
@@ -67,4 +78,4 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
                       and 'This plugin does not support setting window masks' not in line
                       and 'WARN: Unable to find hyprland socket. Cannot connect to hyprland.' not in line)
     print(checked)
-    assert result.returncode==0 and 'PASS' in output and ({'appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
+    assert result.returncode==0 and 'PASS' in output and ({'appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked

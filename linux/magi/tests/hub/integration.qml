@@ -41,7 +41,7 @@ ShellRoot {
                 test.check(window.content.currentContent === test.firstContent, "retained content identity")
                 test.check(Services.Launcher.query === "retained query", "within-session query")
                 test.check(window.content.currentContent.searchField.activeFocus, "switcher focus")
-                window.content.modeButtons.itemAt(1).clicked(); test.exclusive("notifications"); break
+                window.content.modeButtons.itemAt(2).clicked(); test.exclusive("notifications"); break
             case 4:
                 test.check(window.content.currentContent.activeFocus, "notification surface focus")
                 test.check(Services.Notifications.centreOpen, "history policy still knows centre is open")
@@ -79,7 +79,7 @@ ShellRoot {
                 test.check(!window.visible, "Escape closes shared host")
                 Services.Hub.open("invalid"); test.check(!window.visible, "invalid mode rejected")
                 Services.Launcher.open(); Services.SettingsWindowState.open()
-                test.check(!window.visible, "Settings handoff")
+                test.check(Services.Hub.mode === "settings" && Services.SettingsWindowState.shown, "Settings in Hub")
                 console.log("Hub integration PASS: direct modes, selector, retained identity/state, focus, toggles, legacy APIs, anchored handoff, suppression and Escape")
                 sequence.stop(); finish.start()
             }

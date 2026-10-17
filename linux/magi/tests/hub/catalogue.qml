@@ -8,7 +8,7 @@ ShellRoot {
     id: test
     property int step: 0
     property int modeIndex: 0
-    property var modes: ["apps", "notifications", "emoji", "clipboard"]
+    property var modes: ["apps", "clipboard", "notifications", "emoji", "settings"]
     property string selected: modes[Math.min(modeIndex, modes.length - 1)]
     function check(ok, label) { if (!ok) throw new Error(selected + " step " + step + ": " + label) }
     Modules.ModuleRegistry { id: registry; barWindow: null; sharedSurface: surface }
@@ -36,7 +36,7 @@ ShellRoot {
                 break
             case 1:
                 test.check(surface.phase === 3, "CC fully open")
-                test.check(registry.modules.controlcentre.actions.length === 10, "optional entries render")
+                test.check(registry.modules.controlcentre.actions.length === 11, "optional entries render")
                 test.check(registry.modules.controlcentre.columns === 3 && registry.modules.controlcentre.actionColumns === 2, "independent columns")
                 Modules.ControlCatalog.primary(test.selected)
                 test.check(Services.Hub.opened && Services.Hub.mode === test.selected, "catalogue selects Hub mode")
@@ -44,7 +44,7 @@ ShellRoot {
                 break
             case 2:
                 test.check(surface.phase === 0 && window.visible, "handoff completed")
-                test.check(test.selected === "notifications" ? window.content.currentContent.activeFocus
+                test.check((test.selected === "notifications" || test.selected === "settings") ? window.content.currentContent.activeFocus
                     : window.content.currentContent.searchField.activeFocus, "destination focus")
                 test.check(!Services.Notifications.serverActivated && !Services.Clipboard.activated, "no backend ownership change")
                 Services.Hub.close()
@@ -58,7 +58,7 @@ ShellRoot {
                 test.check(!Services.Hub.opened && Services.MenuController.activeMenu === "controlcentre", "unavailable destination does not dismiss CC")
                 Services.Hub.suppressed = false
                 Services.MenuController.close()
-                console.log("RESULT: 0 failures; Hub catalogue: optional entries, four routes, real collapse gate, focus, reopen, unavailable handling")
+                console.log("RESULT: 0 failures; Hub catalogue: optional entries, five routes, real collapse gate, focus, reopen, unavailable handling")
                 sequence.stop(); finish.start()
             }
         }

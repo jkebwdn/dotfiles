@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
 import "../../theme" as Theme
+import "../hub" as HubUI
 Rectangle {
     id: root
     required property var service
@@ -30,22 +31,17 @@ Rectangle {
         else return false
         return true
     }
-    color: root.embedded ? "transparent" : Qt.rgba(Theme.Theme.background.r, Theme.Theme.background.g, Theme.Theme.background.b, 1)
+    color: root.embedded ? "transparent" : Theme.Theme.surface
     radius: Theme.Theme.radius("surface", 22, width, height)
     border.color: Theme.Theme.border; border.width: root.embedded ? 0 : 1
     clip: true
     MouseArea { anchors.fill: parent; onClicked: root.focusSearch() }
-    TextField {
+    HubUI.HubSearchField {
         id: search
         x: 16; y: 16; width: parent.width - 32; height: 46
         placeholderText: "Search emoji"
         text: root.service.query
         onTextEdited: root.service.query = text
-        color: Theme.Theme.text; placeholderTextColor: Theme.Theme.subtext
-        font.family: Theme.Theme.fontFamily; font.pixelSize: 15
-        selectionColor: Theme.Theme.accent; selectedTextColor: Theme.Theme.accentText
-        leftPadding: 14; rightPadding: 14
-        background: Rectangle { color: Theme.Theme.surface; radius: 12; border.width: 1; border.color: search.activeFocus ? Theme.Theme.accent : Theme.Theme.border }
         Keys.priority: Keys.BeforeItem
         Keys.onPressed: event => { event.accepted = root.navigate(event.key, event.modifiers) }
     }

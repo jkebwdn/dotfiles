@@ -4,31 +4,13 @@ import Quickshell
 import Quickshell.Io
 import "../../services" as Services
 Scope {
-    id: root
-    property bool readyToOpen: false
-    property bool created: false
-    property real outputWidth: 1920
-    function present() {
-        if (!readyToOpen || !Services.SettingsWindowState.requested) return
-        created = true
-        Services.SettingsWindowState.shown = true
-        Services.SettingsWindowState.requested = false
-    }
-    onReadyToOpenChanged: Qt.callLater(present)
-    Connections {
-        target: Services.SettingsWindowState
-        function onRequestedChanged() { Qt.callLater(root.present) }
-    }
-    Loader {
-        active: root.created
-        sourceComponent: Component { SettingsWindow { outputWidth: root.outputWidth } }
-    }
+    // Compatibility IPC only: no second Settings instance or native host.
     IpcHandler {
         target: "settingsWindow"
         function open(): void { Services.SettingsWindowState.open() }
-        function close(): void { Services.SettingsWindowState.requested = false; Services.SettingsWindowState.shown = false }
+        function close(): void { Services.Hub.closeMode("settings") }
         function page(id: string): bool {
-            if (["Appearance", "Profile", "Bar", "Control Centre", "Icons", "Launcher", "Date & time", "Emoji", "Wallpaper"].indexOf(id) < 0) return false
+            if (["Appearance", "Profile", "Bar", "Control Centre", "Icons", "Launcher", "Date & time", "Emoji", "Wallpaper", "Notifications", "Clipboard"].indexOf(id) < 0) return false
             Services.SettingsWindowState.page = id
             return true
         }

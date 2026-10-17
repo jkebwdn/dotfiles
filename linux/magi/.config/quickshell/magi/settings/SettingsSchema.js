@@ -55,7 +55,7 @@ function defaults() {
             rowHeight: 56, iconSize: 32, visibleRows: 6, gridColumns: 5,
             showLabels: true, showSubtitles: true, showIcons: true,
             position: "center", headerEnabled: false, headerImage: "",
-            headerPosition: "top", backgroundEnabled: false, backgroundImage: ""},
+            headerPosition: "top", headerFit: "cover", headerRadius: 12, headerBorderWidth: 1, headerBorderRole: "border"},
         clipboard: {enabled: true, historyLimit: 100, persistHistory: false,
             includeImages: true, includeFiles: true},
         notifications: {enabled: true, toastsEnabled: true, dnd: false,
@@ -171,8 +171,8 @@ function analyze(input) {
     effective.emoji.recents = effective.emoji.recents.slice(0, effective.emoji.recentLimit)
     const launcherDefaults = defaults().launcher
     const launcherRanges = {panelWidth:[320,800], gridWidth:[420,1200], rowHeight:[40,96],
-        iconSize:[20,64], visibleRows:[3,12], gridColumns:[3,8]}
-    const launcherEnums = {layout:["list","grid"], position:["center","top"], headerPosition:["top","bottom"]}
+        iconSize:[20,64], visibleRows:[3,12], gridColumns:[3,8], headerRadius:[0,75], headerBorderWidth:[0,8]}
+    const launcherEnums = {layout:["list","grid"], position:["center","top"], headerPosition:["top","bottom"], headerFit:["cover","contain"], headerBorderRole:["border","rim","accent","subtext"]}
     for (const key of Object.keys(launcherDefaults)) {
         const value = effective.launcher[key], range = launcherRanges[key], values = launcherEnums[key]
         const good = key === "hiddenIds" ? Array.isArray(value) && value.every(id =>
@@ -181,7 +181,7 @@ function analyze(input) {
             && new Set(value).size === value.length
             : range ? Number.isInteger(value) && value >= range[0] && value <= range[1]
             : values ? values.indexOf(value) >= 0
-            : key === "headerImage" || key === "backgroundImage"
+            : key === "headerImage"
                 ? typeof value === "string" && value.length <= 4096 && (value === "" || value[0] === "/")
                 : typeof value === "boolean"
         if (!good) { valid(false, "launcher." + key, null); effective.launcher[key] = launcherDefaults[key] }

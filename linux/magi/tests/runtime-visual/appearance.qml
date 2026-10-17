@@ -3,12 +3,12 @@ import QtQuick.Window
 import QtTest
 import Quickshell
 import "../../.config/quickshell/magi/components/bar" as BarUI
-import "../../.config/quickshell/magi/components/settings" as SettingsUI
+import "../../.config/quickshell/magi/components/hub" as HubUI
 import "../../.config/quickshell/magi/services" as Services
 import "../../.config/quickshell/magi/theme" as Theme
 ShellRoot {
     BarUI.Bar { id: bar; expandableHostMode: "combined" }
-    SettingsUI.SettingsWindow { id: settings }
+    HubUI.HubWindow { id: settings; readyToOpen: bar.settingsReady; previewSurface: bar.activeCombinedRegion }
     Timer { id: finish; interval: 100; onTriggered: Qt.quit() }
     TestCase {
         name: "ControlCentreAppearancePreview"
@@ -39,7 +39,7 @@ ShellRoot {
         function test_appearanceAndPreview() {
             try {
             Services.SettingsWindowState.page = "Control Centre"
-            Services.SettingsWindowState.shown = true
+            Services.SettingsWindowState.open()
             Services.Settings.setValue("profile", "displayName", "A long display name ".repeat(4).trim())
             Services.Settings.setValue("profile", "subtitleMode", "custom")
             Services.Settings.setValue("profile", "subtitle", "A long optional profile line ".repeat(4))
@@ -233,13 +233,14 @@ ShellRoot {
             verify(bar.catcherEnabled)
             mouseClick(findChild(bar.contentItem,"statusDismissCatcher"),10,400)
             tryCompare(cc,"phase",0)
+            Services.SettingsWindowState.open(); wait(150)
             reveal(page,preview); mouseClick(preview); tryCompare(cc,"phase",3)
             Services.SettingsWindowState.page = "Profile"
             Services.SettingsWindowState.shown = false
             tryCompare(cc,"phase",0); verify(!bar.previewPinned)
             Services.SettingsWindowState.page = "Control Centre"
             // Preview Escape still reaches the production body/Loader dismissal.
-            Services.SettingsWindowState.shown = true
+            Services.SettingsWindowState.open(); wait(150)
             mouseClick(preview); tryCompare(cc,"phase",3)
             bar.contentItem.Window.window.requestActivate()
             wait(50)

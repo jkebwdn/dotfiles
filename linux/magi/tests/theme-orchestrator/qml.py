@@ -13,6 +13,10 @@ with tempfile.TemporaryDirectory(prefix='magi-orchestrator-qml-') as tmp:
     config = stage/'shell'
     shutil.copytree(ROOT/'.config/quickshell/magi', config)
     (config/'settings.json').write_text('{"schemaVersion":10}')
+    path = config/'components/hub/HubWindow.qml'
+    text = path.read_text().replace('PanelWindow {', 'FloatingWindow {\n    implicitWidth: 1280; implicitHeight: 900')
+    path.write_text('\n'.join(line for line in text.splitlines() if not any(token in line for token in
+        ['anchors { top: true;', 'exclusionMode:', 'WlrLayershell.'])))
     app = stage/'config/ghostty/config.ghostty'
     app.parent.mkdir(parents=True)
     app.write_text('font-size = 11\n')

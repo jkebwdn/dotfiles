@@ -6,6 +6,7 @@ root=Path(__file__).resolve().parents[2]
 with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
     stage=Path(tmp); config=stage/'config'
     shutil.copytree(root/'.config/quickshell/magi',config)
+    (config/'settings.json').write_text('{"schemaVersion":11}')
     stubs={
       'Network': '''property bool connected: false; property bool wifiEnabled: true; property bool wifiHardwareEnabled: true
         property string icon: "wifi"; property string ssid: ""; property int signalStrength: 0
@@ -42,7 +43,7 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
     }
     for name,body in stubs.items():
         (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { id: root\n'+body+'\n}')
-    if len(sys.argv) > 1 and sys.argv[1] == 'catalogue':
+    if len(sys.argv) > 1 and sys.argv[1] in ('catalogue', 'window.qml'):
         path = config / 'components/hub/HubWindow.qml'
         text = path.read_text().replace('PanelWindow {', 'FloatingWindow {\n    implicitWidth: 1280; implicitHeight: 900')
         path.write_text('\n'.join(line for line in text.splitlines() if not any(token in line for token in
@@ -61,7 +62,7 @@ Item {
     fixture = root / 'tests/hub/catalogue.qml' if len(sys.argv) > 1 and sys.argv[1] == 'catalogue' else Path(__file__).with_name(sys.argv[1] if len(sys.argv) > 1 else 'modules.qml')
     (config/'test.qml').write_text(fixture.read_text().replace('../../.config/quickshell/magi/',''))
     runtime=stage/'runtime';runtime.mkdir(mode=0o700)
-    env=dict(os.environ, QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime),XDG_STATE_HOME=str(stage/'state'))
+    env=dict(os.environ, QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime),XDG_STATE_HOME=str(stage/'state'),HOME=str(stage),XDG_CONFIG_HOME=str(stage/'xdg-config'),XDG_DATA_HOME=str(stage/'data'),XDG_CACHE_HOME=str(stage/'cache'))
     env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None)
     p=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=30)
     out=p.stdout+p.stderr;print(out)

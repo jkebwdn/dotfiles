@@ -3,7 +3,7 @@ const base=process.argv[2];
 const registry=JSON.parse(fs.readFileSync(base+'/packs/registry.json'));
 const ctx=vm.createContext({});vm.runInContext(fs.readFileSync(base+'/IconResolver.js','utf8'),ctx);
 const settings={pack:'magi-legacy',modulePacks:{},overrides:{global:{},modules:{}}};
-for(const role of ['wifi','wifi-low','wifi-medium','wifi-high','bluetooth','bluetooth-connected','volume','volume-muted','brightness','battery','battery-charging','settings','night-light','dnd','power-profile','power-saver','airplane-mode','vpn','caffeine','lock','hibernate','shutdown','media-play','media-pause','media-next','media-previous','back','scan','connect','disconnect'])
+for(const role of ['search','wifi','wifi-low','wifi-medium','wifi-high','bluetooth','bluetooth-connected','volume','volume-muted','brightness','battery','battery-charging','settings','night-light','dnd','power-profile','power-saver','airplane-mode','vpn','caffeine','lock','hibernate','shutdown','media-play','media-pause','media-next','media-previous','back','scan','connect','disconnect'])
  assert(ctx.resolve(registry,settings,role,'').icon.text);
 const firstParty=registry.packs.find(pack=>pack.id==='magi-default');
 assert(firstParty && firstParty.parent==='magi-legacy');

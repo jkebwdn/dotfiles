@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Controls.Basic
 import Quickshell
 import "../../theme" as Theme
 import "../controls" as Controls
@@ -16,7 +17,7 @@ Rectangle {
     readonly property bool defaultAction: record && record.notification
         && (entry.actions || []).some(a => a.identifier === "default")
     implicitHeight: content.implicitHeight + 28
-    color: Theme.Theme.surface
+    color: root.historyCard ? Theme.Theme.elevated : Theme.Theme.surface
     radius: Theme.Theme.radius("surface", 12, width, height)
     border.width: 1
     border.color: entry.urgency === 2 ? Theme.Theme.danger : Theme.Theme.border
@@ -56,17 +57,24 @@ Rectangle {
                 Controls.Icon { anchors.centerIn: parent; role: "notifications"; size: 18; visible: !appIcon.visible; color: Theme.Theme.subtext }
             }
             Text {
-                width: parent.width - 60; height: 20
+                width: parent.width - 60 - (root.historyCard ? 76 : 0); height: 20
                 text: root.entry.appName || "Notification"
                 textFormat: Text.PlainText
                 color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 11
                 elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter
             }
-            Item {
+            Text {
+                visible: root.historyCard
+                width: visible ? 68 : 0; height: 20
+                text: root.record ? Qt.formatDateTime(new Date(root.record.updatedAt), "ddd HH:mm") : ""
+                color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily; font.pixelSize: 10
+                verticalAlignment: Text.AlignVCenter
+            }
+            Controls.IconButton {
                 width: 24; height: 20
-                Controls.Icon { anchors.centerIn: parent; role: "close"; size: 14; color: Theme.Theme.stateColor("secondary", true) }
-                MouseArea { anchors.fill: parent; onClicked: root.service.dismiss(root.entry.id) }
-                Accessible.name: "Dismiss notification"; Accessible.role: Accessible.Button
+                objectName: "notificationDismiss"
+                role: "close"; label: "Dismiss notification"
+                onClicked: root.service.dismiss(root.entry.id)
             }
         }
         Text {
@@ -102,26 +110,25 @@ Rectangle {
             visible: root.actions.length > 0
             Repeater {
                 model: root.actions
-                Rectangle {
+                Button {
                     id: action
                     required property var modelData
+                    objectName: "notificationAction-" + modelData.identifier
                     width: Math.min(content.width, Math.max(60, actionText.implicitWidth + 20)); height: 28
-                    radius: Theme.Theme.radius("action", 6, width, height)
-                    color: Theme.Theme.elevated
+                    background: Rectangle {
+                        radius: Theme.Theme.radius("action", 6, width, height)
+                        color: action.hovered ? Theme.Theme.overlay : Theme.Theme.surface
+                        border.width: action.activeFocus ? 1 : 0; border.color: Theme.Theme.focus
+                    }
                     Text {
                         id: actionText; anchors.centerIn: parent; width: Math.min(implicitWidth, parent.width - 20)
                         text: action.modelData.text; textFormat: Text.PlainText; elide: Text.ElideRight
-                        color: Theme.Theme.stateColor("secondary", true); font.family: Theme.Theme.fontFamily; font.pixelSize: 11
+                        color: Theme.Theme.text; font.family: Theme.Theme.fontFamily; font.pixelSize: 11
                     }
-                    MouseArea { anchors.fill: parent; onClicked: root.service.invoke(root.entry.id, action.modelData.identifier) }
+                    onClicked: root.service.invoke(root.entry.id, action.modelData.identifier)
                     Accessible.name: modelData.text; Accessible.role: Accessible.Button
                 }
             }
-        }
-        Text {
-            visible: root.historyCard
-            text: root.record ? Qt.formatDateTime(new Date(root.record.updatedAt), "ddd HH:mm") : ""
-            color: Theme.Theme.muted; font.family: Theme.Theme.fontFamily; font.pixelSize: 10
         }
     }
 }

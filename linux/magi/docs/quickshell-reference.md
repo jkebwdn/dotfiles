@@ -1,5 +1,22 @@
 # MAGI — Quickshell Technical Reference
 
+## Hub Settings composition verification — Phase 2C (2026-10-17)
+
+Installed Quickshell 0.3.1 / Qt 6.11.2 metadata in
+`/usr/lib/qt6/qml/Quickshell/quickshell-core.qmltypes` confirms Region's nested `regions`,
+`Intersection.Subtract`, and TransformWatcher a/b/transform. Hub reuses the existing
+[TransformWatcher v0.3.1 pattern](https://quickshell.org/docs/v0.3.1/types/Quickshell/TransformWatcher/)
+already recorded below: read transform as a dependency before scene-coordinate mapping.
+Its subtraction is a pointer-input region, not a compositor reservation or visual mask.
+
+Existing PanelWindow/Exclusive focus, ExclusionMode.Ignore, retained Loaders, native
+TextField/ComboBox handlers, AfterItem Escape and RoundedArtwork/MultiEffect remain.
+No new native window API or external artwork dependency. Real offscreen Hub+Bar tests
+exercise mask geometry, retained Settings pages, preview ownership and live tuning;
+keyboard/pointer tests exercise the selector and child Escape. This does not establish
+native layer focus, file chooser behaviour, click-through dispatch or GPU mask edges.
+See [test scope and operator checks](design/runtime-phase2c.md).
+
 Zen Copy uses the existing clipboard_backend.py --copy-text JSON/stdin boundary, as Emoji does. Production pointer tests capture the final wl-copy bytes for all ten palettes and verify reactive semantic background guidance; no second clipboard implementation or new Quickshell API was added.
 
 ## Theme Orchestrator bridge — installed 0.3.1, 2026-10-14
@@ -498,3 +515,6 @@ Colour restoration uses existing 7afd1c6 Qt colour/alpha and Icon rendering APIs
 
 
 Typography/spacing additions use existing Qt Text font.pixelSize, ColumnLayout implicitHeight and Item positions. Production tests check font properties, text bounds and section geometry; no new Quickshell API. Native font appearance and edge quality still require operator review. [Final tuning checkpoint](design/runtime-phase2b.md#final-profile-typography-and-section-gap-tuning--2026-10-17).
+
+
+2026-10-17 Notifications native follow-up: The final Notifications refinement uses existing Qt Column.implicitHeight and ListView.contentHeight with the retained virtualized NotificationCard delegate. No new Quickshell API or reservation. Focused Hub tests verify measured short histories and bounded scrolling; native screenshot review remains separate. [Checkpoint](design/runtime-phase2c.md#native-notifications-refinement--2026-10-17).
