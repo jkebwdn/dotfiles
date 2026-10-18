@@ -135,7 +135,7 @@ fn run() -> Result<Outcome, Outcome> {
         }
     }
     let mut terminal = Terminal::open()?;
-    writeln!(terminal.file, "Non-locking PAM proof: one attempt, current UID, service hyprlock.\r\nAll responses hidden; Ctrl-C/Escape cancels. Starting in 3 seconds.").map_err(|_| Outcome::WorkerError)?;
+    writeln!(terminal.file, "Non-locking PAM proof: one attempt, current UID, service magi-lock.\r\nAll responses hidden; Ctrl-C/Escape cancels. Starting in 3 seconds.").map_err(|_| Outcome::WorkerError)?;
     // Interactive-only, one launch, no retry loop. This is an accident guard,
     // not a replacement for PAM faillock or future owner-side serialization.
     for _ in 0..30 {

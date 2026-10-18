@@ -9,12 +9,29 @@ case "${1:-lock}" in
     sleep-coordinated) coordinator=hypridle ;;
     *) echo 'invalid lock request mode' >&2; exit 64 ;;
 esac
+# One graphical session per user manager is the supported deployment. Never
+# silently import arbitrary caller environment or retarget an existing owner.
+if [ -z "${WAYLAND_DISPLAY:-}" ] || [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+    echo 'MAGI lock: run from the graphical session; WAYLAND_DISPLAY and XDG_RUNTIME_DIR are required' >&2
+    exit 78
+fi
+case "$WAYLAND_DISPLAY" in
+    *[!a-zA-Z0-9_.-]*) echo 'MAGI lock: unsupported Wayland display identity' >&2; exit 78 ;;
+esac
+manager_environment=$(/usr/bin/systemctl --user show-environment) || exit 69
+if ! printf '%s\n' "$manager_environment" | /usr/bin/grep -Fxq -- "WAYLAND_DISPLAY=$WAYLAND_DISPLAY" ||
+   ! printf '%s\n' "$manager_environment" | /usr/bin/grep -Fxq -- "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR"; then
+    echo 'MAGI lock: user-manager environment differs; review graphical-session environment import before locking' >&2
+    exit 78
+fi
 # Reuse an existing activation across request modes. A simultaneous cold-start
 # race is still rejected by the native per-display flock, never by stopping an owner.
 for mode in native hypridle; do
-    state=$(/usr/bin/systemctl --user show "magi-lock@$mode.service" --property=ActiveState --value 2>/dev/null) || state=unknown
+    state=$(/usr/bin/systemctl --user show "magi-lock@$mode.service" --property=ActiveState --value) || exit 69
     case "$state" in
         active|activating) exec /usr/bin/systemctl --user start "magi-lock@$mode.service" ;;
+        inactive|failed) ;;
+        *) echo 'MAGI lock: service state is not safe for a new request' >&2; exit 69 ;;
     esac
 done
 exec /usr/bin/systemctl --user start "magi-lock@$coordinator.service"

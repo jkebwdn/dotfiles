@@ -161,7 +161,7 @@ impl Drop for Transaction {
 }
 pub fn authenticate(conversation: &mut Conversation<'_>, user: &CStr) -> Outcome {
     // Do not silently fall through to PAM's "other" policy if service disappears.
-    if !std::fs::metadata("/etc/pam.d/hyprlock").is_ok_and(|m| m.is_file()) {
+    if !std::fs::metadata("/etc/pam.d/magi-lock").is_ok_and(|m| m.is_file()) {
         return Outcome::PamError;
     }
     let conv = Conv {
@@ -169,7 +169,7 @@ pub fn authenticate(conversation: &mut Conversation<'_>, user: &CStr) -> Outcome
         data: (conversation as *mut Conversation<'_>).cast(),
     };
     let mut handle = ptr::null_mut();
-    let started = unsafe { pam_start(c"hyprlock".as_ptr(), user.as_ptr(), &conv, &mut handle) };
+    let started = unsafe { pam_start(c"magi-lock".as_ptr(), user.as_ptr(), &conv, &mut handle) };
     if started != 0 {
         return Outcome::PamError;
     }

@@ -67,11 +67,15 @@ void buffer() {
     CHECK(c.append(full)); CHECK(!c.append({"y",1})); CHECK(c.units()==511);
     c.clear(); CHECK(c.empty());
     // Inspect live raw storage after destruction of an explicitly placed object.
-    alignas(Credential) unsigned char memory[sizeof(Credential)];
+    alignas(Credential) unsigned char memory[sizeof(Credential)]{};
     auto* placed = new(memory) Credential;
-    CHECK(placed->append(secret())); auto bytes=placed->bytes(); auto* start=bytes.data(); auto n=bytes.size();
+    CHECK(placed->append(secret())); auto bytes=placed->bytes(); auto n=bytes.size();
+    const auto offset = reinterpret_cast<const unsigned char*>(bytes.data()) - memory;
+    CHECK(memory[offset] != 0);
     placed->~Credential();
-    for (std::size_t i=0; i<n; ++i) CHECK(reinterpret_cast<const unsigned char*>(start)[i]==0);
+    // Observe backing storage, not a pointer into the ended object's lifetime.
+    const volatile unsigned char* storage = memory;
+    for (std::size_t i=0; i<n; ++i) CHECK(storage[offset+i]==0);
 }
 void keyboard() {
     AuthController auth("/does/not/exist",100,10); NativeInput input(auth);

@@ -1,4 +1,4 @@
-# TEMPLATE ONLY: do not install/enable before live acceptance and packaging.
+# Packaged on-demand unit; no enablement and no automatic restart.
 [Unit]
 Description=MAGI native session lock
 After=graphical-session.target
@@ -12,7 +12,11 @@ ExecStart=/usr/lib/magi/magi-lock --acquire-session-lock --authenticate --sleep-
 Restart=no
 TimeoutStartSec=20
 LimitCORE=0
+SyslogIdentifier=magi-lock
 # No install section: lock requests start this unit on demand.
-# Import WAYLAND_DISPLAY/XDG_RUNTIME_DIR from the actual compositor session first.
+# Import only WAYLAND_DISPLAY from the graphical session before first use.
+# XDG_RUNTIME_DIR and the user bus belong to the user manager. The request
+# wrapper verifies the caller matches that manager's graphical environment.
+# Do not add NoNewPrivileges: PAM's unix_chkpwd may require its packaged privilege.
 # Only native/hypridle are valid instances; the native CLI rejects other values.
 # No Conflicts or automatic restart: neither instance may stop the other owner.

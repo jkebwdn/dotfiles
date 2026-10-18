@@ -2,7 +2,7 @@
 
 **Phase 4 accepted: one real single-output authenticated unlock passed.**
 Hyprlock remains production. Do not acquire a session lock or use a real password
-without explicit approval for that specific run. No install/routing change exists.
+without explicit approval for that specific run. No live installation or routing change has been made.
 
 [Phase 2](../../docs/design/lock-screen-phase2-protocol-proof.md) accepted the native
 Wayland owner. [Phase 3](../../docs/design/lock-screen-phase3-pam-proof.md) accepted
@@ -14,7 +14,9 @@ The C++20 owner binds ext-session-lock-v1 and wl_seat/wl_keyboard on one native
 Wayland connection. xkbcommon translates keys directly into a bounded native
 credential buffer. QML renders offscreen and receives only presentation values.
 On submission, a single ordinary-user Rust child uses private inherited
-AF_UNIX/SOCK_SEQPACKET IPC and the existing `hyprlock` PAM service. Only the C++
+AF_UNIX/SOCK_SEQPACKET IPC and the MAGI-owned `magi-lock` PAM service.
+Earlier accepted live proofs used `hyprlock`; the new policy is a deployment
+template only until separately approved Phase 8B installation. Only the C++
 lock controller may authorize unlock for a current, validated successful attempt.
 
 ## Offline builds and non-locking tests
@@ -246,3 +248,60 @@ instance-guard tests. Existing Phase 5/6 suites remain required. Any further liv
 test requires separate approval and fresh recovery planning. Phase 7 acceptance
 does not authorize installation, production routing/PAM migration or Hyprlock
 retirement. Hypridle remains the intended production idle/sleep coordinator.
+
+
+## Phase 8A production packaging (not installed)
+
+[Production deployment checkpoint](../../docs/design/lock-screen-phase8-production-migration.md)
+contains the PAM review, dependencies, exact migration/rollback commands and
+remaining live gates. Hyprlock remains the active fallback; Hypridle remains a
+production dependency. No live configuration changes are included.
+
+A production build uses Release, prefix `/usr`, and
+`MAGI_LOCK_PRODUCTION_INSTALL=ON`. That configuration rejects development unlock,
+failure injection and external worker overrides, builds Cargo release with
+`--locked --offline`, and installs exactly five artifacts. Proof builds have no
+install rules. Rust/Cargo are build dependencies, not runtime requirements.
+
+```bash
+cargo build --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml \
+  --target-dir /tmp/magi-auth-production-tests --example protocol_fixture
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-production -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+  -DMAGI_LOCK_PRODUCTION_INSTALL=ON \
+  -DMAGI_LOCK_AUTH_FIXTURE=/tmp/magi-auth-production-tests/debug/examples/protocol_fixture
+cmake --build /tmp/magi-lock-production
+ctest --test-dir /tmp/magi-lock-production --output-on-failure
+DESTDIR=/tmp/magi-lock-install-root cmake --install /tmp/magi-lock-production
+python3 linux/magi/native/lock/tests/install_test.py --audit /tmp/magi-lock-install-root
+```
+
+This stages `/usr/lib/magi/{magi-lock,magi-lock-auth}`,
+`/usr/bin/magi-lock-request`, `/usr/lib/systemd/user/magi-lock@.service`, and
+`/etc/pam.d/magi-lock` beneath `/tmp` only. The PAM template is `auth include login`;
+the worker retains authentication-only semantics, without account/session calls.
+No production password test is authorized by these build commands.
+
+Prefer the prepared local Arch package over unmanaged root installation:
+
+```bash
+python3 linux/magi/native/lock/packaging/prepare-source.py /tmp/magi-lock-package
+cd /tmp/magi-lock-package
+makepkg --cleanbuild --noconfirm
+```
+
+Use a fresh export directory. This builds a package without installing it and
+without dependency downloads; required build packages and the locked Cargo crate
+must already be present. No install hook changes routing or activates services.
+Do not use `makepkg -i` or `pacman -U` until Phase 8B approval.
+
+The request wrapper validates `lock`/`sleep-coordinated` and checks that the user
+manager's Wayland/runtime environment matches its graphical caller. It never
+imports environment silently. Type=notify still means compositor-confirmed Locked.
+Instance guard and both explicit sleep coordinators remain the accepted Phase 7
+implementation. No public unlock action is added.
+
+Phase 8A validation: production CTest 12/12, development 11/11, Rust 18/18,
+Clippy and formatting passed. Request tests now contain 12 cases. Staged install,
+unit verification and package checks are non-activating; no real lock/PAM/suspend
+was performed.

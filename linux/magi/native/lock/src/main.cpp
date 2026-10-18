@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     const auto options = magi::parseOptions(arguments);
     if (!options.error.empty()) { std::cerr << options.error << '\n'; return 64; }
     if (options.buildInfo) {
-        std::cout << "MAGI lock protocol proof; development-unlock="
+        std::cout << "MAGI native lock; development-unlock="
                   << MAGI_LOCK_DEVELOPMENT_UNLOCK << "; failure-injection=" << MAGI_LOCK_FAILURE_INJECTION << "; native-authentication=1; explicit --authenticate required\n";
         return 0;
     }
@@ -30,7 +30,12 @@ int main(int argc, char** argv) {
 #if MAGI_LOCK_FAILURE_INJECTION
         std::cout << "--development-auth-failure=crash|hang  SYNTHETIC ONLY; requires authentication and emergency timer\n";
 #endif
-        std::cout << "MAGI lock protocol proof — NOT a production locker\n"
+#if MAGI_LOCK_PACKAGED
+        std::cout << "MAGI native session locker; installed authentication policy: magi-lock\n";
+#else
+        std::cout << "MAGI lock protocol proof — NOT an installed production locker\n";
+#endif
+        std::cout <<
                      "--build-info  Offline build information; no display connection\n"
                      "--acquire-session-lock  Acquire REAL lock; requires operator approval\n"
                      "--authenticate  Enable native keyboard and private PAM worker\n"
@@ -45,7 +50,7 @@ int main(int argc, char** argv) {
 #endif
         return 0;
     }
-    std::cerr << "REAL SESSION LOCK REQUESTED. Explicit proof, not production routing.\n";
+    std::cerr << "REAL SESSION LOCK REQUESTED. Native authentication authority.\n";
     const rlimit coreLimit{0, 0};
     if (setrlimit(RLIMIT_CORE, &coreLimit) || getuid() == 0 || getuid() != geteuid() || getgid() != getegid()) {
         std::cerr << "Ordinary-user/core-limit validation failed\n"; return 64;

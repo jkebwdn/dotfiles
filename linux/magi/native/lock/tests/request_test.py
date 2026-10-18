@@ -25,8 +25,13 @@ class Request(unittest.TestCase):
         fake.write_text(f'#!{sys.executable}\n' + '''import os,json,sys
 from pathlib import Path
 p=Path(os.environ['FAKE_STATE']);states=json.loads(p.read_text())
-args=sys.argv[1:];unit=next(a for a in args if a.endswith('.service'))
+args=sys.argv[1:]
 with p.with_suffix('.calls').open('a') as f:f.write(json.dumps(args)+'\\n')
+if 'show-environment' in args:
+ print('WAYLAND_DISPLAY='+os.environ.get('FAKE_DISPLAY','wayland-test'))
+ print('XDG_RUNTIME_DIR='+os.environ['XDG_RUNTIME_DIR'])
+ sys.exit(int(os.environ.get('FAKE_BUS_ERROR','0')))
+unit=next(a for a in args if a.endswith('.service'))
 if 'show' in args:print(states.get(unit,'inactive'))
 elif 'start' in args:
  states[unit]='activating';p.write_text(json.dumps(states))
@@ -35,7 +40,7 @@ else:sys.exit(99)
         fake.chmod(0o700)
         self.script = self.root / "request"
         self.script.write_text((ROOT / "integration/magi-lock-request").read_text().replace('/usr/bin/systemctl', str(fake)))
-        self.env = dict(os.environ, FAKE_STATE=str(self.state))
+        self.env = dict(os.environ, FAKE_STATE=str(self.state), WAYLAND_DISPLAY='wayland-test', XDG_RUNTIME_DIR=str(self.root))
 
     def invoke(self, *args):
         return subprocess.run(['/bin/sh', str(self.script), *args], env=self.env, capture_output=True, timeout=3)
@@ -97,6 +102,26 @@ listener {
         self.assertIn('--sleep-coordinator=%i', unit)
         self.assertIn('Restart=no', unit)
         self.assertNotIn('Conflicts=', unit)
+
+    def test_missing_graphical_environment(self):
+        self.env.pop('WAYLAND_DISPLAY')
+        self.assertEqual(self.invoke('lock').returncode, 78)
+        self.assertEqual(self.calls(), [])
+
+    def test_wrong_session_never_starts(self):
+        self.env['FAKE_DISPLAY'] = 'other-session'
+        self.assertEqual(self.invoke('lock').returncode, 78)
+        self.assertFalse(any('start' in c for c in self.calls()))
+
+    def test_manager_failure_never_starts(self):
+        self.env['FAKE_BUS_ERROR'] = '1'
+        self.assertEqual(self.invoke('lock').returncode, 69)
+        self.assertFalse(any('start' in c for c in self.calls()))
+
+    def test_deactivating_owner_not_replaced(self):
+        self.state.write_text(json.dumps({'magi-lock@native.service': 'deactivating'}))
+        self.assertEqual(self.invoke('lock').returncode, 69)
+        self.assertFalse(any('start' in c for c in self.calls()))
 
 
 if __name__ == '__main__':
