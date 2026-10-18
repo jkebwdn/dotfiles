@@ -50,6 +50,8 @@ public:
     Controller& operator=(const Controller&) = delete;
     State state() const { return state_; }
     bool confirmed() const { return confirmed_; }
+    bool secureLockReady() const { return confirmed_ && state_ == State::Locked && !cleaned_; }
+    void blockForSleep(bool blocked) { sleepBlocked_ = blocked; }
     const std::map<std::uint32_t, Output>& outputs() const { return outputs_; }
     bool acquire();
     bool locked();
@@ -74,6 +76,7 @@ private:
     Backend& backend_;
     State state_ = State::Idle;
     bool confirmed_ = false;
+    bool sleepBlocked_ = false;
     bool cleaned_ = false;
     bool requested_ = false;
     std::uint64_t nextLifetime_ = 0;

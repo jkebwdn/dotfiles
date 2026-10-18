@@ -35,7 +35,8 @@ bool WaylandOwner::ownsSurface(wl_surface* surface) const {
 const wl_seat_listener WaylandOwner::seatListener{
     [](void* data, wl_seat* seat, std::uint32_t capabilities) {
         auto& self = *static_cast<WaylandOwner*>(data);
-        if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+        self.keyboardCapable_ = capabilities & WL_SEAT_CAPABILITY_KEYBOARD;
+        if (self.keyboardCapable_) {
             if (!self.keyboard_) {
                 self.keyboard_ = wl_seat_get_keyboard(seat);
                 if (self.keyboard_) wl_keyboard_add_listener(self.keyboard_, &keyboardListener, &self);
@@ -122,7 +123,7 @@ WaylandOwner::WaylandOwner(unsigned seconds, bool authenticate, std::string work
         });
     };
     auth_.succeeded = [this](std::uint64_t generation) {
-        if (!stopping_ && authenticate_ && controller_.authenticatedUnlock(auth_, generation)) flush();
+        if (!stopping_ && authenticate_ && (!unlockAllowed || unlockAllowed()) && controller_.authenticatedUnlock(auth_, generation)) flush();
     };
     deadline_.setSingleShot(true);
     connect(&deadline_, &QTimer::timeout, this, [this] {
@@ -137,9 +138,33 @@ WaylandOwner::WaylandOwner(unsigned seconds, bool authenticate, std::string work
 #endif
 }
 WaylandOwner::~WaylandOwner() { controller_.cleanup(); }
+void WaylandOwner::prepareSleep() {
+    controller_.blockForSleep(true);
+    input_.blockForSleep(true);
+    haveModifiers_ = false;
+    qInfo("SLEEP PREPARATION: input blocked, credential cleared, auth cancelled");
+}
+void WaylandOwner::resumeSleep() {
+    if (stopping_) return;
+    input_.blockForSleep(false);
+    focusedSurface_ = nullptr; haveModifiers_ = false; modifiers_ = {};
+    // Fresh keyboard object gives keymap/enter/modifiers in compositor order.
+    // Old queued events cannot restore focus or modifiers to this object.
+    if (keyboard_) wl_keyboard_release(keyboard_);
+    keyboard_ = nullptr;
+    if (seat_ && authenticate_ && keyboardCapable_) {
+        keyboard_ = wl_seat_get_keyboard(seat_);
+        if (keyboard_) wl_keyboard_add_listener(keyboard_, &keyboardListener, this);
+    }
+    controller_.blockForSleep(false);
+    controller_.refresh(); flush();
+    qInfo("RESUME: still locked; fresh keyboard state required");
+}
 bool WaylandOwner::start() {
+    if (started_) return !stopping_;
+    started_ = true;
     display_ = wl_display_connect(nullptr);
-    if (!display_) { qCritical("Cannot connect to Wayland display; no lock requested"); return false; }
+    if (!display_) { stopFailure("Cannot connect to Wayland display; no lock requested"); return false; }
     registry_ = wl_display_get_registry(display_);
     if (!registry_) { stopFailure("Cannot create registry"); return false; }
     wl_registry_add_listener(registry_, &registryListener, this);
@@ -409,6 +434,7 @@ void WaylandOwner::lockConfirmed(void* data, ext_session_lock_v1*) {
         if (self.haveModifiers_) self.input_.modifiers(self.modifiers_[0], self.modifiers_[1], self.modifiers_[2], self.modifiers_[3]);
     }
     self.controller_.refresh();
+    if (self.secureReady) self.secureReady();
 }
 void WaylandOwner::lockFinished(void* data, ext_session_lock_v1*) {
     auto& self = *static_cast<WaylandOwner*>(data);

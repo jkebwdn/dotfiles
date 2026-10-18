@@ -1,4 +1,8 @@
 #include "options.hpp"
+#include "logind_sleep.hpp"
+#include "instance_guard.hpp"
+#include <systemd/sd-daemon.h>
+#include <cstdlib>
 #include "wayland_owner.hpp"
 #include <QGuiApplication>
 #include <QQuickWindow>
@@ -29,7 +33,10 @@ int main(int argc, char** argv) {
         std::cout << "MAGI lock protocol proof — NOT a production locker\n"
                      "--build-info  Offline build information; no display connection\n"
                      "--acquire-session-lock  Acquire REAL lock; requires operator approval\n"
-                     "--authenticate  Enable native keyboard and private PAM worker\n";
+                     "--authenticate  Enable native keyboard and private PAM worker\n"
+                     "--sleep-integration  Opt-in logind delay/credential cleanup (requires acceptance)\n"
+                     "--sleep-coordinator=native|hypridle  Explicit initial sleep-delay owner\n"
+                     "--notify-ready  Notify user service ONLY after compositor locked\n";
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
         std::cout << "--unsafe-development-unlock-after=N  REQUIRED with acquisition in this\n"
                      "development build; auto-unlock N=10..300 seconds AFTER confirmation\n";
@@ -53,6 +60,12 @@ int main(int argc, char** argv) {
     std::signal(SIGTERM, SIG_DFL);
     std::signal(SIGUSR1, SIG_DFL);
     std::signal(SIGPIPE, SIG_IGN);
+    magi::InstanceGuard instance;
+    const auto runtime = std::getenv("XDG_RUNTIME_DIR");
+    const auto display = std::getenv("WAYLAND_DISPLAY");
+    if (!runtime || !display || !instance.acquire(runtime, display)) {
+        std::cerr << "Locker already active or invalid runtime identity; no readiness claimed\n"; return 73;
+    }
     // Qt renders OFFSCREEN ONLY. Do not let platform/plugin CLI options open a
     // second compositor connection or produce ordinary windows. No argv is
     // passed through to Qt, no QQml debugging enablement or arbitrary QML URL.
@@ -77,6 +90,16 @@ int main(int argc, char** argv) {
 #endif
     if (options.authenticate && access(worker.c_str(), X_OK)) { qCritical("Auth worker unavailable; no lock requested"); return 64; }
     magi::WaylandOwner owner(options.developmentSeconds, options.authenticate, worker, authTimeoutMs);
+    std::unique_ptr<magi::LogindSleep> sleep;
+    if (options.sleepIntegration) {
+        sleep = std::make_unique<magi::LogindSleep>(owner, options.sleepCoordinator);
+        if (!sleep->start()) { qCritical("Cannot arm sleep integration; no readiness claimed"); return 2; }
+        owner.unlockAllowed = [&sleep] { return sleep->allowUnlock(); };
+    }
+    owner.secureReady = [&owner, &options] {
+        if (options.notifyReady && owner.secureLockReady() && sd_notify(0, "READY=1\nSTATUS=Compositor confirmed locked") <= 0)
+            qWarning("Readiness delivery failed; retaining lock");
+    };
     QTimer::singleShot(0, &app, [&owner] { if (!owner.start()) QCoreApplication::exit(2); });
     return app.exec();
 }

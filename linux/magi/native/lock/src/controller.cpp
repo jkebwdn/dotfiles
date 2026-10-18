@@ -132,7 +132,7 @@ void Controller::bufferAvailable(std::uint32_t id, std::optional<std::uint64_t> 
     if (it != outputs_.end() && (!lifetime || *lifetime == it->second.lifetime)) draw(id, it->second);
 }
 bool Controller::authenticatedUnlock(AuthController& auth, std::uint64_t generation) {
-    if (state_ != State::Locked || !confirmed_ || cleaned_ || !auth.consumeSuccess(generation)) return false;
+    if (sleepBlocked_ || !secureLockReady() || !auth.consumeSuccess(generation)) return false;
     state_ = State::Unlocking;
     backend_.authenticatedUnlockAndSync();
     return true;

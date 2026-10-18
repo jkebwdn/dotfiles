@@ -29,7 +29,7 @@ bool NativeInput::keymap(std::span<const char> text) {
     return state_ != nullptr;
 }
 void NativeInput::focus(bool focused, std::span<const unsigned> held, bool preserveAuth) {
-    focused_ = focused && ready(); haveModifiers_ = false; down_.fill(false);
+    focused_ = focused && ready() && !sleepBlocked_; haveModifiers_ = false; down_.fill(false);
     for (auto key : held) if (key < down_.size()) down_[key] = true;
     if (compose_) xkb_compose_state_reset(compose_);
     auth_.setInputActive(focused_, preserveAuth);
@@ -44,7 +44,12 @@ void NativeInput::modifiers(unsigned depressed, unsigned latched, unsigned locke
     xkb_state_update_mask(state_, depressed, latched, locked, 0, 0, group);
     auth_.setCaps(xkb_state_mod_name_is_active(state_, XKB_MOD_NAME_CAPS, XKB_STATE_MODS_LOCKED) > 0);
 }
+void NativeInput::blockForSleep(bool blocked) {
+    sleepBlocked_ = blocked;
+    focus(false, {}, !blocked);
+}
 void NativeInput::key(unsigned code, bool pressed) {
+    if (sleepBlocked_) return;
     if (code >= down_.size()) return;
     const bool wasDown = down_[code]; down_[code] = pressed;
     if (!pressed || wasDown || !focused_ || !haveModifiers_ || !state_) return;

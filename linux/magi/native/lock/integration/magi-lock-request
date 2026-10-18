@@ -1,0 +1,20 @@
+#!/bin/sh
+# Future /usr/bin/magi-lock-request. No unlock/stop/restart or arbitrary units.
+if [ "$#" -gt 1 ]; then
+    echo 'usage: magi-lock-request [lock|sleep-coordinated]' >&2
+    exit 64
+fi
+case "${1:-lock}" in
+    lock) coordinator=native ;;
+    sleep-coordinated) coordinator=hypridle ;;
+    *) echo 'invalid lock request mode' >&2; exit 64 ;;
+esac
+# Reuse an existing activation across request modes. A simultaneous cold-start
+# race is still rejected by the native per-display flock, never by stopping an owner.
+for mode in native hypridle; do
+    state=$(/usr/bin/systemctl --user show "magi-lock@$mode.service" --property=ActiveState --value 2>/dev/null) || state=unknown
+    case "$state" in
+        active|activating) exec /usr/bin/systemctl --user start "magi-lock@$mode.service" ;;
+    esac
+done
+exec /usr/bin/systemctl --user start "magi-lock@$coordinator.service"

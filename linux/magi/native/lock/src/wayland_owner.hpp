@@ -15,6 +15,12 @@ class WaylandOwner final : public QObject, public Backend {
 public:
     explicit WaylandOwner(unsigned developmentSeconds, bool authenticate, std::string worker, int authTimeoutMs = 120000);
     ~WaylandOwner() override;
+    std::function<void()> secureReady;
+    std::function<bool()> unlockAllowed;
+    bool secureLockReady() const { return controller_.secureLockReady(); }
+    bool authQuiescent() const { return auth_.quiescent(); }
+    void prepareSleep();
+    void resumeSleep();
     bool start(); // The ONLY entry point which can connect/request a real lock.
     bool requestLock() override;
     bool createSurface(std::uint32_t id) override;
@@ -80,6 +86,7 @@ private:
     std::uint32_t seatId_ = 0;
     std::array<unsigned, 4> modifiers_{};
     bool haveModifiers_ = false;
+    bool keyboardCapable_ = false;
     bool repaintQueued_ = false;
     bool authenticate_;
     AuthController auth_;
@@ -101,6 +108,7 @@ private:
 #endif
     unsigned developmentSeconds_;
     bool stopping_ = false;
+    bool started_ = false;
     Controller controller_; // Must be cleaned while Backend still exists.
 };
 }

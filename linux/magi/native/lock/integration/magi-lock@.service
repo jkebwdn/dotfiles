@@ -1,0 +1,18 @@
+# TEMPLATE ONLY: do not install/enable before live acceptance and packaging.
+[Unit]
+Description=MAGI native session lock
+After=graphical-session.target
+PartOf=graphical-session.target
+RefuseManualStop=yes
+
+[Service]
+Type=notify
+NotifyAccess=main
+ExecStart=/usr/lib/magi/magi-lock --acquire-session-lock --authenticate --sleep-integration --sleep-coordinator=%i --notify-ready
+Restart=no
+TimeoutStartSec=20
+LimitCORE=0
+# No install section: lock requests start this unit on demand.
+# Import WAYLAND_DISPLAY/XDG_RUNTIME_DIR from the actual compositor session first.
+# Only native/hypridle are valid instances; the native CLI rejects other values.
+# No Conflicts or automatic restart: neither instance may stop the other owner.

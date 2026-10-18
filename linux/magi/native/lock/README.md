@@ -172,3 +172,77 @@ Each CTest tree has eight aggregate tests, including 41 new multi-output scenari
 in `output_synthetic`. It uses a fake Wayland Backend, actual offscreen Qt rendering
 and synthetic Rust IPC. It cannot certify live wire traffic or physical scanout.
 No Rust source or fixture changed for Phase 6A. The real worker path above does not authorize another authentication run.
+
+## Phase 7 sleep/readiness (live acceptance complete; not production migrated)
+
+[Phase 7 checkpoint](../../docs/design/lock-screen-phase7-suspend-resume.md) defines
+explicit sleep ownership. Native mode holds a delay before sleep for credential
+clearing/worker reap. `--sleep-coordinator=hypridle` delegates an already-pending
+sleep to Hypridle mode 3's pre-existing inhibitor; it does not attempt a late
+native acquisition. On resume (or startup with sleep already finished), it acquires
+native protection before permitting input, protecting subsequent sleep cycles.
+Already-locked Test 1, corrected initially-unlocked Test 2 and the final
+dual-output suspend/resume test passed with operator visual acceptance. The
+original Test 2 failure remains documented. Test 3 is subsumed by corrected
+Test 2; no redundant execution is required. Resume exercised HDMI replacement
+from registry/lifetime 79/2 to 80/3 while the global session remained locked.
+Delay is finite, not an absolute suspend veto. Production
+continues using Hyprlock; no unit/config below is installed or enabled.
+
+New dependency: libsystemd >=252 (plus Python 3 for tests). `--sleep-integration` subscribes only
+with explicit acquisition/authentication. `--notify-ready` sends READY=1 only from
+the compositor-confirmed native callback. Neither exposes unlock. A native runtime
+flock rejects duplicate owners without claiming ready. Ordinary help/build-info
+and automated tests never acquire a real lock or sleep inhibitor.
+
+`integration/magi-lock@.service` and `magi-lock-request` are future packaging
+artifacts, not commands to deploy now. Intended paths are `/usr/bin/magi-lock-request`
+and sibling owner/worker `/usr/lib/magi/{magi-lock,magi-lock-auth}`. Packaged builds
+must leave MAGI_LOCK_AUTH_WORKER empty; /tmp overrides are development only.
+`magi-lock-request lock` (also the no-argument default) selects the native instance;
+`magi-lock-request sleep-coordinated` selects the hypridle instance. Existing
+activations are reused across modes. Same-instance requests coalesce in systemd;
+a simultaneous cold-start cross-mode race fails safely at the native flock rather
+than stopping another owner. No Conflicts/restart/unlock endpoint is added.
+Type=notify reports the same compositor confirmation to waiting callers;
+Hypridle does not consume READY=1 and gates sleep on its compositor notifier.
+The explicit coordinated request assumes the trusted caller has configured mode 3;
+it is not a claim that arbitrary callers have an external inhibitor.
+
+`integration/handoff_policy.py` is the pure acceptance-harness state model.
+Service/locker exit, systemctl success and deadlines never establish completed
+sleep. Restoration requires observed true→false, fresh PreparingForSleep=false,
+terminal sleep service and an exited locker (or a definitive rejected request).
+Unknown/pending state retains temporary Hypridle and requires operator recovery.
+Production verification requires its inhibitor, not merely a PID.
+`handoff_config.py` renders only the two temporary integration changes; it never
+writes or activates live configuration. Neither module is a production daemon.
+
+Non-disruptive validation from repository root (no real lock/PAM/suspend):
+
+```bash
+cargo build --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase7 --bins --example protocol_fixture
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-phase7-build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DMAGI_LOCK_AUTH_WORKER=/tmp/magi-auth-phase7/debug/magi-lock-auth \
+  -DMAGI_LOCK_AUTH_FIXTURE=/tmp/magi-auth-phase7/debug/examples/protocol_fixture
+cmake --build /tmp/magi-lock-phase7-build
+ctest --test-dir /tmp/magi-lock-phase7-build --output-on-failure
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-phase7-dev-build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug -DMAGI_LOCK_DEVELOPMENT_UNLOCK=ON \
+  -DMAGI_LOCK_FAILURE_INJECTION=ON \
+  -DMAGI_LOCK_AUTH_WORKER=/tmp/magi-auth-phase7/debug/magi-lock-auth \
+  -DMAGI_LOCK_AUTH_FIXTURE=/tmp/magi-auth-phase7/debug/examples/protocol_fixture
+cmake --build /tmp/magi-lock-phase7-dev-build
+ctest --test-dir /tmp/magi-lock-phase7-dev-build --output-on-failure
+cargo test --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase7
+cargo clippy --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase7 --all-targets -- -D warnings
+cargo fmt --manifest-path linux/magi/native/lock/auth/Cargo.toml --check
+```
+
+`sleep_synthetic` adds fake inhibitor/readiness/resume cases, real native input and
+synthetic worker cancellation/reap, output replacement, and competing-process
+instance-guard tests. Existing Phase 5/6 suites remain required. Any further live
+test requires separate approval and fresh recovery planning. Phase 7 acceptance
+does not authorize installation, production routing/PAM migration or Hyprlock
+retirement. Hypridle remains the intended production idle/sleep coordinator.

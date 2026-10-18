@@ -26,6 +26,7 @@ public:
     void clear();
     bool submit();
     void cancel();
+    bool quiescent() const { return pid_ == -1 && fd_ == -1 && credential_.empty(); }
     AuthPresentation presentation() const;
     AuthState state() const { return state_; }
     std::uint64_t generation() const { return generation_; }

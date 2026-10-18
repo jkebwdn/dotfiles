@@ -6,6 +6,15 @@ Options parseOptions(std::span<const std::string_view> args) {
     for (const auto arg : args) {
         if (arg == "--help" && !result.help) result.help = true;
         else if (arg == "--build-info" && !result.buildInfo) result.buildInfo = true;
+        else if (arg == "--sleep-integration" && !result.sleepIntegration) result.sleepIntegration = true;
+        else if (arg.starts_with("--sleep-coordinator=") && !result.coordinatorSpecified) {
+            result.coordinatorSpecified = true;
+            auto mode = arg.substr(sizeof("--sleep-coordinator=") - 1);
+            if (mode == "native") result.sleepCoordinator = SleepCoordinator::Native;
+            else if (mode == "hypridle") result.sleepCoordinator = SleepCoordinator::Hypridle;
+            else { result.error = "Invalid sleep coordinator"; return result; }
+        }
+        else if (arg == "--notify-ready" && !result.notifyReady) result.notifyReady = true;
         else if (arg == "--authenticate" && !result.authenticate) result.authenticate = true;
         else if (arg == "--acquire-session-lock" && !result.acquire) result.acquire = true;
 #if MAGI_LOCK_FAILURE_INJECTION
@@ -30,7 +39,11 @@ Options parseOptions(std::span<const std::string_view> args) {
 #endif
         else { result.error = "Unknown or duplicate argument"; return result; }
     }
-    if ((result.help || result.buildInfo) && (result.acquire || result.developmentSeconds || result.authenticate))
+    if (result.coordinatorSpecified && !result.sleepIntegration)
+        result.error = "Explicit sleep coordinator requires sleep integration";
+    else if ((result.sleepIntegration || result.notifyReady) && (!result.acquire || !result.authenticate || result.help || result.buildInfo))
+        result.error = "Integration requires explicit acquisition and authentication";
+    else if ((result.help || result.buildInfo) && (result.acquire || result.developmentSeconds || result.authenticate))
         result.error = "Informational arguments cannot be combined with acquisition";
     else if (result.authenticate && !result.acquire)
         result.error = "Authentication requires explicit acquisition";
