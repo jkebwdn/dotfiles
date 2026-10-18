@@ -129,3 +129,46 @@ fixture never calls PAM; use only fake input. Injection is absent from default
 binaries. A hang selection uses a fixed five-second timeout, plus two-second
 cancellation grace; normal PAM retains 120 seconds. Future live failure tests use
 90-second emergency recovery and need separate approval and fresh TTY readiness.
+
+## Phase 6 accepted multi-output validation
+
+[Phase 6 checkpoint](../../docs/design/lock-screen-phase6-multi-output.md) records
+architecture, protocol evidence, the passing synthetic matrix, the incomplete first
+headless attempt, successful second headless attempt, and accepted Physical Tests
+1–4 with operator visual confirmation. No further live run is authorized here.
+
+One lock/auth/input/credential controller serves all outputs with identical safe
+presentation. Output lifecycle and instance tokens are independent of auth
+generations. Output focus loss suspends keys without cancelling editing or an
+active attempt; output removal and per-output QML fallback no longer reset global
+authentication. Seat/keymap loss, explicit cancellation and teardown still clear
+credentials/cancel. This supersedes the earlier blanket focus/fallback policy.
+Zero outputs remains locked. Rendering uses each configure's logical size with
+scale-1/NORMAL buffers, independently of output scale/transform metadata.
+
+Non-locking build/test commands from the repository root:
+
+```bash
+cargo build --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase6 --bins --example protocol_fixture
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-phase6-build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DMAGI_LOCK_AUTH_WORKER=/tmp/magi-auth-phase6/debug/magi-lock-auth \
+  -DMAGI_LOCK_AUTH_FIXTURE=/tmp/magi-auth-phase6/debug/examples/protocol_fixture
+cmake --build /tmp/magi-lock-phase6-build
+ctest --test-dir /tmp/magi-lock-phase6-build --output-on-failure
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-phase6-dev-build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug -DMAGI_LOCK_DEVELOPMENT_UNLOCK=ON \
+  -DMAGI_LOCK_FAILURE_INJECTION=ON \
+  -DMAGI_LOCK_AUTH_WORKER=/tmp/magi-auth-phase6/debug/magi-lock-auth \
+  -DMAGI_LOCK_AUTH_FIXTURE=/tmp/magi-auth-phase6/debug/examples/protocol_fixture
+cmake --build /tmp/magi-lock-phase6-dev-build
+ctest --test-dir /tmp/magi-lock-phase6-dev-build --output-on-failure
+cargo test --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase6
+cargo clippy --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase6 --all-targets -- -D warnings
+cargo fmt --manifest-path linux/magi/native/lock/auth/Cargo.toml --check
+```
+
+Each CTest tree has eight aggregate tests, including 41 new multi-output scenarios
+in `output_synthetic`. It uses a fake Wayland Backend, actual offscreen Qt rendering
+and synthetic Rust IPC. It cannot certify live wire traffic or physical scanout.
+No Rust source or fixture changed for Phase 6A. The real worker path above does not authorize another authentication run.

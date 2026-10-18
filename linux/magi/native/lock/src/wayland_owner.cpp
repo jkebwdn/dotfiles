@@ -67,11 +67,13 @@ const wl_keyboard_listener WaylandOwner::keyboardListener{
         std::span<const unsigned> held;
         if (keys && keys->size <= 768*sizeof(unsigned) && keys->size % sizeof(unsigned) == 0)
             held = {static_cast<const unsigned*>(keys->data), keys->size/sizeof(unsigned)};
-        self.input_.focus(self.focusedSurface_ && self.controller_.state() == State::Locked, held);
+        // An enter can refer to a surface removed earlier in the event batch.
+        // Suspend input in that case without cancelling the session attempt.
+        self.input_.focus(self.focusedSurface_ && self.controller_.state() == State::Locked, held, true);
     },
     [](void* data, wl_keyboard*, std::uint32_t, wl_surface*) {
         auto& self = *static_cast<WaylandOwner*>(data);
-        self.focusedSurface_ = nullptr; self.input_.focus(false);
+        self.focusedSurface_ = nullptr; self.input_.focus(false, {}, true);
     },
     [](void* data, wl_keyboard*, std::uint32_t, std::uint32_t, std::uint32_t key, std::uint32_t state) {
         auto& self = *static_cast<WaylandOwner*>(data);
@@ -100,7 +102,7 @@ const wl_output_listener WaylandOwner::outputListener{
     [](void*, wl_output*, uint32_t, int32_t, int32_t, int32_t) {},
     [](void*, wl_output*) {},
     [](void* data, wl_output*, int32_t scale) { static_cast<NativeOutput*>(data)->scale = scale; },
-    [](void*, wl_output*, const char*) {},
+    [](void* data, wl_output*, const char* name) { static_cast<NativeOutput*>(data)->connector = name ? name : ""; },
     [](void*, wl_output*, const char*) {}
 };
 WaylandOwner::Buffer::~Buffer() {
@@ -275,6 +277,7 @@ bool WaylandOwner::createSurface(std::uint32_t id) {
     auto it = nativeOutputs_.find(id);
     if (it == nativeOutputs_.end() || !lock_) return false;
     auto& output = *it->second;
+    output.lifetime = controller_.outputs().at(id).lifetime;
     if (output.surface || output.lockSurface) return false;
     output.surface = wl_compositor_create_surface(compositor_);
     if (!output.surface) return false;
@@ -286,19 +289,22 @@ bool WaylandOwner::createSurface(std::uint32_t id) {
         return false;
     }
     ext_session_lock_surface_v1_add_listener(output.lockSurface, &surfaceListener, &output);
-    qInfo() << "Lock surface created for registry output" << id;
+    qInfo() << "Lock surface created for registry output" << id << "lifetime" << output.lifetime
+            << "auth generation" << auth_.generation() << "authentication enabled" << authenticate_;
     return true;
 }
 void WaylandOwner::removeSurface(std::uint32_t id) {
     auto it = nativeOutputs_.find(id);
     if (it == nativeOutputs_.end()) return;
     auto& output = *it->second;
-    if (focusedSurface_ == output.surface) { focusedSurface_ = nullptr; input_.focus(false); }
+    if (focusedSurface_ == output.surface) { focusedSurface_ = nullptr; input_.focus(false, {}, true); }
     if (output.lockSurface) ext_session_lock_surface_v1_destroy(output.lockSurface);
     if (output.surface) wl_surface_destroy(output.surface);
     output.lockSurface = nullptr;
     output.surface = nullptr;
     std::erase_if(buffers_, [id](const auto& b) { return b->outputId == id; });
+    qInfo() << "Output resources removed" << id << "lifetime" << output.lifetime
+            << "global state" << int(controller_.state()) << "auth generation" << auth_.generation();
 }
 void WaylandOwner::surfaceConfigure(void* data, ext_session_lock_surface_v1*,
                                     std::uint32_t serial, std::uint32_t width, std::uint32_t height) {
@@ -308,7 +314,7 @@ void WaylandOwner::surfaceConfigure(void* data, ext_session_lock_surface_v1*,
     if (output.configureLogs++ < 8)
         qInfo() << "Configure output" << output.id << "serial" << serial << "logical size" << width << height;
     else if (output.configureLogs == 9) qInfo() << "Further configure logs suppressed for output" << output.id;
-    self.controller_.configure(output.id, {serial, width, height});
+    self.controller_.configure(output.id, {serial, width, height}, output.lifetime);
 }
 FrameResult WaylandOwner::present(std::uint32_t id, Configure c, bool acknowledge) {
     const auto it = nativeOutputs_.find(id);
@@ -325,6 +331,7 @@ FrameResult WaylandOwner::present(std::uint32_t id, Configure c, bool acknowledg
     auto buffer = std::make_unique<Buffer>();
     buffer->owner = this;
     buffer->outputId = id;
+    buffer->lifetime = it->second->lifetime;
     buffer->size = bytes;
     const int fd = memfd_create("magi-lock-proof-frame", MFD_CLOEXEC);
     if (fd < 0) return FrameResult::Failed;
@@ -348,7 +355,6 @@ FrameResult WaylandOwner::present(std::uint32_t id, Configure c, bool acknowledg
                                                QString::fromUtf8(state.data(), qsizetype(state.size())), notice, {}, auth_.presentation());
     auto& output = *it->second;
     if (!rendered) {
-        if (!output.fallbackLogged) auth_.presentationFailed();
         Presentation::fallback(image, auth_.presentation());
         if (!output.fallbackLogged) qWarning() << "Native solid fallback activated for output" << id;
         output.fallbackLogged = true;
@@ -364,6 +370,11 @@ FrameResult WaylandOwner::present(std::uint32_t id, Configure c, bool acknowledg
     wl_surface_commit(output.surface);
     buffer->busy = true;
     buffers_.push_back(std::move(buffer));
+    if (output.presentationLogs++ < 8)
+        qInfo() << "Output committed" << id << "lifetime" << output.lifetime
+                << "serial" << c.serial << "acknowledged" << acknowledge
+                << "native fallback" << !rendered << "global state" << int(controller_.state())
+                << "auth generation" << auth_.generation();
     return rendered ? FrameResult::Presented : FrameResult::Fallback;
 }
 void WaylandOwner::bufferReleased(void* data, wl_buffer*) {
@@ -373,10 +384,14 @@ void WaylandOwner::bufferReleased(void* data, wl_buffer*) {
 void WaylandOwner::releaseBuffer(Buffer* buffer) {
     buffer->busy = false;
     const auto id = buffer->outputId;
+    const auto lifetime = buffer->lifetime;
     // Never delete listener data or mutate controller output map reentrantly.
-    QTimer::singleShot(0, this, [this, id] {
+    QTimer::singleShot(0, this, [this, id, lifetime] {
         if (stopping_) return;
-        controller_.bufferAvailable(id);
+        const auto found = controller_.outputs().find(id);
+        if (found == controller_.outputs().end() || found->second.lifetime != lifetime)
+            qInfo() << "Stale output release ignored" << id << "lifetime" << lifetime;
+        controller_.bufferAvailable(id, lifetime);
         flush();
     });
 }

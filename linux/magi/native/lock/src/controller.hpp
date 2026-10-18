@@ -15,7 +15,10 @@ struct Configure {
 // Dimensions are surface-local; native buffers use scale 1, normal transform.
 bool validGeometry(const Configure& configure);
 enum class FrameResult { Presented, Fallback, Deferred, Failed };
+enum class OutputState { Discovered, SurfaceRequested, AwaitingConfigure, Configured, Presented, PresentationFailed, Removed };
 struct Output {
+    OutputState lifecycle = OutputState::Discovered;
+    std::uint64_t lifetime = 0;
     bool surface = false;
     bool fallback = false;
     bool failed = false;
@@ -56,8 +59,9 @@ public:
     void cleanup();
     bool addOutput(std::uint32_t id);
     bool removeOutput(std::uint32_t id);
-    bool configure(std::uint32_t id, Configure configure);
-    void bufferAvailable(std::uint32_t id);
+    // Native callbacks always carry lifetime; omitted only for synchronous callers.
+    bool configure(std::uint32_t id, Configure configure, std::optional<std::uint64_t> lifetime = {});
+    void bufferAvailable(std::uint32_t id, std::optional<std::uint64_t> lifetime = {});
     void refresh();
     bool authenticatedUnlock(AuthController& auth, std::uint64_t generation);
     bool unlockSynced();
@@ -72,6 +76,7 @@ private:
     bool confirmed_ = false;
     bool cleaned_ = false;
     bool requested_ = false;
+    std::uint64_t nextLifetime_ = 0;
     std::map<std::uint32_t, Output> outputs_;
 };
 }

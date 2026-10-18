@@ -30,17 +30,21 @@ private:
     struct NativeOutput {
         WaylandOwner* owner = nullptr;
         std::uint32_t id = 0;
+        std::uint64_t lifetime = 0;
+        std::string connector;
         wl_output* output = nullptr;
         wl_surface* surface = nullptr;
         ext_session_lock_surface_v1* lockSurface = nullptr;
         int scale = 1;
         int transform = WL_OUTPUT_TRANSFORM_NORMAL;
         unsigned configureLogs = 0;
+        unsigned presentationLogs = 0;
         bool fallbackLogged = false;
     };
     struct Buffer {
         WaylandOwner* owner = nullptr;
         std::uint32_t outputId = 0;
+        std::uint64_t lifetime = 0;
         wl_buffer* proxy = nullptr;
         void* mapping = nullptr;
         std::size_t size = 0;

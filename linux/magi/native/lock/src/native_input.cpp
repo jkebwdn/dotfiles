@@ -28,11 +28,11 @@ bool NativeInput::keymap(std::span<const char> text) {
     if (keymap_) state_ = xkb_state_new(keymap_);
     return state_ != nullptr;
 }
-void NativeInput::focus(bool focused, std::span<const unsigned> held) {
+void NativeInput::focus(bool focused, std::span<const unsigned> held, bool preserveAuth) {
     focused_ = focused && ready(); haveModifiers_ = false; down_.fill(false);
     for (auto key : held) if (key < down_.size()) down_[key] = true;
     if (compose_) xkb_compose_state_reset(compose_);
-    auth_.setInputActive(focused_);
+    auth_.setInputActive(focused_, preserveAuth);
 }
 bool NativeInput::mod(const char* name) const {
     return state_ && xkb_state_mod_name_is_active(state_, name, XKB_STATE_MODS_EFFECTIVE) > 0;

@@ -231,17 +231,17 @@ void resilience(const std::string& dir) {
     FakeLock b; Controller lock(b); lock.acquire(); lock.locked();
     AuthController auth(fixture(dir,"success"),1000,20); auth.setInputActive(true);
     CHECK(auth.append(secret())); CHECK(auth.submit()); until([&] { return auth.state()==AuthState::Succeeded; });
-    auth.presentationFailed(); CHECK(auth.state()==AuthState::Succeeded); // Rendering cannot consume a completed receipt.
+    CHECK(auth.state()==AuthState::Succeeded);
     lock.cleanup(); CHECK(!lock.authenticatedUnlock(auth,auth.generation())); CHECK(b.unlocks==0);
     pid_t child;
     { AuthController dying(fixture(dir,"hang"),1000,20); dying.setInputActive(true);
       CHECK(dying.append(secret())); CHECK(dying.submit()); child=AuthTestAccess::pid(dying); }
     CHECK(waitpid(child,nullptr,WNOHANG)==-1 && errno==ECHILD);
-    // First native fallback transition clears input/cancels active work, not a completed receipt.
+    // Explicit global cancellation still clears input and cancels active work.
     for (bool running : {false,true}) {
         AuthController a(fixture(dir,"delayed-success"),1000,20); a.setInputActive(true); CHECK(a.append(secret()));
         if (running) CHECK(a.submit());
-        a.presentationFailed(); CHECK(AuthTestAccess::zeroed(a));
+        a.cancel(); CHECK(AuthTestAccess::zeroed(a));
         until([&] { return a.state()==AuthState::Editing; }); CHECK(AuthTestAccess::cleaned(a));
     }
 }

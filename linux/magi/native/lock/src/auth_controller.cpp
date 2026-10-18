@@ -49,10 +49,6 @@ void AuthController::clearCredential() {
     credential_.clear();
     if (occupied) qInfo("CREDENTIAL CLEARED");
 }
-void AuthController::presentationFailed() {
-    // Native fallback transition abandons pending input, never a completed receipt.
-    if (state_ == AuthState::Editing || state_ == AuthState::Authenticating) cancel();
-}
 void AuthController::notify() { if (changed) changed(); }
 AuthPresentation AuthController::presentation() const {
     return {static_cast<unsigned>(credential_.units()), active_ && editable(), caps_, state_};
@@ -60,11 +56,11 @@ AuthPresentation AuthController::presentation() const {
 bool AuthController::editable() const {
     return pid_ < 0 && !retry_.isActive() && (state_ == AuthState::Idle || state_ == AuthState::Editing);
 }
-void AuthController::setInputActive(bool active) {
-    if (active_ == active) return;
+void AuthController::setInputActive(bool active, bool preserveAuth) {
+    if (active_ == active) { if (!active && !preserveAuth) cancel(); return; }
     active_ = active;
-    if (!active) cancel();
-    else if (editable()) state_ = AuthState::Editing;
+    if (!active && !preserveAuth) cancel();
+    else if (active && editable()) state_ = AuthState::Editing;
     notify();
 }
 void AuthController::setCaps(bool caps) { if (caps_ != caps) { caps_ = caps; notify(); } }

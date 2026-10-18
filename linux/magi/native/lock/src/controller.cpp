@@ -52,9 +52,10 @@ void Controller::cleanup() {
     outputs_.clear();
 }
 bool Controller::addOutput(std::uint32_t id) {
-    if (cleaned_) return false;
+    if (cleaned_ || nextLifetime_ == UINT64_MAX) return false;
     auto [it, added] = outputs_.try_emplace(id);
     if (!added) return false;
+    it->second.lifetime = ++nextLifetime_;
     if (state_ == State::Acquiring || state_ == State::Locked)
         ensureSurface(id, it->second);
     return true;
@@ -62,25 +63,29 @@ bool Controller::addOutput(std::uint32_t id) {
 bool Controller::removeOutput(std::uint32_t id) {
     auto it = outputs_.find(id);
     if (it == outputs_.end()) return false;
+    it->second.lifecycle = OutputState::Removed;
     if (it->second.surface) backend_.removeSurface(id);
     outputs_.erase(it);
     return true;
 }
 void Controller::ensureSurface(std::uint32_t id, Output& output) {
     if (output.surface || output.failed) return;
+    output.lifecycle = OutputState::SurfaceRequested;
     output.surface = backend_.createSurface(id);
+    output.lifecycle = output.surface ? OutputState::AwaitingConfigure : OutputState::PresentationFailed;
     if (!output.surface) {
         output.failed = true;
         backend_.diagnostic("Output surface unavailable; retaining lock, compositor fallback required");
     }
 }
-bool Controller::configure(std::uint32_t id, Configure c) {
+bool Controller::configure(std::uint32_t id, Configure c, std::optional<std::uint64_t> lifetime) {
     if (state_ != State::Acquiring && state_ != State::Locked) return false;
     auto it = outputs_.find(id);
-    if (it == outputs_.end() || !it->second.surface) return false;
+    if (it == outputs_.end() || !it->second.surface || (lifetime && *lifetime != it->second.lifetime)) return false;
     auto& output = it->second;
     if (!validGeometry(c)) {
         output.failed = true;
+        output.lifecycle = OutputState::PresentationFailed;
         output.pending.reset();
         // Remove stale-sized content: active output must become compositor
         // fallback. Never attach null or recreate a duplicate output role.
@@ -92,6 +97,7 @@ bool Controller::configure(std::uint32_t id, Configure c) {
     // Serials are opaque uint32 values and may wrap. Never sort numerically.
     if ((output.committed && output.committed->serial == c.serial)
         || (output.pending && output.pending->serial == c.serial)) return false;
+    output.lifecycle = OutputState::Configured;
     output.pending = c; // Unacked older configure is superseded.
     draw(id, output);
     return true;
@@ -103,12 +109,14 @@ void Controller::draw(std::uint32_t id, Output& output) {
     if (result == FrameResult::Deferred) return;
     if (result == FrameResult::Failed) {
         output.failed = true;
+        output.lifecycle = OutputState::PresentationFailed;
         output.pending.reset();
         backend_.removeSurface(id);
         output.surface = false;
         backend_.diagnostic("Buffer/presentation unavailable; compositor fallback required");
         return;
     }
+    output.lifecycle = OutputState::Presented;
     output.fallback = result == FrameResult::Fallback;
     if (acknowledge) output.committed = output.pending;
     output.pending.reset();
@@ -118,10 +126,10 @@ void Controller::refresh() {
     if (state_ != State::Acquiring && state_ != State::Locked) return;
     for (auto& [id, output] : outputs_) { output.dirty = true; draw(id, output); }
 }
-void Controller::bufferAvailable(std::uint32_t id) {
+void Controller::bufferAvailable(std::uint32_t id, std::optional<std::uint64_t> lifetime) {
     if (state_ != State::Acquiring && state_ != State::Locked) return;
     auto it = outputs_.find(id);
-    if (it != outputs_.end()) draw(id, it->second);
+    if (it != outputs_.end() && (!lifetime || *lifetime == it->second.lifetime)) draw(id, it->second);
 }
 bool Controller::authenticatedUnlock(AuthController& auth, std::uint64_t generation) {
     if (state_ != State::Locked || !confirmed_ || cleaned_ || !auth.consumeSuccess(generation)) return false;

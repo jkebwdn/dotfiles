@@ -12,7 +12,8 @@ public:
     NativeInput(const NativeInput&) = delete;
     NativeInput& operator=(const NativeInput&) = delete;
     bool keymap(std::span<const char> text);
-    void focus(bool focused, std::span<const unsigned> held = {});
+    // Preserve only for output focus routing; seat/keymap/teardown use cancellation.
+    void focus(bool focused, std::span<const unsigned> held = {}, bool preserveAuth = false);
     void modifiers(unsigned depressed, unsigned latched, unsigned locked, unsigned group);
     void key(unsigned evdev, bool pressed);
     bool ready() const { return state_ != nullptr; }

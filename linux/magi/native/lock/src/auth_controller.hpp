@@ -18,14 +18,14 @@ class AuthController final : public QObject {
 public:
     explicit AuthController(std::string worker, int timeoutMs = 120000, int retryMs = 1500);
     ~AuthController() override;
-    void setInputActive(bool active);
+    // Output focus changes suspend input without cancelling the one session attempt.
+    void setInputActive(bool active, bool preserveAuth = false);
     void setCaps(bool caps);
     bool append(std::span<const char> text);
     void backspace();
     void clear();
     bool submit();
     void cancel();
-    void presentationFailed();
     AuthPresentation presentation() const;
     AuthState state() const { return state_; }
     std::uint64_t generation() const { return generation_; }
