@@ -7,8 +7,7 @@ from .neovim import Neovim
 ADAPTERS = {a.id: a for a in (Magi(), Hyprland(), Ghostty(), Gtk(), Zen(), Yazi(),
                              Neovim(), Starship(), Fastfetch(), Btop())}
 DEFERRED = [dict(id='qt', label='Qt', reason='Active platform plugin not verified'),
-            dict(id='hyprtoolkit', label='hyprtoolkit', reason='Authentication/helper dialogs need native validation'),
-            dict(id='hyprlock', label='Hyprlock', reason='Protected lock configuration; separate milestone')]
+            dict(id='hyprtoolkit', label='hyprtoolkit', reason='Authentication/helper dialogs need native validation')]
 
 # Compatibility evidence is a capability, not a claim of current runtime success.
 for target, version in {'magi': 'Quickshell 0.3.1', 'hyprland': 'Hyprland 0.56.x Lua',

@@ -1109,3 +1109,182 @@ before/after-sleep and listener settings are included because the file was
 previously untracked; the only change from the pre-migration configuration is
 the accepted two-setting MAGI routing hunk. Phase 8B commit allowlist is exactly
 these two paths. No unrelated protected configuration is included.
+
+
+## Phase 8C retirement preflight — manual removal gate pending
+
+2026-10-18. Baseline verified as 0b2d8f6f84853d1a461313b46199a654d6a1bc66,
+HEAD/origin/main 0 0. Read-only checks: unlocked, no locker/worker/Hyprlock,
+exactly one Hypridle PID677552 with normal delay inhibitor. MAGI 0.1.0-1 and
+Hyprlock 0.9.6-3 installed. Canonical/live MAGI routing, inhibit_sleep=3,
+300-second lock, 600-second DPMS and absence of idle-suspend listener unchanged.
+Installed MAGI PAM is auth include login; verified worker selects magi-lock,
+not hyprlock. No native/request/service code dependency on the fallback.
+
+Pacman Required By=None and Optional For=None; pactree -r lists only hyprlock.
+Plain pacman -R removes only that package; dependencies remain installed even if
+newly orphaned. No recursive removal/orphan cleanup is authorized. Package-owned
+files include /usr/bin/hyprlock, /etc/pam.d/hyprlock, example config and license.
+An existing /etc/pam.d/hyprlock.bak is an unmanaged fallback artifact, not MAGI
+policy; it is outside the requested local-config cleanup and will not be deleted.
+
+Repository reference inventory before retirement: 267 matching lines, classified
+202 historical-documentation (C), 62 test/research (D), one theme metadata (E),
+and two local fallback-config (F). No active production dependency (A). Full
+line-by-line classification and 535-file preflight snapshot are under
+/tmp/magi-phase8c-8p8s4hdd. Active Hyprland/Hypridle, manual routes and user/system
+unit searches found no Hyprlock launch requirement. Historical records and
+negative binary/migration tests retain their references.
+
+The Theme Orchestrator DEFERRED entry is rendered as an unavailable status row by
+coordinator.status; it is not a functioning theme adapter and does not read or
+write hyprlock.conf. Once retirement passes, remove only this dead metadata row.
+The untracked local hyprlock.conf is the old locker-only visual/auth configuration:
+blurred screenshot, clock/date, typography/password styling, footer and optional
+fingerprint UI/direct fprint configuration. No credential material or unique
+required MAGI policy is present. Deleting it discards those old Hyprlock preferences;
+MAGI fingerprint support remains unproven/deferred, not silently migrated.
+No other active consumer was found. Delete only after both post-removal checks
+and operator acceptance. No config/metadata cleanup has occurred yet.
+
+Before manual removal, freshly confirm authenticated TTY recovery. Production
+has no timer/bypass. Same-user TTY can inspect magi-lock@native.service and
+magi-lock@hypridle.service plus their journal. A securely stranded compositor
+requires confirmed graphical-session termination as documented above; killing
+the locker does not authenticate/unlock it. Saved work and a separate authenticated
+TTY are required before subsequent individually approved live tests.
+
+Manual removal command proposed, not run by the assistant:
+`sudo pacman -R hyprlock`. Await operator completion, then independently verify
+absence and unchanged MAGI artifacts before the separately approved lock/suspend
+tests. No staging, commit or push before final MAGI-only acceptance.
+
+
+### Phase 8C package removal verified — post-removal tests pending
+
+Operator freshly confirmed recovery availability and reported manually removing
+Hyprlock using the proposed `sudo pacman -R hyprlock` gate. Independent verification:
+pacman -Q hyprlock fails (package not found), /usr/bin/hyprlock and
+/etc/pam.d/hyprlock are absent. MAGI 0.1.0-1 and Hypridle 0.1.8-2 remain installed.
+All five MAGI hashes/modes match reviewed artifacts; host pacman -Qkk reports zero
+alterations. MAGI PAM and live/canonical routing are unchanged. Desktop unlocked,
+no locker/worker, no pending sleep. Hypridle PID677552 holds its normal inhibitor.
+Other baseline hashes match except the intended removed Hyprlock PAM file and
+checkpoint edits. Obsolete local config/metadata have not been deleted. No package
+dependency cleanup, lock, suspend, restart, staging, commit or push occurred in
+this verification step. First post-removal Session.Lock test awaits approval.
+
+
+### Phase 8C post-removal Session.Lock — software passed, visuals pending
+
+Operator approved one production loginctl lock-session with pre-armed observer.
+Hyprlock package absence was checked before launch. Evidence:
+/tmp/magi-phase8c-8p8s4hdd/session-lock-test/. Installed owner PID684637 received
+both eDP-1 and HDMI-A-1 at 1920x1080 and 2560x1440. One generation-1 worker
+PID684705 spawned at 17:04:50.834984; authentication succeeded and worker reaped
+at 17:04:50.899929. Exactly one AUTHENTICATED UNLOCK at 17:04:50.900041;
+service inactive/dead, Result=success, ExecMainStatus=0, no owner/worker remains.
+Hyprland unlocked, outputs active, Hypridle normal inhibitor present. Protected
+hashes match except intended package PAM removal/checkpoint. Operator visual
+confirmation pending. No retry or suspend occurred; obsolete config/metadata
+remain untouched until both post-removal gates are accepted.
+
+
+Operator confirmed full coverage, no desktop leakage, hidden password, successful
+authentication and clean return on both displays. **Phase 8C post-removal
+Session.Lock accepted.** Final production suspend/resume remains pending fresh
+approval. No config/metadata cleanup yet.
+
+
+### Phase 8C post-removal suspend — software passed, visuals pending
+
+One explicitly approved production systemctl suspend, no temporary handoff,
+retry or timer. Hyprlock absence, unchanged MAGI artifacts/routing, unlocked state,
+normal inhibitor and no pending sleep verified first. AC connected, battery 93%.
+Evidence: /tmp/magi-phase8c-8p8s4hdd/production-suspend/.
+
+Realtime epoch ordering: logind request 1792339560.216208; compositor Locked
+1792339560.303143; Hypridle notifier/release with FD10 absent observed at
+1792339560.305090; actual systemd Performing suspend at 1792339560.445201.
+Lock confirmed about 86.935 ms after request, ~4.913 s inside five-second limit.
+The release observation uses userspace polling, not exact syscall timing.
+Zero late native inhibitor attempts. Both outputs committed before confirmation.
+
+System returned from sleep at 1792339574.255856; MAGI resume signal .398211,
+native inhibitor reacquired .401006 before RESUME/input reconstruction
+.414932/.580794. Global state stayed Locked, generation 0. eDP-1 retained
+registry72/lifetime1; HDMI registry84/lifetime2 was removed naturally after wake,
+then returned as registry85/lifetime3 with fresh 2560x1440 configure/commit and no
+fallback. No manual topology change or stale-lifetime effect was observed.
+
+One generation-1 worker PID685919 spawned at 1792339585.202881, reaped with
+Authentication succeeded .278525; exactly one AUTHENTICATED UNLOCK .278773.
+Owner PID685102 exited; no locker/worker remains. Suspend command exit0, final
+Unlocked/PreparingForSleep=false, both outputs active, normal MAGI shell/Hyprland
+lifecycles intact, Hypridle PID677552 normal delay inhibitor restored. Expected
+post-removal protected hashes match. Operator visual acceptance pending; no stale
+configuration/metadata deletion, staging, commit or push yet.
+
+
+## Phase 8C retirement accepted — final MAGI-only state
+
+The operator confirmed all post-removal suspend visual checks: both displays
+covered before sleep, genuine suspend, no desktop leakage on wake, usable input,
+hidden password and clean return on both outputs. **Both post-removal Session.Lock
+and suspend/resume are accepted.** No further live acceptance run was performed.
+
+After these confirmations, removed the audited obsolete untracked local
+linux/t15g/hypr/.config/hypr/hyprlock.conf. Its bytes matched the pre-retirement
+snapshot and no other consumer remained. It contained only the old Hyprlock
+presentation/fingerprint preferences previously audited, not secrets or required
+MAGI policy. Because it was untracked, there is no staged Git deletion.
+
+Removed only the Hyprlock item from Theme Orchestrator's DEFERRED registry.
+This removes a dead unavailable status row, not an active theme adapter. All other
+adapters and deferred entries remain unchanged. Existing Theme Orchestrator
+fixture suite passed **15/15**, without operator configuration writes. No shell
+restart or visual redesign was needed. Historical references and negative
+binary/migration tests remain; /etc/pam.d/hyprlock.bak remains an unmanaged,
+inactive historical artifact outside this cleanup. No orphan cleanup occurred.
+
+Final runtime architecture:
+
+    Hyprland
+      + Quickshell / MAGI shell
+      + native MAGI Lock owner
+      + magi-lock-auth PAM worker
+      + Hypridle
+      + systemd/logind
+
+Hyprlock is no longer an active or installed runtime component. MAGI package
+0.1.0-1 and its five installed artifacts/PAM policy remain unchanged. Hypridle
+remains the required idle/Session.Lock/DPMS/sleep coordinator. Production lock
+routing remains magi-lock-request sleep-coordinated, inhibit_sleep=3; lock 300s,
+display off 600s, idle suspend Never. Actual idle lock was already proven at
+300.288 seconds in Phase 8B; 600s DPMS firing remains NOT TESTED and unchanged.
+
+There is no second graphical locker fallback now. Recovery remains authenticated
+Ctrl+Alt+F3 TTY access, inspection with systemctl --user status and journalctl
+--user for magi-lock@native.service / magi-lock@hypridle.service, and confirmed
+graphical-session termination as last resort. Determine the current graphical
+session with loginctl before termination; never assume historical session ID1
+in a new login. Ending that session loses unsaved work and is not authenticated
+unlock. Never kill a lock owner expecting desktop access. No production timer,
+public unlock API or security bypass was added.
+
+Phase 9 lock-screen visual design remains future work; proof presentation is
+temporary. Power & Idle Settings (Enabled/Never, bounded choices, possible later
+custom/AC-battery profiles) remains future work backed by Hypridle, with defaults
+5-minute lock / 10-minute displays off / no idle suspend. Optional external-display
+top-bar Settings remains deferred. None is implemented during retirement.
+
+Phase 8C repository allowlist is exactly this checkpoint and
+linux/magi/.config/quickshell/magi/services/theme_orchestrator/adapters/__init__.py.
+All other protected hashes match except the intentionally removed package PAM
+file and obsolete local Hyprlock configuration. The package was removed manually
+with plain sudo pacman -R hyprlock; no recursive dependency removal or fallback
+package cleanup. Earlier rollback history is preserved as historical evidence,
+not a promise that an uninstalled fallback can be invoked now.
+
+**MAGI Lock production migration is complete. Hyprlock has been retired.
+Hypridle remains.**
