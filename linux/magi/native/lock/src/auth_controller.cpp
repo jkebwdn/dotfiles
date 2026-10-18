@@ -33,16 +33,25 @@ AuthController::AuthController(std::string worker, int timeout, int retry)
     : worker_(std::move(worker)), timeoutMs_(timeout), retryMs_(retry) {
     retry_.setSingleShot(true);
     connect(&retry_, &QTimer::timeout, this, [this] {
-        if (pid_ < 0 && state_ != AuthState::Succeeded) { state_ = active_ ? AuthState::Editing : AuthState::Idle; notify(); }
+        if (pid_ < 0 && state_ != AuthState::Succeeded) { state_ = active_ ? AuthState::Editing : AuthState::Idle; qInfo("RETRY READY"); notify(); }
     });
 }
 AuthController::~AuthController() {
-    poller_.stop(); retry_.stop(); credential_.clear();
+    poller_.stop(); retry_.stop(); clearCredential();
     if (fd_ >= 0) close(fd_);
     if (pid_ > 0) {
         kill(pid_, SIGKILL);
         while (waitpid(pid_, nullptr, 0) < 0 && errno == EINTR) {}
     }
+}
+void AuthController::clearCredential() {
+    const bool occupied = !credential_.empty();
+    credential_.clear();
+    if (occupied) qInfo("CREDENTIAL CLEARED");
+}
+void AuthController::presentationFailed() {
+    // Native fallback transition abandons pending input, never a completed receipt.
+    if (state_ == AuthState::Editing || state_ == AuthState::Authenticating) cancel();
 }
 void AuthController::notify() { if (changed) changed(); }
 AuthPresentation AuthController::presentation() const {
@@ -65,24 +74,24 @@ bool AuthController::append(std::span<const char> text) {
 }
 void AuthController::backspace() { if (active_ && editable()) { credential_.backspace(); notify(); } }
 void AuthController::clear() {
-    credential_.clear();
+    clearCredential();
     if (pid_ > 0 || state_ == AuthState::Succeeded) cancel();
     else notify();
 }
 bool AuthController::submit() {
     if (!active_ || !editable() || credential_.empty()) return false;
-    if (generation_ == UINT64_MAX) { credential_.clear(); state_ = AuthState::WorkerError; notify(); return false; }
+    if (generation_ == UINT64_MAX) { clearCredential(); state_ = AuthState::WorkerError; notify(); return false; }
     ++generation_;
     hello_ = sent_ = stopping_ = eof_ = reaped_ = cleanExit_ = consumed_ = false;
     result_.reset(); nextId_ = 1;
     state_ = AuthState::Authenticating;
-    if (!spawn()) { credential_.clear(); state_ = AuthState::WorkerError; retry_.start(retryMs_); notify(); return false; }
+    if (!spawn()) { qInfo("WORKER ERROR: spawn failed"); consumed_ = true; clearCredential(); state_ = AuthState::WorkerError; retry_.start(retryMs_); notify(); return false; }
     elapsed_.start();
     QObject::disconnect(&poller_, nullptr, this, nullptr);
     const auto current = generation_;
     connect(&poller_, &QTimer::timeout, this, [this, current] { poll(current); });
     poller_.start(10);
-    qInfo("Auth attempt started"); notify(); return true;
+    qInfo() << "Auth attempt started; generation" << generation_; notify(); return true;
 }
 bool AuthController::spawn() {
     if (getuid() == 0 || getuid() != geteuid() || getgid() != getegid()
@@ -146,18 +155,18 @@ void AuthController::receive() {
         }
         if (b[5] == 8) {
             if (id || len != 1 || b[12] > 5 || (b[12] == 0 && !sent_)) { stop(AuthState::WorkerError); return; }
-            credential_.clear(); result_ = b[12]; continue;
+            clearCredential(); result_ = b[12]; continue;
         }
         if (id != nextId_ || nextId_ > 64) { stop(AuthState::WorkerError); return; }
         ++nextId_;
         switch (b[5]) {
         case 3:
             qInfo("PAM PromptEchoOff");
-            if (sent_ || credential_.empty()) { stop(AuthState::Unsupported); return; }
+            if (sent_ || credential_.empty()) { stop(AuthState::Unsupported, "UNSUPPORTED CONVERSATION"); return; }
             sent_ = true;
             {
                 const bool okay = send(7, id, credential_.bytes());
-                credential_.clear(); notify();
+                clearCredential(); notify();
                 if (!okay) { stop(AuthState::WorkerError); return; }
             }
             break;
@@ -165,7 +174,7 @@ void AuthController::receive() {
             qInfo("PAM PromptEchoOn");
             // Identity is preset by worker. Text alone cannot securely identify
             // arbitrary echo-on semantics; never guess or expose editing to QML.
-            stop(AuthState::Unsupported); return;
+            stop(AuthState::Unsupported, "UNSUPPORTED CONVERSATION"); return;
         case 5: case 6:
             qInfo(b[5] == 5 ? "PAM Info" : "PAM Error");
             if (!send(10, id)) { stop(AuthState::WorkerError); return; }
@@ -174,8 +183,9 @@ void AuthController::receive() {
         }
     }
 }
-void AuthController::stop(AuthState state) {
-    credential_.clear(); consumed_ = true;
+void AuthController::stop(AuthState state, const char* diagnostic) {
+    if (!stopping_) qInfo("%s", diagnostic);
+    clearCredential(); consumed_ = true;
     state_ = state;
     if (pid_ > 0 && !stopping_) {
         send(9, 0); // Best effort: do not wait for a hung peer to read Cancel.
@@ -184,19 +194,22 @@ void AuthController::stop(AuthState state) {
     notify();
 }
 void AuthController::cancel() {
-    credential_.clear(); consumed_ = true;
-    if (pid_ > 0) stop(AuthState::Cancelled);
-    else if (state_ != AuthState::Idle) { state_ = AuthState::Cancelled; retry_.start(retryMs_); notify(); }
+    clearCredential(); consumed_ = true;
+    if (pid_ > 0) stop(AuthState::Cancelled, "AUTH CANCELLED");
+    else if (state_ != AuthState::Idle) { qInfo("AUTH CANCELLED"); state_ = AuthState::Cancelled; retry_.start(retryMs_); notify(); }
 }
 void AuthController::poll(std::uint64_t generation) {
     if (generation != generation_ || pid_ < 0) return;
-    if (!stopping_ && elapsed_.elapsed() >= timeoutMs_) stop(AuthState::WorkerError);
+    if (!stopping_ && elapsed_.elapsed() >= timeoutMs_) stop(AuthState::WorkerError, "AUTH TIMEOUT");
     if (!stopping_) receive();
     if (stopping_ && !reaped_ && stoppingTime_.elapsed() >= 2000) kill(pid_, SIGKILL);
     if (!reaped_) {
         int status = 0;
         const auto rc = waitpid(pid_, &status, WNOHANG);
-        if (rc == pid_) { reaped_ = true; cleanExit_ = WIFEXITED(status) && WEXITSTATUS(status) == 0; }
+        if (rc == pid_) {
+            reaped_ = true; cleanExit_ = WIFEXITED(status) && WEXITSTATUS(status) == 0;
+            if (!cleanExit_) qInfo(WIFSIGNALED(status) ? "WORKER CRASH/TERMINATED" : "WORKER ERROR: abnormal exit");
+        }
         else if (rc < 0 && errno != EINTR) { reaped_ = true; cleanExit_ = false; stop(AuthState::WorkerError); }
     }
     if (reaped_ && !stopping_) receive(); // Drain bytes queued just before exit.
@@ -204,12 +217,23 @@ void AuthController::poll(std::uint64_t generation) {
     if (reaped_ && (stopping_ || (result_ && eof_))) finish();
 }
 void AuthController::finish() {
-    poller_.stop(); close(fd_); fd_ = -1; pid_ = -1; credential_.clear();
+    poller_.stop(); close(fd_); fd_ = -1; pid_ = -1; clearCredential();
     if (!stopping_) {
         if (*result_ == 0 && cleanExit_) state_ = AuthState::Succeeded;
         else if (*result_ == 1) state_ = AuthState::Failed;
         else if (*result_ == 2) state_ = AuthState::Cancelled;
         else state_ = AuthState::WorkerError;
+    }
+    if (state_ != AuthState::Succeeded) consumed_ = true;
+    if (!stopping_ && result_) {
+        switch (*result_) {
+        case 1: qInfo("AUTH FAILED"); break;
+        case 2: qInfo("AUTH CANCELLED"); break;
+        case 3: qInfo("PAM ERROR"); break;
+        case 4: qInfo("PROTOCOL ERROR"); break;
+        case 5: qInfo("WORKER ERROR"); break;
+        default: break;
+        }
     }
     qInfo() << "Auth worker reaped;" << authStateName(state_);
     const auto generation = generation_;
@@ -218,7 +242,7 @@ void AuthController::finish() {
     if (state_ == AuthState::Succeeded && succeeded) succeeded(generation);
 }
 bool AuthController::consumeSuccess(std::uint64_t generation) {
-    if (generation != generation_ || state_ != AuthState::Succeeded || consumed_ || pid_ > 0 || !cleanExit_ || !result_ || *result_ != 0 || !eof_) return false;
+    if (generation != generation_ || state_ != AuthState::Succeeded || consumed_ || pid_ != -1 || fd_ != -1 || !hello_ || !sent_ || !reaped_ || stopping_ || !credential_.empty() || !cleanExit_ || !result_ || *result_ != 0 || !eof_) return false;
     consumed_ = true; return true;
 }
 }

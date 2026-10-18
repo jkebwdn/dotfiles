@@ -95,3 +95,37 @@ unauthenticated timer. Do not use a default build for the first combined real te
 
 Production lock actions, Hypridle/loginctl routing, PAM files, broad MAGI services,
 clipboard, Settings and final visual design remain outside this proof.
+
+## Phase 5 non-locking failure validation
+
+[Phase 5 checkpoint](../../docs/design/lock-screen-phase5-failure-resilience.md)
+records the failure audit and accepted live Tests A/B/C. They must not be repeated
+under this checkpoint; these build instructions authorize no live run. The real PAM
+worker remains unchanged.
+
+```bash
+cargo build --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase5 --example protocol_fixture
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-phase5-build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DMAGI_LOCK_AUTH_WORKER=/tmp/magi-auth-build/debug/magi-lock-auth \
+  -DMAGI_LOCK_AUTH_FIXTURE=/tmp/magi-auth-phase5/debug/examples/protocol_fixture
+cmake --build /tmp/magi-lock-phase5-build
+ctest --test-dir /tmp/magi-lock-phase5-build --output-on-failure
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-phase5-dev-build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug -DMAGI_LOCK_DEVELOPMENT_UNLOCK=ON \
+  -DMAGI_LOCK_FAILURE_INJECTION=ON \
+  -DMAGI_LOCK_AUTH_WORKER=/tmp/magi-auth-build/debug/magi-lock-auth \
+  -DMAGI_LOCK_AUTH_FIXTURE=/tmp/magi-auth-phase5/debug/examples/protocol_fixture
+cmake --build /tmp/magi-lock-phase5-dev-build
+ctest --test-dir /tmp/magi-lock-phase5-dev-build --output-on-failure
+cargo test --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase5
+cargo clippy --locked --offline --manifest-path linux/magi/native/lock/auth/Cargo.toml --target-dir /tmp/magi-auth-phase5 --all-targets -- -D warnings
+cargo fmt --manifest-path linux/magi/native/lock/auth/Cargo.toml --check
+```
+
+Failure injection additionally requires runtime `--development-auth-failure=crash`
+or `=hang`, authentication, acquisition and explicit emergency timer flags. The
+fixture never calls PAM; use only fake input. Injection is absent from default
+binaries. A hang selection uses a fixed five-second timeout, plus two-second
+cancellation grace; normal PAM retains 120 seconds. Future live failure tests use
+90-second emergency recovery and need separate approval and fresh TTY readiness.

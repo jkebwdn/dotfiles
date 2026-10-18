@@ -25,6 +25,7 @@ public:
     void clear();
     bool submit();
     void cancel();
+    void presentationFailed();
     AuthPresentation presentation() const;
     AuthState state() const { return state_; }
     std::uint64_t generation() const { return generation_; }
@@ -32,12 +33,14 @@ public:
     std::function<void(std::uint64_t)> succeeded;
 private:
     friend class Controller;
+    friend struct AuthTestAccess; // Tests inspect cleanup flags, never export secrets.
+    void clearCredential();
     bool consumeSuccess(std::uint64_t generation);
     bool spawn();
     bool send(unsigned kind, unsigned id, std::span<const char> payload = {});
     void poll(std::uint64_t generation);
     void receive();
-    void stop(AuthState result);
+    void stop(AuthState result, const char* diagnostic = "WORKER ERROR");
     void finish();
     void notify();
     bool editable() const;

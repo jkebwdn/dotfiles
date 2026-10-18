@@ -5,6 +5,9 @@
 #include <QSGRendererInterface>
 #include <iostream>
 #include <vector>
+#include <QElapsedTimer>
+#include <QThread>
+#include <functional>
 struct LockBackend final : magi::Backend {
     int unlocks = 0;
     bool requestLock() override { return true; }
@@ -57,5 +60,26 @@ int main(int argc, char** argv) {
         if (textPixels<100 || backend.unlocks || lock.state()!=magi::State::Locked) return 13;
     }
     credential.clear();
+    if (argc != 2) return 14;
+    auto wait = [](const std::function<bool()>& done) {
+        QElapsedTimer timer; timer.start();
+        while (!done() && timer.elapsed()<3000) { QCoreApplication::processEvents(); QThread::msleep(2); }
+        return done();
+    };
+    for (auto stage : {magi::AuthState::Editing, magi::AuthState::Authenticating, magi::AuthState::Failed}) {
+        const auto mode = stage==magi::AuthState::Failed ? "/fixture-failed" : "/fixture-delayed-success";
+        magi::AuthController auth(std::string(argv[1])+mode,1000,20); auth.setInputActive(true);
+        constexpr char input[]="MAGI_TEST_SECRET_7df1_CPP";
+        if (!auth.append({input,sizeof(input)-1})) return 15;
+        if (stage!=magi::AuthState::Editing && !auth.submit()) return 16;
+        if (stage==magi::AuthState::Failed && !wait([&] { return auth.state()==stage; })) return 17;
+        auth.succeeded=[&](auto generation) { lock.authenticatedUnlock(auth,generation); };
+        if (magi::Presentation::render(image,"Output","Locked","TEST","invalid QML",auth.presentation())) return 18;
+        auth.presentationFailed(); // Same first-fallback policy as native owner.
+        magi::Presentation::fallback(image,auth.presentation());
+        if (auth.presentation().count || backend.unlocks) return 19;
+        if (!wait([&] { return auth.state()==magi::AuthState::Editing; })) return 20;
+        if (backend.unlocks || lock.state()!=magi::State::Locked) return 21;
+    }
     std::cout << "Real offscreen QML/native-buffer render, invalid QML, wrong root and solid fallback passed\n";
 }

@@ -19,6 +19,7 @@ public:
     std::size_t units() const { return units_; }
     bool empty() const { return size_ == 0; }
 private:
+    friend struct AuthTestAccess;
     std::array<char, capacity> data_{};
     std::size_t size_ = 0, units_ = 0;
 };

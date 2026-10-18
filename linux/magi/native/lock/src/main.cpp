@@ -19,10 +19,13 @@ int main(int argc, char** argv) {
     if (!options.error.empty()) { std::cerr << options.error << '\n'; return 64; }
     if (options.buildInfo) {
         std::cout << "MAGI lock protocol proof; development-unlock="
-                  << MAGI_LOCK_DEVELOPMENT_UNLOCK << "; native-authentication=1; explicit --authenticate required\n";
+                  << MAGI_LOCK_DEVELOPMENT_UNLOCK << "; failure-injection=" << MAGI_LOCK_FAILURE_INJECTION << "; native-authentication=1; explicit --authenticate required\n";
         return 0;
     }
     if (options.help) {
+#if MAGI_LOCK_FAILURE_INJECTION
+        std::cout << "--development-auth-failure=crash|hang  SYNTHETIC ONLY; requires authentication and emergency timer\n";
+#endif
         std::cout << "MAGI lock protocol proof — NOT a production locker\n"
                      "--build-info  Offline build information; no display connection\n"
                      "--acquire-session-lock  Acquire REAL lock; requires operator approval\n"
@@ -62,10 +65,18 @@ int main(int argc, char** argv) {
     app.setQuitOnLastWindowClosed(false);
     qInfo() << "Protocol proof PID" << QCoreApplication::applicationPid();
     const std::string configuredWorker = MAGI_LOCK_AUTH_WORKER;
-    const auto worker = configuredWorker.empty()
+    auto worker = configuredWorker.empty()
         ? (QCoreApplication::applicationDirPath() + "/magi-lock-auth").toStdString() : configuredWorker;
+    int authTimeoutMs = 120000;
+#if MAGI_LOCK_FAILURE_INJECTION
+    if (!options.failureFixture.empty()) {
+        worker = std::string(MAGI_LOCK_FAILURE_DIRECTORY) + "/fixture-" + options.failureFixture;
+        authTimeoutMs = 5000;
+        qWarning("SYNTHETIC FAILURE INJECTION: no PAM; use fake input only");
+    }
+#endif
     if (options.authenticate && access(worker.c_str(), X_OK)) { qCritical("Auth worker unavailable; no lock requested"); return 64; }
-    magi::WaylandOwner owner(options.developmentSeconds, options.authenticate, worker);
+    magi::WaylandOwner owner(options.developmentSeconds, options.authenticate, worker, authTimeoutMs);
     QTimer::singleShot(0, &app, [&owner] { if (!owner.start()) QCoreApplication::exit(2); });
     return app.exec();
 }

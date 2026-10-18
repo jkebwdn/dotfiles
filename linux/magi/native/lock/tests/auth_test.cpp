@@ -12,7 +12,21 @@
 #include <iostream>
 #include <string>
 #include <type_traits>
+#include <sys/wait.h>
+#include <QTemporaryFile>
+#include <sys/stat.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
+namespace magi {
+struct AuthTestAccess {
+    static bool zeroed(const AuthController& a) {
+        for (char c : a.credential_.data_) if (c) return false;
+        return a.credential_.empty();
+    }
+    static bool cleaned(const AuthController& a) { return a.pid_ == -1 && a.fd_ == -1 && zeroed(a); }
+    static pid_t pid(const AuthController& a) { return a.pid_; }
+    static void stalePoll(AuthController& a, std::uint64_t generation) { a.poll(generation); }
+};
+}
 using namespace magi;
 namespace {
 constexpr char synthetic[] = "MAGI_TEST_SECRET_7df1_CPP";
@@ -175,6 +189,62 @@ void cancellationAndTimeout(const std::string& dir) {
         CHECK(!lock.authenticatedUnlock(auth,auth.generation()));
     }
 }
+void resilience(const std::string& dir) {
+    for (const char* mode : {"failed", "pamerror", "protocolerror", "workererror", "cancelled",
+                            "duplicate", "success-crash", "eof-handshake", "eof-prompt", "eof-response",
+                            "result-hang", "crash", "exitonly", "hang", "version", "truncated",
+                            "oversize", "unknown", "wrongid", "zero-success", "echoon", "secondprompt", "badexit", "extraframe"}) {
+        FakeLock b; Controller lock(b); lock.acquire(); lock.locked();
+        AuthController auth(fixture(dir,mode),100,20); auth.setInputActive(true);
+        auth.succeeded=[&](auto g) { lock.authenticatedUnlock(auth,g); };
+        CHECK(auth.append(secret())); CHECK(auth.submit()); auto g=auth.generation(); auto pid=AuthTestAccess::pid(auth);
+        for (int i=0;i<100;++i) { CHECK(!auth.submit()); CHECK(!auth.append(secret())); }
+        CHECK(auth.generation()==g && AuthTestAccess::pid(auth)==pid);
+        until([&] { return auth.state()!=AuthState::Authenticating; });
+        CHECK(AuthTestAccess::zeroed(auth)); CHECK(!auth.submit());
+        CHECK(!lock.authenticatedUnlock(auth,g));
+        until([&] { return auth.state()==AuthState::Editing; });
+        CHECK(AuthTestAccess::cleaned(auth)); CHECK(waitpid(pid,nullptr,WNOHANG)==-1 && errno==ECHILD);
+        CHECK(b.unlocks==0 && lock.state()==State::Locked);
+    }
+    for (bool cancel : {true,false}) {
+        FakeLock b; Controller lock(b); lock.acquire(); lock.locked();
+        AuthController auth(fixture(dir,"delayed-success"),cancel ? 1000 : 100,20); auth.setInputActive(true);
+        CHECK(auth.append(secret())); CHECK(auth.submit()); auto old=auth.generation();
+        until([&] { return auth.presentation().count==0; });
+        if (cancel) auth.clear(); // Escape path; late success must be discarded.
+        until([&] { return auth.state()==AuthState::Editing; });
+        CHECK(AuthTestAccess::cleaned(auth)); CHECK(!lock.authenticatedUnlock(auth,old));
+        CHECK(auth.append(secret())); CHECK(auth.submit());
+        auto currentPid=AuthTestAccess::pid(auth); AuthTestAccess::stalePoll(auth,old);
+        CHECK(AuthTestAccess::pid(auth)==currentPid && !lock.authenticatedUnlock(auth,old));
+        auth.cancel(); until([&] { return auth.state()==AuthState::Editing; }); CHECK(b.unlocks==0);
+    }
+    QTemporaryFile nonExecutable; CHECK(nonExecutable.open());
+    for (bool executable : {false,true}) {
+        CHECK(fchmod(nonExecutable.handle(),executable ? 0700 : 0600)==0);
+        AuthController auth(nonExecutable.fileName().toStdString(),100,20); auth.setInputActive(true);
+        CHECK(auth.append(secret())); CHECK(!auth.submit()); CHECK(AuthTestAccess::cleaned(auth));
+        until([&] { return auth.state()==AuthState::Editing; });
+    }
+    // Lock teardown rejects an otherwise valid, unconsumed current receipt.
+    FakeLock b; Controller lock(b); lock.acquire(); lock.locked();
+    AuthController auth(fixture(dir,"success"),1000,20); auth.setInputActive(true);
+    CHECK(auth.append(secret())); CHECK(auth.submit()); until([&] { return auth.state()==AuthState::Succeeded; });
+    auth.presentationFailed(); CHECK(auth.state()==AuthState::Succeeded); // Rendering cannot consume a completed receipt.
+    lock.cleanup(); CHECK(!lock.authenticatedUnlock(auth,auth.generation())); CHECK(b.unlocks==0);
+    pid_t child;
+    { AuthController dying(fixture(dir,"hang"),1000,20); dying.setInputActive(true);
+      CHECK(dying.append(secret())); CHECK(dying.submit()); child=AuthTestAccess::pid(dying); }
+    CHECK(waitpid(child,nullptr,WNOHANG)==-1 && errno==ECHILD);
+    // First native fallback transition clears input/cancels active work, not a completed receipt.
+    for (bool running : {false,true}) {
+        AuthController a(fixture(dir,"delayed-success"),1000,20); a.setInputActive(true); CHECK(a.append(secret()));
+        if (running) CHECK(a.submit());
+        a.presentationFailed(); CHECK(AuthTestAccess::zeroed(a));
+        until([&] { return a.state()==AuthState::Editing; }); CHECK(AuthTestAccess::cleaned(a));
+    }
+}
 void repaintAndEmergency() {
     FakeLock backend; Controller lock(backend); lock.addOutput(1); lock.acquire(); lock.locked();
     lock.configure(1,{9,800,600}); lock.refresh(); lock.refresh();
@@ -188,8 +258,9 @@ void repaintAndEmergency() {
 int main(int argc,char** argv) {
     QCoreApplication app(argc,argv); CHECK(argc==2);
     qInstallMessageHandler(logger);
-    buffer(); keyboard(); attempts(argv[1]); staleAndRetry(argv[1]); nativeKeysToRust(argv[1]); cancellationAndTimeout(argv[1]); repaintAndEmergency();
+    buffer(); keyboard(); attempts(argv[1]); staleAndRetry(argv[1]); nativeKeysToRust(argv[1]); cancellationAndTimeout(argv[1]); resilience(argv[1]); repaintAndEmergency();
     CHECK(logs.find(synthetic)==std::string::npos);
+    for (const char* event : {"CREDENTIAL CLEARED", "RETRY READY", "AUTH TIMEOUT", "AUTH FAILED", "PAM ERROR", "PROTOCOL ERROR", "WORKER ERROR", "WORKER CRASH/TERMINATED", "AUTH CANCELLED", "UNSUPPORTED CONVERSATION"}) CHECK(logs.find(event)!=std::string::npos);
     CHECK(logs.find("PAM PromptEchoOff")!=std::string::npos);
     std::cout << "Native buffer/input, Rust IPC fixtures, authorization, stale-result, retry, cleanup and log leakage checks passed\n";
 }

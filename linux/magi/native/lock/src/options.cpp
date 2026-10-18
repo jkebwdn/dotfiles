@@ -8,6 +8,13 @@ Options parseOptions(std::span<const std::string_view> args) {
         else if (arg == "--build-info" && !result.buildInfo) result.buildInfo = true;
         else if (arg == "--authenticate" && !result.authenticate) result.authenticate = true;
         else if (arg == "--acquire-session-lock" && !result.acquire) result.acquire = true;
+#if MAGI_LOCK_FAILURE_INJECTION
+        else if (arg.starts_with("--development-auth-failure=") && result.failureFixture.empty()) {
+            auto mode = arg.substr(sizeof("--development-auth-failure=") - 1);
+            if (mode != "crash" && mode != "hang") { result.error = "Unsupported failure fixture"; return result; }
+            result.failureFixture = mode;
+        }
+#endif
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
         else if (arg.starts_with("--unsafe-development-unlock-after=")) {
             const auto value = arg.substr(sizeof("--unsafe-development-unlock-after=") - 1);
@@ -34,6 +41,10 @@ Options parseOptions(std::span<const std::string_view> args) {
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     else if (result.acquire && !result.developmentSeconds)
         result.error = "Development build requires the explicit unsafe unlock timer";
+#endif
+#if MAGI_LOCK_FAILURE_INJECTION
+    if (!result.failureFixture.empty() && (!result.authenticate || !result.acquire || !result.developmentSeconds))
+        result.error = "Failure injection requires authentication, acquisition and emergency timer";
 #endif
     return result;
 }

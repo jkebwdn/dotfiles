@@ -1,4 +1,4 @@
-//! Test-only peer for C++ integration; never installed or selected by the locker.
+//! Test-only peer for C++ integration; never installed; development crash/hang selection is explicitly gated.
 //! Uses the production Rust IPC implementation, never calls any PAM entry point.
 use magi_lock_auth::{
     Outcome, process,
@@ -23,7 +23,7 @@ fn main() {
         return;
     }
     if mode == "fixture-hang" {
-        std::thread::sleep(std::time::Duration::from_secs(10));
+        std::thread::sleep(std::time::Duration::from_secs(300));
         return;
     }
     if [
@@ -55,6 +55,21 @@ fn main() {
         }
         return;
     }
+    if matches!(
+        mode,
+        "fixture-eof-handshake" | "fixture-eof-prompt" | "fixture-eof-response"
+    ) {
+        channel.send(Kind::Hello, 0, &[]).unwrap();
+        channel.expect(Kind::HelloAck, 0).unwrap();
+        if mode == "fixture-eof-handshake" {
+            return;
+        }
+        channel.send(Kind::PromptEchoOff, 1, b"synthetic").unwrap();
+        if mode == "fixture-eof-response" {
+            let _ = channel.expect(Kind::Response, 1);
+        }
+        return;
+    }
     if mode == "fixture-wrongid" {
         channel.send(Kind::Hello, 0, &[]).unwrap();
         channel.expect(Kind::HelloAck, 0).unwrap();
@@ -83,12 +98,27 @@ fn main() {
         if mode == "fixture-secondprompt" {
             let _ = conversation.message(Kind::PromptEchoOff, b"second");
         }
+        if mode == "fixture-delayed-success" {
+            std::thread::sleep(std::time::Duration::from_millis(250));
+        }
         match mode {
+            "fixture-protocolerror" => Outcome::ProtocolError,
+            "fixture-workererror" => Outcome::WorkerError,
+            "fixture-cancelled" => Outcome::Cancelled,
             "fixture-failed" => Outcome::AuthenticationFailed,
             "fixture-pamerror" => Outcome::PamError,
             _ => Outcome::Success,
         }
     });
+    if mode == "fixture-result-hang" {
+        std::thread::sleep(std::time::Duration::from_secs(300));
+    }
+    if mode == "fixture-success-crash" {
+        std::process::abort();
+    }
+    if mode == "fixture-duplicate" {
+        let _ = channel.send(Kind::AuthenticationResult, 0, &[0]);
+    }
     if mode == "fixture-extraframe" {
         let _ = channel.send(Kind::Hello, 0, &[]);
     }

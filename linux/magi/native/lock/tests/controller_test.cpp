@@ -126,6 +126,14 @@ void gating() {
     CHECK(!parse({"--help", "--acquire-session-lock"}).error.empty());
     CHECK(!parse({"--acquire-session-lock", "--acquire-session-lock"}).error.empty());
     CHECK(!parse({"--unlock"}).error.empty());
+    CHECK(!parse({"--development-auth-failure=crash"}).error.empty());
+    CHECK(!parse({"--acquire-session-lock", "--authenticate", "--unsafe-development-unlock-after=90", "--development-auth-failure=success"}).error.empty());
+#if MAGI_LOCK_FAILURE_INJECTION
+    CHECK(parse({"--acquire-session-lock", "--authenticate", "--unsafe-development-unlock-after=90", "--development-auth-failure=crash"}).error.empty());
+    CHECK(parse({"--acquire-session-lock", "--authenticate", "--unsafe-development-unlock-after=90", "--development-auth-failure=hang"}).error.empty());
+#else
+    CHECK(!parse({"--acquire-session-lock", "--authenticate", "--unsafe-development-unlock-after=90", "--development-auth-failure=crash"}).error.empty());
+#endif
     CHECK(!parse({"--unsafe-development-unlock-after=30"}).error.empty());
     CHECK(!parse({"--acquire-session-lock", "--unsafe-development-unlock-after=0"}).error.empty());
     CHECK(!parse({"--acquire-session-lock", "--unsafe-development-unlock-after=30x"}).error.empty());

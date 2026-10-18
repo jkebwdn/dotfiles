@@ -109,8 +109,8 @@ WaylandOwner::Buffer::~Buffer() {
     if (proxy) wl_buffer_destroy(proxy);
     if (mapping && mapping != MAP_FAILED) munmap(mapping, size);
 }
-WaylandOwner::WaylandOwner(unsigned seconds, bool authenticate, std::string worker)
-    : authenticate_(authenticate), auth_(std::move(worker)), input_(auth_), developmentSeconds_(seconds), controller_(*this) {
+WaylandOwner::WaylandOwner(unsigned seconds, bool authenticate, std::string worker, int authTimeoutMs)
+    : authenticate_(authenticate), auth_(std::move(worker), authTimeoutMs), input_(auth_), developmentSeconds_(seconds), controller_(*this) {
     auth_.changed = [this] {
         if (stopping_ || repaintQueued_) return;
         repaintQueued_ = true;
@@ -348,6 +348,7 @@ FrameResult WaylandOwner::present(std::uint32_t id, Configure c, bool acknowledg
                                                QString::fromUtf8(state.data(), qsizetype(state.size())), notice, {}, auth_.presentation());
     auto& output = *it->second;
     if (!rendered) {
+        if (!output.fallbackLogged) auth_.presentationFailed();
         Presentation::fallback(image, auth_.presentation());
         if (!output.fallbackLogged) qWarning() << "Native solid fallback activated for output" << id;
         output.fallbackLogged = true;

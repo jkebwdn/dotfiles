@@ -13,7 +13,7 @@
 namespace magi {
 class WaylandOwner final : public QObject, public Backend {
 public:
-    explicit WaylandOwner(unsigned developmentSeconds, bool authenticate, std::string worker);
+    explicit WaylandOwner(unsigned developmentSeconds, bool authenticate, std::string worker, int authTimeoutMs = 120000);
     ~WaylandOwner() override;
     bool start(); // The ONLY entry point which can connect/request a real lock.
     bool requestLock() override;
