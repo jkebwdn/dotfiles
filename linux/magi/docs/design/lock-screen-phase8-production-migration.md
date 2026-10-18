@@ -607,3 +607,505 @@ Hypridle/PAM/routing change accompanies this source checkpoint. Phase 8B is not
 started; Hyprlock removal remains last, after production acceptance and rollback
 proof. Earlier statements that the index was empty describe the Phase 8A
 implementation audit before this separately authorized checkpoint finalization.
+
+
+## Phase 8B — installation verified; direct lock approval pending
+
+2026-10-18. Baseline `6d6973e6c0a74159d05e129af60d48580f9173a7`,
+HEAD/origin/main `0 0`. Fresh committed-source rebuild in
+`/tmp/magi-phase8b-hev2uoup/package` passed package and extracted-artifact audits.
+The operator manually installed `magi-lock-0.1.0-1-x86_64.pkg.tar.zst` with
+`sudo pacman -U`; reported successful completion was independently checked using
+pacman and installed files. Package SHA-256:
+`0a2ecd84b46ba51e4cd686e75ffbd0e8e7d9d9f8d54f13e1497847f5bcc6045b`.
+
+`pacman -Q` reports magi-lock 0.1.0-1; `pacman -Qkk` reports 13 entries,
+zero altered files (five regular artifacts plus parent directories). Exactly the
+five intended regular files are owned by this package, with no symlinks, root:root
+ownership and matching reviewed hashes/modes:
+
+| File | Mode | SHA-256 |
+| --- | --- | --- |
+| `/etc/pam.d/magi-lock` | `0644` | `7c0ddfcdcf0beaef0146aa289a95f1eb482e5529bfaf5216e70d23ce8680e5e4` |
+| `/usr/bin/magi-lock-request` | `0755` | `949057877040a503cf75469094016bdec4f43c0d498d3fab655e3eeeaa70f8bc` |
+| `/usr/lib/magi/magi-lock-auth` | `0755` | `b64613639a3c602a3f4f7dda4515e2b624c176dc9a662847b4611226eb7572a9` |
+| `/usr/lib/magi/magi-lock` | `0755` | `080485c39c21686bed1ba120017f8712f7b5fcd0c206e01b74e07a444d4fabf9` |
+| `/usr/lib/systemd/user/magi-lock@.service` | `0644` | `20957a3e49e1ce9c508175e848a4376965b1fa21c967548bea9e85ed12dffdf8` |
+
+Ownership was verified outside the tool sandbox: its UID namespace represents
+host root as nobody, producing misleading initial ownership warnings; host
+stat/pacman verification confirmed root:root and zero alterations. No corrective
+ownership operation was needed or performed.
+
+Installed PAM contents are exactly `#%PAM-1.0` followed by `auth include login`.
+The verified worker contains `/etc/pam.d/magi-lock` and no Hyprlock service
+reference. No PAM transaction was performed. Installed build-info reports
+development-unlock=0, failure-injection=0 and native authentication enabled.
+The production build uses the installed sibling worker with no override. ELF
+checks confirm PIE, RELRO, immediate binding and non-executable stacks; C++ stack
+protection is present, with fortification inherited from the verified Release
+build. Seven unsupported wrapper invocations rejected with status 64 without
+calling a valid lock operation. Configuration contains no /tmp path/fixture.
+
+`systemctl --user daemon-reload` and non-activating unit verification passed.
+No template was enabled; no MAGI units or owner/worker processes are active.
+Type=notify, Restart=no, installed executable and validated native/hypridle
+instance selection remain unchanged. Only compositor-confirmed readiness sends
+READY=1. Clarification: `/usr/bin/magi-lock-request lock` selects
+**magi-lock@native.service**, not magi-lock@lock.service.
+
+The manager matches graphical MAGI PID 1543 and Hypridle PID 630192:
+WAYLAND_DISPLAY=wayland-1, XDG_RUNTIME_DIR=/run/user/1000, the current Hyprland
+signature and unix:path=/run/user/1000/bus. Hyprland PID 1492's initial /proc
+environment lacks the display/signature it establishes during startup; its
+running children and manager match. No environment import/retarget was performed.
+Graphical session 1 is active Wayland on tty1. Hyprland reports unlocked.
+
+Hyprlock 0.9.6-3 remains installed. Production Hypridle PID 630192 retains
+`pidof hyprlock || hyprlock` and its normal delay inhibitor. All 533 pre-install
+snapshot file hashes match, including existing PAM files and operator configs.
+The new MAGI PAM file is the intended package addition; pacman database changes
+are expected installation metadata. Snapshot is not an audit of every system
+file or arbitrary third-party package hook. No Hypridle restart/handoff, routing
+change, real lock/PAM, suspend, staging, commit or push was performed here.
+
+### Pending direct test and recovery gate
+
+Proposed command, **not executed**: `/usr/bin/magi-lock-request lock`.
+One submission, no automatic retry; observer must be ready before execution.
+Production has no development timer. Obtain fresh saved-work and authenticated
+TTY confirmation plus explicit approval before acquisition. Use Ctrl+Alt+F3 to
+reach an authenticated recovery TTY and Ctrl+Alt+F1 to return to the current
+graphical VT. Verify the TTY is accessible before the test.
+
+From the same user's recovery TTY, safe inspection is:
+
+```sh
+export XDG_RUNTIME_DIR=/run/user/1000
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+systemctl --user status magi-lock@native.service --no-pager
+journalctl --user -u magi-lock@native.service -n 80 --no-pager
+loginctl show-session 1 -p Name -p Type -p State -p VTNr
+```
+
+If securely stuck, do not kill/restart the locker or assume Hyprlock can take over.
+A last-resort recovery is ending the confirmed graphical session from the separate
+TTY: `loginctl terminate-session 1`. This closes that desktop and can lose unsaved
+work; it does not authenticate/unlock the existing session. Confirm the session
+is still the original graphical session before doing so, and never terminate the
+recovery TTY. If logind denies permission, use the operator's administrative
+recovery (`sudo loginctl terminate-session 1`) rather than weakening the locker.
+Then log in afresh using the machine's normal graphical login/start procedure.
+The production Hyprlock route remains unchanged. No termination is authorized or
+executed as part of preparation; it is the explicit emergency plan to review.
+
+Production direct-lock acceptance and all subsequent migration gates remain
+**pending**. No live migration success is claimed.
+
+### Deferred post-lock-screen Settings/refinement requirements
+
+After lock-screen work, MAGI should expose **Power & Idle** Settings backed by
+Hypridle: **Lock after**, **Turn displays off after**, and **Suspend after**.
+Each needs Enabled/Never semantics and sensible bounded time choices; custom
+values can follow where appropriate. Separate AC/battery policies are a potential
+future enhancement, not an architecture commitment. MAGI Settings is the eventual
+user-facing control surface; Hypridle remains the idle/DPMS/suspend policy engine.
+Do not change current idle timings during Phase 8B.
+
+Also retain **optional MAGI top bar on external displays** for the later
+consolidated MAGI refinement pass. Neither Settings nor external-bar work is
+implemented by this milestone.
+
+
+### Direct installed-production test — software passed, visual confirmation pending
+
+2026-10-18. Explicit operator approval preceded exactly one
+`/usr/bin/magi-lock-request lock`. The pre-armed observer ran without mid-lock
+chat interaction or automatic retries. No development timer exists or was added.
+Evidence: `/tmp/magi-phase8b-hev2uoup/direct-test/`.
+
+At invocation only eDP-1 was present (the earlier installation preflight had two
+outputs). This test therefore establishes single-output software evidence only;
+production dual-output acceptance remains a later separate gate.
+
+Installed owner PID 671894 under magi-lock@native.service acquired native sleep
+protection at 16:29:28.780245. Output registry 72/lifetime 1 received configure
+1920x1080, acknowledged/committed without fallback. Compositor confirmed Locked
+at 16:29:28.823996; systemd reported Started afterward at 16:29:28.831203.
+One worker PID 671984 and generation-1 attempt began at 16:29:37.341205/341236.
+Worker was reaped with Authentication succeeded at 16:29:37.397917; exactly one
+AUTHENTICATED UNLOCK: current PAM Success followed at 16:29:37.398096.
+Compositor processed explicit unlock and the owner exited. Final service state
+inactive/dead, Result=success, ExecMainStatus=0; wrapper exit 0. No worker remains.
+The verified installed owner uses its installed sibling worker and hardcoded
+magi-lock PAM service; no development binaries or service override were selected.
+No password content was captured. Cleanup cancellation diagnostics occur after
+authenticated unlock and do not represent additional attempts.
+
+Hyprland returned unlocked, eDP-1 active; production Hypridle PID 630192 retained
+its normal inhibitor. All pre-install hashes except this intentionally updated
+checkpoint match; installed package hashes also match. Hyprlock routing remains
+unchanged. Operator visual acceptance is still pending; no later migration gate
+has started. No suspend, Hypridle restart, staging, commit or push occurred.
+
+
+Operator confirmed all direct-production visual checks: complete laptop coverage,
+no desktop leakage, no literal password display, successful authentication and
+clean desktop return. **Direct installed-production test accepted.**
+
+Next gate prepared, not applied: exact live Hypridle rollback copy at
+`/tmp/magi-phase8b-hev2uoup/hypridle.before-migration.conf` (mode 0600), SHA-256
+`eb6fa3c034957abaf48de818e690429c4a1c8b4815e72ead5e19d90a30cc17fb`.
+Proposed change replaces only lock_cmd and adds inhibit_sleep=3, preserving all
+other bytes. Await separate approval before configuration edit/runtime restart.
+
+
+### Live Hypridle routing migration — applied, Session.Lock test pending
+
+Operator explicitly approved the exact two-setting diff and runtime restart.
+Before mutation Hyprland was unlocked, logind PreparingForSleep=false, and no
+locker/worker existed. Original PID 630192 argv/cwd/environment/start identity
+matched the saved snapshot. Exact original backup remains preserved.
+
+Applied only lock_cmd=/usr/bin/magi-lock-request sleep-coordinated and
+inhibit_sleep=3. All other bytes remain unchanged. Original process received TERM;
+no forced kill. Replacement PID 672803 uses /usr/bin/hypridle with original argv
+`hypridle`, cwd /home/jkebwdn and byte-matched saved graphical environment.
+Exactly one Hypridle and its normal sleep-delay inhibitor were verified.
+Migrated config SHA-256:
+`2e4480b4517bca59a84aaf8ff0801a464720454d3417c55d207f674e79f4b3c5`.
+Rollback was pre-armed but not needed. Other protected hashes match; Hyprlock
+remains installed. No explicit lock, suspend, staging, commit or push was run
+in this migration step. Existing 300-second idle policy is now active with MAGI
+routing; Session.Lock, Control Centre, suspend, dual-output and rollback-drill
+acceptance remain pending and require their separate operator gates.
+
+
+### Production Session.Lock test — software passed, visual confirmation pending
+
+2026-10-18. Fresh operator approval preceded exactly one `loginctl lock-session`;
+pre-armed diagnostics at `/tmp/magi-phase8b-hev2uoup/session-lock-test/` captured
+the installed magi-lock@hypridle.service route. Owner PID 673042 configured
+registry 72/lifetime 1 at 1920x1080 without fallback. Because no sleep was pending,
+coordinated startup acquired native delay protection at 16:32:59.666784 as designed.
+Compositor confirmed Locked at 16:32:59.704826, before systemd Started.
+One generation-1 worker PID 673094 spawned at 16:33:04.497133, reaped with
+Authentication succeeded at 16:33:04.560606. Exactly one AUTHENTICATED UNLOCK
+at 16:33:04.560748; owner exited normally, service Result=success/ExecMainStatus=0,
+Hyprland unlocked, no worker remained. eDP-1 only; no dual-output claim.
+Hypridle PID 672803 and its inhibitor remain intact; migrated configuration and
+all other protected baseline files match expected hashes. No retry or suspend.
+Visual confirmation remains pending before acceptance/next test.
+
+
+Operator confirmed all production Session.Lock visual checks: full coverage, no
+desktop leakage, no literal password display, successful authentication and clean
+return. **Production loginctl/Session.Lock test accepted.** The next gate is one
+operator-triggered Control Centre Lock action with pre-armed observation; approval
+and fresh saved-work/authenticated recovery confirmation are pending. No Control
+Centre code changes are required or made.
+
+
+### Control Centre test — software passed, operator confirmation pending
+
+2026-10-18. Operator approved one UI-triggered test. Read-only observer was armed
+before inviting the Control Centre Lock click; it issued no lock command. Evidence
+is under `/tmp/magi-phase8b-hev2uoup/control-centre-test/`. Existing UI/source was
+unchanged. Installed magi-lock@hypridle.service owner PID 673754 acquired native
+sleep protection while awake and configured eDP-1 registry 72/lifetime 1 at
+1920x1080 without fallback. Compositor Locked: 16:35:04.124303, before service
+Started. One generation-1 worker PID 673835 spawned at 16:35:11.363022 and reaped
+with authentication success at 16:35:11.414431. Exactly one AUTHENTICATED UNLOCK
+at 16:35:11.414553. Service exited successfully; desktop unlocked; no worker
+remains. Hypridle PID 672803 and its normal inhibitor remain. Protected hashes
+match except approved config/checkpoint changes. Operator confirmation of UI
+trigger and visual result is pending. No suspend or further gate executed.
+
+
+Operator confirmed the Control Centre Lock trigger and all visual checks:
+complete coverage, no desktop leakage, hidden password characters and clean
+return. **Production Control Centre Lock test accepted.** No UI rewrite required.
+
+Idle decision: retain the actual 300-second idle listener unchanged and defer
+observing its elapsed-time firing to post-migration daily use. The exact listener
+command (`loginctl lock-session`) and production destination have already passed
+explicit Session.Lock and Control Centre tests; another deliberate five-minute
+wait adds timer evidence only. This is not a claim of actual idle-timer acceptance.
+Do not shorten timings. Record this pending observation in the final report and
+resolve before declaring all Hyprlock-removal gates satisfied.
+
+Next planned gate: one separately approved production suspend/resume from an
+unlocked desktop using the actual migrated Hypridle, with no temporary handoff.
+Fresh power/recovery approval and complete observation preparation are required.
+No suspend has occurred during Phase 8B yet.
+
+
+### Production suspend/resume — software passed, visual confirmation pending
+
+2026-10-18. Operator approved one cycle with saved-work/recovery gate. AC connected,
+battery charging at 66%; eDP-1 only. Actual migrated Hypridle PID 672803 remained
+running throughout; no temporary handoff/config. Pre-armed observer confirmed
+Unlocked, no locker/worker, PreparingForSleep=false, installed hashes, supported
+suspend and pre-existing Hypridle inhibitor before issuing exactly one systemctl
+suspend. Evidence: `/tmp/magi-phase8b-hev2uoup/production-suspend/`.
+
+Epoch timestamps (seconds, realtime):
+
+- Request issued: 1792337856.441641; logind request: 1792337856.453276.
+- Hypridle PrepareForSleep(true) observed: 1792337856.455024, with inhibitor FD10
+  still `/run/systemd/inhibit/135.ref`; Session.Lock/request observed .457220.
+- MAGI pending-sleep startup: 1792337856.496103; input blocked/credential cleared.
+- Compositor Locked: 1792337856.524803. eDP-1 registry 72/lifetime 1 configured
+  1920x1080, acknowledged/committed without fallback before confirmation.
+- Hypridle notifier/release log and absent FD10 observed: 1792337856.526353.
+- MAGI auth-quiescent/coordinated diagnostic: 1792337856.531044; zero late native
+  inhibitor acquisitions before suspend. Hypridle gates on compositor notifier,
+  not the later diagnostic or Type=notify delivery.
+- systemd Performing sleep operation suspend: 1792337856.673545.
+- Returned from suspend: 1792337869.905161.
+- MAGI PrepareForSleep(false): 1792337870.043779; native inhibitor acquired
+  .047270, before RESUME/input reconstruction .053677/.058105.
+- One worker PID 675206, generation 1: 1792337875.773264/.773765.
+- Worker reaped/Authentication succeeded: 1792337875.836567; exactly one
+  AUTHENTICATED UNLOCK at 1792337875.836665. No timer or retry.
+
+Hypridle timestamps are bounded userspace observations (2 ms polling target),
+not syscall instrumentation. Its notifier/release ordering plus observed FD closure
+precedes actual systemd suspend. Lock confirmation was about 71.527 ms after
+logind's recorded request (about 69.779 ms after observing PrepareForSleep), leaving
+about 4.928 s against the effective 5-second delay allowance using request time.
+No indefinite-veto claim. Logind's earlier 'will suspend now' announcement is
+sleep intent, not the actual systemd Performing sleep operation timestamp.
+
+Output identity retained across sleep, remained globally Locked with generation 0
+until manual submission. Native protection preceded input rebuild; no automatic
+PAM. Final state Unlocked, PreparingForSleep=false, suspend command exit 0; no
+locker/worker remains. MAGI PID1543/Hyprland PID1492 and Hypridle PID672803 remain;
+Hypridle reacquired inhibitor `/run/systemd/inhibit/141.ref`. Protected hashes
+match except approved Hypridle/checkpoint edits; installed hashes match.
+Systemd logged existing SYSTEMD_SLEEP_FREEZE_USER_SESSIONS=0 policy; no system
+sleep configuration was changed. Visual suspend/wake/coverage acceptance pending.
+
+
+Operator confirmed all production suspend visual checks: MAGI before sleep,
+genuine suspend, no desktop leakage during wake, locked presentation on resume,
+working input, hidden password characters and clean authenticated return.
+**Production suspend/resume accepted.** No second suspend was performed.
+
+The operator subsequently connected the external monitor normally while unlocked.
+The separate production dual-output lock gate is being prepared; no lock command
+has been issued and fresh saved-work/recovery approval remains required.
+
+
+### Production dual-output lock — software passed, visual confirmation pending
+
+2026-10-18. Fresh operator approval preceded one `loginctl lock-session` with
+both displays active. Pre-armed observer: `/tmp/magi-phase8b-hev2uoup/dual-output-test/`.
+Installed owner PID 676384 used magi-lock@hypridle.service. eDP-1 registry 72,
+lifetime 1 configured 1920x1080 (scale 2); HDMI-A-1 registry 84, lifetime 2
+configured 2560x1440 (scale 1.5). Both surfaces acknowledged/committed without
+fallback; one global lock/auth state remained generation 0 until submission.
+One generation-1 worker PID 676464 spawned at 16:41:54.239024, reaped with success
+at 16:41:54.317419; exactly one AUTHENTICATED UNLOCK at 16:41:54.317682.
+Service exited successfully; no locker/worker remains. Both outputs remain active
+and normal, Hyprland unlocked, Hypridle PID672803 inhibitor intact. Protected hashes
+match except approved config/checkpoint changes. No hotplug or suspend in this
+run. Operator visual acceptance pending; rollback drill has not started.
+
+
+Operator confirmed all dual-output visual checks: both displays fully covered,
+no desktop leakage, password hidden, both unlocked together and both returned
+cleanly. **Production dual-output lock accepted.**
+
+Next required gate is the controlled routing rollback drill. Original backup hash
+reverified; proposed procedure restores only the exact original Hypridle bytes,
+restarts with audited invocation/environment, verifies one process and its normal
+inhibitor, then performs one separately approved Hyprlock test via Session.Lock.
+MAGI package stays installed. No rollback action has run yet; fresh approval and
+saved-work/authenticated TTY recovery confirmation are pending. MAGI reapplication
+will follow only after successful rollback acceptance and its own approval gate.
+
+
+### Required rollback drill — software passed, visual confirmation pending
+
+2026-10-18. Operator approved restoring original routing and one Hyprlock test.
+Preconditions verified unlocked/no pending sleep/no locker. Restored exact backup
+SHA-256 eb6fa3c034957abaf48de818e690429c4a1c8b4815e72ead5e19d90a30cc17fb,
+including original lock_cmd and implicit original sleep-inhibition mode. Hypridle
+PID672803 terminated normally; replacement PID677006 uses audited original
+argv/cwd/environment. Exactly one process and normal delay inhibitor verified
+before issuing exactly one loginctl lock-session. MAGI package was not removed.
+
+Evidence `/tmp/magi-phase8b-hev2uoup/rollback-drill/`: Hypridle launched Hyprlock;
+Hyprlock configured both outputs at 1920x1080 and 2560x1440, compositor confirmed
+locked, and Hyprlock logged authentication success, unlocking, and clean exit.
+No MAGI owner/worker launched. Observer saw locked then unlocked, Hyprlock exited,
+both outputs stayed active, and Hypridle reacquired its normal delay inhibitor.
+No claim is made about MAGI PAM semantics from the fallback's authentication.
+Original config/all protected hashes (except checkpoint) now match pre-install
+baseline; installed MAGI hashes unchanged. Hyprlock routing remains active pending
+operator visual acceptance and separate MAGI-reapplication approval. No automatic
+reapplication, suspend, staging, commit or push occurred.
+
+
+Operator confirmed Hyprlock worked as expected. **Required rollback drill
+accepted:** original routing, functional fallback lock/authentication and clean
+return are proven without uninstalling MAGI. Final reapplication is pending
+explicit approval: restore only the previously reviewed MAGI lock_cmd/inhibit_sleep
+hunk, restart Hypridle using audited runtime parameters, verify inhibitor, then
+one final loginctl Session.Lock check. No full acceptance suite will be repeated.
+
+
+### Final MAGI reapplication — software passed, visual confirmation pending
+
+Operator approved reapplication and one final Session.Lock check. Reapplied only
+the identical reviewed two-setting hunk, replacing rollback Hypridle PID677006
+with PID677552 using original audited argv/cwd/environment. One instance and its
+normal inhibitor verified before exactly one loginctl lock-session. Evidence:
+`/tmp/magi-phase8b-hev2uoup/final-magi-test/`.
+
+Installed magi-lock@hypridle.service received both physical outputs. One
+generation-1 worker was spawned/reaped successfully; exactly one AUTHENTICATED
+UNLOCK. Final state unlocked, no MAGI owner/worker or Hyprlock process remains;
+both outputs active, Hypridle PID677552 inhibitor verified. Package hashes match;
+all other protected baseline hashes match except approved Hypridle/checkpoint.
+MAGI routing is active; Hyprlock remains installed as unused fallback. Final
+operator visual confirmation is pending. No full suite repeated or additional
+suspend performed. No staging, commit or push.
+
+
+Operator confirmed the final MAGI visual checks: both outputs fully covered,
+no desktop leakage, hidden password, simultaneous unlock and clean return.
+**Final MAGI reapplication accepted. Phase 8B controlled migration complete,
+with actual 300-second idle-timer observation explicitly deferred to daily use.**
+
+Final acceptance summary: installed package/PAM verified; direct production lock,
+Session.Lock, Control Centre, production suspend/resume, production dual-output
+lock, actual Hyprlock rollback drill, and final MAGI reapplication all accepted.
+Every MAGI test used one generation-1 worker and exactly one authenticated unlock.
+No production timer/failure fixture, automatic retry, package removal or broad
+cleanup was used. The operator accepted coverage/clean return for every live gate.
+
+Final active Hypridle configuration uses /usr/bin/magi-lock-request
+sleep-coordinated and inhibit_sleep=3, retaining before_sleep loginctl,
+after_sleep DPMS enable, 300-second lock and 600-second DPMS listeners unchanged.
+Hypridle remains the production idle/DPMS/Session.Lock/sleep coordinator.
+Hyprlock 0.9.6-3 remains installed as an unused tested fallback. Active config,
+manual-routing source, installed service/request and MAGI PAM have no Hyprlock
+launch/PAM dependency. Theme orchestrator adapters/__init__.py retains a protected
+Hyprlock-configuration metadata entry; it is not a lock route. Historical docs,
+rollback copies and hyprlock.conf remain deliberately preserved.
+
+No native source correction was needed in Phase 8B. Repository changes comprise
+this checkpoint and the authorized operator-local live hypridle.conf migration;
+all pre-existing operator changes are preserved. Nothing was staged/committed or
+pushed. Original exact backup and evidence remain in /tmp/magi-phase8b-hev2uoup;
+that directory is temporary and is not package/repository content.
+
+**Not all Hyprlock-removal gates are closed:** actual idle timer firing remains a
+daily-use observation, and removal requires a separate explicit operator decision.
+No Hyprlock removal is performed or authorized by this completion record. Deferred
+Power & Idle Settings/external top-bar refinement remains documentation only.
+
+
+### Actual 300-second production idle observation — software passed, visuals pending
+
+2026-10-18. Fresh operator saved-work/recovery confirmation preceded a bounded
+read-only observer. No input was synthesized, no lock command was issued by the
+observer, no timeout changed, and no suspend/topology change occurred. Evidence:
+`/tmp/magi-idle-acceptance-8b0z4ge9/observation/`.
+
+Observation armed at epoch 1792338578.974564; Hypridle's actual `Idled` event was
+observed at 1792338879.262151: **300.288 seconds** elapsed. This is observer elapsed
+time, not a direct timestamp of the final physical input; approximately one-second
+sampling bounds apply. Hypridle's log explicitly records the idle rule firing,
+Running/Executing loginctl lock-session, Session.Lock delivery, and launching
+/usr/bin/magi-lock-request sleep-coordinated. No manual trigger was substituted.
+The 600-second DPMS listener remained unchanged and its firing was not observed.
+
+Installed owner PID681327 configured eDP-1 registry72/lifetime1 at 1920x1080 and
+HDMI-A-1 registry84/lifetime2 at 2560x1440. Compositor confirmed Locked at
+16:54:39.105949. One generation-1 worker PID681470 spawned at 16:54:52.393219;
+clean reap/Authentication succeeded at 16:54:52.468725; exactly one AUTHENTICATED
+UNLOCK at 16:54:52.468833. Service ended inactive/dead, Result=success,
+ExecMainStatus=0; no locker/worker remains. Hypridle PID677552 healthy, normal
+inhibitor restored/present. All idle-test snapshot hashes matched before this
+checkpoint update, including live configuration and installed package files.
+Operator confirmation of no manual trigger, natural appearance after five minutes,
+coverage/no leakage/hidden password/successful authentication/clean return is
+pending. Hyprlock remains installed; no removal, staging, commit or push performed.
+
+
+Operator confirmed no manual lock trigger, natural MAGI appearance after roughly
+five minutes, complete coverage, no desktop leakage, hidden password characters,
+successful authentication and clean return. **Actual production 300-second idle
+lock observation accepted.** This closes the idle-observation deferral recorded
+earlier; those entries remain as chronological history. The 600-second DPMS
+listener was not awaited or claimed tested.
+
+**All agreed Phase 8B production acceptance gates required before considering
+Hyprlock removal are now satisfied:** installed package/MAGI PAM, direct lock,
+Session.Lock, Control Centre, actual idle lock, production suspend/resume,
+dual-output coverage, proven Hyprlock routing rollback, and successful MAGI
+reapplication. No active routing/PAM dependency on Hyprlock remains. Its protected
+theme metadata/historical configuration is not an active lock dependency.
+
+This is acceptance evidence, not removal authorization. **Hyprlock remains
+installed as unused fallback.** Any removal requires a separate explicit operator
+decision. MAGI routing and Hypridle remain active. No further live test, config
+change, package removal, staging, commit or push was performed. All idle-test
+snapshot hashes other than this intentionally updated checkpoint still match.
+
+
+## Final Phase 8B production acceptance
+
+| Gate | Result |
+| --- | --- |
+| Package/PAM verification | PASS |
+| Direct installed production lock | PASS |
+| Session.Lock | PASS |
+| Control Centre Lock | PASS |
+| Suspend/resume | PASS |
+| Dual-output | PASS |
+| Hyprlock rollback | PASS |
+| MAGI reapplication | PASS |
+| Genuine 300s idle lock | PASS |
+| 600s DPMS firing | NOT TESTED |
+
+**Actual idle lock firing observed at 300.288 seconds.**
+**600-second DPMS-off timer was NOT observed during Phase 8B.** Its unchanged
+policy/command makes this informational, not a blocker to accepted MAGI locking
+or the separate Hyprlock-removal decision. All applicable operator visual checks
+passed. All agreed security/production gates for later removal are satisfied;
+Hyprlock removal is explicitly outside Phase 8B and requires separate approval.
+
+Current effective idle policy: Lock after 5 minutes; displays off after 10 minutes;
+Suspend after Never (no idle-suspend listener). Other explicit/lid system suspend
+policy is not disabled by that statement. Future Power & Idle Settings will expose
+these controls through Hypridle, with Enabled/Never and bounded choices, possible
+later custom values/AC-battery profiles. Future external-display MAGI top-bar
+Settings remains deferred. Neither feature is implemented here.
+
+Hypridle remains a permanent production dependency for idle timers, Session.Lock,
+DPMS, suspend and lock-before-suspend coordination. MAGI replaces Hyprlock's locker
+role, not Hypridle. Final read-only audit found magi-lock 0.1.0-1 and Hyprlock
+0.9.6-3 installed, exactly one Hypridle PID677552 with normal delay inhibitor,
+Hyprland unlocked and no locker/worker. Accepted live settings unchanged.
+
+Canonical configuration audit: ~/.config/hypr is a symlink to
+../dotfiles/linux/t15g/hypr/.config/hypr. Thus the requested hypridle.conf is the
+canonical Stow-deployed file. Its bytes differ from the exact pre-migration backup
+only in the accepted lock_cmd replacement and added inhibit_sleep=3. However,
+HEAD/index have never tracked that file: Git sees it as a new 17-line file, not a
+two-setting modification. Tracking it would necessarily add the preserved
+before/after-sleep and listener baseline too. No partial two-line file may replace
+the deployable config. This staging distinction is recorded for operator review
+before committing; no other protected path belongs in the Phase 8B allowlist.
+
+
+The operator explicitly approved tracking the complete canonical 17-line
+hypridle.conf alongside this finalized checkpoint. The preserved baseline
+before/after-sleep and listener settings are included because the file was
+previously untracked; the only change from the pre-migration configuration is
+the accepted two-setting MAGI routing hunk. Phase 8B commit allowlist is exactly
+these two paths. No unrelated protected configuration is included.
