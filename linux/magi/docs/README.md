@@ -532,3 +532,28 @@ restored 7afd1c6 colour semantics, Settings-wide preview, and final Schema 11
 typography/spacing controls form the accepted baseline. Operator-tuned settings
 and runtime integrations remain local and excluded from the source commit.
 [Accepted checkpoint and path allowlist](design/runtime-phase2b.md#native-acceptance-and-source-checkpoint).
+
+
+## Phase 9B resume-input investigation — paused
+
+The failed production resume remains under investigation; no input-acceptance
+change or visual rollback is made. Bounded, opt-in development diagnostics and
+NativeInput ordering characterizations preserve fail-secure readiness. Installed
+0.1.0-2 remains untouched; host IPC validation and operator review are required
+before another live test. See [evidence, protocol findings and recovery plan](design/lock-screen-phase9-resume-input-investigation.md).
+
+
+Phase 9 resume compatibility follow-up implements a fixed two-event, 100 ms
+early-input slot, authoritative-modifier replay, lifetime invalidation and explicit
+unknown Caps state. Full host validation and audited 0.1.0-3 packaging remain
+pending; installed 0.1.0-2 is unchanged. No live test or finalization is authorized
+by implementation alone. [Fix and validation checkpoint](design/lock-screen-phase9-resume-input-investigation.md#compatibility-fix-implementation--awaiting-host-validation).
+
+### Phase 9 production acceptance (2026-10-19)
+
+Installed magi-lock 0.1.0-3 passed operator-approved normal dual-output lock and
+single suspend/resume acceptance, including correct input and clean display return.
+Accepted visuals and native security boundaries remain intact. The bounded
+early-key compatibility fix and 37-path final allowlist are documented in the
+Phase 9 visual and resume-input checkpoints. Host offline validation is complete;
+final post-suspend host health verification passed; repository finalization is authorized.

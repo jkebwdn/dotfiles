@@ -1,4 +1,5 @@
 #include "presentation.hpp"
+#include "auth_controller.hpp"
 #include "controller.hpp"
 #include <QGuiApplication>
 #include <QQuickWindow>
@@ -27,12 +28,12 @@ int main(int argc, char** argv) {
     QImage image(reinterpret_cast<uchar*>(pixels.data()), 800, 600, 800 * 4, QImage::Format_RGB32);
     if (!magi::Presentation::render(image, "Output 7", "Locked", "TEST ONLY")) return 1;
     unsigned different = 0;
-    const QRgb background = QColor("#181825").rgb();
+    const QRgb background = QColor(magi::VisualData::current().values.value("background").toString()).rgb();
     for (auto pixel : pixels) {
         if (qAlpha(pixel) != 255) return 2;
         if (pixel != background) ++different;
     }
-    if (different < 100) { std::cerr << "No proof text rendered into native buffer\n"; return 3; }
+    if (different < 100) { std::cerr << "No lock composition rendered into native buffer\n"; return 3; }
     for (const auto& invalid : {QByteArray("import QtQuick\nNotAType {}"),
                                 QByteArray("import QtQml\nQtObject {}")}) {
         if (magi::Presentation::render(image, "Output 7", "Locked", "TEST", invalid)) return 4;

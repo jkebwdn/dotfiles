@@ -1,5 +1,6 @@
 #include "wayland_owner.hpp"
 #include "presentation.hpp"
+#include <QDateTime>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QImage>
@@ -8,6 +9,7 @@
 #include <cstring>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <time.h>
 
 namespace magi {
 namespace {
@@ -27,30 +29,75 @@ const wl_surface_listener wlSurfaceListener{
 };
 }
 
+#if MAGI_LOCK_INPUT_DIAGNOSTICS
+void WaylandOwner::traceInput(const char* event, wl_keyboard* eventKeyboard, wl_surface* eventSurface) {
+    if (inputTraceCount_++ >= 256) return;
+    timespec now{}; clock_gettime(CLOCK_MONOTONIC, &now);
+    const auto input = input_.readiness();
+    unsigned output = 0; std::uint64_t lifetime = 0;
+    for (const auto& [id, entry] : nativeOutputs_)
+        if (entry->surface == (eventSurface ? eventSurface : focusedSurface_) && entry->surface) {
+            output = id; lifetime = entry->lifetime; break;
+        }
+    const char* gate = stopping_ ? "stopping" : controller_.state() != State::Locked ? "not-locked"
+        : !currentFocus() ? "no-owned-focus" : input.blocked ? "sleep-blocked"
+        : !input.keymap ? "no-keymap" : !input.focused ? "not-focused"
+        : !input.modifiers ? "no-modifiers" : "routing-ready";
+    qInfo().nospace() << "INPUT_DIAG mono_us=" << (qint64(now.tv_sec)*1000000 + now.tv_nsec/1000)
+        << " event=" << event << " keyboard_epoch=" << keyboardEpoch_
+        << " keyboard_present=" << bool(keyboard_) << " event_current=" << (!eventKeyboard || eventKeyboard == keyboard_)
+        << " keyboard_capable=" << keyboardCapable_ << " seat=" << seatId_
+        << " output=" << output << " lifetime=" << lifetime << " auth_generation=" << auth_.generation()
+        << " owned_focus=" << currentFocus() << " sleep_blocked=" << input.blocked
+        << " keymap=" << input.keymap << " focused=" << input.focused << " modifiers=" << input.modifiers
+        << " auth_editable=" << auth_.presentation().active
+        << " gate=" << gate << " trace_remaining=" << (256-inputTraceCount_);
+}
+#endif
+
 bool WaylandOwner::ownsSurface(wl_surface* surface) const {
     if (!surface) return false;
     for (const auto& [id, output] : nativeOutputs_) { (void)id; if (output->surface == surface) return true; }
     return false;
 }
+bool WaylandOwner::currentFocus() const {
+    const auto it = nativeOutputs_.find(focusedOutput_);
+    return focusedSurface_ && it != nativeOutputs_.end()
+        && it->second->surface == focusedSurface_ && it->second->lifetime == focusedLifetime_;
+}
+void WaylandOwner::rememberFocus(wl_surface* surface) {
+    focusedSurface_ = nullptr; focusedOutput_ = 0; focusedLifetime_ = 0;
+    for (const auto& [id, output] : nativeOutputs_) if (surface && output->surface == surface) {
+        focusedSurface_ = surface; focusedOutput_ = id; focusedLifetime_ = output->lifetime; return;
+    }
+}
 const wl_seat_listener WaylandOwner::seatListener{
     [](void* data, wl_seat* seat, std::uint32_t capabilities) {
         auto& self = *static_cast<WaylandOwner*>(data);
         self.keyboardCapable_ = capabilities & WL_SEAT_CAPABILITY_KEYBOARD;
+        self.traceInput("seat-capabilities");
         if (self.keyboardCapable_) {
             if (!self.keyboard_) {
                 self.keyboard_ = wl_seat_get_keyboard(seat);
+#if MAGI_LOCK_INPUT_DIAGNOSTICS
+                ++self.keyboardEpoch_;
+#endif
+                self.traceInput("keyboard-created");
                 if (self.keyboard_) wl_keyboard_add_listener(self.keyboard_, &keyboardListener, &self);
             }
         } else if (self.keyboard_) {
             self.focusedSurface_ = nullptr; self.input_.focus(false);
+            self.traceInput("keyboard-destroy-capability");
             wl_keyboard_release(self.keyboard_); self.keyboard_ = nullptr;
         }
     },
     [](void*, wl_seat*, const char*) {}
 };
 const wl_keyboard_listener WaylandOwner::keyboardListener{
-    [](void* data, wl_keyboard*, std::uint32_t format, int fd, std::uint32_t size) {
+    [](void* data, wl_keyboard* eventKeyboard, std::uint32_t format, int fd, std::uint32_t size) {
         auto& self = *static_cast<WaylandOwner*>(data);
+        if (!eventKeyboard || eventKeyboard != self.keyboard_) { close(fd); return; }
+        self.traceInput("keymap-received", eventKeyboard);
         self.input_.keymap({}); self.haveModifiers_ = false;
         if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1 || !size || size > 1024*1024) { close(fd); return; }
         void* map = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0); close(fd);
@@ -59,34 +106,50 @@ const wl_keyboard_listener WaylandOwner::keyboardListener{
         munmap(map, size);
         if (okay) qInfo("Native keyboard keymap initialized");
         else qWarning("Native keyboard unavailable; remaining locked");
-        self.input_.focus(okay && self.ownsSurface(self.focusedSurface_) && self.controller_.state() == State::Locked);
+        self.input_.focus(okay && self.currentFocus() && self.controller_.state() == State::Locked);
+        self.traceInput("keymap-applied", eventKeyboard);
     },
-    [](void* data, wl_keyboard*, std::uint32_t, wl_surface* surface, wl_array* keys) {
+    [](void* data, wl_keyboard* eventKeyboard, std::uint32_t, wl_surface* surface, wl_array* keys) {
         auto& self = *static_cast<WaylandOwner*>(data);
+        if (!eventKeyboard || eventKeyboard != self.keyboard_) return;
         self.haveModifiers_ = false;
-        self.focusedSurface_ = self.ownsSurface(surface) ? surface : nullptr;
+        self.rememberFocus(surface);
         std::span<const unsigned> held;
         if (keys && keys->size <= 768*sizeof(unsigned) && keys->size % sizeof(unsigned) == 0)
             held = {static_cast<const unsigned*>(keys->data), keys->size/sizeof(unsigned)};
         // An enter can refer to a surface removed earlier in the event batch.
         // Suspend input in that case without cancelling the session attempt.
         self.input_.focus(self.focusedSurface_ && self.controller_.state() == State::Locked, held, true);
+        self.traceInput("enter", eventKeyboard, surface);
     },
-    [](void* data, wl_keyboard*, std::uint32_t, wl_surface*) {
+    [](void* data, wl_keyboard* eventKeyboard, std::uint32_t, wl_surface*) {
         auto& self = *static_cast<WaylandOwner*>(data);
+        if (!eventKeyboard || eventKeyboard != self.keyboard_) return;
+        self.traceInput("leave", eventKeyboard);
         self.focusedSurface_ = nullptr; self.input_.focus(false, {}, true);
+        self.traceInput("leave-applied", eventKeyboard);
     },
-    [](void* data, wl_keyboard*, std::uint32_t, std::uint32_t, std::uint32_t key, std::uint32_t state) {
+    [](void* data, wl_keyboard* eventKeyboard, std::uint32_t, std::uint32_t, std::uint32_t key, std::uint32_t state) {
         auto& self = *static_cast<WaylandOwner*>(data);
-        if (!self.stopping_ && self.controller_.state() == State::Locked && self.ownsSurface(self.focusedSurface_))
+        if (!eventKeyboard || eventKeyboard != self.keyboard_) return;
+        // Never log keycode/text: physical codes can reconstruct passwords.
+        self.traceInput(state == WL_KEYBOARD_KEY_STATE_PRESSED ? "key-pressed" : "key-released", eventKeyboard);
+        if (!self.stopping_ && self.controller_.state() == State::Locked && self.currentFocus())
             self.input_.key(key, state == WL_KEYBOARD_KEY_STATE_PRESSED);
+        else self.input_.focus(false, {}, true);
     },
-    [](void* data, wl_keyboard*, std::uint32_t, std::uint32_t depressed, std::uint32_t latched, std::uint32_t locked, std::uint32_t group) {
+    [](void* data, wl_keyboard* eventKeyboard, std::uint32_t, std::uint32_t depressed, std::uint32_t latched, std::uint32_t locked, std::uint32_t group) {
         auto& self = *static_cast<WaylandOwner*>(data);
+        if (!eventKeyboard || eventKeyboard != self.keyboard_) return;
         self.modifiers_ = {depressed, latched, locked, group}; self.haveModifiers_ = true;
-        self.input_.modifiers(depressed, latched, locked, group);
+        if (!self.stopping_ && self.controller_.state() == State::Locked && self.currentFocus())
+            self.input_.modifiers(depressed, latched, locked, group);
+        else self.input_.focus(false, {}, true);
+        self.traceInput("modifiers", eventKeyboard);
     },
-    [](void*, wl_keyboard*, std::int32_t, std::int32_t) {} // No key repeat in this proof.
+    [](void* data, wl_keyboard* eventKeyboard, std::int32_t, std::int32_t) {
+        static_cast<WaylandOwner*>(data)->traceInput("repeat-info", eventKeyboard);
+    } // No key repeat in this proof.
 };
 
 const wl_registry_listener WaylandOwner::registryListener{registryGlobal, registryRemove};
@@ -125,6 +188,14 @@ WaylandOwner::WaylandOwner(unsigned seconds, bool authenticate, std::string work
     auth_.succeeded = [this](std::uint64_t generation) {
         if (!stopping_ && authenticate_ && (!unlockAllowed || unlockAllowed()) && controller_.authenticatedUnlock(auth_, generation)) flush();
     };
+    // One-shot QML scenes do not own timers. Refresh through the existing
+    // lifetime-checked output path; never retain QML objects across outputs.
+    clockRefresh_.setInterval(1000);
+    connect(&clockRefresh_, &QTimer::timeout, this, [this, lastMinute = qint64(-1)]() mutable {
+        const auto minute = QDateTime::currentSecsSinceEpoch() / 60;
+        if (!stopping_ && minute != lastMinute) { lastMinute = minute; controller_.refresh(); flush(); }
+    });
+    clockRefresh_.start();
     deadline_.setSingleShot(true);
     connect(&deadline_, &QTimer::timeout, this, [this] {
         stopFailure("Protocol deadline exceeded; disconnecting WITHOUT unlock");
@@ -142,22 +213,31 @@ void WaylandOwner::prepareSleep() {
     controller_.blockForSleep(true);
     input_.blockForSleep(true);
     haveModifiers_ = false;
+    traceInput("sleep-blocked");
     qInfo("SLEEP PREPARATION: input blocked, credential cleared, auth cancelled");
 }
 void WaylandOwner::resumeSleep() {
     if (stopping_) return;
+    traceInput("resume-begin");
     input_.blockForSleep(false);
+    traceInput("sleep-unblocked");
     focusedSurface_ = nullptr; haveModifiers_ = false; modifiers_ = {};
     // Fresh keyboard object gives keymap/enter/modifiers in compositor order.
     // Old queued events cannot restore focus or modifiers to this object.
+    traceInput("keyboard-destroy-resume");
     if (keyboard_) wl_keyboard_release(keyboard_);
     keyboard_ = nullptr;
     if (seat_ && authenticate_ && keyboardCapable_) {
         keyboard_ = wl_seat_get_keyboard(seat_);
+#if MAGI_LOCK_INPUT_DIAGNOSTICS
+        ++keyboardEpoch_;
+#endif
+        traceInput("keyboard-created-resume");
         if (keyboard_) wl_keyboard_add_listener(keyboard_, &keyboardListener, this);
     }
     controller_.blockForSleep(false);
     controller_.refresh(); flush();
+    traceInput("resume-reconstructed");
     qInfo("RESUME: still locked; fresh keyboard state required");
 }
 bool WaylandOwner::start() {
@@ -322,6 +402,7 @@ void WaylandOwner::removeSurface(std::uint32_t id) {
     auto it = nativeOutputs_.find(id);
     if (it == nativeOutputs_.end()) return;
     auto& output = *it->second;
+    traceInput("surface-removing", nullptr, output.surface);
     if (focusedSurface_ == output.surface) { focusedSurface_ = nullptr; input_.focus(false, {}, true); }
     if (output.lockSurface) ext_session_lock_surface_v1_destroy(output.lockSurface);
     if (output.surface) wl_surface_destroy(output.surface);
@@ -374,7 +455,7 @@ FrameResult WaylandOwner::present(std::uint32_t id, Configure c, bool acknowledg
     const auto state = stateName(controller_.state());
     const QString notice = developmentSeconds_
         ? QString("UNSAFE DEVELOPMENT: automatic unlock %1 seconds after confirmation").arg(developmentSeconds_)
-        : (authenticate_ ? QStringLiteral("AUTHENTICATION PROOF — NOT FOR PRODUCTION USE")
+        : (authenticate_ ? QString()
                          : QStringLiteral("NO AUTHENTICATION / NO UNLOCK — NOT FOR PRODUCTION USE"));
     const bool rendered = Presentation::render(image, QString("Output registry id %1").arg(id),
                                                QString::fromUtf8(state.data(), qsizetype(state.size())), notice, {}, auth_.presentation());
@@ -429,7 +510,7 @@ void WaylandOwner::lockConfirmed(void* data, ext_session_lock_v1*) {
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     if (self.developmentSeconds_) self.developmentTimer_.start(int(self.developmentSeconds_ * 1000));
 #endif
-    if (self.authenticate_ && self.ownsSurface(self.focusedSurface_)) {
+    if (self.authenticate_ && self.currentFocus()) {
         self.input_.focus(true);
         if (self.haveModifiers_) self.input_.modifiers(self.modifiers_[0], self.modifiers_[1], self.modifiers_[2], self.modifiers_[3]);
     }
@@ -457,6 +538,7 @@ void WaylandOwner::authenticatedUnlockAndSync() {
     unlockAndSync();
 }
 void WaylandOwner::unlockAndSync() {
+    focusedSurface_ = nullptr; input_.focus(false, {}, true);
     ext_session_lock_v1_unlock_and_destroy(lock_);
     lock_ = nullptr;
     sync_ = wl_display_sync(display_);

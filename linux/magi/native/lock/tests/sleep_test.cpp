@@ -154,8 +154,17 @@ void keyboard(const std::string& dir) {
     p.prepare(false); b.input.key(30,false); b.input.key(30,true); CHECK(b.auth.presentation().count==0);
     wait([&]{return b.auth.state()==AuthState::Idle;});
     CHECK(b.input.keymap({text,strlen(text)+1})); b.input.focus(true); b.input.key(30,true); CHECK(b.auth.presentation().count==0);
-    b.input.key(30,false); b.input.modifiers(0,0,0,0); b.input.key(30,true); b.input.key(30,false);
-    CHECK(b.auth.presentation().count==1);
+    CHECK(b.input.pendingCount()==1 && !b.input.readiness().modifiers);
+    b.input.key(30,false);
+    CHECK(b.input.pendingCount()==2 && b.auth.presentation().count==0);
+    // A fresh post-resume press/release waits for authoritative modifiers, then
+    // contributes exactly once. It must no longer disappear as in the old gate.
+    b.input.modifiers(0,0,0,0);
+    CHECK(b.input.pendingCount()==0 && b.input.readiness().modifiers);
+    CHECK(b.auth.presentation().count==1 && b.auth.generation()==0);
+    b.input.modifiers(0,0,0,0); CHECK(b.auth.presentation().count==1);
+    b.input.key(30,true); b.input.key(30,false);
+    CHECK(b.auth.presentation().count==2 && b.auth.generation()==0);
     b.auth.clear(); CHECK(b.auth.append({secret,sizeof(secret)-1}));
     b.auth.succeeded=[&](auto g){CHECK(b.lock.authenticatedUnlock(b.auth,g));};
     b.input.key(28,true); wait([&]{return b.backend.unlocks==1;});

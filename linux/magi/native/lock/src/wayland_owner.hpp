@@ -57,9 +57,19 @@ private:
         bool busy = false;
         ~Buffer();
     };
+#if MAGI_LOCK_INPUT_DIAGNOSTICS
+    void traceInput(const char* event, wl_keyboard* eventKeyboard = nullptr, wl_surface* eventSurface = nullptr);
+    unsigned inputTraceCount_ = 0;
+    std::uint64_t keyboardEpoch_ = 0;
+#else
+    void traceInput(const char*, wl_keyboard* = nullptr, wl_surface* = nullptr) {}
+#endif
     void flush();
     void unlockAndSync();
     bool ownsSurface(wl_surface* surface) const;
+    bool currentFocus() const;
+    void rememberFocus(wl_surface* surface);
+    friend struct InputOwnerTestAccess;
     static const wl_seat_listener seatListener;
     static const wl_keyboard_listener keyboardListener;
     void dispatch();
@@ -83,6 +93,8 @@ private:
     wl_seat* seat_ = nullptr;
     wl_keyboard* keyboard_ = nullptr;
     wl_surface* focusedSurface_ = nullptr;
+    std::uint32_t focusedOutput_ = 0;
+    std::uint64_t focusedLifetime_ = 0;
     std::uint32_t seatId_ = 0;
     std::array<unsigned, 4> modifiers_{};
     bool haveModifiers_ = false;
@@ -103,6 +115,7 @@ private:
     std::vector<std::unique_ptr<Buffer>> buffers_;
     std::unique_ptr<QSocketNotifier> reader_, writer_;
     QTimer deadline_;
+    QTimer clockRefresh_;
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     QTimer developmentTimer_;
 #endif

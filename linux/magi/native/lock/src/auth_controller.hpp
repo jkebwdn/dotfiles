@@ -1,5 +1,6 @@
 #pragma once
 #include "credential.hpp"
+#include "auth_presentation.hpp"
 #include <QObject>
 #include <QTimer>
 #include <QElapsedTimer>
@@ -10,10 +11,6 @@
 #include <sys/types.h>
 namespace magi {
 class Controller;
-enum class AuthState { Idle, Editing, Authenticating, Failed, WorkerError, Unsupported, Cancelled, Succeeded };
-const char* authStateName(AuthState state);
-// Only this value object crosses the presentation boundary, never the controller.
-struct AuthPresentation { unsigned count = 0; bool active = false; bool caps = false; AuthState state = AuthState::Idle; };
 class AuthController final : public QObject {
 public:
     explicit AuthController(std::string worker, int timeoutMs = 120000, int retryMs = 1500);
@@ -21,6 +18,8 @@ public:
     // Output focus changes suspend input without cancelling the one session attempt.
     void setInputActive(bool active, bool preserveAuth = false);
     void setCaps(bool caps);
+    void setCapsUnknown();
+    void setKeyboardUnavailable(bool unavailable);
     bool append(std::span<const char> text);
     void backspace();
     void clear();
@@ -31,6 +30,7 @@ public:
     AuthState state() const { return state_; }
     std::uint64_t generation() const { return generation_; }
     std::function<void()> changed;
+    std::function<void()> inputInvalidated; // Native-only pending-event scrubbing.
     std::function<void(std::uint64_t)> succeeded;
 private:
     friend class Controller;
@@ -54,6 +54,7 @@ private:
     std::uint64_t generation_ = 0;
     unsigned nextId_ = 1;
     AuthState state_ = AuthState::Idle;
+    bool capsKnown_ = true, keyboardUnavailable_ = false;
     bool active_ = false, caps_ = false, hello_ = false, sent_ = false;
     bool stopping_ = false, eof_ = false, reaped_ = false, cleanExit_ = false, consumed_ = false;
     std::optional<unsigned> result_;

@@ -16,19 +16,6 @@ struct Frame {
     ~Frame() { explicit_bzero(data.data(), data.size()); }
 };
 }
-const char* authStateName(AuthState s) {
-    switch (s) {
-    case AuthState::Idle: return "Locked";
-    case AuthState::Editing: return "Enter password, then Enter";
-    case AuthState::Authenticating: return "Authenticating";
-    case AuthState::Failed: return "Authentication failed";
-    case AuthState::WorkerError: return "Authentication unavailable";
-    case AuthState::Unsupported: return "Unsupported PAM conversation";
-    case AuthState::Cancelled: return "Cancelled";
-    case AuthState::Succeeded: return "Authentication succeeded";
-    }
-    return "Authentication unavailable";
-}
 AuthController::AuthController(std::string worker, int timeout, int retry)
     : worker_(std::move(worker)), timeoutMs_(timeout), retryMs_(retry) {
     retry_.setSingleShot(true);
@@ -51,7 +38,7 @@ void AuthController::clearCredential() {
 }
 void AuthController::notify() { if (changed) changed(); }
 AuthPresentation AuthController::presentation() const {
-    return {static_cast<unsigned>(credential_.units()), active_ && editable(), caps_, state_};
+    return {static_cast<unsigned>(credential_.units()), active_ && editable(), caps_, state_, capsKnown_, keyboardUnavailable_};
 }
 bool AuthController::editable() const {
     return pid_ < 0 && !retry_.isActive() && (state_ == AuthState::Idle || state_ == AuthState::Editing);
@@ -63,18 +50,22 @@ void AuthController::setInputActive(bool active, bool preserveAuth) {
     else if (active && editable()) state_ = AuthState::Editing;
     notify();
 }
-void AuthController::setCaps(bool caps) { if (caps_ != caps) { caps_ = caps; notify(); } }
+void AuthController::setCaps(bool caps) { if (!capsKnown_ || caps_ != caps) { caps_ = caps; capsKnown_ = true; notify(); } }
+void AuthController::setCapsUnknown() { if (capsKnown_) { capsKnown_ = false; notify(); } }
+void AuthController::setKeyboardUnavailable(bool unavailable) { if (keyboardUnavailable_ != unavailable) { keyboardUnavailable_ = unavailable; notify(); } }
 bool AuthController::append(std::span<const char> text) {
     if (!active_ || !editable() || !credential_.append(text)) return false;
     state_ = AuthState::Editing; notify(); return true;
 }
 void AuthController::backspace() { if (active_ && editable()) { credential_.backspace(); notify(); } }
 void AuthController::clear() {
+    if (inputInvalidated) inputInvalidated();
     clearCredential();
     if (pid_ > 0 || state_ == AuthState::Succeeded) cancel();
     else notify();
 }
 bool AuthController::submit() {
+    if (inputInvalidated) inputInvalidated();
     if (!active_ || !editable() || credential_.empty()) return false;
     if (generation_ == UINT64_MAX) { clearCredential(); state_ = AuthState::WorkerError; notify(); return false; }
     ++generation_;
@@ -190,6 +181,7 @@ void AuthController::stop(AuthState state, const char* diagnostic) {
     notify();
 }
 void AuthController::cancel() {
+    if (inputInvalidated) inputInvalidated();
     clearCredential(); consumed_ = true;
     if (pid_ > 0) stop(AuthState::Cancelled, "AUTH CANCELLED");
     else if (state_ != AuthState::Idle) { qInfo("AUTH CANCELLED"); state_ = AuthState::Cancelled; retry_.start(retryMs_); notify(); }

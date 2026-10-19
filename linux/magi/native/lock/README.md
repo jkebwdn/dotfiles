@@ -305,3 +305,51 @@ Phase 8A validation: production CTest 12/12, development 11/11, Rust 18/18,
 Clippy and formatting passed. Request tests now contain 12 cases. Staged install,
 unit verification and package checks are non-activating; no real lock/PAM/suspend
 was performed.
+
+## Phase 9A visual preview (not installed)
+
+The modular `qml/LockScreen.qml` replaces the proof paragraph. It consumes only
+safe display values and an immutable native snapshot of MAGI's semantic palette,
+shared saved wallpaper and managed avatar. Native input/auth/sleep/output ownership
+is unchanged. See [the design and validation checkpoint](../../docs/design/lock-screen-phase9-visual-design.md).
+
+Render synthetic PNGs without a session lock, worker or PAM:
+
+```sh
+cmake -S linux/magi/native/lock -B /tmp/magi-lock-visual -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF -DMAGI_LOCK_VISUAL_PREVIEW=ON
+cmake --build /tmp/magi-lock-visual --target magi-lock-preview
+/tmp/magi-lock-visual/magi-lock-preview /tmp/magi-lock-renders
+```
+
+This executable forces Qt offscreen software rendering. It cannot accept secret
+input, acquire a lock or authenticate. Production installation rejects the preview
+build option and still installs exactly five artifacts. Phase 9A is pending visual
+review; these source changes have not replaced the installed production locker.
+
+Phase 9A.1 previews use a cached CPU-blurred copy of the saved shared wallpaper,
+never a desktop capture. The snapshot is rebuilt on each locker launch, not on
+credential/clock redraws. The preview emits ten states, including bright synthetic
+wallpaper, missing artwork, long identity and maximum-count cases. See the Phase
+9A.1 section of the design checkpoint for processing limits and cache semantics.
+
+### Resume input compatibility (uncommitted, host validation pending)
+
+A focused early press and its matching release can be held for at most 100 ms
+until the first authoritative wl_keyboard.modifiers notification. The fixed
+metadata slot is scrubbed on expiry, overflow, auth cancellation and focus/keyboard/
+output/sleep lifetime changes. Replay uses normal NativeInput handling; no guessed
+mask or held-enter-key replay is allowed. Unknown Caps state and an exceptional
+Shift press/release recovery hint are safe display values only. Missing state
+never permits authentication with guessed modifiers. See
+`docs/design/lock-screen-phase9-resume-input-investigation.md` for evidence,
+limits and required host validation before release 0.1.0-3 packaging.
+
+### Phase 9 production acceptance (2026-10-19)
+
+Installed magi-lock 0.1.0-3 passed operator-approved normal dual-output lock and
+single suspend/resume acceptance, including correct input and clean display return.
+Accepted visuals and native security boundaries remain intact. The bounded
+early-key compatibility fix and 37-path final allowlist are documented in the
+Phase 9 visual and resume-input checkpoints. Host offline validation is complete;
+final post-suspend host health verification passed; repository finalization is authorized.

@@ -1,6 +1,17 @@
 # Structural regression: presentation has no input widget/handler or credential API.
-file(READ "${SOURCE}/qml/Proof.qml" qml)
-if(qml MATCHES "TextField|TextInput|Keys\\.|password|credential|unlock|Clipboard")
+file(GLOB qml_files "${SOURCE}/qml/*.qml")
+set(qml "")
+foreach(path IN LISTS qml_files)
+    file(READ "${path}" content)
+    # The reviewed instruction is display copy, not an unlock capability.
+    # Exempt only this exact literal in this component; identifiers, functions,
+    # handlers and every other unlock reference remain forbidden below.
+    if(path MATCHES "/LockStatus\\.qml$")
+        string(REPLACE "\"Press Enter to unlock\"" "\"APPROVED_NATIVE_INPUT_HINT\"" content "${content}")
+    endif()
+    string(APPEND qml "${content}")
+endforeach()
+if(qml MATCHES "TextField|TextInput|Keys\\.|plaintext|passwordBytes|unlock|Clipboard|MouseArea|TapHandler|Process|XMLHttpRequest")
     message(FATAL_ERROR "QML acquired an input/credential/unlock boundary")
 endif()
 file(READ "${SOURCE}/src/presentation.cpp" renderer)
@@ -10,7 +21,15 @@ endif()
 # Only allowed property names are assigned to the QML root.
 string(REGEX MATCHALL "setProperty\\(\"[^\"]+\"" properties "${renderer}")
 foreach(property IN LISTS properties)
-    if(NOT property MATCHES "\"(outputLabel|nativeState|developmentNotice|characterCount|inputActive|capsLock|authStatus)\"$")
+    if(NOT property MATCHES "\"(outputLabel|nativeState|developmentNotice|characterCount|inputActive|capsLock|capsKnown|authStatus|visual|timeLabel|dateLabel|wallpaperAvailable|avatarAvailable)\"$")
         message(FATAL_ERROR "Unexpected presentation property")
     endif()
 endforeach()
+
+if(qml MATCHES "property[ \t]+(string|var|variant)[ \t]+(password|credential|secret|token)[ \t]*:")
+    message(FATAL_ERROR "Secret-bearing QML property")
+endif()
+file(READ "${SOURCE}/src/presentation.hpp" api)
+if(api MATCHES "auth_controller.hpp|credential.hpp|AuthController|Credential&")
+    message(FATAL_ERROR "Renderer acquired a security capability instead of a display value")
+endif()

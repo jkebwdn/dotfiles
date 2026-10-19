@@ -1,7 +1,12 @@
 #include "native_input.hpp"
 #include <xkbcommon/xkbcommon-keysyms.h>
+#include <QDebug>
 namespace magi {
 NativeInput::NativeInput(AuthController& auth) : auth_(auth) {
+    pendingTimer_.setSingleShot(true);
+    pendingTimer_.setTimerType(Qt::PreciseTimer);
+    QObject::connect(&pendingTimer_, &QTimer::timeout, &auth_, [this] { expirePending(); });
+    auth_.inputInvalidated = [this] { discardPending(); };
     context_ = xkb_context_new(XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
     if (context_) {
         // Never print keymap/compose contents through xkb diagnostics.
@@ -12,6 +17,7 @@ NativeInput::NativeInput(AuthController& auth) : auth_(auth) {
 }
 NativeInput::~NativeInput() {
     focus(false);
+    auth_.inputInvalidated = {};
     if (compose_) xkb_compose_state_unref(compose_);
     if (table_) xkb_compose_table_unref(table_);
     if (state_) xkb_state_unref(state_);
@@ -29,6 +35,9 @@ bool NativeInput::keymap(std::span<const char> text) {
     return state_ != nullptr;
 }
 void NativeInput::focus(bool focused, std::span<const unsigned> held, bool preserveAuth) {
+    discardPending(); pendingExpired_ = false; earlyLogged_ = false;
+    auth_.setKeyboardUnavailable(false);
+    auth_.setCapsUnknown();
     focused_ = focused && ready() && !sleepBlocked_; haveModifiers_ = false; down_.fill(false);
     for (auto key : held) if (key < down_.size()) down_[key] = true;
     if (compose_) xkb_compose_state_reset(compose_);
@@ -43,14 +52,56 @@ void NativeInput::modifiers(unsigned depressed, unsigned latched, unsigned locke
     haveModifiers_ = true;
     xkb_state_update_mask(state_, depressed, latched, locked, 0, 0, group);
     auth_.setCaps(xkb_state_mod_name_is_active(state_, XKB_MOD_NAME_CAPS, XKB_STATE_MODS_LOCKED) > 0);
+    if (pendingCount_ && pendingAge_.elapsed() >= pendingWaitMs) expirePending();
+    pendingExpired_ = false;
+    auth_.setKeyboardUnavailable(false);
+    // Detach before normal dispatch: Escape/Enter can invalidate input reentrantly.
+    auto events = pending_;
+    const auto count = pendingCount_;
+    const auto generation = pendingGeneration_;
+    discardPending();
+    if (focused_ && !sleepBlocked_ && generation == auth_.generation()) {
+        for (unsigned i = 0; i < count; ++i) key(events[i].code, events[i].pressed);
+        if (count) qInfo("EARLY INPUT: replayed once with authoritative modifiers");
+    }
+    explicit_bzero(events.data(), sizeof(events));
 }
 void NativeInput::blockForSleep(bool blocked) {
     sleepBlocked_ = blocked;
     focus(false, {}, !blocked);
 }
+void NativeInput::discardPending() {
+    pendingTimer_.stop(); pendingAge_.invalidate();
+    explicit_bzero(pending_.data(), sizeof(pending_));
+    pendingCount_ = 0; pendingGeneration_ = 0;
+}
+void NativeInput::expirePending() {
+    if (!pendingCount_) return;
+    discardPending(); pendingExpired_ = true;
+    auth_.clear(); // Never retain an ambiguously partial password.
+    auth_.setKeyboardUnavailable(true);
+    qInfo("EARLY INPUT: discarded unavailable keyboard state; authoritative modifiers required");
+}
 void NativeInput::key(unsigned code, bool pressed) {
-    if (sleepBlocked_) return;
-    if (code >= down_.size()) return;
+    if (sleepBlocked_ || !focused_ || !state_ || code >= down_.size()) return;
+    if (!haveModifiers_) {
+        if (pendingExpired_) return;
+        if (pendingCount_ && pendingAge_.elapsed() >= pendingWaitMs) { expirePending(); return; }
+        if (!pendingCount_) {
+            if (!pressed) { down_[code] = false; return; }
+            if (down_[code] || !auth_.presentation().active) return;
+            pending_[0] = {code, true}; pendingCount_ = 1;
+            pendingGeneration_ = auth_.generation(); pendingAge_.start();
+            pendingTimer_.start(pendingWaitMs);
+            if (!earlyLogged_) { qInfo("EARLY INPUT: deferred pending initial modifiers"); earlyLogged_ = true; }
+        } else if (pendingCount_ == 1 && code == pending_[0].code && !pressed) {
+            pending_[1] = {code, false}; pendingCount_ = 2;
+        } else {
+            // Multiple presses/chords cannot be reconstructed from one later mask.
+            expirePending();
+        }
+        return;
+    }
     const bool wasDown = down_[code]; down_[code] = pressed;
     if (!pressed || wasDown || !focused_ || !haveModifiers_ || !state_) return;
     const auto key = code + 8; // wl_keyboard uses Linux evdev codes, XKB adds eight.
