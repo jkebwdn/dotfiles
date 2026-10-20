@@ -51,6 +51,13 @@ class Model(unittest.TestCase):
         self.history.remove(first)
         self.assertIsNone(self.history.get(first))
 
+    def test_older_pin_precedes_newest(self):
+        pinned = self.add("older pinned entry")
+        self.history.pin(pinned)
+        newest = self.add("newest entry")
+        self.assertEqual([row["id"] for row in self.history.rows()], [pinned, newest])
+        self.assertTrue(self.history.get(pinned)["pinned"])
+
     def test_bounded_pins_and_clear(self):
         pinned = self.add("pinned")
         self.history.pin(pinned)

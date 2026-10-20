@@ -1,5 +1,18 @@
 # MAGI — Quickshell Technical Reference
 
+Phase 10A fallback correction: selected pack → same-ID MAGI Default → bundled
+SVG placeholder. No parent inheritance or user overrides; [audit and previews](design/phase10a-icon-fallback.md).
+
+## Phase 10A — accepted and complete (2026-10-20)
+
+Baseline `649326c77022bd400bf241336894102d50ff0616` was synchronized at `0 0`.
+MAGI Lock remains complete at production `magi-lock 0.1.0-3`; Hyprlock is retired,
+Hypridle remains. This milestone does not change lock/authentication architecture.
+Live review passed; Clipboard option B retains pinned-first ordering with newest-on-entry.
+Phase 10B/C remain deferred.
+See [Phase 10A ownership, tests, previews and deferred work](design/phase10a.md).
+
+
 > Phase 2E, including 2E.1/2E.2, is natively accepted. See the
 > [final acceptance and source allowlist](design/runtime-phase2e-finalization.md).
 > Dated earlier review status below is historical; final Hub persistence, Schema 12,

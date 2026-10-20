@@ -29,12 +29,13 @@ for (const d of definitions) for (const presentation of d.presentations.filter(p
 const duplicate = plain(custom);
 duplicate.controlCentre.actions.push(duplicate.controlCentre.actions[0]);
 assert(ctx.analyze(duplicate).errors.length);
-const registry = JSON.parse(fs.readFileSync(`${base}/icons/packs/registry.json`));
+const index = JSON.parse(fs.readFileSync(`${base}/icons/packs/registry.json`));
+const registry = {packs:index.manifests.map(name => ({...JSON.parse(fs.readFileSync(`${base}/icons/packs/${name}`)),baseUrl:'file:///bundled/'}))};
 for (const pack of ['magi-legacy','magi-default']) for (const d of definitions) {
     const resolved = ctx.resolve(registry, {pack}, d.icon, d.id);
-    assert(!resolved.diagnostic, d.id);
+    assert(resolved.icon.kind === 'managed' || resolved.icon.text);
+    assert.notEqual(resolved.icon.kind, 'placeholder', d.id);
     assert.notEqual(resolved.icon.text, '?', d.id);
-    if (resolved.icon.kind === 'svg') assert(fs.existsSync(`${base}/icons/packs/${resolved.icon.path}`));
 }
 assert.deepEqual(plain(ctx.defaults()), original, 'validation never mutates reset defaults');
 console.log('Catalogue IDs, eligibility, preservation, defaults, duplicate rejection and icons PASS');

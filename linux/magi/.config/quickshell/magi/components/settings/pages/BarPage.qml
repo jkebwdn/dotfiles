@@ -34,6 +34,11 @@ SettingsUI.SettingsPage {
         const index = Services.Settings.data.bar[lane].indexOf(id)
         if (index >= 0 && index !== position) Services.Settings.moveBar(lane, index, position - index)
     }
+    SettingsUI.VisualSettingsGroup {
+        collapsible: false
+        title: "Status icons"
+        numbers: [{key:"statusIconSize",label:"Status icon size",min:16,max:28,step:1}]
+    }
     SettingsUI.SettingsReorderBoard {
         objectName: "barOrder"
         viewport: root

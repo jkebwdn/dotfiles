@@ -96,7 +96,7 @@ ShellRoot {
 
             RowLayout {
                 spacing: 24
-                Label { text: "Legacy fallback"; color: Theme.Theme.subtext; Layout.preferredWidth: 150 }
+                Label { text: "MAGI default fallback"; color: Theme.Theme.subtext; Layout.preferredWidth: 150 }
                 Controls.Icon { role: "settings"; size: 24; color: Theme.Theme.text }
                 Label { text: "settings is absent from the partial MAGI pack"; color: Theme.Theme.subtext }
             }

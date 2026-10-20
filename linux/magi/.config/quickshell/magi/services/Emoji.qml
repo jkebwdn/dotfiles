@@ -20,8 +20,9 @@ Scope {
     property string pendingId: ""
     property string pendingSequence: ""
     property bool busy: false
-    readonly property var categories: ["All", "Recently Used"].concat(Search.categories(entries))
-    readonly property var results: Search.rank(entries, query, category, preferences.recents.slice(0, preferences.recentLimit))
+    readonly property var categories: ["All"].concat(Search.categories(entries))
+    readonly property var results: Search.rank(entries, query, category)
+    readonly property var recentEntries: Search.recentEntries(entries, preferences.recents.slice(0, preferences.recentLimit))
     onResultsChanged: selected = 0
     onQueryChanged: message = ""
     onPreferencesChanged: { if (!preferences.enabled) close() }
@@ -34,17 +35,20 @@ Scope {
     function prepare() {
         session++
         query = ""; selected = 0; error = ""; message = ""
-        category = preferences.recentLimit && preferences.recents.some(id => entries.some(e => e.id === id)) ? "Recently Used" : "All"
+        category = "All"
     }
     function open() { Hub.open("emoji") }
     function close() { Hub.closeMode("emoji") }
     function toggle() { Hub.toggle("emoji") }
     function move(delta) { selected = Math.max(0, Math.min(results.length - 1, selected + delta)) }
-    function chooseCategory(value) { category = value; query = "" }
+    function chooseCategory(value) { category = categories.indexOf(value) >= 0 ? value : "All"; query = "" }
     function choose(index) {
-        const sequence = Search.sequenceAt(results, index)
-        if (!opened || busy || !sequence) return
-        pendingSequence = sequence; pendingId = results[index].id; pendingSession = session
+        chooseEntry(results[index])
+    }
+    function chooseRecent(index) { chooseEntry(recentEntries[index]) }
+    function chooseEntry(entry) {
+        if (!opened || busy || !entry || !entry.emoji) return
+        pendingSequence = entry.emoji; pendingId = entry.id; pendingSession = session
         error = ""; message = ""
         // Process.running becomes true asynchronously; guard same-turn selections now.
         busy = true

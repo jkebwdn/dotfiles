@@ -21,14 +21,13 @@ Scope {
         return request.id
     }
     function importAvatar(url) { return enqueue("avatar", url, {}) }
-    function importIcon(url, role, moduleId) { return enqueue("icon", url, {role:role, moduleId:moduleId || ""}) }
     function importIconPack(url) { return enqueue("icon-pack", url, {}) }
     function cacheArtwork(url, token) { return enqueue("artwork", url, {token:token || ""}) }
     function assetUrl(assetId) {
         if (!assetId) return ""
         const parts = String(assetId).split(":")
         if (parts.length !== 2 || !/^[a-f0-9]{64}\.(png|jpg|webp|svg)$/.test(parts[1])) return ""
-        const directory = parts[0] === "avatar" ? "avatars" : parts[0] === "icon" ? "icons" : ""
+        const directory = parts[0] === "avatar" ? "avatars" : ""
         return directory ? dataRoot + "/" + directory + "/" + parts[1] : ""
     }
     function startNext() {

@@ -4,6 +4,8 @@ MAGI is a first-party Quickshell desktop shell layer for Hyprland, developed for
 this repository's Arch Linux setup. It combines the status bar, system controls
 and everyday desktop utilities with shared themes, icons and Settings.
 
+Phase 10A Settings, Hub and icon architecture refinement is accepted; see the
+[final contract and validation](docs/design/phase10a.md). Phase 10B/C remain deferred.
 The Phase 2E visual and behavioural overhaul is natively accepted. MAGI remains a
 personal shell, not a packaged desktop distribution. The validated baseline is
 Quickshell 0.3.1 and Hyprland 0.56.2; broader multi-output and fractional-scale
@@ -78,7 +80,9 @@ text sizes/weights, artwork sizing/roundness and border-width controls.
 
 Settings can pin the **real production Control Centre** while navigating pages and
 adjusting values live. Profile, Calendar, Notifications, Clipboard, Launcher, Emoji,
-Wallpaper and Icons retain their own settings. Preferences persist through Schema 12;
+Wallpaper retain their own settings. Theme and Icon Pack share Appearance → Theme;
+Status icon size belongs to Bar. Schema 13 retires individual icon overrides and adds
+semantic media-progress/Hub-toggle roles;
 local `settings.json`, backups and managed assets should be backed up separately.
 
 ### Profile and weather

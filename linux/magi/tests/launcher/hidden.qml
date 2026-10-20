@@ -80,6 +80,7 @@ ShellRoot {
                 break
             }
             case 7:
+                if (Services.Settings.saveState === "pending") { step--; return }
                 check(!ui.grid && launcher.preferences.hiddenIds.length === 0 && launcher.results.length === 1, "reset restores all")
                 check(Services.Settings.saveState === "saved", "reset saved")
                 console.log("Hidden applications contextual action, list/grid/search, persistence, unavailable ID, Restore UI and reset PASS")

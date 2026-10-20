@@ -25,7 +25,7 @@ assert.equal(c.rank(entries,'CAT','All',[])[0].emoji,'🐈');
 assert.ok(c.rank(entries,'face smiling','All',[]).length);
 assert.ok(c.rank(entries,'','Flags',[]).every(e=>e.group==='Flags'));
 assert.equal(c.rank(entries,'missing nonsense','All',[]).length,0);
-assert.equal(c.rank(entries,'','Recently Used',['missing','1F525'])[0].emoji,'🔥');
+assert.equal(c.recentEntries(entries,['missing','1F525'])[0].emoji,'🔥');
 assert.deepEqual(Array.from(c.promote(['1F525','1F600'],'1F600',2)),['1F600','1F525']);
 assert.equal(c.promote(['1F525'],'1F600',0).length,0);
 assert.deepEqual(Array.from(c.promote(['1F525','1F600'],'1F601',2)),['1F601','1F525']);

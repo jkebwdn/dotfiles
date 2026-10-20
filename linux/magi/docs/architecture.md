@@ -1,5 +1,15 @@
 # MAGI — Architecture
 
+## Phase 10A — accepted and complete (2026-10-20)
+
+Baseline `649326c77022bd400bf241336894102d50ff0616` was synchronized at `0 0`.
+MAGI Lock remains complete at production `magi-lock 0.1.0-3`; Hyprlock is retired,
+Hypridle remains. This milestone does not change lock/authentication architecture.
+Live review passed; Clipboard option B retains pinned-first ordering with newest-on-entry.
+Phase 10B/C remain deferred.
+See [Phase 10A ownership, tests, previews and deferred work](design/phase10a.md).
+
+
 > Phase 2E, including 2E.1/2E.2, is natively accepted. See the
 > [final acceptance and source allowlist](design/runtime-phase2e-finalization.md).
 > Dated earlier review status below is historical; final Hub persistence, Schema 12,
@@ -488,16 +498,15 @@ See [persistence and validation evidence](research/settings-foundation-checkpoin
 semantic facade over Settings. RenderTokens contains no palette colors.
 Master roundness (0–2) and nullable barPill/surface/controlTile/slider/action
 multipliers drive live radii, clamped to geometry. Padding, font baselines, gaps
-and nominal dimensions stay internal. IconRegistry combines bundled and
-validated managed packs; incomplete packs inherit from a declared parent and
-ultimately MAGI Legacy. The [pack contract](design/icon-pack-contract.md) fixes
-the normal UI canvas at 24×24 without cropping internal whitespace.
-`magi-default` is the partial built-in first-party pack and inherits missing
-roles from `magi-legacy`. Icon descriptors explicitly select `semantic` or
-`fixed` color mode. The shared Icon component applies semantic colors through
-the SVG's rendered alpha mask, retaining internal opacity; fixed mode preserves
-source RGB for future multicolor assets. Bundled, managed and individual assets
-continue through one resolver and the existing override/pack/fallback order.
+and nominal dimensions stay internal. IconRegistry loads bundled and installed
+manifests through the same bounded `assets.py` validator. IconResolver reads the
+selected pack's same-ID mapping, then the canonical MAGI Default mapping, then
+the bundled `missing.svg`. Unknown/malformed packs use the same chain.
+The default is `magi-default`; `magi-legacy` is an explicit alternate pack.
+There are no individual overrides, module pack selections or parent inheritance.
+The [pack contract](design/icon-pack-contract.md) retains 24×24 SVG validation,
+semantic alpha-mask tinting and explicit fixed-colour mode. Application icons
+remain owned by LauncherIcons and the system theme.
 
 A module can bind `expandedWidth`/`menuHeight` or call `requestGeometry(w,h)`.
 `SharedStatusSurface.retargetGeometry()` coalesces target changes and animates
@@ -516,8 +525,8 @@ ProfileHeader consumes explicit user profile data. Media wraps Quickshell MPRIS
 through one deterministic MediaController. The section keeps an intentional empty state when no suitable player
 exists; explicit region/layout settings still use same-view geometry retargeting. The duplicated battery
 summary has been removed. The initial Settings GUI and IconRegistry are
-implemented. AssetManager validates and copies avatars/SVG overrides into XDG-
-managed storage; bounded override UI covers an initial role subset. Host lifecycle,
+implemented. AssetManager validates and copies avatars and icon packs into XDG-
+managed storage. Host lifecycle,
 MenuController semantics, Network and other system services remain unchanged.
 
 ## Current presentation ownership and tokens — 2026-10-02

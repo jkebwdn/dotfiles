@@ -1,8 +1,9 @@
 # MAGI icon-pack contract
 
-Status: production contract introduced with settings schema v3 on 2026-09-28.
-MAGI Legacy remains the complete built-in fallback. This contract describes
-local installable packs; it is not an online package or trust system.
+Current Phase 10A contract (schema 13). Icon packs are the sole configurable
+source of MAGI shell control/status icons. Application icons continue through
+LauncherIcons/system icon-theme lookup. Select or install a pack in
+Settings → Appearance → Theme, beside the theme selector. There is no Icons page.
 
 ## UI asset contract
 
@@ -39,7 +40,6 @@ A pack is installed from a local JSON manifest next to its SVG files:
   "version": "1.0",
   "author": "Example",
   "description": "Optional metadata",
-  "parent": "magi-legacy",
   "roles": {
     "wifi": "wifi.svg",
     "profile-logo": {
@@ -62,29 +62,42 @@ file in the manifest directory. Installation validates and copies a pack into
 `~/.local/share/magi/icon-packs/`); QML never loads the original source path.
 An existing ID is not overwritten implicitly.
 
-Resolution remains:
+Resolution is selected pack's requested semantic ID → built-in `magi-default`
+for the **same ID** → `magi-default/missing.svg`. Unknown/malformed alternate packs
+use the default mapping. A malformed descriptor is treated as absent. An unreadable
+selected SVG retries the same default ID; an unreadable default asset terminates at
+the bundled placeholder. There is no normal question-mark text fallback.
 
-1. individual module/role override, then global role override;
-2. selected module pack, when configured;
-3. selected global pack;
-4. the selected pack's declared parent;
-5. MAGI Legacy and its neutral missing glyph.
+No arbitrary parent graph, module pack or individual override is consulted.
+Legacy `parent` fields are ignored on normalization. The `roles` keys are the
+supported-icon inventory; no duplicate list is needed. The generic placeholder is
+a 24×24 rounded square/cross SVG using the same semantic tint/opacity/alignment as
+other SVG icons. It remains available before the asynchronous pack inventory loads.
 
-An incomplete pack is therefore valid. Adding a future first-party MAGI SVG
-pack requires a manifest and assets, not edits to consuming controls.
+The optional `{ "text": "…", "font": "…" }` descriptor supports glyph packs
+(including MAGI Legacy) under the same contract. Text must be nonempty and at
+most eight characters; font names are bounded to 100 characters. No executable
+QML is accepted. Glyph rendering requires the named font; SVG packs are preferred.
 
 ## Built-in packs
 
-`magi-default` is MAGI's partial first-party SVG pack. Its bundled manifest and
-registry descriptors use semantic color mode and inherit missing roles from
-`magi-legacy`. `magi-legacy` remains the complete Nerd Font fallback. Bundled
-SVG files retain their exported 24×24 canvases byte-for-byte; MAGI does not trim
-them to visible path bounds.
+`icons/packs/registry.json` lists manifest paths. Both bundled packs and installed
+packs pass `assets.py:pack_manifest` and produce the same normalized role map
+and directory base URL. IconRegistry loads that inventory; IconResolver has no
+built-in-pack branch. Existing `formatVersion: 1` remains sufficient.
 
-## Current semantic action roles
+`magi-default` (MAGI Default) is the default first-party SVG pack. Its existing
+SVG artwork is unchanged. Previously inherited same-ID glyph descriptors (for
+example `battery-high`, `battery-unknown`, `settings`, `dnd`, `caffeine` and `lock`)
+are now explicit mappings in the default manifest. Thus the default itself is the
+fallback authority, with no runtime dependency on Legacy. These are the exact
+previously used glyphs, not newly chosen similar icons; no font outlines are copied.
+`reboot` explicitly maps to the existing bundled reboot SVG.
+`magi-legacy` remains an explicitly selectable glyph pack, never an implicit
+fallback. Built-in IDs cannot be shadowed by imported packs.
 
-The production vocabulary includes `power-saver`, `airplane-mode`, `vpn`,
-`dnd`, `caffeine`, `lock`, `hibernate` and `shutdown`, alongside the
-existing network, Bluetooth, volume, brightness, battery, settings, navigation
-and media roles. Until first-party SVG artwork exists, MAGI Legacy supplies
-Nerd Font fallback glyphs.
+Schema 12→13 retires `icons.overrides` and `icons.modulePacks` while preserving
+`icons.pack` and unrelated fields. The loader migrates in memory; loading alone
+never rewrites settings. The next normal save writes the migrated document.
+There is no individual SVG import/persistence API or override editor. Existing
+operator-managed old assets are not deleted from disk.

@@ -2,16 +2,25 @@ import QtQuick
 import QtQuick.Effects
 import "../../icons" as Icons
 import "../../theme" as Theme
-import "../../services" as Services
 Item {
     id: root
     property string role: "missing"
     property string moduleId: ""
     property real size: 16
     property color color: Theme.Theme.text
-    readonly property var resolved: Icons.IconRegistry.resolve(role, moduleId)
-    readonly property bool assetIcon: resolved.icon.kind === "svg"
-        || resolved.icon.kind === "managed" || resolved.icon.kind === "user"
+    readonly property var requested: Icons.IconRegistry.resolve(role)
+    readonly property var canonical: Icons.IconRegistry.resolve(role, true)
+    property int failureStage: 0
+    readonly property var resolved: failureStage === 0 ? requested : failureStage === 1 ? canonical
+        : ({icon: {kind: "placeholder", colorMode: "semantic"}})
+    onRequestedChanged: failureStage = 0
+    function recoverAsset() {
+        if (asset.status !== Image.Error || failureStage >= 2) return
+        failureStage = failureStage === 0 && (canonical.icon.kind === "glyph"
+            || (canonical.icon.kind === "managed" && canonical.icon.url !== requested.icon.url)) ? 1 : 2
+    }
+    readonly property url placeholderSource: Qt.resolvedUrl("../../icons/packs/magi-default/missing.svg")
+    readonly property bool assetIcon: (resolved.icon.kind === "managed" || resolved.icon.kind === "placeholder")
     readonly property bool semanticAsset: assetIcon
         && resolved.icon.colorMode !== "fixed"
     implicitWidth: size
@@ -19,8 +28,7 @@ Item {
     Text {
         anchors.centerIn: parent
         visible: root.resolved.icon.kind === "glyph"
-            || (root.assetIcon && asset.status === Image.Error)
-        text: asset.status === Image.Error ? "?" : root.resolved.icon.text || ""
+        text: root.resolved.icon.text || ""
         font.family: root.resolved.icon.font || Theme.Theme.fontFamily
         font.pixelSize: root.size
         color: root.color
@@ -29,9 +37,9 @@ Item {
         id: asset
         anchors.fill: parent
         visible: root.assetIcon && !root.semanticAsset && status !== Image.Error
-        source: root.resolved.icon.kind === "svg" ? Qt.resolvedUrl("../../icons/packs/" + root.resolved.icon.path)
-            : root.resolved.icon.kind === "managed" ? root.resolved.icon.url
-            : root.resolved.icon.kind === "user" ? Services.AssetManager.assetUrl(root.resolved.icon.assetId) : ""
+        source: root.resolved.icon.kind === "placeholder" ? root.placeholderSource
+            : root.assetIcon ? root.resolved.icon.url : ""
+        onStatusChanged: if (status === Image.Error) Qt.callLater(root.recoverAsset)
         sourceSize: Qt.size(root.size * 2, root.size * 2)
         fillMode: Image.PreserveAspectFit
     }

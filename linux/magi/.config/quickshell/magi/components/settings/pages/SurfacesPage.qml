@@ -56,11 +56,6 @@ SettingsUI.SettingsPage {
                 SettingsUI.SettingsButton { text: "Default"; onClicked: Services.Settings.setRoundness(parent.modelData.id, parent.modelData.id === "master" ? 1 : null) }
             }
         }
-        SettingsUI.VisualSettingsGroup {
-            collapsible: false
-            title: "Status icons"
-            numbers: [{key:"statusIconSize",label:"Status icon size",min:16,max:28,step:1}]
-        }
     }
     SettingsUI.SettingsButton { text: "Reset surface borders"; onClicked: {
         Services.Settings.setValue("appearance","surfaceBorders", Schema.defaults().appearance.surfaceBorders)

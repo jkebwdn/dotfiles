@@ -36,8 +36,8 @@ not canonical MAGI colors. S2 removed that bypass.
 Semantic icons, responsive configured Control Centre and the initial normal
 Settings window are now implemented. The [checkpoint](../research/settings-application-checkpoint.md)
 records the exact departures/limits and passed operator checklist. Stable keys
-and explicit actions implement the contract below; managed individual SVG
-overrides and local manifest-based packs are now implemented. Schema v3 adds
+and explicit actions implement the contract below. Phase 10A retains local
+manifest-based packs and retires the original individual SVG overrides. Schema v3 adds
 presentation-aware primary controls, sliders and secondary actions; see the
 [icon-pack contract](icon-pack-contract.md). S2 retargeting permits live open-view layout updates;
 password/pending sessions still defer them. The original audit remains historical.
@@ -99,7 +99,7 @@ not an installed configuration or an implemented validator.
 | Section | Fields / meaning |
 | --- | --- |
 | `appearance` | Stable `theme` ID; `roundness.master` and nullable `roundness.roles` overrides. |
-| `icons` | Global `pack`, module-ID → pack map, optional global/module role → asset overrides. Missing entries mean Default/inherit. |
+| `icons` | Selected `pack` only; missing roles use the same-ID MAGI Default mapping, then `missing.svg`. |
 | `bar` | Ordered `left`, `center`, `right` ID arrays. Omission hides a bar item, not its service/detail capability. |
 | `controlCentre` | Requested `columns`; ordered `controls` and `sliders` entries with stable instance `key`, module ID, `enabled` and supported `presentation`. |
 | Later `profile`, `media` | Add in their own migration when implemented; do not publish ineffective GUI settings now. Proposed shapes in section 8. |
@@ -264,58 +264,15 @@ Square–Reference–Rounder, with live sample controls and Default per role.
 Internal padding, baseline offsets, tiny gaps, font hierarchy, animation timings,
 exclusive zone and host mode are not first-release appearance controls.
 
-## 4. Semantic icons
+## 4. Semantic icons — Phase 10A supersedes the original proposal
 
-Add `IconRegistry.qml` plus `components/controls/Icon.qml`. Callers request a
-role and optional module ID, size and semantic tint; the resolver returns a
-descriptor, not a QML component path. The existing font glyphs become the first
-`magi-legacy` pack to avoid replacing artwork and APIs at once. Descriptors can
-be `{kind: "glyph", font, text}` or `{kind: "svg", assetId, tintable}` with
-consistent view-box/baseline metadata. No arbitrary SVG strings in module QML.
-
-Initial role vocabulary includes `wifi`, `wifi-low`, `wifi-off`,
-`bluetooth`, `bluetooth-connected`, `bluetooth-off`, `volume`, `volume-low`,
-`volume-muted`, `brightness`, `battery`, `battery-charging`, `settings`,
-`night-light`, `dnd`, `power-profile`, `media-play`, `media-pause`, `media-next`,
-`media-previous`, plus navigation roles. Roles reserve vocabulary, not unsupported
-features. Service presentation adapters choose state roles from existing state;
-do not rewrite Network operations to remove its legacy glyph accessor.
-
-Resolution, highest priority first:
-
-1. Individual module+role override, then global role override.
-2. Explicit module pack selection, if supplied by the user.
-3. Selected global pack's role.
-4. Module/core bundled default role, then a neutral missing-icon fallback.
-
-Thus global selection establishes the look, component choices refine it and
-individual overrides win. Missing variants may use a declared neutral base-role
-fallback, never imply a connected/full-battery state incorrectly. Unknown pack
-or missing asset yields a diagnostic and fallback, not a blank essential control.
-Default removes the relevant override and reveals inherited selection.
-
-Settings initially needs a pack selector and compact component/role override
-editor, not a gallery/browser. Bundled replacement choices use registry asset
-IDs. Override-map values are tagged descriptors: for example
-`{source:"bundled", pack:"magi-legacy", icon:"wifi"}` or
-`{source:"user", assetId:"user:sha256:<digest>"}`. Global overrides are keyed by
-role; module overrides are keyed first by module ID, then role. No override is
-represented by deleting the entry. Imported SVG uses the stable asset reference;
-do not serialize arbitrary executable paths.
-
-Proposed import boundary (a small tested helper when imports are implemented):
-local regular SVG only, explicit file selection, maximum 256KiB and bounded
-dimensions/element count; reject DTD/entities, scripts, foreignObject, external
-links/resources and animation. Permit a documented static shape/path/gradient
-subset, with only checked internal fragment references. Copy validated bytes to
-`$XDG_DATA_HOME/magi/icons/` (fallback `~/.local/share`), content-addressed and
-immutable; settings references that copy, not a moving source file. Never
-interpolate filenames into shell commands. Invalid/missing assets keep the last
-valid selection. Preserve supplied colors unless tintability is declared.
-Qt SVG rendering is not a general security sandbox: validator limits and rendering
-must be tested before exposing import. Assets are not deleted by Reset.
-Pack manifests carry attribution/license; do not redistribute existing font or
-third-party SVG assets without checking their individual license.
+Settings → Appearance → Theme owns the theme and icon-pack selectors and local
+manifest installation. No dedicated Icons page or individual override editor remains.
+The selected manifest maps semantic roles to assets. Missing IDs use the same ID
+from MAGI Default, then the real `missing.svg` placeholder.
+All built-in and alternate packs share the [manifest contract](icon-pack-contract.md).
+Application icons remain separate. Schema 13 retires old overrides on normal save,
+preserving pack selection and unrelated data without rewriting files at load time.
 
 ## 5. Proposed production structure and ownership
 
@@ -447,7 +404,7 @@ Initial pages only:
 
 1. **Appearance:** theme list, live swatch/control preview, global icon pack,
    master roundness and collapsed Advanced role controls; per-control and section
-   reset. Compact icon override editor may be a subpage once imports are tested.
+   reset. Icon-pack installation lives beside theme selection (Phase 10A).
 2. **Bar:** three ordered groups, enable/disable/move controls, available modules;
    initially buttons/selectors, drag/drop later. Explain that hiding a status item
    does not disable its device or remove its CC detail view.
@@ -509,7 +466,7 @@ into one change. S1/S2 authorization followed this spike; later stages remain pr
 | --- | --- | --- |
 | S1 Configuration core | Pure v0→v1 migration/default/validation functions, sole writer and compatibility accessors; no GUI or palette change. | Test both old palettes, missing/empty arrays, unknown keys, malformed/newer versions, reset, failed writes, watcher loops, rapid edits and external conflict using temp paths. Confirm backup/restore. Roll back code + original JSON. |
 | S2 Theme/appearance | Data registry, Mocha default and Catppuccin variants, Everforest mappings, semantic radius facade. Route sampled CC colors through Theme; keep geometry. | Validate complete role maps and contrast including Latte, live edits while opening/closing, reset/restart persistence; original lifecycle 44-step test plus 48px/log check. Screenshot review. Roll back facade/registry consumption; retain v1 core. |
-| S3 Icons | Registry + legacy glyph pack, incremental role consumption; then guarded SVG import/overrides. | Confirm identical initial glyphs, state semantics, missing font/pack/asset fallback, inheritance/reset and malformed asset rejection. No service-operation changes. Roll back Icon consumers independently. |
+| S3 Icons | Registry + legacy glyph pack, incremental role consumption; then validated manifest-based packs. | Confirm identical initial glyphs, state semantics, missing font/pack/asset fallback, placeholder/reset and malformed asset rejection. No service-operation changes. Roll back Icon consumers independently. |
 | S4 Module configuration | Stable view/session instances independent of bar placement; descriptor-driven CC and ordered controls; remove duplicated battery row. | Hide Wi-Fi/BT pills yet open their CC details; reorder across sections, columns 4/5/6/7/8+, narrow screen and empty lists. Test password/pending deferral, no duplicate owners, navigation/back, interruption, consumed dismissal, fullscreen and 48px. Bounded anchored fallback including hidden-detail anchor. Stop on lifetime/geometry blocker. Roll back this stage's registry/placement consumers to last accepted data. |
 | S5 Minimum Settings window | One normal desktop window, Appearance/Bar/CC pages, live changes and reset/save diagnostics. | Move/resize/close/reopen; only one window; normal desktop focus; no extra reservation; close window mid-save; external-file conflict; menu→Settings and password coexistence. Manual operator check. Window rollback does not remove configuration core. |
 | S6 Profile/media | Explicit user profile plus real MPRIS adapter/body section. Add schema migration only now. | Test no player, paused/multiple/disappearing players, missing capabilities/artwork, open-view height changes, no identity defaults. Real-player and geometry acceptance required. Roll back media/profile consumers + corresponding version backup if reverting schema code. |
@@ -528,10 +485,10 @@ The architecture is small enough to implement without a framework, but the
 implemented choices are multiplier-based roundness, the existing settings path,
 column cap 16 in the schema, legacy glyph pack identifier, idle deferral for bar
 placement and the real Control Centre pill as hidden-view fallback anchor.
-CC layout consumption, bounded SVG override assets, explicit profile and real
-MPRIS media are implemented. See the latest
-[checkpoint](../research/profile-media-icons-checkpoint.md). Module-specific icon
-override UI, real multi-player operator coverage and final morph work remain.
+CC layout consumption, manifest-based icon packs, explicit profile and real
+MPRIS media are implemented. The original
+[checkpoint](../research/profile-media-icons-checkpoint.md) is historical; Phase 10A
+retires the individual/module icon override work.
 
 Required future investigation is implementation-bounded: FileView failure/
 watcher/symlink tests, Qt SVG subset support, normal-window focus behavior,

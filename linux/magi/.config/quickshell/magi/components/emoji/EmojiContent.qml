@@ -62,9 +62,37 @@ Rectangle {
         ToolTip.visible: hovered
         ToolTip.text: "Ctrl + Left / Right changes category · Search spans all categories"
     }
+    Row {
+        id: recentRow
+        objectName: "emojiRecentRow"
+        x: 16; y: category.y + category.height + 8
+        width: parent.width - 32
+        height: visible ? root.cellSize : 0
+        visible: !root.service.query && recentRepeater.count > 0
+        Repeater {
+            id: recentRepeater
+            model: (root.service.recentEntries || []).slice(0, Math.min(10, root.columns))
+            Button {
+                required property var modelData
+                required property int index
+                width: recentRow.width / root.columns; height: root.cellSize - 4
+                Accessible.name: "Recent: " + modelData.name
+                text: modelData.emoji
+                font.family: "Noto Color Emoji"; font.pixelSize: root.preferences.emojiSize
+                background: Rectangle { radius: 8; color: parent.hovered ? Theme.Theme.elevated : "transparent" }
+                onClicked: { root.service.chooseRecent(index); root.focusSearch() }
+                ToolTip.visible: hovered; ToolTip.text: modelData.name
+            }
+        }
+    }
+    Rectangle {
+        x: 16; y: recentRow.y + recentRow.height
+        width: parent.width - 32; height: 1
+        visible: recentRow.visible; color: Theme.Theme.border
+    }
     GridView {
         id: grid
-        x: 16; y: category.y + category.height + 8; width: parent.width - 32
+        x: 16; y: recentRow.y + recentRow.height + (recentRow.visible ? 8 : 0); width: parent.width - 32
         height: Math.max(0, parent.height - y - 42)
         cellWidth: width / root.columns; cellHeight: root.cellSize
         clip: true; boundsBehavior: Flickable.StopAtBounds
@@ -102,7 +130,7 @@ Rectangle {
         Text {
             anchors.centerIn: parent; width: parent.width; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap
             visible: grid.count === 0
-            text: root.service.dataError || (root.service.query ? "No matching emoji" : root.service.category === "Recently Used" ? "Your recently used emoji will appear here" : "Loading emoji…")
+            text: root.service.dataError || (root.service.query ? "No matching emoji" : "Loading emoji…")
             color: Theme.Theme.subtext; font.family: Theme.Theme.fontFamily
         }
     }

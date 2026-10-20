@@ -5,7 +5,11 @@ import "../../.config/quickshell/magi/components/clipboard" as ClipboardUI
 ShellRoot {
     QtObject {
         id: mock
-        property var rows: [{id:"one",category:"text",preview:"<b>Literal sample</b>",timestamp:1,pinned:false,thumbnail:""},
+        signal entered()
+        signal resultsAccepted()
+        signal resultsReplacing()
+        property string renderedQuery: ""
+        property var rows: [{id:"one",category:"text",preview:"<b>Literal sample</b>",timestamp:3,pinned:false,thumbnail:""},
             {id:"two",category:"files",preview:"file:///harmless",timestamp:2,pinned:true,thumbnail:""}]
         property int count: rows.length
         property var preferences: ({enabled:true,persistHistory:false})
@@ -29,7 +33,7 @@ ShellRoot {
         onTriggered: {
             function check(value) { if (!value) throw new Error("Clipboard UI assertion") }
             function key(code, modifiers) { ui.navigate({key:code,modifiers:modifiers || 0,accepted:false}) }
-            ui.begin(); check(ui.selectedId === "one")
+            ui.begin(); ui.applyTop(); check(ui.selectedId === "one")
             key(Qt.Key_Down); check(ui.selectedId === "two")
             key(Qt.Key_Return); check(mock.result === "restore:two")
             key(Qt.Key_P, Qt.ControlModifier); check(mock.result === "pin:two")

@@ -44,6 +44,7 @@ Scope {
             else if (value === "clipboard") Clipboard.prepare()
             visited[value] = true
         }
+        if (value === "clipboard" && (!opened || mode !== value)) Clipboard.entered()
         mode = value
         opened = true
         publish()

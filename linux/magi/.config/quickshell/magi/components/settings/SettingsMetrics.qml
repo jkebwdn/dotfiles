@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 QtObject {
     // Settings geometry only; colours and radii remain owned by Theme.
+    readonly property int sidebarInset: 10
     readonly property int pagePadding: 24
     readonly property int gap: 16
     readonly property int compactGap: 8

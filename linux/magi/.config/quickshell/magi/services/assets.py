@@ -132,11 +132,6 @@ def validate_svg(data, canonical=True):
     return data
 
 
-def import_svg(value):
-    path = local_path(value)
-    return persist(validate_svg(path.read_bytes()), data_root() / "icons", "svg", "icon")
-
-
 def pack_manifest(value):
     path = local_path(value)
     if path.stat().st_size > PACK_MANIFEST_LIMIT:
@@ -147,14 +142,11 @@ def pack_manifest(value):
     if not isinstance(manifest, dict) or manifest.get("formatVersion") != 1:
         raise ValueError("Unsupported icon-pack manifest version")
     pack_id = manifest.get("id")
-    if not isinstance(pack_id, str) or not PACK_ID.fullmatch(pack_id) or pack_id == "magi-legacy":
+    if not isinstance(pack_id, str) or not PACK_ID.fullmatch(pack_id):
         raise ValueError("Icon-pack ID must be lowercase kebab-case")
     label = manifest.get("displayName")
     if not isinstance(label, str) or not label.strip() or len(label) > 80:
         raise ValueError("Icon pack needs a display name")
-    parent = manifest.get("parent", "magi-legacy")
-    if not isinstance(parent, str) or not PACK_ID.fullmatch(parent) or parent == pack_id:
-        raise ValueError("Invalid icon-pack parent")
     roles = manifest.get("roles")
     if not isinstance(roles, dict) or not roles or len(roles) > 256:
         raise ValueError("Icon pack needs 1–256 role mappings")
@@ -163,6 +155,12 @@ def pack_manifest(value):
     for role, descriptor in roles.items():
         if not isinstance(role, str) or not PACK_ID.fullmatch(role):
             raise ValueError("Icon roles must be lowercase kebab-case")
+        if isinstance(descriptor, dict) and "text" in descriptor:
+            text, font = descriptor["text"], descriptor.get("font", "sans-serif")
+            if not isinstance(text, str) or not text.strip() or len(text) > 8 or not isinstance(font, str) or len(font) > 100:
+                raise ValueError("Invalid glyph descriptor")
+            normalized_roles[role] = {"text": text, "font": font}
+            continue
         if isinstance(descriptor, str):
             filename, color_mode = descriptor, "semantic"
         elif isinstance(descriptor, dict):
@@ -180,7 +178,7 @@ def pack_manifest(value):
         checked[filename] = validate_svg(asset.read_bytes())
         normalized_roles[role] = {"asset": filename, "colorMode": color_mode}
     clean = {"formatVersion": 1, "id": pack_id, "displayName": label.strip(),
-             "parent": parent, "roles": normalized_roles}
+             "roles": normalized_roles}
     for field in ("author", "description", "version"):
         value = manifest.get(field, "")
         if value is not None and (not isinstance(value, str) or len(value) > 240):
@@ -191,6 +189,8 @@ def pack_manifest(value):
 
 def import_pack(value):
     manifest, assets = pack_manifest(value)
+    if manifest["id"] in ("magi-default", "magi-legacy"):
+        raise ValueError("Built-in icon-pack IDs are reserved")
     root = data_root() / "icon-packs"
     destination = root / manifest["id"]
     if destination.exists():
@@ -208,32 +208,22 @@ def import_pack(value):
 
 
 def list_packs():
+    # Built-in and installed packs pass identical validation and normalization.
     packs = []
+    bundled = Path(__file__).resolve().parents[1] / "icons/packs"
+    registry = json.loads((bundled / "registry.json").read_text())
+    manifests = [bundled / name for name in registry["manifests"]]
     root = data_root() / "icon-packs"
-    if root.is_dir():
-        for directory in sorted(root.iterdir()):
-            try:
-                manifest = json.loads((directory / "manifest.json").read_text())
-                if directory.name != manifest["id"]: continue
-                roles = {}
-                for role, descriptor in manifest["roles"].items():
-                    if isinstance(descriptor, str):
-                        filename, color_mode = descriptor, "semantic"
-                    elif isinstance(descriptor, dict):
-                        filename = descriptor.get("asset", "")
-                        color_mode = descriptor.get("colorMode", "semantic")
-                    else: continue
-                    if color_mode not in ("semantic", "fixed"):
-                        continue
-                    if (directory / filename).is_file():
-                        roles[role] = {"kind": "managed-svg", "path": filename,
-                                       "colorMode": color_mode}
-                packs.append({"id": manifest["id"], "label": manifest["displayName"],
-                    "author": manifest.get("author", ""), "description": manifest.get("description", ""),
-                    "version": manifest.get("version", ""), "parent": manifest.get("parent", "magi-legacy"),
-                    "baseUrl": directory.as_uri() + "/", "roles": roles, "modules": {}, "assets": {}})
-            except (OSError, KeyError, json.JSONDecodeError):
-                continue
+    if root.is_dir(): manifests += sorted(root.glob("*/manifest.json"))
+    seen = set()
+    for path in manifests:
+        try:
+            manifest, _ = pack_manifest(str(path))
+            if manifest["id"] in seen: continue
+            seen.add(manifest["id"])
+            packs.append(dict(manifest, label=manifest["displayName"], baseUrl=path.parent.as_uri() + "/"))
+        except (OSError, ValueError, TypeError, KeyError):
+            continue
     return {"packs": packs}
 
 
@@ -265,7 +255,6 @@ def cache_artwork(value):
 def perform(request):
     operation = request.get("op")
     if operation == "avatar": return import_image(request["url"])
-    if operation == "icon": return import_svg(request["url"])
     if operation == "icon-pack": return import_pack(request["url"])
     if operation == "pack-list": return list_packs()
     if operation == "artwork": return cache_artwork(request["url"])

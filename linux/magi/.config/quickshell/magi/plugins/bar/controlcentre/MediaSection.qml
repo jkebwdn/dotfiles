@@ -24,6 +24,7 @@ Rectangle {
             radius: Theme.Theme.radius("albumArt", 10, width, height)
             placeholder: "media-play"
             source: root.service.artworkUrl
+            progressColor: Theme.Theme.mediaProgressColor
             progress: root.service.available ? root.service.progress : -1
             borderColor: Theme.Theme.border
             borderWidth: Theme.Theme.visual.mediaProgressBorderWidth

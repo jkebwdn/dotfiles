@@ -18,3 +18,4 @@ SettingsDragHandle 1.0 SettingsDragHandle.qml
 SettingsReorderBoard 1.0 SettingsReorderBoard.qml
 SettingsContent 1.0 SettingsContent.qml
 SurfaceStyleSettings 1.0 SurfaceStyleSettings.qml
+SemanticPaletteSelector 1.0 SemanticPaletteSelector.qml

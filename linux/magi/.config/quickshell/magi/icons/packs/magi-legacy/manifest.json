@@ -1,0 +1,268 @@
+{
+  "formatVersion": 1,
+  "id": "magi-legacy",
+  "displayName": "MAGI Legacy",
+  "description": "Legacy glyph pack; missing semantic roles use MAGI Default.",
+  "roles": {
+    "profile": {
+      "text": "",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "calendar": {
+      "text": "",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "wifi": {
+      "text": "󰤨",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "wifi-high": {
+      "text": "󰤨",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "wifi-medium": {
+      "text": "󰤥",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "wifi-low": {
+      "text": "󰤢",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "wifi-weak": {
+      "text": "󰤟",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "wifi-off": {
+      "text": "󰤭",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "bluetooth": {
+      "text": "󰂯",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "bluetooth-connected": {
+      "text": "󰂱",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "bluetooth-off": {
+      "text": "󰂲",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "volume": {
+      "text": "󰕾",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "volume-low": {
+      "text": "󰕿",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "volume-medium": {
+      "text": "󰖀",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "volume-muted": {
+      "text": "󰖁",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "brightness": {
+      "text": "󰃟",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery": {
+      "text": "󰁹",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-charging": {
+      "text": "󰂄",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-unknown": {
+      "text": "󰂑",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-0": {
+      "text": "󰂎",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "settings": {
+      "text": "󰒓",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "night-light": {
+      "text": "󰖔",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "dnd": {
+      "text": "󰂛",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "notifications": {
+      "text": "󰂚",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "power-profile": {
+      "text": "󰓅",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "power-saver": {
+      "text": "󰌪",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "airplane-mode": {
+      "text": "󰀝",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "vpn": {
+      "text": "󰖂",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "caffeine": {
+      "text": "󰅶",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "lock": {
+      "text": "󰌾",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "hibernate": {
+      "text": "󰒲",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "shutdown": {
+      "text": "󰐥",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "reboot": {
+      "asset": "reboot.svg",
+      "colorMode": "semantic"
+    },
+    "media-play": {
+      "text": "󰐊",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "media-pause": {
+      "text": "󰏤",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "media-next": {
+      "text": "󰒭",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "media-previous": {
+      "text": "󰒮",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "back": {
+      "text": "󰁍",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "scan": {
+      "text": "󰑐",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "scanning": {
+      "text": "󰑓",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "connect": {
+      "text": "󰌘",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "disconnect": {
+      "text": "󰌙",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "clipboard": {
+      "text": "󰅌",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "pin": {
+      "text": "󰐃",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "delete": {
+      "text": "󰆴",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "image": {
+      "text": "󰋩",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "file": {
+      "text": "󰈔",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-10": {
+      "text": "󰁺",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-20": {
+      "text": "󰁻",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-30": {
+      "text": "󰁼",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-40": {
+      "text": "󰁽",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-50": {
+      "text": "󰁾",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-60": {
+      "text": "󰁿",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-70": {
+      "text": "󰂀",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-80": {
+      "text": "󰂁",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-90": {
+      "text": "󰂂",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "wifi-disconnected": {
+      "text": "󰤯",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "volume-high": {
+      "text": "󰕾",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-full": {
+      "text": "󰁹",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-high": {
+      "text": "󰂀",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-medium": {
+      "text": "󰁾",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "battery-low": {
+      "text": "󰁻",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "search": {
+      "text": "",
+      "font": "JetBrainsMono Nerd Font"
+    },
+    "apps": {
+      "text": "▦",
+      "font": "sans-serif"
+    },
+    "emoji": {
+      "text": "☺",
+      "font": "sans-serif"
+    }
+  }
+}

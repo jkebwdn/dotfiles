@@ -51,7 +51,7 @@ ShellRoot {
                 Services.Clipboard.query = "sample"
                 Services.Notifications.toggle(); test.exclusive("notifications")
                 Services.Clipboard.toggle(); test.exclusive("clipboard")
-                test.check(Services.Clipboard.query === "sample", "clipboard retains query")
+                test.check(Services.Clipboard.query === "", "fresh clipboard entry resets query")
                 Services.Clipboard.toggle(); test.check(!window.visible, "same-mode shortcut closes")
                 Services.Clipboard.opened = true; test.exclusive("clipboard")
                 Services.Clipboard.opened = false; test.check(!Services.Hub.opened, "legacy property close")

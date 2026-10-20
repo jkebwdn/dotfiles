@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import ".." as SettingsUI
+import QtQuick.Dialogs
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import "../../../services" as Services
@@ -30,14 +31,59 @@ SettingsUI.SettingsPage {
     }
     title: "Appearance"
     description: "Palette and shape changes preview immediately."
-    Label { text: "Theme"; font.bold: true }
-    SettingsUI.SettingsSelector {
-        Accessible.name: "Theme"
+    property int packRequest: 0
+    property string packError: ""
+    GridLayout {
+        objectName: "themeAndIconPack"
         Layout.fillWidth: true
-        model: Theme.ThemeRegistry.themes
-        textRole: "label"
-        currentIndex: Theme.ThemeRegistry.ids.indexOf(Services.Settings.data.appearance.theme)
-        onActivated: index => Services.Settings.setTheme(model[index].id)
+        columns: root.body.width >= 440 ? 2 : 1
+        columnSpacing: SettingsUI.SettingsMetrics.gap
+        ColumnLayout {
+            Layout.fillWidth: true; Layout.minimumWidth: 0
+            Label { text: "Theme"; font.bold: true }
+            SettingsUI.SettingsSelector {
+                Accessible.name: "Theme"
+                Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.maximumWidth: Infinity
+                model: Theme.ThemeRegistry.themes
+                textRole: "label"
+                currentIndex: Theme.ThemeRegistry.ids.indexOf(Services.Settings.data.appearance.theme)
+                onActivated: index => Services.Settings.setTheme(model[index].id)
+            }
+        }
+        ColumnLayout {
+            Layout.fillWidth: true; Layout.minimumWidth: 0
+            Label { text: "Icon Pack"; font.bold: true }
+            SettingsUI.SettingsSelector {
+                objectName: "iconPackSelector"
+                Accessible.name: "Icon Pack"
+                Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.maximumWidth: Infinity
+                model: Icons.IconRegistry.packs
+                textRole: "label"
+                currentIndex: model.findIndex(p => p.id === Services.Settings.data.icons.pack)
+                onActivated: index => Services.Settings.setIconPack(model[index].id)
+            }
+        }
+    }
+    SettingsUI.SettingsButton { text: "Install icon pack…"; onClicked: packDialog.open() }
+    SettingsUI.SettingsHelp {
+        text: root.packError || (!Icons.IconRegistry.packs.some(p => p.id === Services.Settings.data.icons.pack)
+            ? "Selected icon pack is unavailable; using MAGI Default." : "Shell icons follow this pack. Application icons use the system icon theme.")
+    }
+    SettingsUI.SettingsRow {
+        Label { text: "Media progress colour"; Layout.fillWidth: true }
+        SettingsUI.SemanticPaletteSelector {
+            Accessible.name: "Media progress colour"
+            role: Services.Settings.data.appearance.mediaProgressRole
+            onRoleSelected: value => Services.Settings.setValue("appearance", "mediaProgressRole", value)
+        }
+    }
+    SettingsUI.SettingsRow {
+        Label { text: "Hub toggle colour"; Layout.fillWidth: true }
+        SettingsUI.SemanticPaletteSelector {
+            Accessible.name: "Hub toggle colour"
+            role: Services.Settings.data.appearance.hubToggleRole
+            onRoleSelected: value => Services.Settings.setValue("appearance", "hubToggleRole", value)
+        }
     }
     RowLayout {
         Repeater {
@@ -241,25 +287,21 @@ SettingsUI.SettingsPage {
             onClicked: Services.ThemeOrchestrator.refresh()
         }
     }
-    Label { text: "Icon pack"; font.bold: true }
-    RowLayout {
-        SettingsUI.SettingsSelector {
-            Layout.fillWidth: true
-            model: Icons.IconRegistry.packs
-            textRole: "label"
-            currentIndex: Math.max(0, model.findIndex(p => p.id === Services.Settings.data.icons.pack))
-            onActivated: index => Services.Settings.setIconPack(model[index].id)
-        }
-        MagiControls.Icon { role: "wifi"; size: 24 }
-        MagiControls.Icon { role: "bluetooth"; size: 24 }
-        MagiControls.Icon { role: "volume"; size: 24 }
-        SettingsUI.SettingsButton { text: "Default"; onClicked: Services.Settings.setIconPack("magi-legacy") }
-    }
-    Label {
-        visible: !Icons.IconRegistry.packs.some(p => p.id === Services.Settings.data.icons.pack)
-        text: "Unknown icon pack; using MAGI Legacy."
-        color: Theme.Theme.warning
-    }
     SettingsUI.SettingsButton { flat: true; text: "Reset appearance"; onClicked: Services.Settings.resetSection("appearance") }
 
+
+    FileDialog {
+        id: packDialog
+        title: "Install a local MAGI icon-pack manifest"
+        nameFilters: ["JSON manifests (*.json)"]
+        onAccepted: { root.packError = ""; root.packRequest = Services.AssetManager.importIconPack(selectedFile) }
+    }
+    Connections {
+        target: Services.AssetManager
+        function onCompleted(requestId, operation, assetId, url, error) {
+            if (requestId !== root.packRequest || operation !== "icon-pack") return
+            root.packError = error
+            if (!error) Services.Settings.setIconPack(assetId.slice(5))
+        }
+    }
 }

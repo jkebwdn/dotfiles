@@ -27,7 +27,7 @@ ShellRoot {
                 content.navigate(Qt.Key_Right, 0); check(test.service.selected === 1, "right")
                 content.navigate(Qt.Key_Left, 0); check(test.service.selected === 0, "left")
                 content.navigate(Qt.Key_Right, Qt.ControlModifier)
-                check(test.service.category === "Recently Used" && test.service.query === "", "category")
+                check(test.service.category === test.service.categories[1] && test.service.query === "", "category")
                 test.service.query = "woman technologist medium skin tone"
                 check(test.service.results[0].emoji === "👩🏽‍💻", "complex match")
                 content.navigate(Qt.Key_Return, 0)
@@ -37,15 +37,15 @@ ShellRoot {
                 check(!test.service.opened && !test.service.error, "copy close")
                 check(Services.Settings.data.emoji.recents[0] === "1F469-1F3FD-200D-1F4BB", "recent")
                 test.service.open(); content.focusSearch()
-                check(content.searchField.activeFocus && test.service.category === "Recently Used", "reopen")
-                check(test.service.results[0].emoji === "👩🏽‍💻", "recent results")
+                check(content.searchField.activeFocus && test.service.category === "All", "reopen")
+                check(test.service.recentEntries[0].emoji === "👩🏽‍💻", "recent results")
                 Services.Settings.setValue("emoji", "closeOnSelect", false)
                 test.service.query = "fire"; test.service.choose(0)
                 break
             case 2:
                 if (test.service.busy) { test.step--; return }
                 check(test.service.opened && test.service.message.length > 0, "keep open")
-                test.service.choose(0)
+                test.service.query = ""; test.service.chooseRecent(0)
                 break
             case 3:
                 if (test.service.busy) { test.step--; return }

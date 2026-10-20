@@ -102,7 +102,7 @@ ShellRoot {
                 Services.SettingsWindowState.open(); wait(80)
                 const settings = window.content.currentContent
                 verify(Services.SettingsWindowState.shown)
-                for (const page of ["Appearance","Profile","Bar","Date & time","Control Centre","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Icons"]) {
+                for (const page of ["Appearance","Profile","Bar","Date & time","Control Centre","Notifications","Clipboard","Launcher","Emoji","Wallpaper"]) {
                     const sub = ({Bar:"bar", "Control Centre":"controlcentre"})[page]
                     if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
                     const nav = findChild(settings,sub ? "appearanceNav-" + sub : "settingsNav-"+page)

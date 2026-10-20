@@ -30,8 +30,8 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 12,
-        appearance: {navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
+    return {schemaVersion: 13,
+        appearance: {mediaProgressRole: "accent", hubToggleRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null}},
             surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, hubContent:true, hubSelector:true},
             notificationBorders: {role:"border", width:1, toasts:true, history:true, clipboard:true},
@@ -48,7 +48,7 @@ function defaults() {
                 secondaryOffOpacity: 0.6,
                 sliderTrack: "elevated", sliderFill: "overlay", sliderBorder: "lavender",
                 sliderBorderWidth: 2, avatarBorderWidth: 2}},
-        icons: {pack: "magi-legacy", modulePacks: {}, overrides: {global: {}, modules: {}}},
+        icons: {pack: "magi-default"},
         weather: {enabled: false, location: "", units: "metric"},
         profile: {greetingStyle: "compact", displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
         hub: {selectorPosition:"below", verticalPosition:2/3},
@@ -98,7 +98,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 12) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 13) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -116,10 +116,19 @@ function analyze(input) {
         if (!test) { errors.push(path + ": invalid value"); return clone(fallback) }
         return null
     }
+    // Retired fields are never part of effective runtime configuration.
+    delete effective.icons.overrides
+    delete effective.icons.modulePacks
     const a = effective.appearance
     if (typeof a.theme !== "string" || !a.theme.length) { valid(false, "appearance.theme", ""); a.theme = "catppuccin-mocha" }
 
     const semanticRoles = ["background","surface","elevated","overlay","text","subtext","muted","accent","blue","lavender","green","yellow","peach","red","teal","border"]
+    for (const key of ["mediaProgressRole", "hubToggleRole"]) {
+        if (["accent", "blue", "lavender", "green", "yellow", "peach", "red", "teal"].indexOf(a[key]) < 0) {
+            warnings.push("appearance." + key + ": using accent")
+            a[key] = "accent"
+        }
+    }
     for (const key of ["navigationAccent", "toggleStyle"]) {
         const values = key === "navigationAccent" ? semanticRoles : ["pill", "filled", "minimal"]
         if (values.indexOf(a[key]) < 0) { valid(false, "appearance." + key, null); a[key] = defaults().appearance[key] }
@@ -252,45 +261,7 @@ function analyze(input) {
         }
     }
     if (typeof effective.icons.pack !== "string" || !effective.icons.pack.length) {
-        valid(false, "icons.pack", ""); effective.icons.pack = "magi-legacy"
-    }
-    function validIconDescriptor(value) {
-        return object(value)
-            && (value.colorMode === undefined
-                || ["semantic", "fixed"].indexOf(value.colorMode) >= 0)
-            && (value.source === "user"
-            ? typeof value.assetId === "string" && /^icon:[a-f0-9]{64}\.svg$/.test(value.assetId)
-            : value.source === "bundled" && typeof value.pack === "string" && value.pack.length
-                && typeof value.icon === "string" && value.icon.length)
-    }
-    if (!object(effective.icons.modulePacks)) {
-        valid(false, "icons.modulePacks", {}); effective.icons.modulePacks = {}
-    } else for (const key of Object.keys(effective.icons.modulePacks)) {
-        if (!/^[a-z0-9-]+$/.test(key) || typeof effective.icons.modulePacks[key] !== "string") {
-            errors.push("icons.modulePacks." + key + ": invalid value"); delete effective.icons.modulePacks[key]
-        }
-    }
-    if (!object(effective.icons.overrides) || !object(effective.icons.overrides.global)
-            || !object(effective.icons.overrides.modules)) {
-        valid(false, "icons.overrides", {}); effective.icons.overrides = defaults().icons.overrides
-    } else {
-        for (const role of Object.keys(effective.icons.overrides.global)) {
-            if (!/^[a-z0-9-]+$/.test(role) || !validIconDescriptor(effective.icons.overrides.global[role])) {
-                errors.push("icons.overrides.global." + role + ": invalid value")
-                delete effective.icons.overrides.global[role]
-            }
-        }
-        for (const moduleId of Object.keys(effective.icons.overrides.modules)) {
-            const roles = effective.icons.overrides.modules[moduleId]
-            if (!/^[a-z0-9-]+$/.test(moduleId) || !object(roles)) {
-                errors.push("icons.overrides.modules." + moduleId + ": invalid value")
-                delete effective.icons.overrides.modules[moduleId]; continue
-            }
-            for (const role of Object.keys(roles)) if (!/^[a-z0-9-]+$/.test(role) || !validIconDescriptor(roles[role])) {
-                errors.push("icons.overrides.modules." + moduleId + "." + role + ": invalid value")
-                delete roles[role]
-            }
-        }
+        valid(false, "icons.pack", ""); effective.icons.pack = "magi-default"
     }
     function textField(section, key, maximum) {
         const value = effective[section][key]

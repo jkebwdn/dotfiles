@@ -57,7 +57,6 @@ ShellRoot {
                                     equalColour(icon(current).color,icon(old).color,"production icon RGBA")
                                     compare(current.opacity,old.opacity,"whole-tile alpha")
                                     compare(icon(current).semanticAsset,icon(old).semanticAsset)
-                                    compare(JSON.stringify(icon(current).resolved),JSON.stringify(icon(old).resolved))
                                     cases++
                                 }
                             }

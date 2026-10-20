@@ -125,15 +125,6 @@ Scope {
     }
     function setTheme(id) { return setValue("appearance", "theme", id) }
     function setIconPack(id) { return setValue("icons", "pack", id) }
-    function setIconOverride(role, assetId, moduleId, colorMode) {
-        const icons = Schema.clone(data.icons)
-        const target = moduleId ? (icons.overrides.modules[moduleId] || {}) : icons.overrides.global
-        if (assetId === null) delete target[role]
-        else target[role] = {source: "user", assetId: assetId,
-            colorMode: colorMode === "fixed" ? "fixed" : "semantic"}
-        if (moduleId) icons.overrides.modules[moduleId] = target
-        return setValue("icons", "overrides", icons.overrides)
-    }
     function setRoundness(role, value) {
         const roundness = Schema.clone(data.appearance.roundness)
         if (role === "master") roundness.master = value

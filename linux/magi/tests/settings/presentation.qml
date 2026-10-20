@@ -37,7 +37,7 @@ ShellRoot {
             try {
             Services.SettingsWindowState.shown = true
             wait(100)
-            const names = ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
+            const names = ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper"]
             for (const theme of ["catppuccin-mocha", "catppuccin-frappe", "everforest-dark-hard", "everforest-light-hard", "catppuccin-latte"]) {
                 Services.Settings.setTheme(theme)
                 for (const size of [Qt.size(720,500), Qt.size(940,720)]) {
@@ -70,7 +70,7 @@ ShellRoot {
                         if (!nav.hovered) compare(nav.background.color, sub ? Theme.Theme.elevated : "#00000000", "navigation levels have distinct selection")
                         checkControls(current.body, current)
                         if (Quickshell.env("MAGI_SETTINGS_CAPTURES")
-                                && ["Control Centre", "Icons", "Launcher", "Appearance"].indexOf(name) >= 0) {
+                                && ["Control Centre", "Launcher", "Appearance"].indexOf(name) >= 0) {
                             if (name === "Appearance") tryCompare(Services.ThemeOrchestrator, "busy", false)
                             wait(50)
                             const capture = grabImage(window.contentItem)
@@ -81,8 +81,8 @@ ShellRoot {
                     }
                 }
             }
-            Services.SettingsWindowState.page = "Surfaces"; wait(50)
-            const slider = findChild(page("Surfaces"), "visualSetting-statusIconSize")
+            Services.SettingsWindowState.page = "Bar"; wait(50)
+            const slider = findChild(page("Bar"), "visualSetting-statusIconSize")
             verify(slider.visible, "surface controls remain reachable")
             const iconSize = Services.Settings.data.appearance.visual.statusIconSize
             slider.forceActiveFocus(Qt.TabFocusReason); keyClick(Qt.Key_Right)

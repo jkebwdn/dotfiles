@@ -60,18 +60,9 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
         tile=old('plugins/bar/controlcentre/ControlTile.qml')
         tile=tile.replace('"../../../components/controls"','"../components/controls"').replace('"../../../theme"','"."')
         (reference/'ControlTile.qml').write_text(tile)
-        # Sharing the renderer is valid only while it and its registry/data are
-        # byte-for-byte equal to the known-good production implementation.
-        for name in ['components/controls/Icon.qml','icons/IconRegistry.qml']:
-            assert (root/'.config/quickshell/magi'/name).read_text() == old(name), name
-        # Phase 2C adds only the missing Legacy search glyph. Existing role data
-        # and the renderer must still match the immutable colour oracle exactly.
-        registry=json.loads((config/'icons/packs/registry.json').read_text())
-        registry['packs'][0]['roles'].pop('profile')
-        registry['packs'][0]['roles'].pop('calendar')
-        search=registry['packs'][0]['roles'].pop('search')
-        assert search == {'kind':'glyph','text':''}
-        assert registry == json.loads(old('icons/packs/registry.json'))
+        # Phase 10A replaces icon lookup. This oracle compares tile geometry and
+        # semantic RGBA supplied to the shared renderer, not resolver identity.
+        # tests/settings/icons.cjs independently covers the new manifest contract.
     if len(sys.argv) > 1 and sys.argv[1] == 'weather.qml':
         (config/'services/weather.py').rename(config/'services/weather_backend.py')
         shutil.copy(root/'tests/weather/fixture.py',config/'services/weather.py')

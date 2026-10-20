@@ -3,7 +3,7 @@
 This bounded fixture renders the real production `components/controls/Icon.qml`
 at 12, 16, 20 and 24 logical pixels. It covers narrow, full, complex and
 multi-opacity first-party SVGs, the three semantic foreground states and one
-role inherited from MAGI Legacy.
+previously inherited role now explicitly owned by MAGI Default.
 
 Run it independently from the shell:
 

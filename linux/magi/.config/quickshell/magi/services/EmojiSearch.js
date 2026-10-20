@@ -25,13 +25,9 @@ function fieldScore(field, token) {
     const at = field.indexOf(token)
     return at < 0 ? 0 : field[at - 1] === " " ? 65 : 45
 }
-function rank(entries, query, category, recents) {
+function rank(entries, query, category) {
     const normalized = normalize(query), tokens = normalized.split(" ").filter(Boolean)
     if (!tokens.length) {
-        if (category === "Recently Used") {
-            const byId = new Map(entries.map(e => [e.id, e]))
-            return (recents || []).map(id => byId.get(id)).filter(Boolean)
-        }
         return entries.filter(e => !category || category === "All" || e.group === category)
     }
     // Search deliberately spans every category. Unicode order breaks score ties.
@@ -50,3 +46,8 @@ function sequenceAt(results, index) {
     return Number.isInteger(index) && index >= 0 && index < results.length ? results[index].emoji : ""
 }
 function promote(recents, id, limit) { return [id].concat(recents.filter(value => value !== id)).slice(0, limit) }
+
+function recentEntries(entries, recents) {
+    const byId = new Map(entries.map(e => [e.id, e]))
+    return (recents || []).map(id => byId.get(id)).filter(Boolean)
+}

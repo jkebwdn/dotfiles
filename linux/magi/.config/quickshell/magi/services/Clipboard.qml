@@ -6,6 +6,9 @@ import Quickshell.Io
 
 Scope {
     id: root
+    signal entered()
+    signal resultsAccepted()
+    signal resultsReplacing()
     property bool activated: false
     property bool opened: false
     property bool fullscreen: false
@@ -72,8 +75,10 @@ Scope {
                 try {
                     const response = JSON.parse(data)
                     if (response.query === root.query) {
+                        root.resultsReplacing()
                         root.rows = response.rows || []
                         root.renderedQuery = response.query
+                        root.resultsAccepted()
                     }
                     root.count = response.count || 0
                     root.monitoring = response.monitoring === true

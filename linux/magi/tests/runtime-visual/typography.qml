@@ -43,7 +43,7 @@ ShellRoot {
                         compare(findChild(inactive,"settingsNavigationText").color,Theme.Theme.text)
                         Services.Hub.open("apps");wait(15)
                         const button=hub.content.modeButtons.itemAt(0)
-                        compare(findChild(button,"hubModeIcon").color,Theme.Theme.roles[role])
+                        compare(findChild(button,"hubModeIcon").color,Theme.Theme.hubToggleColor)
                         compare(findChild(button,"hubSelectionDot"),null)
                         Services.Hub.close()
                     }

@@ -4,6 +4,7 @@ import "../../theme" as Theme
 import "../../services" as Services
 Switch {
     id: root
+    property color activeColor: Theme.Theme.accent
     property bool indicatorOnRight: false
     readonly property string toggleStyle: Services.Settings.data.appearance.toggleStyle
     implicitWidth: 40
@@ -23,7 +24,7 @@ Switch {
             width: parent.width
             height: root.toggleStyle === "minimal" ? 6 : parent.height
             radius: Theme.Theme.radius("action", height / 2, width, height)
-            color: root.checked ? Theme.Theme.accent
+            color: root.checked ? root.activeColor
                 : root.hovered ? Theme.Theme.overlay : Theme.Theme.elevated
             border.width: root.checked ? 0 : 1
             border.color: Theme.Theme.border
@@ -34,7 +35,7 @@ Switch {
             x: root.checked ? parent.width - width - 3 : 3
             y: (parent.height - height) / 2
             radius: Theme.Theme.radius("action", width / 2, width, height)
-            color: root.checked ? (root.toggleStyle === "minimal" ? Theme.Theme.accent : Theme.Theme.accentText) : Theme.Theme.text
+            color: root.checked ? (root.toggleStyle === "minimal" ? root.activeColor : Theme.Theme.legibleInk(root.activeColor, Theme.Theme.accentText)) : Theme.Theme.text
             Behavior on x { NumberAnimation { duration: Theme.Motion.control } }
         }
         Rectangle {

@@ -13,6 +13,8 @@ QtObject {
     readonly property string iconPack: MagiServices.Settings.data.icons.pack
     readonly property var roundness: MagiServices.Settings.data.appearance.roundness
 
+    readonly property color mediaProgressColor: primaryAccent(MagiServices.Settings.data.appearance.mediaProgressRole, "accent")
+    readonly property color hubToggleColor: primaryAccent(MagiServices.Settings.data.appearance.hubToggleRole, "accent")
     readonly property color navigationAccent: roles[MagiServices.Settings.data.appearance.navigationAccent] || accent
     readonly property var visual: MagiServices.Settings.data.appearance.visual
     readonly property real statusIconSize: visual.statusIconSize

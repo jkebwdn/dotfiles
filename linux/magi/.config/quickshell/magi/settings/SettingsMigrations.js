@@ -101,5 +101,15 @@ function migrate(input) {
     }
     // New visual/retention fields are default-filled without rewriting v11 values.
     if (doc.schemaVersion === 11) doc.schemaVersion = 12
+    if (doc.schemaVersion === 12) {
+        if (doc.icons && typeof doc.icons === "object") {
+            delete doc.icons.overrides
+            delete doc.icons.modulePacks
+        }
+        doc.appearance = doc.appearance || {}
+        if (doc.appearance.mediaProgressRole === undefined) doc.appearance.mediaProgressRole = "accent"
+        if (doc.appearance.hubToggleRole === undefined) doc.appearance.hubToggleRole = "accent"
+        doc.schemaVersion = 13
+    }
     return doc
 }

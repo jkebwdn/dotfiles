@@ -42,7 +42,7 @@ FocusScope {
             Rectangle {
                 objectName: "settingsSidebar"
                 Layout.preferredWidth: 206
-                Layout.margins: 10
+                Layout.margins: SettingsMetrics.sidebarInset
                 Layout.fillHeight: true
                 color: Theme.Theme.elevated
                 radius: Theme.Theme.radius("surface", 11, width, height)
@@ -54,7 +54,6 @@ FocusScope {
                         MagiControls.Icon { role: "settings"; moduleId: "settings"; size: SettingsMetrics.iconSize }
                         Label { text: "MAGI"; font.pixelSize: 20; font.bold: true }
                     }
-                    Label { text: "Settings"; color: Theme.Theme.subtext; Layout.bottomMargin: 12 }
                     ScrollView {
                         id: navigationScroll
                         objectName: "settingsNavigation"
@@ -67,13 +66,13 @@ FocusScope {
                             width: parent.width
                             spacing: 2
                             Repeater {
-                                model: ["Appearance", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
+                                model: ["Appearance", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper"]
                                 SettingsNavigationItem {
                                     id: navigationButton
                                     required property string modelData
                                     objectName: "settingsNav-" + modelData
                                     Layout.fillWidth: true
-                                    iconRole: ({"Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image","Icons":"image"})[modelData]
+                                    iconRole: ({"Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image"})[modelData]
                                     text: modelData
                                     checked: modelData === "Appearance" ? Services.SettingsWindowState.inAppearance : Services.SettingsWindowState.page === modelData
                                     onClicked: Services.SettingsWindowState.page = modelData
@@ -92,13 +91,14 @@ FocusScope {
                         Layout.fillWidth: true
                         implicitHeight: statusColumn.implicitHeight + 16
                         radius: Theme.Theme.radius("action", 8, width, height)
-                        color: Theme.Theme.surface
+                        color: "transparent"
                         ColumnLayout {
                             id: statusColumn
                             anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; margins: 8 }
                             spacing: 6
                             Label {
                                 objectName: "settingsSaveStatus"
+                                horizontalAlignment: Text.AlignHCenter
                                 Layout.fillWidth: true
                                 textFormat: Text.PlainText; wrapMode: Text.Wrap
                                 maximumLineCount: 3; elide: Text.ElideRight
@@ -131,6 +131,7 @@ FocusScope {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 0
+                Layout.topMargin: Services.SettingsWindowState.inAppearance ? SettingsMetrics.sidebarInset : 0
                 Flow {
                     objectName: "appearanceNavigation"
                     visible: Services.SettingsWindowState.inAppearance
@@ -153,7 +154,7 @@ FocusScope {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Repeater {
-                        model: ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Icons"]
+                        model: ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper"]
                         Loader {
                             required property string modelData
                             property bool visited: false
@@ -173,7 +174,7 @@ FocusScope {
                                 : modelData === "Wallpaper" ? wallpaper
                                 : modelData === "Emoji" ? emoji
                                 : modelData === "Launcher" ? launcher
-                                : modelData === "Icons" ? icons : centre
+                                : centre
                         }
                     }
                 }
@@ -188,7 +189,6 @@ FocusScope {
     Component { id: calendar; Pages.CalendarPage {} }
     Component { id: bar; Pages.BarPage {} }
     Component { id: centre; Pages.ControlCentrePage { outputWidth: window.outputWidth } }
-    Component { id: icons; Pages.IconsPage {} }
     Component { id: notifications; Pages.NotificationsPage {} }
     Component { id: wallpaper; Pages.WallpaperPage {} }
     Component { id: emoji; Pages.EmojiPage {} }

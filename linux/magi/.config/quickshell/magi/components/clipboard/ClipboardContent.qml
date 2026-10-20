@@ -30,20 +30,66 @@ Pane {
         border.color: Theme.Theme.border; border.width: root.embedded ? 0 : 1
     }
     function focusSearch() { search.forceActiveFocus() }
+    property var browsingAnchor: null
+    function rememberViewport() {
+        if (resetPending || !visible || history.moving) return
+        const index = history.indexAt(1, history.contentY + 1)
+        const item = history.itemAtIndex(index)
+        browsingAnchor = item && service.rows[index]
+            ? {id: service.rows[index].id, offset: history.contentY - item.y, y: history.contentY} : null
+    }
+    function restoreViewport() {
+        if (!browsingAnchor || resetPending || history.moving) return
+        const anchor = browsingAnchor
+        browsingAnchor = null
+        history.forceLayout()
+        const index = service.rows.findIndex(row => row.id === anchor.id)
+        if (index >= 0) {
+            history.positionViewAtIndex(index, ListView.Beginning)
+            const item = history.itemAtIndex(index)
+            if (item) history.contentY = item.y + anchor.offset
+        } else history.contentY = Math.max(history.originY,
+            Math.min(anchor.y, history.originY + history.contentHeight - history.height))
+    }
+    property bool resetPending: false
+    property bool resetToNewest: false
+    property alias historyView: history
     function reconcile() {
         const found = service.rows.findIndex(e => e.id === selectedId)
-        select(found >= 0 ? found : Math.min(Math.max(0, selectedIndex), service.rows.length - 1))
+        selectedIndex = found >= 0 ? found : Math.min(Math.max(0, selectedIndex), service.rows.length - 1)
+        selectedId = selectedIndex >= 0 ? service.rows[selectedIndex].id : ""
     }
     function select(index) {
         selectedIndex = Math.max(-1, Math.min(index, service.rows.length - 1))
         selectedId = selectedIndex >= 0 ? service.rows[selectedIndex].id : ""
         if (selectedIndex >= 0) history.positionViewAtIndex(selectedIndex, ListView.Contain)
     }
+    function requestTop(newest = false) {
+        browsingAnchor = null
+        resetToNewest = newest
+        resetPending = true
+        selectedIndex = -1; selectedId = ""
+        Qt.callLater(applyTop)
+    }
+    function applyTop() {
+        if (!resetPending || service.query !== service.renderedQuery) return
+        history.forceLayout()
+        history.positionViewAtBeginning()
+        if (service.rows.length) {
+            let index = 0
+            if (resetToNewest) {
+                for (let i = 1; i < service.rows.length; i++)
+                    if (service.rows[i].timestamp > service.rows[index].timestamp) index = i
+            }
+            selectedIndex = index; selectedId = service.rows[index].id
+            history.positionViewAtIndex(index, ListView.Beginning)
+            resetPending = false
+        }
+        // Empty asynchronous results keep the entry/search reset pending.
+    }
     function begin() {
-        search.text = ""
         service.query = ""
-        selectedId = ""
-        reconcile()
+        requestTop(true)
         search.forceActiveFocus()
     }
     function navigate(event) {
@@ -61,7 +107,20 @@ Pane {
         event.accepted = true
     }
     Keys.onPressed: event => navigate(event)
-    Connections { target: root.service; function onRowsChanged() { root.reconcile() } }
+    Connections {
+        target: root.service
+        function onEntered() { root.begin() }
+        function onQueryChanged() { root.requestTop() }
+        function onResultsReplacing() { root.rememberViewport() }
+        function onResultsAccepted() {
+            if (root.resetPending) Qt.callLater(root.applyTop)
+            else Qt.callLater(root.restoreViewport)
+        }
+        function onRowsChanged() {
+            root.reconcile()
+            if (root.resetPending) Qt.callLater(root.applyTop)
+        }
+    }
     ColumnLayout {
         anchors.fill: parent
         spacing: 12
@@ -94,6 +153,7 @@ Pane {
             clip: true; spacing: 8
             boundsBehavior: Flickable.StopAtBounds
             model: root.service.rows
+            onMovementStarted: root.resetPending = false
             ScrollBar.vertical: ScrollBar {}
             delegate: Rectangle {
                 id: card

@@ -7,14 +7,11 @@ import "IconResolver.js" as Resolver
 import "IconState.js" as State
 Scope {
     id: root
-    readonly property var builtInRegistry: JSON.parse(data.text())
-    property var managedPacks: []
-    readonly property var registry: ({formatVersion: builtInRegistry.formatVersion,
-        packs: builtInRegistry.packs.concat(managedPacks)})
-    readonly property var packs: registry.packs
+    property var packs: []
+    readonly property var registry: ({packs: packs})
     property string packResponse: ""
-    function resolve(role, moduleId) {
-        return Resolver.resolve(registry, Services.Settings.data.icons, role, moduleId || "")
+    function resolve(role, skipSelected) {
+        return Resolver.resolve(registry, Services.Settings.data.icons, role, skipSelected)
     }
     function signalRole(strength) {
         return State.signalRole(strength)
@@ -25,7 +22,6 @@ Scope {
     function batteryRole(available, charging, percent) {
         return State.batteryRole(available, charging, percent)
     }
-    FileView { id: data; path: Qt.resolvedUrl("packs/registry.json"); blockLoading: true }
     function reloadManaged() {
         if (packWorker.running) return
         packResponse = ""
@@ -46,8 +42,8 @@ Scope {
         onExited: {
             try {
                 const result = JSON.parse(root.packResponse)
-                root.managedPacks = result.ok ? result.packs : []
-            } catch (exception) { root.managedPacks = [] }
+                root.packs = result.ok ? result.packs : []
+            } catch (exception) { root.packs = [] }
         }
     }
 }
