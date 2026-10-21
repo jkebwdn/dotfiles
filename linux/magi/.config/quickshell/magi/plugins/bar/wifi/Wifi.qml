@@ -37,7 +37,7 @@ MagiBar.ExpandableModule {
     color: sharedSurface ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion) : MagiTheme.Theme.surface
 
     function signalIcon(strength) { return Icons.IconRegistry.signalRole(strength) }
-    function updateScanning() { MagiServices.Network.setScanning(requestedOpen || connecting) }
+    function updateScanning() { MagiServices.Network.setScanning(requestedOpen || connecting, root) }
     function resetTransientState() {
         clearPassword()
         selectedNetwork = null
@@ -88,6 +88,7 @@ MagiBar.ExpandableModule {
         if (!requestedOpen) resetTransientState()
         updateScanning()
     }
+    Component.onDestruction: MagiServices.Network.setScanning(false, root)
     onSelectedNetworkChanged: clearPassword()
     onPendingNetworkChanged: updateScanning()
     Connections {

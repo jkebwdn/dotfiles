@@ -7,6 +7,9 @@ import "WorkspaceModel.js" as WorkspaceModel
 Rectangle {
     id: root
 
+    property var outputScreen: null
+    readonly property var outputMonitor: outputScreen ? Hyprland.monitorFor(outputScreen) : null
+    readonly property var activeWorkspace: outputMonitor ? outputMonitor.activeWorkspace : null
     // One continuous workspace chip, styled by MAGI's active palette.
     color: MagiTheme.Theme.surface
     radius: MagiTheme.Theme.barPillRadius
@@ -14,7 +17,6 @@ Rectangle {
     implicitWidth: workspaceRow.implicitWidth
     implicitHeight: MagiTheme.Theme.barPillHeight
 
-    Component.onCompleted: Hyprland.refreshWorkspaces()
 
     Row {
         id: workspaceRow
@@ -31,8 +33,8 @@ Rectangle {
                 required property var modelData
 
                 readonly property bool isActive:
-                    Hyprland.focusedWorkspace !== null
-                    && modelData.id === Hyprland.focusedWorkspace.id
+                    root.activeWorkspace !== null
+                    && modelData.id === root.activeWorkspace.id
 
                 implicitWidth: 28
                 implicitHeight: MagiTheme.Theme.barPillHeight

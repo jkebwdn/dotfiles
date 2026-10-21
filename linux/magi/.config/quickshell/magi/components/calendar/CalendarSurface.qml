@@ -27,11 +27,11 @@ BarUI.SharedStatusSurface {
     TransformWatcher { id: clockWatch; a: root.parent; b: root.clockItem }
     TransformWatcher { id: dateWatch; a: root.parent; b: root.dateItem }
     x: Math.max(Theme.Theme.barEdgeMargin, Math.min(origin.x, (parent ? parent.width : 1920) - width - Theme.Theme.barEdgeMargin))
-    y: origin.y
+    y: bottomUp ? origin.y + Theme.Theme.barPillHeight - height : origin.y
     visible: absorbed
     combined: true
     headerAlignment: Qt.AlignLeft
-    requestedModule: service.opened && anchorItem ? definition : null
+    requestedModule: presentationEnabled && service.opened && anchorItem ? definition : null
     modules: [definition]
     QtObject {
         id: definition
@@ -56,5 +56,5 @@ BarUI.SharedStatusSurface {
         }
     }
     // Every point in the inherited clock/date header remains a close target.
-    MouseArea { width: parent.width; height: root.headerHeight; z: 3; onClicked: root.service.close() }
+    MouseArea { y: root.bottomUp ? root.revealedHeight : 0; width: parent.width; height: root.headerHeight; z: 3; onClicked: root.service.close() }
 }

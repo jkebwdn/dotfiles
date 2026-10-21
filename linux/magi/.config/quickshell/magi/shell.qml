@@ -18,19 +18,20 @@ ShellRoot {
         Services.Wallpaper.initialize()
         Services.Weather.activate()
     }
-    NotificationsUI.FullscreenMonitor { id: fullscreen; screen: bar.screen }
+    NotificationsUI.FullscreenMonitor { id: fullscreen; screen: bars.mainScreen }
     Binding { target: Services.Notifications; property: "fullscreen"; value: fullscreen.suppressed }
-    Binding { target: Services.Calendar; property: "suppressed"; value: fullscreen.suppressed }
-    Binding { target: Services.Clipboard; property: "fullscreen"; value: fullscreen.suppressed }
-    Binding { target: Services.Notifications; property: "outputToastLimit"; value: Math.max(1, Math.floor(((bar.screen ? bar.screen.height : 1080) - 76) / 300)) }
-    NotificationsUI.ToastHost { screen: bar.screen; service: Services.Notifications; suppressed: fullscreen.suppressed }
-    Binding { target: Services.Hub; property: "suppressed"; value: fullscreen.suppressed }
+    NotificationsUI.FullscreenMonitor { id: menuFullscreen; screen: Services.SurfaceOrigin.menuTarget() }
+    Binding { target: Services.Calendar; property: "suppressed"; value: menuFullscreen.suppressed }
+    Binding { target: Services.Clipboard; property: "fullscreen"; value: hubFullscreen.suppressed }
+    Binding { target: Services.Notifications; property: "outputToastLimit"; value: Math.max(1, Math.floor(((bars.mainScreen ? bars.mainScreen.height : 1080) - 76) / 300)) }
+    NotificationsUI.ToastHost { screen: bars.mainScreen; service: Services.Notifications; suppressed: fullscreen.suppressed }
+    NotificationsUI.FullscreenMonitor { id: hubFullscreen; screen: Services.SurfaceOrigin.hubTarget() }
+    Binding { target: Services.Hub; property: "suppressed"; value: hubFullscreen.suppressed }
     // Shared utility host; backend lifetimes remain above.
-    HubUI.HubWindow { screen: bar.screen; readyToOpen: bar.settingsReady; previewSurface: bar.activeCombinedRegion }
-    SettingsUI.SettingsApplication {}
-    Bar.Bar {
-        id: bar
-        // Change to "anchored" to use the PopupWindow fallback.
-        expandableHostMode: "combined"
+    HubUI.HubWindow {
+        readyToOpen: !bars.hubBar || bars.hubBar.settingsReady
+        previewSurface: bars.hubBar ? bars.hubBar.activeCombinedRegion : null
     }
+    SettingsUI.SettingsApplication {}
+    Bar.BarFleet { id: bars }
 }

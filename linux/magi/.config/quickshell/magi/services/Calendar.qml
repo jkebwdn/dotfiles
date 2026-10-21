@@ -11,13 +11,14 @@ Scope {
         today: ClockState.today
         locale: ClockState.locale
     }
-    function open() {
+    function open(screen) {
+        SurfaceOrigin.menuScreen = screen || SurfaceOrigin.menuTarget()
         if (suppressed) return
         model.resetToday()
-        MenuController.open("calendar")
+        MenuController.open("calendar", screen)
     }
     function close() { if (opened) MenuController.close() }
-    function toggle() { if (opened) close(); else open() }
+    function toggle(screen) { if (opened && (!screen || SurfaceOrigin.menuTarget() === screen)) close(); else open(screen) }
     onSuppressedChanged: { if (suppressed) close() }
     onOpenedChanged: {
         if (opened) {

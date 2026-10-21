@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix='magi-calendar-bar-') as temporary:
     shutil.copytree(root/'.config/quickshell/magi',config)
     (config/'settings.json').write_text('{"schemaVersion":8,"bar":{"left":["clock","date"],"center":[],"right":["controlcentre"]}}')
     stubs['Battery'] += '\nproperty string statusText: \"Unavailable\"'
-    (config/'plugins/bar/workspaces/Workspaces.qml').write_text('import QtQuick\nItem { implicitWidth: 80; implicitHeight: 28 }')
+    (config/'plugins/bar/workspaces/Workspaces.qml').write_text('import QtQuick\nItem { property var outputScreen: null; implicitWidth: 80; implicitHeight: 28 }')
     for name,body in stubs.items():
         (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { id: root\n'+body+'\n}')
     # Offscreen Qt has no layer-shell backend. Adapt only the native wrapper;
@@ -26,7 +26,7 @@ with tempfile.TemporaryDirectory(prefix='magi-calendar-bar-') as temporary:
     source=path.read_text().replace('PanelWindow {','FloatingWindow {',1)
     start=source.index('    exclusiveZone:')
     end=source.index('    implicitHeight:',start)
-    source=source[:start]+"    property int exclusiveZone: fullSurface ? 48 : 0\n    implicitWidth: 1200\n"+source[end:]
+    source=source[:start]+"    property int exclusiveZone: fullSurface ? geometry.reservation : 0\n    implicitWidth: 1200\n"+source[end:]
     path.write_text(source)
     (config/'test.qml').write_text(Path(__file__).with_name('bar.qml').read_text().replace('../../.config/quickshell/magi/',''))
     runtime=stage/'runtime';runtime.mkdir(mode=0o700)

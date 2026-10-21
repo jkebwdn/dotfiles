@@ -30,7 +30,7 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 13,
+    return {schemaVersion: 14,
         appearance: {mediaProgressRole: "accent", hubToggleRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null}},
             surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, hubContent:true, hubSelector:true},
@@ -68,7 +68,7 @@ function defaults() {
         notifications: {retentionHours:6, enabled: true, toastsEnabled: true, dnd: false,
             fallbackTimeout: 5000, maxVisible: 3, historyLimit: 100,
             showBody: true, criticalBypassDnd: true},
-        bar: {left: ["clock", "date"], center: ["workspaces"],
+        bar: {position: "top", horizontalInset: 0, edgeOffset: 0, externalDisplays: false, left: ["clock", "date"], center: ["workspaces"],
             right: ["volume", "wifi", "bluetooth", "battery", "controlcentre"]},
         controlCentre: {columns: 4, actionColumns: 6, sections: {
             profile: true, quickControls: true, sliders: true, actions: true, media: true
@@ -98,7 +98,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 13) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 14) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -288,6 +288,17 @@ function analyze(input) {
     }
     if (["collapse", "minimal"].indexOf(effective.media.emptyState) < 0) {
         valid(false, "media.emptyState", "collapse"); effective.media.emptyState = "collapse"
+    }
+    for (const [key, maximum] of [["horizontalInset", 64], ["edgeOffset", 32]]) {
+        if (!Number.isInteger(effective.bar[key]) || effective.bar[key] < 0 || effective.bar[key] > maximum) {
+            valid(false, "bar." + key, 0); effective.bar[key] = 0
+        }
+    }
+    if (!["top", "bottom"].includes(effective.bar.position)) {
+        valid(false, "bar.position", "top"); effective.bar.position = "top"
+    }
+    if (typeof effective.bar.externalDisplays !== "boolean") {
+        valid(false, "bar.externalDisplays", false); effective.bar.externalDisplays = false
     }
     const seen = []
     for (const section of ["left", "center", "right"]) {

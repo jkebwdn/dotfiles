@@ -28,7 +28,7 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
     source = source.replace('id: root', 'id: root; objectName: "testWorkspaces"; property int testCurrent: 1', 1)
     source = source.replace('Component.onCompleted: Hyprland.refreshWorkspaces()', '')
     source = source.replace('Hyprland.workspaces.values', '[{id:1,name:"1"},{id:2,name:"2"},{id:3,name:"3"}]')
-    source = source.replace('Hyprland.focusedWorkspace !== null', 'true').replace('Hyprland.focusedWorkspace.id', 'root.testCurrent')
+    source = source.replace('outputScreen ? Hyprland.monitorFor(outputScreen) : null', '({activeWorkspace:{id:root.testCurrent}})')
     workspace.write_text(source)
     for name,body in stubs.items():
         (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { id: root\n'+body+'\n}')
@@ -36,11 +36,11 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
     # production bar content, masks and shared animation owners remain intact.
     path=config/'components/bar/Bar.qml'
     source=path.read_text()
-    assert 'exclusiveZone: fullSurface ? 48 : 0' in source
-    source=source.replace('PanelWindow {','FloatingWindow {',1)
+    assert 'exclusiveZone: fullSurface ? geometry.reservation : 0' in source
+    source=source.replace('PanelWindow {','FloatingWindow {',1).replace('        syncPlacement()', '        MagiServices.SurfaceOrigin.mainScreen = bar.outputScreen\n        syncPlacement()')
     start=source.index('    exclusiveZone:')
     end=source.index('    implicitHeight:',start)
-    source=source[:start]+"    property int exclusiveZone: fullSurface ? 48 : 0\n    implicitWidth: 1200\n"+source[end:]
+    source=source[:start]+"    property int exclusiveZone: fullSurface ? geometry.reservation : 0\n    implicitWidth: 1200\n"+source[end:]
     path.write_text(source)
     path=config/'components/hub/HubWindow.qml'
     source=path.read_text().replace('PanelWindow {','FloatingWindow {\n    implicitWidth: 1920; implicitHeight: 1080',1)

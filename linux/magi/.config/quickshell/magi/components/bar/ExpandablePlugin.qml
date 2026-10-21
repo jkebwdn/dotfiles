@@ -79,6 +79,7 @@ Rectangle {
     readonly property bool requestedOpen:
         menuId !== ""
         && MagiServices.MenuController.activeMenu === menuId
+        && (!barWindow || !barWindow.outputScreen || MagiServices.SurfaceOrigin.menuTarget() === barWindow.outputScreen)
     readonly property bool contentInteractive:
         hostMode === "combined" && requestedOpen && phase === 3
     readonly property var combinedMenuRegion:
@@ -387,7 +388,7 @@ Rectangle {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) root.secondaryTriggered()
-            else if (root.expandsOnClick) MagiServices.MenuController.toggle(root.menuId)
+            else if (root.expandsOnClick) MagiServices.MenuController.toggle(root.menuId, root.barWindow ? root.barWindow.outputScreen : null)
             else root.primaryTriggered()
         }
     }

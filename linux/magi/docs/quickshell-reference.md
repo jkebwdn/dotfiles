@@ -1,5 +1,22 @@
 # MAGI — Quickshell Technical Reference
 
+
+## Phase 10B — accepted and complete (2026-10-21)
+
+Optional external bars share the existing services. ShellScreen-keyed Variants,
+origin-scoped status/Calendar and singleton Hub routing, Top/Bottom, horizontal
+inset and edge offset are implemented with schema 14 defaults preserving the
+single top bar. Each enabled output reserves 48 + edgeOffset logical px. The operator confirmed the physical dual-output, hotplug and geometry checks.
+The operator accepted the standalone final state after leaving the office and
+authorized the exact Phase 10B commit/push; protected local state is excluded.
+[Architecture audit, policy, API evidence, tests, previews and vertical feasibility](design/phase10b-bar-multimonitor.md).
+The startup guard is applied; the correction auto-reload was clean. Main output
+prefers internal, then retained eligible main, then focused active output once,
+then connector-name order. Keyboard shortcuts target the focused enabled output
+without moving main; bar clicks retain their origin. The checkpoint records the initial live-reload incident
+and authorized one-key settings repair. Physical checklist results and the final standalone snapshot are recorded there.
+No lock/authentication, Hypridle or Phase 10C changes.
+
 Phase 10A fallback correction: selected pack → same-ID MAGI Default → bundled
 SVG placeholder. No parent inheritance or user overrides; [audit and previews](design/phase10a-icon-fallback.md).
 
@@ -9,7 +26,7 @@ Baseline `649326c77022bd400bf241336894102d50ff0616` was synchronized at `0 0`.
 MAGI Lock remains complete at production `magi-lock 0.1.0-3`; Hyprlock is retired,
 Hypridle remains. This milestone does not change lock/authentication architecture.
 Live review passed; Clipboard option B retains pinned-first ordering with newest-on-entry.
-Phase 10B/C remain deferred.
+Phase 10C remains deferred; Phase 10B now has a separate review checkpoint above.
 See [Phase 10A ownership, tests, previews and deferred work](design/phase10a.md).
 
 

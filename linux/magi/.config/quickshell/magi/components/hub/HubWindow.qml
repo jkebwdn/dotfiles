@@ -10,6 +10,7 @@ import "../../services" as Services
 
 PanelWindow {
     id: root
+    screen: Services.SurfaceOrigin.hubTarget()
     property bool readyToOpen: true
     property alias content: content
     property Item previewSurface: null

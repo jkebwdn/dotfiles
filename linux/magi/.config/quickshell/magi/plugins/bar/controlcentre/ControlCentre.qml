@@ -9,7 +9,7 @@ import "../../../modules" as Modules
 import "../../../icons" as Icons
 MagiBar.ExpandableModule {
     id: root
-    onSecondaryTriggered: Services.SettingsWindowState.open()
+    onSecondaryTriggered: Services.SettingsWindowState.open(barWindow ? barWindow.outputScreen : null)
     menuId: "controlcentre"
     icon: "settings"
     title: "Control Centre"

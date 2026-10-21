@@ -5,13 +5,14 @@ import "../../services" as Services
 import "../../theme" as Theme
 AbstractButton {
     id: root
+    property var outputScreen: null
     required property string mode
     objectName: "utilityPill-" + mode
     required property string label
     implicitWidth: 30
     implicitHeight: Theme.Theme.barPillHeight
     Accessible.name: label
-    onClicked: Services.Hub.toggle(mode)
+    onClicked: Services.Hub.toggle(mode, outputScreen)
     background: Rectangle {
         radius: Theme.Theme.barPillRadius
         color: root.hovered ? Theme.Theme.elevated : Theme.Theme.surface

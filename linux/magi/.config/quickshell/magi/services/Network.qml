@@ -57,10 +57,15 @@ QtObject {
         Networking.wifiEnabled = enabled
     }
 
-    function setScanning(enabled) {
-        if (wifiDevice !== null)
-            wifiDevice.scannerEnabled = enabled
+    property var scanOwners: []
+    function setScanning(enabled, owner) {
+        const key = owner || root
+        const next = scanOwners.filter(value => value !== key)
+        if (enabled) next.push(key)
+        scanOwners = next
+        if (wifiDevice !== null) wifiDevice.scannerEnabled = next.length > 0
     }
+    onWifiDeviceChanged: { if (wifiDevice !== null) wifiDevice.scannerEnabled = scanOwners.length > 0 }
 
     // Connection controls
 

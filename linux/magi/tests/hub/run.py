@@ -9,7 +9,7 @@ assert "SettingsWindow {" not in (source / "components/settings/SettingsApplicat
 assert "Loader {" not in (source / "components/settings/SettingsApplication.qml").read_text()
 assert "exclusionMode: ExclusionMode.Ignore" in (source / "components/hub/HubWindow.qml").read_text()
 assert "exclusiveZone:" not in (source / "components/hub/HubWindow.qml").read_text()
-assert "exclusiveZone: fullSurface ? 48 : 0" in (source / "components/bar/Bar.qml").read_text()
+assert "exclusiveZone: fullSurface ? geometry.reservation : 0" in (source / "components/bar/Bar.qml").read_text()
 launcher = (source / "components/launcher/LauncherContent.qml").read_text()
 assert not any(value in launcher for value in ("backgroundEnabled", "backgroundImage", "Esc to close", "Enter to open", " applications  "))
 for retired in ["launcher/LauncherWindow.qml", "emoji/EmojiWindow.qml", "clipboard/ClipboardWindow.qml", "notifications/NotificationCentre.qml"]:

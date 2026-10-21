@@ -11,6 +11,18 @@ Item {
     id: root
 
     property bool combined: false
+    property bool bottomUp: false
+    property bool presentationEnabled: true
+    // Origin changes discard the old presentation immediately, not a second close animation.
+    onPresentationEnabledChanged: if (!presentationEnabled) {
+        stopAnimations()
+        displayedModule = null
+        phase = 0
+        headerProgress = 0
+        revealedHeight = 0
+        contentOpacity = 0
+        animatedWidth = collapsedWidth
+    }
     property int headerAlignment: Qt.AlignRight
     property Component statusContent: null
     property var modules: []
@@ -33,7 +45,7 @@ Item {
         displayedModule ? displayedModule.expandedWidth : collapsedWidth)
     readonly property real targetHeight: displayedModule
         ? displayedModule.menuHeight : 0
-    readonly property bool requestedOpen: combined && requestedModule !== null
+    readonly property bool requestedOpen: combined && presentationEnabled && requestedModule !== null
     readonly property bool interactive: requestedOpen && phase === 3
         && !switchingView && displayedModule === requestedModule
     readonly property real expansion: combined ? headerProgress : 0
@@ -91,7 +103,7 @@ Item {
     }
 
     function syncSelection() {
-        if (!combined)
+        if (!combined || !presentationEnabled)
             return
         stopAnimations()
         switchingView = false
@@ -234,7 +246,7 @@ Item {
         id: statusLoader
         sourceComponent: root.statusContent
         x: root.headerAlignment === Qt.AlignLeft ? 12 * root.expansion : root.width - width - 12 * root.expansion
-        y: 8 * root.expansion
+        y: (root.bottomUp ? root.revealedHeight : 0) + 8 * root.expansion
         z: 2
         // Intrinsic row size stays independent of the growing surface.
         width: item ? item.implicitWidth : 0
@@ -243,7 +255,7 @@ Item {
 
     Controls.Icon {
         x: 10
-        y: 8 * root.expansion
+        y: (root.bottomUp ? root.revealedHeight : 0) + 8 * root.expansion
         z: 2
         width: 24
         height: MagiTheme.Theme.barPillHeight
@@ -262,7 +274,7 @@ Item {
     }
 
     Item {
-        y: root.headerHeight
+        y: root.bottomUp ? 0 : root.headerHeight
         width: root.width
         height: Math.max(0, root.revealedHeight)
         clip: true

@@ -50,6 +50,7 @@ Scope {
     property real viewRadius: MagiTheme.Theme.radiusMedium
     property color viewSurfaceColor: MagiTheme.Theme.surface
     readonly property bool requestedOpen: Services.MenuController.activeMenu === menuId
+        && (!barWindow || !barWindow.outputScreen || Services.SurfaceOrigin.menuTarget() === barWindow.outputScreen)
     readonly property int phase: sharedSurface ? sharedSurface.phase
         : pill ? pill.phase : fallbackPill ? fallbackPill.phase : 0
 }

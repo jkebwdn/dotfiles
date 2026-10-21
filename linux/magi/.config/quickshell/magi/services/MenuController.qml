@@ -12,14 +12,15 @@ QtObject {
     property var history: []
     readonly property bool canGoBack: history.length > 0
 
-    function toggle(menuId) {
-        if (activeMenu === menuId)
+    function toggle(menuId, screen) {
+        if (activeMenu === menuId && (!screen || SurfaceOrigin.menuTarget() === screen))
             close()
         else
-            open(menuId)
+            open(menuId, screen)
     }
 
-    function open(menuId) {
+    function open(menuId, screen) {
+        SurfaceOrigin.menuScreen = screen || SurfaceOrigin.menuTarget()
         history = []
         activeMenu = menuId
     }

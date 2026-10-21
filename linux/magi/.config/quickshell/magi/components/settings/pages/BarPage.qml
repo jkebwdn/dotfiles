@@ -34,6 +34,39 @@ SettingsUI.SettingsPage {
         const index = Services.Settings.data.bar[lane].indexOf(id)
         if (index >= 0 && index !== position) Services.Settings.moveBar(lane, index, position - index)
     }
+    Label { font.bold: true; text: "Bar placement" }
+    SettingsUI.SettingsRow {
+        Label { text: "Position"; Layout.fillWidth: true }
+        SettingsUI.SettingsSelector {
+            objectName: "barPosition"
+            model: ["Top", "Bottom"]
+            currentIndex: Services.Settings.data.bar.position === "bottom" ? 1 : 0
+            onActivated: Services.Settings.setValue("bar", "position", currentIndex === 1 ? "bottom" : "top")
+        }
+    }
+    Repeater {
+        model: [{key:"horizontalInset", label:"Horizontal inset (px)", maximum:64},
+            {key:"edgeOffset", label:"Edge offset (px)", maximum:32}]
+        SettingsUI.SettingsRow {
+            required property var modelData
+            Label { text: parent.modelData.label; Layout.fillWidth: true }
+            SettingsUI.SettingsNumber {
+                readonly property var option: parent.modelData
+                objectName: option.key
+                from: 0; to: option.maximum; stepSize: 1
+                value: Services.Settings.data.bar[option.key]
+                onValueModified: Services.Settings.setValue("bar", option.key, value)
+            }
+        }
+    }
+    Label { font.bold: true; text: "Multi-monitor" }
+    SettingsUI.SettingsToggle {
+        objectName: "externalBars"
+        text: "Show bar on external displays"
+        checked: Services.Settings.data.bar.externalDisplays
+        onClicked: Services.Settings.setValue("bar", "externalDisplays", checked)
+    }
+    SettingsUI.SettingsHelp { text: "Distances use logical pixels. Each bar reserves 48 px plus its edge offset at the selected edge. On narrow outputs the inset shrinks, then workspace and left modules hide to keep status controls usable." }
     SettingsUI.VisualSettingsGroup {
         collapsible: false
         title: "Status icons"

@@ -34,7 +34,9 @@ Scope {
         if (visible) open(value)
         else if (opened && mode === value) close()
     }
-    function open(value) {
+    function open(value, screen) {
+        if (!modes.includes(value)) return
+        SurfaceOrigin.hubScreen = screen || (MenuController.activeMenu ? SurfaceOrigin.menuTarget() : SurfaceOrigin.hubTarget())
         if (!available(value)) { publish(); return }
         if (value !== "settings" || !SettingsWindowState.controlCentrePreview) MenuController.close()
         if (!opened) visited = ({})
@@ -54,17 +56,19 @@ Scope {
         publish()
     }
     function closeMode(value) { if (opened && mode === value) close() }
-    function toggle(value) { if (opened && mode === value) close(); else open(value) }
+    function toggle(value, screen) { if (opened && mode === value && (!screen || SurfaceOrigin.hubTarget() === screen)) close(); else open(value, screen) }
     // Fullscreen temporarily suppresses presentation without dismissing the session.
     Connections {
         target: MenuController
         function onActiveMenuChanged() { if (MenuController.activeMenu && !(root.opened && root.mode === "settings"
                 && SettingsWindowState.controlCentrePreview && MenuController.activeMenu === "controlcentre")) root.close() }
     }
+    function openFromShortcut(value) { root.open(value, SurfaceOrigin.shortcutTarget()) }
+    function toggleFromShortcut(value) { root.toggle(value, SurfaceOrigin.shortcutTarget()) }
     IpcHandler {
         target: "hub"
-        function open(mode: string): void { root.open(mode) }
-        function toggle(mode: string): void { root.toggle(mode) }
+        function open(mode: string): void { root.openFromShortcut(mode) }
+        function toggle(mode: string): void { root.toggleFromShortcut(mode) }
         function close(): void { root.close() }
         function status(): string { return JSON.stringify({opened:root.opened, mode:root.mode, suppressed:root.suppressed}) }
     }

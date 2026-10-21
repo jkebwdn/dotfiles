@@ -5,7 +5,6 @@ import QtQuick
 
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Io
 
 import "../../plugins/bar/clock" as ClockPlugin
 import "../../plugins/bar/date" as DatePlugin
@@ -15,10 +14,22 @@ import "../../modules" as Modules
 import "../../services" as MagiServices
 import "../../theme" as MagiTheme
 import "../calendar" as CalendarUI
+import "OutputPolicy.js" as OutputPolicy
 
 PanelWindow {
     id: bar
 
+    property var outputScreen: screen
+    readonly property bool ownsMenu: !outputScreen || MagiServices.SurfaceOrigin.menuTarget() === outputScreen
+    readonly property bool bottomBar: MagiServices.Settings.data.bar.position === "bottom"
+    readonly property real minimumBarWidth: Math.max(
+        leftSection.implicitWidth + statusSurface.collapsedWidth + 3 * MagiTheme.Theme.barEdgeMargin,
+        2 * Math.max(leftSection.implicitWidth, statusSurface.collapsedWidth) + centerSection.implicitWidth + 4 * MagiTheme.Theme.barEdgeMargin)
+    readonly property var geometry: OutputPolicy.geometry(width, height,
+        MagiServices.Settings.data.bar.horizontalInset, MagiServices.Settings.data.bar.edgeOffset,
+        bottomBar, minimumBarWidth)
+    readonly property alias statusPresentation: statusSurface
+    readonly property real barY: geometry.y
     // Set to "anchored" to retain the native 48px bar and PopupWindow host.
     property string expandableHostMode: "anchored"
 
@@ -31,16 +42,16 @@ PanelWindow {
     readonly property bool settingsReady: statusSurface.phase === 0 && calendarSurface.phase === 0 && !MagiServices.Calendar.opened && !registry.interactionBusy && !registry.presentationBusy
     readonly property var expandablePillRegistry: registry.modules
     readonly property bool combinedMode: expandableHostMode === "combined"
-    readonly property var activeExpandablePill: combinedMode
+    readonly property var activeExpandablePill: combinedMode && ownsMenu
         && registry.modules[MagiServices.MenuController.activeMenu]?.expandsOnClick
         ? registry.modules[MagiServices.MenuController.activeMenu] : null
-    readonly property bool combinedMenuActive: activeExpandablePill !== null || MagiServices.Calendar.opened
-    readonly property bool fullSurface: combinedMode || MagiServices.Calendar.opened || calendarSurface.absorbed
+    readonly property bool combinedMenuActive: activeExpandablePill !== null || (ownsMenu && MagiServices.Calendar.opened)
+    readonly property bool fullSurface: combinedMode || (ownsMenu && MagiServices.Calendar.opened) || calendarSurface.absorbed
     property Item clockAnchor: null
     property Item dateAnchor: null
     function toggleCalendar(item) {
-        if (!MagiServices.Calendar.opened) calendarSurface.anchorItem = item
-        MagiServices.Calendar.toggle()
+        calendarSurface.anchorItem = item
+        MagiServices.Calendar.toggle(bar.outputScreen)
     }
     readonly property Item activeCombinedRegion:
         combinedMode && statusSurface.revealedHeight > 0 ? statusSurface : null
@@ -48,7 +59,7 @@ PanelWindow {
         && MagiServices.MenuController.activeMenu === "controlcentre"
     readonly property bool catcherEnabled: combinedMenuActive && !previewPinned
     readonly property bool combinedKeyboardEnabled:
-        MagiServices.Calendar.opened || (activeExpandablePill !== null && activeExpandablePill.menuKeyboardFocus)
+        (ownsMenu && MagiServices.Calendar.opened) || (activeExpandablePill !== null && activeExpandablePill.menuKeyboardFocus)
 
     function closeActiveCombinedMenu() {
         if (combinedMenuActive && !previewPinned)
@@ -73,7 +84,7 @@ PanelWindow {
         }
     }
 
-    exclusiveZone: fullSurface ? 48 : 0
+    exclusiveZone: fullSurface ? geometry.reservation : 0
     exclusionMode: fullSurface
         ? ExclusionMode.Normal
         : ExclusionMode.Auto
@@ -83,7 +94,8 @@ PanelWindow {
         : WlrKeyboardFocus.None
 
     anchors {
-        top: true
+        top: !bar.bottomBar
+        bottom: bar.bottomBar
         left: true
         right: true
     }
@@ -94,19 +106,12 @@ PanelWindow {
     color: "transparent"
     mask: fullSurface ? combinedInputMask : null
 
-    IdleInhibitor {
-        enabled: MagiServices.Caffeine.requested
-        window: bar
-    }
-    Component.onDestruction: MagiServices.Caffeine.bound = false
-
     // ---------------------------------------------------------
     // Enabled plugins and positions
     // ---------------------------------------------------------
 
     property var placement: ({left: [], center: [], right: []})
     Component.onCompleted: {
-        MagiServices.Caffeine.bound = true
         syncPlacement()
     }
     readonly property var leftPlugins: placement.left
@@ -161,8 +166,8 @@ PanelWindow {
         "controlcentre": controlCentreComponent
     })
 
-    Component { id: notificationsComponent; UtilityPill { mode: "notifications"; label: "Notifications" } }
-    Component { id: clipboardComponent; UtilityPill { mode: "clipboard"; label: "Clipboard" } }
+    Component { id: notificationsComponent; UtilityPill { outputScreen: bar.outputScreen; mode: "notifications"; label: "Notifications" } }
+    Component { id: clipboardComponent; UtilityPill { outputScreen: bar.outputScreen; mode: "clipboard"; label: "Clipboard" } }
 
     Component {
         id: clockComponent
@@ -191,7 +196,7 @@ PanelWindow {
     Component {
         id: workspacesComponent
 
-        WorkspacePlugin.Workspaces {}
+        WorkspacePlugin.Workspaces { outputScreen: bar.outputScreen }
     }
 
     Component {
@@ -226,53 +231,52 @@ PanelWindow {
         ModulePill { module: registry.modules.controlcentre }
     }
 
-    IpcHandler {
-        target: "magi"
-        function status(): string {
-            const phases = {}
-            for (const id of Object.keys(registry.modules)) phases[id] = registry.modules[id].phase
-            return JSON.stringify({mode: bar.expandableHostMode,
-                modules: Object.keys(registry.modules),
-                pills: Object.keys(registry.modules).filter(id => registry.modules[id].pill !== null),
-                active: MagiServices.MenuController.activeMenu,
-                phase: statusSurface.phase, catcher: bar.catcherEnabled,
-                keyboard: bar.combinedKeyboardEnabled,
-                width: bar.width, height: bar.height, reservation: bar.exclusiveZone,
-                viewWidth: statusSurface.width, viewHeight: statusSurface.height,
-                interactive: statusSurface.interactive,
-                theme: MagiTheme.Theme.effectiveTheme, themeDiagnostic: MagiTheme.Theme.diagnostic,
-                surfaceColor: MagiTheme.Theme.surface.toString(),
-                pillRadius: MagiTheme.Theme.barPillRadius,
-                calendar: {opened:MagiServices.Calendar.opened, phase:calendarSurface.phase,
-                    absorbed:calendarSurface.absorbed, x:calendarSurface.x, y:calendarSurface.y,
-                    width:calendarSurface.width, height:calendarSurface.height,
-                    clockOpacity:bar.clockAnchor ? bar.clockAnchor.opacity : -1,
-                    dateOpacity:bar.dateAnchor ? bar.dateAnchor.opacity : -1},
-                modulePhases: phases})
-        }
-        function open(view: string): bool {
-            if (view === "calendar") {
-                const anchor = bar.clockAnchor || bar.dateAnchor
-                if (!anchor) return false
-                calendarSurface.anchorItem = anchor
-                MagiServices.Calendar.open()
-                return MagiServices.Calendar.opened
-            }
-            if (!registry.modules[view] || !registry.modules[view].expandsOnClick) return false
-            MagiServices.MenuController.open(view)
-            return true
-        }
-        function toggle(view: string): void {
-            if (MagiServices.MenuController.activeMenu === view) MagiServices.MenuController.close()
-            else open(view)
-        }
-        function close(): void { MagiServices.MenuController.close() }
+    function status(): string {
+        const phases = {}
+        for (const id of Object.keys(registry.modules)) phases[id] = registry.modules[id].phase
+        return JSON.stringify({mode: bar.expandableHostMode,
+            modules: Object.keys(registry.modules),
+            pills: Object.keys(registry.modules).filter(id => registry.modules[id].pill !== null),
+            active: MagiServices.MenuController.activeMenu,
+            phase: statusSurface.phase, catcher: bar.catcherEnabled,
+            keyboard: bar.combinedKeyboardEnabled,
+            width: bar.width, height: bar.height, reservation: bar.exclusiveZone,
+            viewWidth: statusSurface.width, viewHeight: statusSurface.height,
+            interactive: statusSurface.interactive,
+            theme: MagiTheme.Theme.effectiveTheme, themeDiagnostic: MagiTheme.Theme.diagnostic,
+            surfaceColor: MagiTheme.Theme.surface.toString(),
+            pillRadius: MagiTheme.Theme.barPillRadius,
+            calendar: {opened:MagiServices.Calendar.opened, phase:calendarSurface.phase,
+                absorbed:calendarSurface.absorbed, x:calendarSurface.x, y:calendarSurface.y,
+                width:calendarSurface.width, height:calendarSurface.height,
+                clockOpacity:bar.clockAnchor ? bar.clockAnchor.opacity : -1,
+                dateOpacity:bar.dateAnchor ? bar.dateAnchor.opacity : -1},
+            modulePhases: phases})
     }
+    function open(view: string): bool {
+        if (view === "calendar") {
+            const anchor = bar.clockAnchor || bar.dateAnchor
+            if (!anchor) return false
+            calendarSurface.anchorItem = anchor
+            MagiServices.Calendar.open(bar.outputScreen)
+            return MagiServices.Calendar.opened
+        }
+        if (!registry.modules[view] || !registry.modules[view].expandsOnClick) return false
+        MagiServices.MenuController.open(view, bar.outputScreen)
+        return true
+    }
+    function toggle(view: string): void {
+        if (ownsMenu && MagiServices.MenuController.activeMenu === view) MagiServices.MenuController.close()
+        else open(view)
+    }
+    function close(): void { MagiServices.MenuController.close() }
 
     CalendarUI.CalendarSurface {
         id: calendarSurface
         objectName: "calendarSurface"
         service: MagiServices.Calendar
+        presentationEnabled: bar.ownsMenu
+        bottomUp: bar.bottomBar
         clockItem: bar.clockAnchor
         dateItem: bar.dateAnchor
         z: 20
@@ -296,12 +300,9 @@ PanelWindow {
     Rectangle {
         id: barStrip
 
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
-
+        x: bar.geometry.inset
+        y: bar.barY
+        width: bar.geometry.width
         height: 48
         z: 9
         color: "transparent"
@@ -313,6 +314,8 @@ PanelWindow {
 
     Row {
         id: leftSection
+        opacity: bar.geometry.width >= implicitWidth + statusSurface.collapsedWidth + 3 * MagiTheme.Theme.barEdgeMargin ? 1 : 0
+        enabled: opacity > 0
 
         anchors {
             left: barStrip.left
@@ -349,6 +352,8 @@ PanelWindow {
         id: centerSection
 
         anchors.centerIn: barStrip
+        opacity: bar.geometry.width >= 2 * Math.max(leftSection.implicitWidth, statusSurface.collapsedWidth) + implicitWidth + 4 * MagiTheme.Theme.barEdgeMargin ? 1 : 0
+        enabled: opacity > 0
 
         spacing: MagiTheme.Theme.barSectionSpacing
         z: 10
@@ -377,8 +382,13 @@ PanelWindow {
 
     SharedStatusSurface {
         id: statusSurface
-        x: bar.width - MagiTheme.Theme.barEdgeMargin - width
-        y: (48 - MagiTheme.Theme.barPillHeight) / 2
+        x: Math.max(0, bar.width - bar.geometry.inset - MagiTheme.Theme.barEdgeMargin - width)
+        y: bar.bottomBar ? bar.barY + (48 + MagiTheme.Theme.barPillHeight) / 2 - height
+            : bar.barY + (48 - MagiTheme.Theme.barPillHeight) / 2
+        transformOrigin: Item.TopRight
+        scale: phase === 0 ? Math.min(1, Math.max(0, bar.geometry.width - 2 * MagiTheme.Theme.barEdgeMargin) / Math.max(1, collapsedWidth)) : 1
+        bottomUp: bar.bottomBar
+        presentationEnabled: bar.ownsMenu
         z: 10
         combined: bar.combinedMode
         requestedModule: bar.activeExpandablePill

@@ -5,11 +5,14 @@ this repository's Arch Linux setup. It combines the status bar, system controls
 and everyday desktop utilities with shared themes, icons and Settings.
 
 Phase 10A Settings, Hub and icon architecture refinement is accepted; see the
-[final contract and validation](docs/design/phase10a.md). Phase 10B/C remain deferred.
+[final contract and validation](docs/design/phase10a.md). Phase 10B adds optional
+external bars, Top/Bottom placement, inset/offset and originating-output surfaces;
+[implementation, execution-boundary exception and review checkpoint](docs/design/phase10b-bar-multimonitor.md).
+Phase 10C remains deferred.
 The Phase 2E visual and behavioural overhaul is natively accepted. MAGI remains a
 personal shell, not a packaged desktop distribution. The validated baseline is
-Quickshell 0.3.1 and Hyprland 0.56.2; broader multi-output and fractional-scale
-coverage remains future work.
+Quickshell 0.3.1 and Hyprland 0.56.2. Phase 10B physical checks passed on
+eDP-1 at scale 2 and HDMI-A-1 at scale 1.5; Phase 10B is accepted and complete.
 
 ## The shell
 
@@ -109,7 +112,7 @@ Wallpaper-derived palettes are not implemented.
 
 ## Design and architecture
 
-The main shell reserves **exactly 48 logical px**. Floating utilities add no reservation.
+Each enabled bar reserves **48 + edgeOffset logical px**, with a 48px strip. Floating utilities add no reservation.
 Compact Bar objects expand into related surfaces using shared status-surface ownership;
 Hub retains its own utility host. Semantic palettes, roundness, motion and shared artwork
 masking provide consistent presentation without hard-coded per-theme styling.

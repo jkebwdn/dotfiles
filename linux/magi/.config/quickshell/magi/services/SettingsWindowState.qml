@@ -19,7 +19,7 @@ QtObject {
         if (controlCentrePreview) { closePreview(); return }
         if (!shown) return
         controlCentrePreview = true
-        MenuController.open("controlcentre")
+        MenuController.open("controlcentre", SurfaceOrigin.hubTarget())
     }
     onShownChanged: if (!shown) {
         closePreview()
@@ -31,9 +31,9 @@ QtObject {
             if (MenuController.activeMenu !== "controlcentre") root.controlCentrePreview = false
         }
     }
-    function open() {
+    function open(screen) {
         requested = true
-        Hub.open("settings")
+        Hub.open("settings", screen)
         requested = false
     }
 }
