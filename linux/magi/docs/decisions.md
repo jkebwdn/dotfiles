@@ -1,5 +1,14 @@
 # MAGI — Decisions and Debugging History
 
+## Phase 10C.2A — accepted non-authoritative display framework
+
+Displays adds a preview-only layout editor, versioned profiles, a read-only Hyprmon
+importer, a non-executing Hyprland planner and file-backed synthetic transactions
+with an independent timeout watchdog. Main Settings remains schema15. Hyprmon
+remains production authority; no live monitor apply or startup migration exists.
+See [audit, architecture, previews and deferred physical ledger](design/phase10c2-display-manager.md).
+
+
 ## Phase 10C.1 — accepted and complete (2026-10-22)
 
 Power & Idle is integrated with schema 15 and saved 300/600/0 policy. The

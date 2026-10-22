@@ -1,0 +1,272 @@
+[
+  {
+    "name": "Norm t15g Screen",
+    "outputs": [
+      {
+        "name": "eDP-1",
+        "make": "California Institute of Technology",
+        "model": "0x1500",
+        "serial": "",
+        "description": "California Institute of Technology 0x1500",
+        "enabled": true,
+        "modes": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "refresh": 60000
+          }
+        ],
+        "mode": "3840x2160@60",
+        "scale": 2,
+        "x": 0,
+        "y": 0,
+        "transform": 0,
+        "mirror": ""
+      }
+    ],
+    "unsupported": {
+      "eDP-1": {
+        "BitDepth": 0,
+        "ColorMode": "",
+        "SDRBrightness": 0,
+        "SDRSaturation": 0,
+        "VRR": 0
+      }
+    },
+    "warnings": [],
+    "ready": true,
+    "converted": [
+      "identity",
+      "enabled",
+      "mode",
+      "scale",
+      "position",
+      "transform",
+      "mirror"
+    ],
+    "written": false
+  },
+  {
+    "name": "Home Office Docked",
+    "outputs": [
+      {
+        "name": "eDP-1",
+        "make": "California Institute of Technology",
+        "model": "0x1500",
+        "serial": "",
+        "description": "California Institute of Technology 0x1500",
+        "enabled": false,
+        "modes": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "refresh": 60000
+          }
+        ],
+        "mode": "3840x2160@60",
+        "scale": 2,
+        "x": 0,
+        "y": 0,
+        "transform": 0,
+        "mirror": ""
+      },
+      {
+        "name": "HDMI-A-1",
+        "make": "Samsung Electric Company",
+        "model": "Odyssey G81SF",
+        "serial": "HNBY700046",
+        "description": "Samsung Electric Company Odyssey G81SF HNBY700046",
+        "enabled": true,
+        "modes": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "refresh": 60000
+          },
+          {
+            "width": 3840,
+            "height": 2160,
+            "refresh": 240000
+          },
+          {
+            "width": 3840,
+            "height": 2160,
+            "refresh": 119880
+          },
+          {
+            "width": 3840,
+            "height": 2160,
+            "refresh": 59940
+          },
+          {
+            "width": 3840,
+            "height": 2160,
+            "refresh": 29970
+          },
+          {
+            "width": 2560,
+            "height": 1440,
+            "refresh": 239980
+          },
+          {
+            "width": 2560,
+            "height": 1440,
+            "refresh": 120000
+          },
+          {
+            "width": 2560,
+            "height": 1440,
+            "refresh": 59950
+          },
+          {
+            "width": 1920,
+            "height": 1080,
+            "refresh": 239980
+          },
+          {
+            "width": 1920,
+            "height": 1080,
+            "refresh": 119880
+          },
+          {
+            "width": 1920,
+            "height": 1080,
+            "refresh": 60000
+          },
+          {
+            "width": 1920,
+            "height": 1080,
+            "refresh": 59940
+          },
+          {
+            "width": 1680,
+            "height": 1050,
+            "refresh": 59950
+          },
+          {
+            "width": 1600,
+            "height": 900,
+            "refresh": 60000
+          },
+          {
+            "width": 1280,
+            "height": 1024,
+            "refresh": 75030
+          },
+          {
+            "width": 1280,
+            "height": 1024,
+            "refresh": 60020
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "refresh": 59890
+          },
+          {
+            "width": 1280,
+            "height": 800,
+            "refresh": 59810
+          },
+          {
+            "width": 1152,
+            "height": 864,
+            "refresh": 75000
+          },
+          {
+            "width": 1280,
+            "height": 720,
+            "refresh": 60000
+          },
+          {
+            "width": 1280,
+            "height": 720,
+            "refresh": 59940
+          },
+          {
+            "width": 1024,
+            "height": 768,
+            "refresh": 75030
+          },
+          {
+            "width": 1024,
+            "height": 768,
+            "refresh": 70070
+          },
+          {
+            "width": 1024,
+            "height": 768,
+            "refresh": 60000
+          },
+          {
+            "width": 800,
+            "height": 600,
+            "refresh": 75000
+          },
+          {
+            "width": 800,
+            "height": 600,
+            "refresh": 72190
+          },
+          {
+            "width": 800,
+            "height": 600,
+            "refresh": 60320
+          },
+          {
+            "width": 720,
+            "height": 480,
+            "refresh": 59940
+          },
+          {
+            "width": 640,
+            "height": 480,
+            "refresh": 75000
+          },
+          {
+            "width": 640,
+            "height": 480,
+            "refresh": 59940
+          }
+        ],
+        "mode": "3840x2160@239.995",
+        "scale": 1.5,
+        "x": 1920,
+        "y": 32,
+        "transform": 0,
+        "mirror": ""
+      }
+    ],
+    "unsupported": {
+      "eDP-1": {
+        "BitDepth": 0,
+        "ColorMode": "",
+        "SDRBrightness": 0,
+        "SDRSaturation": 0,
+        "VRR": 0
+      },
+      "HDMI-A-1": {
+        "BitDepth": 0,
+        "ColorMode": "",
+        "SDRBrightness": 0,
+        "SDRSaturation": 0,
+        "VRR": 0
+      }
+    },
+    "warnings": [
+      "HDMI-A-1: saved refresh/mode absent from listed modes; review required",
+      "Selected mode is unavailable; review the proposed fallback."
+    ],
+    "ready": false,
+    "converted": [
+      "identity",
+      "enabled",
+      "mode",
+      "scale",
+      "position",
+      "transform",
+      "mirror"
+    ],
+    "written": false
+  }
+]

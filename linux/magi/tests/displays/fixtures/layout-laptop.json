@@ -1,0 +1,23 @@
+[
+  {
+    "name": "eDP-1",
+    "make": "MAGI Synthetic",
+    "model": "Laptop",
+    "serial": "internal",
+    "description": "Preview Laptop",
+    "enabled": true,
+    "modes": [
+      {
+        "width": 3840,
+        "height": 2160,
+        "refresh": 60000
+      }
+    ],
+    "mode": "3840x2160@60",
+    "scale": 2,
+    "x": 0,
+    "y": 0,
+    "transform": 0,
+    "mirror": ""
+  }
+]

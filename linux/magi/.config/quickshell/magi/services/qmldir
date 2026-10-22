@@ -31,3 +31,5 @@ singleton ThemeOrchestrator 1.0 ThemeOrchestrator.qml
 singleton Weather 1.0 Weather.qml
 
 singleton SurfaceOrigin 1.0 SurfaceOrigin.qml
+
+singleton Displays 1.0 Displays.qml
