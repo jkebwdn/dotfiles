@@ -1,5 +1,16 @@
 # MAGI — Quickshell Technical Reference
 
+## Phase 12A — preview configuration input (2026-10-22)
+
+Installed Quickshell 0.3.2 / Qt 6.12.0. PreviewControlGrid reuses the existing
+SettingsDragHandle MouseArea and keyboard signals; Qt Item.mapToItem maps pointer
+coordinates into one grid. No native cross-window drag API or shell IPC is needed.
+The test-only FloatingWindow host is unchanged in role; production stays inside
+Settings/Hub. Offscreen software does not render the production MultiEffect
+SVG/artwork shaders; OpenGL/EGL initialization was unavailable in the sandbox.
+See [API sources, evidence and completed native visual gate](design/phase12a-control-centre-configurator.md#sources-and-compatibility).
+
+
 
 ## Phase 10B — accepted and complete (2026-10-21)
 

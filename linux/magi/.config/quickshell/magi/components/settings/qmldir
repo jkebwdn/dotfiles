@@ -19,3 +19,5 @@ SettingsReorderBoard 1.0 SettingsReorderBoard.qml
 SettingsContent 1.0 SettingsContent.qml
 SurfaceStyleSettings 1.0 SurfaceStyleSettings.qml
 SemanticPaletteSelector 1.0 SemanticPaletteSelector.qml
+ControlCentrePreview 1.0 ControlCentrePreview.qml
+PreviewControlGrid 1.0 PreviewControlGrid.qml

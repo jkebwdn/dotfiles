@@ -91,7 +91,7 @@ ShellRoot {
                     wait(20);verify(status.text.length>0);compare(status.color,Theme.Theme.red)
                     Services.Settings.setValue("hub","verticalPosition",2/3)
                     tryCompare(Services.Settings,"saveState","saved")
-                    for(const name of ["Appearance","Profile","Date & time","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Icons"]) {
+                    for(const name of ["Appearance","Profile","Date & time","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Security"]) {
                         Services.SettingsWindowState.page=name;wait(20)
                         const nav=findChild(content,"settingsNav-"+name)
                         verify(nav.checked && nav.iconRole.length>0)
@@ -104,7 +104,7 @@ ShellRoot {
                     compare(nav.background.color,Theme.Theme.elevated)
                     const page=findChild(content,"settingsPage-Control Centre")
                     const runtime=JSON.stringify(Services.Settings.data.controlCentre.sections)
-                    for(const title of ["Profile and playback","Layout","Visible sections","Primary controls","Sliders","Secondary actions"]) {
+                    for(const title of ["Profile Header","Controls","Media Player","Layout","Visible sections","Primary controls","Sliders","Secondary actions"]) {
                         const button=findChild(page,"settingsButton-"+title+"  ▾")
                         verify(button!==null,title+" disclosure")
                         page.contentY=Math.max(0,button.mapToItem(page.contentItem,0,0).y-30);wait(20)

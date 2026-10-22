@@ -42,14 +42,6 @@ SettingsUI.SettingsPage {
         onTextEdited: Services.Settings.setValue("profile", "displayName", text)
         onEditingFinished: Services.Settings.setValue("profile", "displayName", text.trim())
     }
-    SettingsUI.SettingsRow {
-        Label { text: "Greeting style"; Layout.fillWidth: true }
-        SettingsUI.SettingsSelector {
-            Accessible.name: "Greeting style"; model: ["Compact", "Friendly"]
-            currentIndex: Services.Settings.data.profile.greetingStyle === "friendly" ? 1 : 0
-            onActivated: Services.Settings.setValue("profile", "greetingStyle", currentIndex === 1 ? "friendly" : "compact")
-        }
-    }
     SettingsUI.SettingsToggle {
         text: "Show an optional third profile line"
         checked: Services.Settings.data.profile.subtitleMode === "custom"

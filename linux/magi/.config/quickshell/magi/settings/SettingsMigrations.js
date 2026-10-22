@@ -113,5 +113,11 @@ function migrate(input) {
     }
     if (doc.schemaVersion === 13) doc.schemaVersion = 14
     if (doc.schemaVersion === 14) doc.schemaVersion = 15
+    if (doc.schemaVersion === 15) {
+        doc.appearance = doc.appearance || {}
+        if (doc.appearance.hubSelectionRole === undefined)
+            doc.appearance.hubSelectionRole = doc.appearance.hubToggleRole === undefined ? "accent" : doc.appearance.hubToggleRole
+        doc.schemaVersion = 16
+    }
     return doc
 }

@@ -102,7 +102,7 @@ FocusScope {
                             anchors.centerIn: parent; width: 18; height: 18
                             role: button.modelData.icon; size: 18
                             objectName: "hubModeIcon"
-                            color: button.checked ? Theme.Theme.hubToggleColor : Theme.Theme.subtext
+                            color: button.checked ? Theme.Theme.hubSelectionColor : Theme.Theme.subtext
                             opacity: button.enabled ? 1 : .4
                         }
                     }

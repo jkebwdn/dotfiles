@@ -31,6 +31,22 @@ ShellRoot {
             try {
                 for(const theme of ["catppuccin-mocha","everforest-dark-hard","everforest-light-hard"]) {
                     Services.Settings.setTheme(theme)
+                    Services.Settings.setValue("appearance","hubSelectionRole","red")
+                    Services.Settings.setValue("appearance","hubToggleRole","green")
+                    Services.Settings.setValue("appearance","navigationAccent","blue")
+                    Services.Hub.open("apps");wait(20)
+                    const selectedIcon=findChild(hub.content.modeButtons.itemAt(0),"hubModeIcon")
+                    compare(selectedIcon.color,Theme.Theme.primaryAccent("red","accent"))
+                    compare(toggle.activeColor,Theme.Theme.primaryAccent("green","accent"))
+                    compare(findChild(nav,"settingsNavigationIcon").color,Theme.Theme.roles.blue)
+                    Services.Settings.setValue("appearance","hubSelectionRole","teal");wait(10)
+                    compare(toggle.activeColor,Theme.Theme.primaryAccent("green","accent"))
+                    compare(selectedIcon.color,Theme.Theme.primaryAccent("teal","accent"))
+                    Services.Settings.setValue("appearance","hubToggleRole","yellow");wait(10)
+                    compare(selectedIcon.color,Theme.Theme.primaryAccent("teal","accent"))
+                    compare(toggle.activeColor,Theme.Theme.primaryAccent("yellow","accent"))
+                    compare(findChild(nav,"settingsNavigationIcon").color,Theme.Theme.roles.blue)
+                    Services.Hub.close()
                     for(const role of ["accent","red","teal","text"]) {
                         Services.Settings.setValue("appearance","navigationAccent",role);wait(10)
                         compare(findChild(nav,"settingsNavigationIcon").color,Theme.Theme.roles[role])
@@ -43,7 +59,7 @@ ShellRoot {
                         compare(findChild(inactive,"settingsNavigationText").color,Theme.Theme.text)
                         Services.Hub.open("apps");wait(15)
                         const button=hub.content.modeButtons.itemAt(0)
-                        compare(findChild(button,"hubModeIcon").color,Theme.Theme.hubToggleColor)
+                        compare(findChild(button,"hubModeIcon").color,Theme.Theme.hubSelectionColor)
                         compare(findChild(button,"hubSelectionDot"),null)
                         Services.Hub.close()
                     }

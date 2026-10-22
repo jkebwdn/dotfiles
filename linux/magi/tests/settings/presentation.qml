@@ -21,6 +21,7 @@ ShellRoot {
         when: Services.Settings.ready
         function page(title) { return findChild(window.contentItem, "settingsPage-" + title) }
         function reveal(p, item) {
+            p = findChild(p, "controlCentreEditor") || p
             p.contentY = Math.max(0, Math.min(p.contentHeight - p.height, item.mapToItem(p.contentItem, 0, 0).y - 50))
             wait(30)
         }
@@ -37,7 +38,7 @@ ShellRoot {
             try {
             Services.SettingsWindowState.shown = true
             wait(100)
-            const names = ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays"]
+            const names = ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
             for (const theme of ["catppuccin-mocha", "catppuccin-frappe", "everforest-dark-hard", "everforest-light-hard", "catppuccin-latte"]) {
                 Services.Settings.setTheme(theme)
                 for (const size of [Qt.size(720,500), Qt.size(940,720)]) {
@@ -96,6 +97,7 @@ ShellRoot {
             const primaryBefore = Services.Settings.data.controlCentre.columns
             primary.forceActiveFocus(Qt.TabFocusReason); keyClick(Qt.Key_Up)
             compare(Services.Settings.data.controlCentre.columns, primaryBefore + 1)
+            reveal(page("Control Centre"), primary)
             mouseClick(primary.up.indicator)
             compare(Services.Settings.data.controlCentre.columns, primaryBefore + 2, "integrated stepper pointer increment")
             mouseClick(primary.down.indicator)

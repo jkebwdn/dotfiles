@@ -30,8 +30,8 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 15,
-        appearance: {mediaProgressRole: "accent", hubToggleRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
+    return {schemaVersion: 16,
+        appearance: {mediaProgressRole: "accent", hubToggleRole: "accent", hubSelectionRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null}},
             surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, hubContent:true, hubSelector:true},
             notificationBorders: {role:"border", width:1, toasts:true, history:true, clipboard:true},
@@ -99,7 +99,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 15) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 16) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -136,7 +136,7 @@ function analyze(input) {
     if (typeof a.theme !== "string" || !a.theme.length) { valid(false, "appearance.theme", ""); a.theme = "catppuccin-mocha" }
 
     const semanticRoles = ["background","surface","elevated","overlay","text","subtext","muted","accent","blue","lavender","green","yellow","peach","red","teal","border"]
-    for (const key of ["mediaProgressRole", "hubToggleRole"]) {
+    for (const key of ["mediaProgressRole", "hubToggleRole", "hubSelectionRole"]) {
         if (["accent", "blue", "lavender", "green", "yellow", "peach", "red", "teal"].indexOf(a[key]) < 0) {
             warnings.push("appearance." + key + ": using accent")
             a[key] = "accent"
@@ -173,7 +173,7 @@ function analyze(input) {
     if (typeof position !== "number" || !isFinite(position) || position < .1 || position > .9) {
         valid(false,"hub.verticalPosition",null); effective.hub.verticalPosition = 2/3
     }
-    if (["always","active","hidden"].indexOf(effective.media.controlsVisibility) < 0) {
+    if (["always","active","playing","hidden"].indexOf(effective.media.controlsVisibility) < 0) {
         valid(false,"media.controlsVisibility",null); effective.media.controlsVisibility = "active"
     }
     const visualDefaults = defaults().appearance.visual

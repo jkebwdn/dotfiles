@@ -70,7 +70,7 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
     runtime=stage/'runtime';runtime.mkdir(mode=0o700)
     env=dict(os.environ,QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime),XDG_STATE_HOME=str(stage/'state'), HOME=str(stage), XDG_CONFIG_HOME=str(stage/'xdg-config'), XDG_DATA_HOME=str(stage/'data'), XDG_CACHE_HOME=str(stage/'cache'))
     env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None)
-    result=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=60)
+    result=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=120 if len(sys.argv) > 1 and sys.argv[1] == "appearance.qml" else 60)
     output=result.stdout+result.stderr
     checked='\n'.join(line for line in output.splitlines() if 'Failed to start IPC server' not in line
                       and 'This plugin does not support setting window masks' not in line

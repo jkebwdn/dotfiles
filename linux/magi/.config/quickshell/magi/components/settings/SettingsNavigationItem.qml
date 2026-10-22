@@ -9,19 +9,19 @@ SettingsButton {
     font.weight: checked ? Font.DemiBold : Font.Normal
     leftPadding: 10; rightPadding: 10
     contentItem: Item {
-        implicitWidth: label.implicitWidth + (root.iconRole ? 26 : 0)
+        implicitWidth: label.implicitWidth + (root.iconRole ? SettingsMetrics.navigationIconSize + SettingsMetrics.navigationIconGap : 0)
         implicitHeight: label.implicitHeight
         Controls.Icon {
             objectName: "settingsNavigationIcon"
             visible: root.iconRole.length > 0
             anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
-            role: root.iconRole; size: 16
+            role: root.iconRole; size: SettingsMetrics.navigationIconSize
             color: root.checked ? (root.subsection ? Theme.Theme.accent : Theme.Theme.navigationAccent) : Theme.Theme.subtext
         }
         Text {
             id: label
             objectName: "settingsNavigationText"
-            anchors.fill: parent; anchors.leftMargin: root.iconRole ? 26 : 0
+            anchors.fill: parent; anchors.leftMargin: root.iconRole ? SettingsMetrics.navigationIconSize + SettingsMetrics.navigationIconGap : 0
             text: root.text; font: root.font
             color: root.checked ? (root.subsection ? Theme.Theme.accent : Theme.Theme.navigationAccent) : Theme.Theme.text
             verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight

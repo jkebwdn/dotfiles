@@ -8,6 +8,7 @@ import "../../../theme" as Theme
 Rectangle {
     id: root
     property var service: Services.Media
+    property bool interactive: true
     readonly property int contentPadding: 10
     implicitHeight: Math.max(Theme.RenderTokens.mediaArtworkSize, metadata.implicitHeight) + contentPadding * 2
     radius: Theme.Theme.radius("controlTile", 10, width, height)
@@ -64,24 +65,26 @@ Rectangle {
             }
             RowLayout {
                 Layout.alignment: Qt.AlignLeft
+                objectName: "mediaPlaybackControls"
                 visible: Services.Settings.data.media.controlsVisibility === "always"
                     || Services.Settings.data.media.controlsVisibility === "active" && root.service.available
+                    || Services.Settings.data.media.controlsVisibility === "playing" && root.service.available && root.service.playing
                 spacing: 8
                 Controls.MediaButton {
                     objectName: "mediaPrevious"
                     icon: "media-previous"; moduleId: "media"; available: root.service.available && root.service.canPrevious
-                    onTriggered: root.service.previous()
+                    onTriggered: if (root.interactive) root.service.previous()
                 }
                 Controls.MediaButton {
                     objectName: "mediaToggle"
                     icon: root.service.playing ? "media-pause" : "media-play"
                     moduleId: "media"; available: root.service.available && root.service.canToggle
-                    onTriggered: root.service.togglePlaying()
+                    onTriggered: if (root.interactive) root.service.togglePlaying()
                 }
                 Controls.MediaButton {
                     objectName: "mediaNext"
                     icon: "media-next"; moduleId: "media"; available: root.service.available && root.service.canNext
-                    onTriggered: root.service.next()
+                    onTriggered: if (root.interactive) root.service.next()
                 }
             }
         }

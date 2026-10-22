@@ -13,9 +13,10 @@ Rectangle {
     readonly property int contentPadding: Services.Settings.data.appearance.profileBackground.enabled ? 10 : 0
     implicitHeight: Math.max(Theme.RenderTokens.avatarSize, profileText.implicitHeight) + contentPadding * 2
     property string weatherSummary: Services.Weather.summary
-    readonly property var profile: Services.Settings.data.profile
+    property bool preview: false
+    property var profile: Services.Settings.data.profile
     property int localHour: new Date().getHours()
-    Timer { interval: 60000; repeat: true; running: true; onTriggered: root.localHour = new Date().getHours() }
+    Timer { interval: 60000; repeat: true; running: !root.preview; onTriggered: root.localHour = new Date().getHours() }
     RowLayout {
         anchors.fill: parent
         anchors.margins: root.contentPadding

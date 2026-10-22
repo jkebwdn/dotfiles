@@ -1,5 +1,16 @@
 # MAGI
 
+## Phase 12A — visual configurator (accepted and complete)
+
+Settings has larger navigation icons, independent Hub selection/toggle colours,
+and Profile Header / Controls / Media Player groups around a safe live Control
+Centre preview. Production presenters and section layout are reused; drag handles
+reorder within each type through the existing auto-save contract. Schema 16
+preserves the old Hub selected colour on migration. Native review and integration passed; local Settings migrated to schema 16
+without unrelated value changes. [Architecture, tests, offline previews and review limits](docs/design/phase12a-control-centre-configurator.md).
+Phase 12B/C/D and hardware acceptance remain deferred.
+
+
 ## Phase 11A — fingerprint groundwork (accepted and complete)
 
 Native test-only fingerprint state/packet/lifecycle models and synthetic enrollment

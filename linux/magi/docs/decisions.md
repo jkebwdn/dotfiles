@@ -1,5 +1,22 @@
 # MAGI — Decisions and Debugging History
 
+## Phase 12A — safe embedded preview, existing save contract (2026-10-22)
+
+Reuse production presenters with injected synthetic profile/media data, disable
+activation and keep system dispatch outside the Settings preview. Reuse the
+production section spacing helper; keep real tile dimensions, responsive column
+clamping and compact expansion. Reorder only within controls/sliders/actions;
+retain existing add/remove and keyboard boards. Drag motion does not publish
+Settings. Drop and appearance edits follow the existing live-apply/auto-save
+contract instead of introducing a second shadow document. Schema 16 preserves
+old Hub selection colour and then separates it from toggle colour. Keep legacy
+media `active` behaviour under Player available; add `playing` explicitly.
+Offline shader limitations remain visible in the review evidence; no production
+render workaround or hardware test was introduced. Native integration and visual
+review passed; the operator explicitly accepted finalization.
+[Detailed design and operator decisions](design/phase12a-control-centre-configurator.md).
+
+
 ## Phase 11A — fingerprint groundwork (accepted and complete)
 
 Native test-only fingerprint state/packet/lifecycle models and synthetic enrollment

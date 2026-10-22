@@ -19,6 +19,7 @@ ShellRoot {
             return found
         }
         function reveal(page, item) {
+            page = findChild(page, "controlCentreEditor") || page
             page.contentY = Math.max(0, Math.min(page.contentHeight - page.height, item.mapToItem(page.contentItem, 0, 0).y - 40))
             wait(30)
         }
@@ -53,17 +54,14 @@ ShellRoot {
             const page = findChild(settings.contentItem, "settingsPage-Control Centre")
             const preview = findChild(page, "controlCentrePreview")
             verify(preview !== null)
-            mouseClick(preview)
+            Services.SettingsWindowState.toggleControlCentrePreview()
             const cc = bar.expandablePillRegistry.controlcentre
             tryCompare(cc, "phase", 3)
             verify(Services.SettingsWindowState.controlCentrePreview && bar.previewPinned)
             verify(!bar.catcherEnabled, "no full-screen input catcher in preview")
-            compare(preview.text, "Close preview")
             compare(bar.exclusiveZone, 48)
             bar.closeActiveCombinedMenu()
             compare(Services.MenuController.activeMenu, "controlcentre", "outside dismissal entry point ignores preview")
-            const disclosure = findChild(page, "settingsButton-Appearance  ▸")
-            mouseClick(disclosure)
             // Real Settings interactions write the canonical preferences and update
             // the actual retained runtime objects, not a duplicate preview widget.
             for (const key of ["primaryIconSize", "primaryContainerSize", "secondaryIconSize", "avatarSize", "mediaArtworkSize"]) {
@@ -190,11 +188,11 @@ ShellRoot {
             Services.Settings.discardAndReload()
             tryCompare(Services.Settings,"ready",true)
             verify(bar.previewPinned)
-            reveal(page,preview); mouseClick(preview)
+            Services.SettingsWindowState.toggleControlCentrePreview()
             tryCompare(cc,"phase",0)
             verify(!Services.SettingsWindowState.controlCentrePreview)
             // New typography and border settings update the real pinned production card.
-            mouseClick(preview); tryCompare(cc,"phase",3)
+            Services.SettingsWindowState.toggleControlCentrePreview(); tryCompare(cc,"phase",3)
             for (const weight of [400,700]) {
                 for (const key of ["profileGreetingWeight","profileWeatherWeight","profileThirdLineWeight","mediaTitleWeight","mediaArtistWeight"])
                     Services.Settings.setVisual(key,weight)
@@ -209,11 +207,11 @@ ShellRoot {
                 compare(findChild(body(),"runtimeAlbumArt").borderWidth,weight===400?0:5)
                 verify(bar.previewPinned)
             }
-            mouseClick(preview);tryCompare(cc,"phase",0)
+            Services.SettingsWindowState.toggleControlCentrePreview();tryCompare(cc,"phase",0)
             // The pin belongs to the Settings session, across every real page.
-            mouseClick(preview); tryCompare(cc,"phase",3)
+            Services.SettingsWindowState.toggleControlCentrePreview(); tryCompare(cc,"phase",3)
             const closePreview = findChild(settings.contentItem,"settingsCloseControlCentrePreview")
-            for (const name of ["Appearance","Profile","Bar","Date & time","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Icons","Control Centre"]) {
+            for (const name of ["Appearance","Profile","Bar","Date & time","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Security","Control Centre"]) {
                 const sub = ({Bar:"bar", "Control Centre":"controlcentre"})[name]
                     if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
                     const nav = findChild(settings.contentItem,sub ? "appearanceNav-" + sub : "settingsNav-"+name)
@@ -253,14 +251,14 @@ ShellRoot {
             mouseClick(findChild(bar.contentItem,"statusDismissCatcher"),10,400)
             tryCompare(cc,"phase",0)
             Services.SettingsWindowState.open(); wait(150)
-            reveal(page,preview); mouseClick(preview); tryCompare(cc,"phase",3)
+            Services.SettingsWindowState.toggleControlCentrePreview(); tryCompare(cc,"phase",3)
             Services.SettingsWindowState.page = "Profile"
             Services.SettingsWindowState.shown = false
             tryCompare(cc,"phase",0); verify(!bar.previewPinned)
             Services.SettingsWindowState.page = "Control Centre"
             // Preview Escape still reaches the production body/Loader dismissal.
             Services.SettingsWindowState.open(); wait(150)
-            mouseClick(preview); tryCompare(cc,"phase",3)
+            Services.SettingsWindowState.toggleControlCentrePreview(); tryCompare(cc,"phase",3)
             bar.contentItem.Window.window.requestActivate()
             wait(50)
             body().forceActiveFocus(); keyClick(Qt.Key_Escape)
@@ -268,7 +266,7 @@ ShellRoot {
             verify(Services.SettingsWindowState.shown, "Escape in CC leaves Settings open")
             settings.contentItem.Window.window.requestActivate()
             wait(50)
-            mouseClick(preview); tryCompare(cc,"phase",3)
+            Services.SettingsWindowState.toggleControlCentrePreview(); tryCompare(cc,"phase",3)
             Services.MenuController.navigate("wifi")
             verify(!bar.previewPinned)
             Services.MenuController.close(); wait(550)

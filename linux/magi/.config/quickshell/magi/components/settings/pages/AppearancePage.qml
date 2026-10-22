@@ -69,22 +69,6 @@ SettingsUI.SettingsPage {
         text: root.packError || (!Icons.IconRegistry.packs.some(p => p.id === Services.Settings.data.icons.pack)
             ? "Selected icon pack is unavailable; using MAGI Default." : "Shell icons follow this pack. Application icons use the system icon theme.")
     }
-    SettingsUI.SettingsRow {
-        Label { text: "Media progress colour"; Layout.fillWidth: true }
-        SettingsUI.SemanticPaletteSelector {
-            Accessible.name: "Media progress colour"
-            role: Services.Settings.data.appearance.mediaProgressRole
-            onRoleSelected: value => Services.Settings.setValue("appearance", "mediaProgressRole", value)
-        }
-    }
-    SettingsUI.SettingsRow {
-        Label { text: "Hub toggle colour"; Layout.fillWidth: true }
-        SettingsUI.SemanticPaletteSelector {
-            Accessible.name: "Hub toggle colour"
-            role: Services.Settings.data.appearance.hubToggleRole
-            onRoleSelected: value => Services.Settings.setValue("appearance", "hubToggleRole", value)
-        }
-    }
     RowLayout {
         Repeater {
             model: ["background", "surface", "text", "accent", "blue", "green", "yellow", "red"]

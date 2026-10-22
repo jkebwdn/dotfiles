@@ -1,5 +1,19 @@
 # MAGI — Architecture
 
+## Phase 12A — accepted configurator architecture (2026-10-22)
+
+The Settings Control Centre page embeds ControlCentrePreview with production
+ProfileHeader/ControlTile/IconSlider/ActionButton/MediaSection presenters and
+SectionLayout. Synthetic data and inert handlers separate configuration from
+runtime actions. PreviewControlGrid owns transient reorder geometry; a valid drop
+writes the canonical Settings list. Normal edits continue to live-apply and
+250 ms auto-save, matching existing SettingsStore behaviour. No Bar/Hub ownership,
+monitor routing or live CC backend is replaced. Schema 16 adds hubSelectionRole,
+separate from hubToggleRole and navigationAccent; the migration copies the former
+shared role to preserve appearance. Native integration and operator visual acceptance passed; production Settings is schema 16.
+See [Phase 12A design and validation](design/phase12a-control-centre-configurator.md).
+
+
 ## Phase 11A — fingerprint groundwork (accepted and complete)
 
 Native test-only fingerprint state/packet/lifecycle models and synthetic enrollment
