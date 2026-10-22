@@ -66,13 +66,13 @@ FocusScope {
                             width: parent.width
                             spacing: 2
                             Repeater {
-                                model: ["Appearance", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper"]
+                                model: ["Appearance", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle"]
                                 SettingsNavigationItem {
                                     id: navigationButton
                                     required property string modelData
                                     objectName: "settingsNav-" + modelData
                                     Layout.fillWidth: true
-                                    iconRole: ({"Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image"})[modelData]
+                                    iconRole: ({"Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image","Power & Idle":"power"})[modelData]
                                     text: modelData
                                     checked: modelData === "Appearance" ? Services.SettingsWindowState.inAppearance : Services.SettingsWindowState.page === modelData
                                     onClicked: Services.SettingsWindowState.page = modelData
@@ -154,7 +154,7 @@ FocusScope {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Repeater {
-                        model: ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper"]
+                        model: ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle"]
                         Loader {
                             required property string modelData
                             property bool visited: false
@@ -168,6 +168,7 @@ FocusScope {
                                 : modelData === "Surfaces" ? surfaces : modelData === "Hub" ? hubAppearance
                                 : modelData === "Profile" ? profile
                                 : modelData === "Bar" ? bar
+                                : modelData === "Power & Idle" ? powerIdle
                                 : modelData === "Date & time" ? calendar
                                 : modelData === "Notifications" ? notifications
                                 : modelData === "Clipboard" ? clipboard
@@ -186,6 +187,7 @@ FocusScope {
     Component { id: hubAppearance; Pages.HubPage {} }
     Component { id: appearance; Pages.AppearancePage {} }
     Component { id: profile; Pages.ProfilePage {} }
+    Component { id: powerIdle; Pages.PowerIdlePage {} }
     Component { id: calendar; Pages.CalendarPage {} }
     Component { id: bar; Pages.BarPage {} }
     Component { id: centre; Pages.ControlCentrePage { outputWidth: window.outputWidth } }

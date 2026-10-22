@@ -5,6 +5,7 @@ import "../settings" as Configuration
 
 Configuration.SettingsStore {
     id: root
+    idleInhibited: Caffeine.active
     path: Qt.resolvedUrl("../settings.json").toString().replace(/^file:\/\//, "")
     readonly property string palette: data.appearance.theme === "everforest-dark-hard"
         ? "everforest" : "catppuccin"
@@ -15,7 +16,7 @@ Configuration.SettingsStore {
         target: "settings"
         function status(): string {
             return JSON.stringify({data: root.data, revision: root.revision,
-                state: root.saveState, error: root.error, diagnostics: root.diagnostics})
+                idleInhibited: root.idleInhibited, state: root.saveState, error: root.error, diagnostics: root.diagnostics})
         }
         function theme(id: string): bool { return root.setTheme(id) }
         function roundness(role: string, value: string): bool {

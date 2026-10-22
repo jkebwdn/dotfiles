@@ -112,5 +112,6 @@ function migrate(input) {
         doc.schemaVersion = 13
     }
     if (doc.schemaVersion === 13) doc.schemaVersion = 14
+    if (doc.schemaVersion === 14) doc.schemaVersion = 15
     return doc
 }

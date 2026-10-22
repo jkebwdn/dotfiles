@@ -1,5 +1,17 @@
 # MAGI
 
+## Phase 10C.1 — accepted and complete (2026-10-22)
+
+Power & Idle is integrated with schema 15 and saved 300/600/0 policy. The
+managed user service owns Hypridle and reads generated runtime configuration
+outside Git. Default Apply, timed lock, DPMS wake, inhibitor refusal/recovery,
+invalid ordering, manual lock and real suspend/resume passed the live gates.
+First-character resume input and temporary suspend-listener activation passed. The original
+canonical config is an emergency fallback only. The exact startup command passed an idempotent active-service check; a true
+fresh login remains untested. The operator accepted finalization; protected local state is excluded.
+See [ownership, acceptance evidence, rollback and remaining limits](docs/design/phase10c1-power-idle.md).
+No MAGI Lock/PAM redesign, Hyprmon replacement or Phase 10C.2 work.
+
 MAGI is a first-party Quickshell desktop shell layer for Hyprland, developed for
 this repository's Arch Linux setup. It combines the status bar, system controls
 and everyday desktop utilities with shared themes, icons and Settings.
@@ -8,7 +20,7 @@ Phase 10A Settings, Hub and icon architecture refinement is accepted; see the
 [final contract and validation](docs/design/phase10a.md). Phase 10B adds optional
 external bars, Top/Bottom placement, inset/offset and originating-output surfaces;
 [implementation, execution-boundary exception and review checkpoint](docs/design/phase10b-bar-multimonitor.md).
-Phase 10C remains deferred.
+Phase 10C.2 remains deferred.
 The Phase 2E visual and behavioural overhaul is natively accepted. MAGI remains a
 personal shell, not a packaged desktop distribution. The validated baseline is
 Quickshell 0.3.1 and Hyprland 0.56.2. Phase 10B physical checks passed on

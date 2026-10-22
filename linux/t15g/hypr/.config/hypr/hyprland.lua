@@ -42,7 +42,7 @@ hl.config({
 hl.on("hyprland.start", function()
     hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
     hl.exec_cmd("hyprpaper")
-    hl.exec_cmd("hypridle")
+    hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_STATE_HOME XDG_SESSION_ID XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY && systemctl --user start magi-hypridle.service")
     hl.exec_cmd("hyprmon")
     hl.exec_cmd("quickshell -c magi")
 end)

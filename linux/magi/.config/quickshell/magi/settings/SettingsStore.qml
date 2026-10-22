@@ -8,6 +8,7 @@ import "SettingsMigrations.js" as Migrations
 Scope {
     id: root
     required property string path
+    property bool idleInhibited: false
     readonly property var data: state.effective
     readonly property int revision: state.revision
     readonly property bool ready: state.ready
@@ -33,6 +34,7 @@ Scope {
         property var request: null
         property string response: ""
         property bool readPending: false
+        property bool forceIdle: false
     }
 
     function publish(result) {
@@ -72,6 +74,7 @@ Scope {
     function discardAndReload() {
         if (state.request || worker.running) return false
         state.dirty = false
+        state.forceIdle = false
         state.ready = false
         reload()
         return true
@@ -87,7 +90,8 @@ Scope {
         if (worker.running || state.request) { saveTimer.restart(); return false }
         state.status = "pending"
         start({op: "write", path: path, expected: state.baseline,
-            text: JSON.stringify(state.document, null, 2) + "\n", revision: state.revision})
+            text: JSON.stringify(state.document, null, 2) + "\n", revision: state.revision,
+            applyIdle: state.forceIdle, idleInhibited: root.idleInhibited})
         return true
     }
     function commit(document, repairMalformed) {
@@ -105,8 +109,20 @@ Scope {
             return true
         } catch (exception) { state.error = String(exception); return false }
     }
+    function setPowerIdle(value) {
+        if (idleInhibited) {
+            state.error = "Power policy can't be changed while idle inhibition is active."
+            state.status = "error"
+            return false
+        }
+        const next = Schema.clone(state.document)
+        next.powerIdle = Object.assign({}, data.powerIdle, value)
+        const accepted = commit(next)
+        if (accepted) state.forceIdle = true
+        return accepted
+    }
     function setValue(section, key, value) {
-        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji", "wallpaper", "hub", "weather"].indexOf(section) < 0) return false
+        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji", "wallpaper", "hub", "weather", "powerIdle"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         // Fill missing defaults, but retain unknown fields and diagnosed raw values.
         if (next[section] === undefined) next[section] = Schema.defaults()[section]
@@ -205,7 +221,7 @@ Scope {
     function addControl(module) { return addEntry("controls", module) }
     function removeControl(key) { return removeEntry("controls", key) }
     function resetSection(section) {
-        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji", "wallpaper", "hub", "weather"].indexOf(section) < 0) return false
+        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji", "wallpaper", "hub", "weather", "powerIdle"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         next[section] = Schema.defaults()[section]
         return commit(next)
@@ -244,6 +260,7 @@ Scope {
                 } else {
                     state.baseline = result.text
                     state.dirty = state.revision !== request.revision
+                    if (!state.dirty) state.forceIdle = false
                     state.status = state.dirty ? "pending" : "saved"
                     state.error = ""
                     if (state.dirty) saveTimer.restart()

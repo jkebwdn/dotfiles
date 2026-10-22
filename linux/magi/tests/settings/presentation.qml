@@ -37,7 +37,7 @@ ShellRoot {
             try {
             Services.SettingsWindowState.shown = true
             wait(100)
-            const names = ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper"]
+            const names = ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle"]
             for (const theme of ["catppuccin-mocha", "catppuccin-frappe", "everforest-dark-hard", "everforest-light-hard", "catppuccin-latte"]) {
                 Services.Settings.setTheme(theme)
                 for (const size of [Qt.size(720,500), Qt.size(940,720)]) {

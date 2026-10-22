@@ -2,10 +2,10 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const c=vm.createContext({});
 for(const f of ['SettingsSchema','SettingsMigrations']) vm.runInContext(fs.readFileSync('.config/quickshell/magi/settings/'+f+'.js','utf8'),c);
 const old={schemaVersion:8,calendar:{firstDay:'monday'},custom:42};
-const r=c.analyze(c.migrate(old)); assert.equal(r.effective.schemaVersion,14);
+const r=c.analyze(c.migrate(old)); assert.equal(r.effective.schemaVersion,15);
 assert.equal(old.schemaVersion,8); assert.equal(r.effective.custom,42); assert.equal(r.effective.calendar.firstDay,'monday');
 assert.equal(r.effective.emoji.recentLimit,24); assert.equal(c.analyze(c.defaults()).errors.length,0);
-assert.equal(c.analyze({schemaVersion:15}).future,true);
+assert.equal(c.analyze({schemaVersion:16}).future,true);
 for(const [key,value] of Object.entries({enabled:1,gridColumns:3,emojiSize:49,recentLimit:61,showCategories:null,closeOnSelect:'yes',recents:['1F600','1F600']})) {
  const result=c.analyze({schemaVersion:9,emoji:{[key]:value}}); assert.ok(result.errors.length,key);
  assert.deepEqual(result.effective.emoji[key],c.defaults().emoji[key]);

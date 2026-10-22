@@ -13,8 +13,11 @@ from pathlib import Path
 import stat
 import sys
 import tempfile
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from power_idle import Manager, atomic, policy, PolicyError
 
-CURRENT_VERSION = 2
+CURRENT_VERSION = 15
 
 
 def perform(request):
@@ -63,12 +66,33 @@ def perform(request):
             # Recheck after backup/write work, immediately before replacing.
             if (path.read_text() if path.exists() else None) != before:
                 return {'ok': False, 'conflict': True, 'error': 'Settings changed during save'}
-            os.replace(temp, path)
-            directory = os.open(path.parent, os.O_DIRECTORY)
+            def save_settings():
+                if (path.read_text() if path.exists() else None) != before:
+                    raise RuntimeError('Settings changed during idle activation; previous policy restored')
+                try:
+                    os.replace(temp, path)
+                    directory = os.open(path.parent, os.O_DIRECTORY)
+                    try:
+                        os.fsync(directory)
+                    finally:
+                        os.close(directory)
+                except Exception:
+                    if (path.read_text() if path.exists() else None) == text:
+                        if before is None:
+                            path.unlink()
+                        else:
+                            atomic(path, before)
+                            os.chmod(path, mode)
+                    raise
             try:
-                os.fsync(directory)
-            finally:
-                os.close(directory)
+                prior = json.loads(before) if before else {}
+            except ValueError:
+                prior = {}
+            following = json.loads(text)
+            apply_idle = request.get('applyIdle') is True
+            if (apply_idle or policy(prior) != policy(following)) and request.get('idleInhibited'):
+                raise PolicyError("Power policy can't be changed while idle inhibition is active.")
+            Manager().change(prior, following, save_settings, force=apply_idle)
         finally:
             if os.path.exists(temp):
                 os.unlink(temp)

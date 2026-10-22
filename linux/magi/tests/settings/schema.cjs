@@ -8,11 +8,11 @@ assert.equal(run('analyze(defaults()).errors').length, 0);
 assert.equal(run('analyze(migrate({palette:"everforest",barCenterPlugins:[],custom:7})).effective.appearance.theme'), 'everforest-dark-hard');
 assert.deepEqual(run('migrate({palette:"catppuccin",barCenterPlugins:[]}).bar.center'), []);
 assert.equal(run('migrate({palette:"catppuccin",custom:7}).custom'), 7);
-assert.equal(run('migrate({schemaVersion:1,appearance:{theme:"catppuccin-latte"}}).schemaVersion'),14);
+assert.equal(run('migrate({schemaVersion:1,appearance:{theme:"catppuccin-latte"}}).schemaVersion'),15);
 assert.deepEqual(run('analyze({schemaVersion:4}).effective.bar.center'), ['workspaces']);
 assert.equal(run('analyze({schemaVersion:4,appearance:{roundness:{master:-4}}}).effective.appearance.roundness.master'), 1);
 assert.equal(run('analyze({schemaVersion:4,appearance:{theme:"unknown"}}).effective.appearance.theme'), 'unknown');
-assert.equal(run('analyze({schemaVersion:15}).future'), true);
+assert.equal(run('analyze({schemaVersion:16}).future'), true);
 assert.deepEqual(run('analyze({schemaVersion:4,bar:{left:["wifi"],right:["wifi","bogus","volume"]}}).effective.bar.right'), ['volume']);
 assert.throws(() => run('analyze(JSON.parse(\'{"schemaVersion":1,"__proto__":{}}\'))'));
 assert.throws(() => run('migrate({palette:"catppuccin",appearance:{}})'));
@@ -35,7 +35,7 @@ const v3=run('migrate({schemaVersion:3,controlCentre:{controls:['
     + '{key:"wireless",module:"bluetooth",enabled:true,presentation:"tile"},'
     + '{key:"power-saver",module:"power-saver",enabled:true,presentation:"tile"},'
     + '{key:"airplane-mode",module:"airplane-mode",enabled:true,presentation:"tile"}]}})');
-assert.equal(v3.schemaVersion,14);
+assert.equal(v3.schemaVersion,15);
 assert.deepEqual(v3.controlCentre.controls.map(e=>e.accent),['teal','blue','green','lavender']);
 const customAccent=run('migrate({schemaVersion:3,controlCentre:{controls:['
     + '{key:"network",module:"wifi",accent:"red",enabled:true,presentation:"tile"}]}})');
@@ -75,7 +75,7 @@ for (const [key, values] of Object.entries(geometry)) {
     }
 }
 const upgraded=run('analyze(migrate({schemaVersion:10,custom:42,appearance:{visual:{avatarSize:100,controlOn:"peach"},roundness:{roles:{action:1.5,avatar:.7}}}}))');
-assert.equal(upgraded.effective.schemaVersion,14);
+assert.equal(upgraded.effective.schemaVersion,15);
 assert.equal(upgraded.effective.appearance.visual.avatarSize,100);
 assert.equal(upgraded.effective.appearance.visual.controlOn,'peach');
 assert.equal(upgraded.effective.appearance.roundness.roles.albumArt,1.5);
@@ -121,7 +121,7 @@ console.log('Hub header fit/roundness/border validation and retired raw data pre
 
 // Phase 2E: migration preserves existing tuning and rejects invalid new input.
 const v12 = run('analyze(migrate({schemaVersion:11,appearance:{visual:{primaryIconSize:27}},hub:{verticalPosition:.4}})).effective');
-assert.equal(v12.schemaVersion,14);
+assert.equal(v12.schemaVersion,15);
 assert.equal(v12.appearance.visual.primaryIconSize,27);
 assert.equal(v12.hub.verticalPosition,.4);
 assert.equal(v12.notifications.retentionHours,6);
@@ -145,7 +145,7 @@ assert.equal(run('analyze({schemaVersion:12,appearance:{notificationBorders:{cli
 console.log('Schema 12 Clipboard card border enable validation PASS');
 // Phase 2E.2 stays inside the single 11→12 migration.
 const final = run('analyze(migrate({schemaVersion:11,appearance:{visual:{avatarBorderWidth:3,profileGreetingSize:22}},profile:{displayName:"jkebwdn"}})).effective');
-assert.equal(final.schemaVersion,14); assert.equal(final.appearance.visual.avatarBorderWidth,3);
+assert.equal(final.schemaVersion,15); assert.equal(final.appearance.visual.avatarBorderWidth,3);
 assert.equal(final.profile.greetingStyle,'compact'); assert.equal(final.profile.displayName,'jkebwdn');
 assert.deepEqual(JSON.parse(JSON.stringify(final.weather)),{enabled:false,location:'',units:'metric'});
 for(const key of ['profileGreetingWeight','profileWeatherWeight','profileThirdLineWeight','mediaTitleWeight','mediaArtistWeight']) {
@@ -169,7 +169,7 @@ const before=JSON.stringify(oldIcons);
 context.oldIcons=oldIcons;
 const result=run('analyze(migrate(oldIcons))');
 assert.equal(JSON.stringify(oldIcons),before);
-assert.equal(result.effective.schemaVersion,14);
+assert.equal(result.effective.schemaVersion,15);
 assert.equal(result.errors.length,0);
 assert.deepEqual(result.document.icons,{pack:'alternate',extra:7});
 assert.equal(result.document.custom.untouched,42);

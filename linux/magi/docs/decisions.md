@@ -1,5 +1,17 @@
 # MAGI — Decisions and Debugging History
 
+## Phase 10C.1 — accepted and complete (2026-10-22)
+
+Power & Idle is integrated with schema 15 and saved 300/600/0 policy. The
+managed user service owns Hypridle and reads generated runtime configuration
+outside Git. Default Apply, timed lock, DPMS wake, inhibitor refusal/recovery,
+invalid ordering, manual lock and real suspend/resume passed the live gates.
+First-character resume input and temporary suspend-listener activation passed. The original
+canonical config is an emergency fallback only. The exact startup command passed an idempotent active-service check; a true
+fresh login remains untested. The operator accepted finalization; protected local state is excluded.
+See [ownership, acceptance evidence, rollback and remaining limits](design/phase10c1-power-idle.md).
+No MAGI Lock/PAM redesign, Hyprmon replacement or Phase 10C.2 work.
+
 
 ## Phase 10B — accepted and complete (2026-10-21)
 

@@ -30,7 +30,7 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 14,
+    return {schemaVersion: 15,
         appearance: {mediaProgressRole: "accent", hubToggleRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null}},
             surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, hubContent:true, hubSelector:true},
@@ -48,6 +48,7 @@ function defaults() {
                 secondaryOffOpacity: 0.6,
                 sliderTrack: "elevated", sliderFill: "overlay", sliderBorder: "lavender",
                 sliderBorderWidth: 2, avatarBorderWidth: 2}},
+        powerIdle: {lockAfter: 300, displayOffAfter: 600, suspendAfter: 0},
         icons: {pack: "magi-default"},
         weather: {enabled: false, location: "", units: "metric"},
         profile: {greetingStyle: "compact", displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
@@ -98,7 +99,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 14) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 15) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -116,6 +117,18 @@ function analyze(input) {
         if (!test) { errors.push(path + ": invalid value"); return clone(fallback) }
         return null
     }
+    const durations = [0,60,120,300,600,900,1800,3600]
+    const suspendDurations = [0,300,600,900,1800,3600,7200]
+    for (const key of ["lockAfter", "displayOffAfter", "suspendAfter"]) {
+        const value = effective.powerIdle[key]
+        if (!Number.isInteger(value) || !(key === "suspendAfter" ? suspendDurations : durations).includes(value)) {
+            errors.push("powerIdle." + key + ": choose a supported duration")
+            effective.powerIdle[key] = defaults().powerIdle[key]
+        }
+    }
+    const enabledTimers = [effective.powerIdle.lockAfter, effective.powerIdle.displayOffAfter, effective.powerIdle.suspendAfter].filter(v => v > 0)
+    if (enabledTimers.some((v,i) => i > 0 && v < enabledTimers[i-1]))
+        errors.push("Enabled timers must run in order: lock, display off, then suspend.")
     // Retired fields are never part of effective runtime configuration.
     delete effective.icons.overrides
     delete effective.icons.modulePacks
