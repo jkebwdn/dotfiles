@@ -85,6 +85,7 @@ bool Presentation::render(QImage& image, const QString& output, const QString& s
     item->setProperty("capsLock", auth.caps);
     item->setProperty("capsKnown", auth.capsKnown);
     item->setProperty("authStatus", QString::fromLatin1(auth.keyboardUnavailable ? "Keyboard state unavailable: press and release Shift" : authStateName(auth.state)));
+    item->setProperty("fingerprintStatus", QString::fromUtf8(auth.fingerprintStatus));
     item->setProperty("visual", data.values);
     const auto now=QDateTime::currentDateTime();
     const auto format=data.values.value("timeFormat").toString();

@@ -1,5 +1,18 @@
 # MAGI documentation
 
+## Phase 11A — fingerprint groundwork (accepted and complete)
+
+Native test-only fingerprint state/packet/lifecycle models and synthetic enrollment
+Settings previews are implemented. Production remains password-only, schema 15;
+QML gains presentation text only. Direct fprintd broker selected for future
+integration alongside the independent PAM password worker. Enrollment audit is
+unknown due to denied D-Bus access; existing enrollment is protected. Some IPC
+regressions are environment-blocked and reproduce on the accepted baseline; this
+limitation is accepted for non-authoritative Phase 11A. The operator accepted
+Security Settings and offline lock presentation; Phase 11B remains deferred.
+[Design, evidence, previews, limitations and Phase 11B ledger](design/phase11a-fingerprint-groundwork.md).
+
+
 ## Phase 10C.2A — accepted non-authoritative display framework
 
 Displays adds a preview-only layout editor, versioned profiles, a read-only Hyprmon

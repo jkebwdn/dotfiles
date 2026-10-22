@@ -49,5 +49,14 @@ int main(int argc, char** argv) {
               {scene.count,true,scene.caps,scene.state},scene.data)
             || !image.save(directory.filePath(QString::fromLatin1(scene.name)+".png"))) return 1;
     }
-    QTextStream(stdout)<<"10 offline synthetic previews rendered; no session lock or PAM\n";
+    const char* fingerprintLabels[]={"Touch fingerprint sensor · or enter password", "Fingerprint not recognised · try again or enter password", "Fingerprint reader unavailable · use password"};
+    const char* fingerprintNames[]={"fingerprint-waiting", "fingerprint-retry", "fingerprint-unavailable"};
+    for(unsigned i=0;i<3;++i) {
+        QImage image({1920,1080},QImage::Format_RGB32);
+        magi::AuthPresentation auth{3,true,false,magi::AuthState::Editing};
+        auth.fingerprintStatus=fingerprintLabels[i];
+        if(!magi::Presentation::render(image,"Preview","Locked","SYNTHETIC FINGERPRINT PREVIEW",{},auth,&live)
+            || !image.save(directory.filePath(QString::fromLatin1(fingerprintNames[i])+".png"))) return 1;
+    }
+    QTextStream(stdout)<<"13 offline synthetic previews rendered; no session lock or PAM\n";
 }

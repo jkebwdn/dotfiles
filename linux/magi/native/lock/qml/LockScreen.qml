@@ -8,6 +8,7 @@ Item {
     property bool inputActive: false
     property bool capsLock: false
     property bool capsKnown: true
+    property string fingerprintStatus: ""
     property string authStatus: "Locked"
     property var visual: ({})
     property string timeLabel: ""
@@ -26,6 +27,7 @@ Item {
             width: parent.width; spacing: design.gap
             LockProfile { width: parent.width; tokens: design; displayName: root.visual.displayName || ""; artworkAvailable: root.avatarAvailable }
             LockCredential { width: parent.width; tokens: design; characterCount: root.characterCount }
+            LockFingerprint { width: parent.width; tokens: design; status: root.fingerprintStatus }
             LockStatus { width: parent.width; tokens: design; authStatus: root.authStatus; capsLock: root.capsLock; capsKnown: root.capsKnown; inputActive: root.inputActive; characterCount: root.characterCount }
         }
     }

@@ -21,7 +21,7 @@ endif()
 # Only allowed property names are assigned to the QML root.
 string(REGEX MATCHALL "setProperty\\(\"[^\"]+\"" properties "${renderer}")
 foreach(property IN LISTS properties)
-    if(NOT property MATCHES "\"(outputLabel|nativeState|developmentNotice|characterCount|inputActive|capsLock|capsKnown|authStatus|visual|timeLabel|dateLabel|wallpaperAvailable|avatarAvailable)\"$")
+    if(NOT property MATCHES "\"(outputLabel|nativeState|developmentNotice|characterCount|inputActive|capsLock|capsKnown|authStatus|fingerprintStatus|visual|timeLabel|dateLabel|wallpaperAvailable|avatarAvailable)\"$")
         message(FATAL_ERROR "Unexpected presentation property")
     endif()
 endforeach()

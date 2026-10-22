@@ -67,3 +67,7 @@ else()
         message(FATAL_ERROR "Non-injection binary contains synthetic fixture selection")
     endif()
 endif()
+
+if(symbols MATCHES "magi::fingerprint::|SyntheticBackend")
+    message(FATAL_ERROR "Production owner contains synthetic fingerprint authority")
+endif()
