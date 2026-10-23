@@ -3,7 +3,7 @@ import QtQuick
 QtObject {
     id: root
     property string page: "Appearance"
-    readonly property var appearanceRoutes: ({theme:"Appearance", surfaces:"Surfaces", hub:"Hub"})
+    readonly property var appearanceRoutes: ({theme:"Appearance"})
     readonly property bool inAppearance: Object.values(appearanceRoutes).indexOf(page) >= 0
     readonly property string appearanceSection: Object.keys(appearanceRoutes).find(id => appearanceRoutes[id] === page) || "theme"
     function selectAppearance(id) { if (appearanceRoutes[id]) page = appearanceRoutes[id] }

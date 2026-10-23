@@ -1,5 +1,20 @@
 # MAGI
 
+## Phase 12E — Hub editor and ownership (natively accepted)
+
+Hub now has a first-class visual editor with a fitted production-frame preview and
+contextual content/selector/toggle inspectors. Notifications and Clipboard own their
+card border switches; shared card colour/width live in Notifications. Appearance
+retains global design-system controls and explicitly named Settings navigation accent.
+The Surfaces page is retired with every former option mapped. Schema stays 18.
+Switch style is honestly labelled shared with Wi-Fi/Bluetooth; Hub toggle colour
+continues to affect Hub-hosted Settings switches. Bar and CC editors remain unchanged.
+The reviewed Phase 12E paths are integrated and natively accepted. Schema remains
+18; the operator restored preferences and all protected local state is unchanged.
+Phase 12F remains a separate future task.
+[Ownership audit, test limits and review gallery](docs/design/phase12e-hub-settings-ownership.md).
+
+
 ## Phase 12D — Control Centre visual editor (accepted and complete)
 
 Control Centre has a first-class visual editor with ordered structural composition,
@@ -148,15 +163,16 @@ fallback bindings.
 
 ## Appearance and Settings
 
-Appearance groups **Theme, Surfaces, Bar, Control Centre and Hub** without duplicating
-pages. Operator controls include semantic palette roles and roundness, expanded/card
-borders, navigation accent, Pill/Filled/Minimal switches, Hub placement, Bar arrangement,
+Settings has first-class **Appearance, Bar, Control Centre and Hub** pages.
+Appearance owns global tokens; feature pages own their specific borders and styling.
+Operator controls include semantic palette roles and roundness, expanded/card
+borders, Settings navigation accent, shared Pill/Filled/Minimal switches, Hub placement, Bar arrangement,
 Control Centre composition and icon/tile styling. Profile and Media have independent
 text sizes/weights, artwork sizing/roundness and border-width controls.
 
 Settings can pin the **real production Control Centre** while navigating pages and
 adjusting values live. Profile, Calendar, Notifications, Clipboard, Launcher, Emoji,
-Wallpaper retain their own settings. Theme and Icon Pack share Appearance → Theme;
+Wallpaper retain their own settings. Theme and Icon Pack share Appearance;
 Status icon size belongs to Bar. Schema 13 retires individual icon overrides and adds
 semantic media-progress/Hub-toggle roles;
 local `settings.json`, backups and managed assets should be backed up separately.

@@ -1,5 +1,20 @@
 # MAGI documentation
 
+## Phase 12E — Hub editor and ownership (natively accepted)
+
+Hub now has a first-class visual editor with a fitted production-frame preview and
+contextual content/selector/toggle inspectors. Notifications and Clipboard own their
+card border switches; shared card colour/width live in Notifications. Appearance
+retains global design-system controls and explicitly named Settings navigation accent.
+The Surfaces page is retired with every former option mapped. Schema stays 18.
+Switch style is honestly labelled shared with Wi-Fi/Bluetooth; Hub toggle colour
+continues to affect Hub-hosted Settings switches. Bar and CC editors remain unchanged.
+The reviewed Phase 12E paths are integrated and natively accepted. Schema remains
+18; the operator restored preferences and all protected local state is unchanged.
+Phase 12F remains a separate future task.
+[Ownership audit, test limits and review gallery](design/phase12e-hub-settings-ownership.md).
+
+
 ## Phase 12D — Control Centre visual editor (accepted and complete)
 
 Control Centre has a first-class visual editor with ordered structural composition,

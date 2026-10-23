@@ -146,6 +146,22 @@ ShellRoot {
             Services.Settings.resetSection("controlCentre")
             for (const id of ["controlcentre", "wifi", "bluetooth"]) {
                 open(id)
+                if (id !== "controlcentre") {
+                    const switches = collect(bar.contentItem, item => item.toggleStyle !== undefined && item.visible)
+                    verify(switches.length > 0, id + " production switch exists")
+                    Services.Settings.setValue("appearance", "hubToggleRole", "red")
+                    for (const style of ["pill", "filled", "minimal"]) {
+                        Services.Settings.setValue("appearance", "toggleStyle", style)
+                        wait(20)
+                        for (const control of switches) {
+                            compare(control.toggleStyle, style, id + " consumes shared switch style")
+                            compare(findChild(control, "toggleTrack").height, style === "minimal" ? 6 : 18)
+                            compare(findChild(control, "toggleKnob").width, style === "filled" ? 8 : 12)
+                            compare(control.activeColor, Theme.Theme.accent, "Hub toggle colour does not recolour " + id)
+                        }
+                    }
+                    Services.Settings.setValue("appearance", "toggleStyle", "pill")
+                }
                 closeOutside()
                 open(id)
                 const module = bar.expandablePillRegistry[id]

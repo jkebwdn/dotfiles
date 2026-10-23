@@ -5,6 +5,7 @@ import QtQuick.Dialogs
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import "../../../services" as Services
+import "../../../settings/SettingsSchema.js" as Schema
 import "../../../theme" as Theme
 import "../../../icons" as Icons
 import "../../controls" as MagiControls
@@ -275,6 +276,50 @@ SettingsUI.SettingsPage {
         Label {text:"Master roundness";Layout.fillWidth:true}
         SettingsUI.SettingsSlider {Layout.fillWidth:true;from:0;to:2;stepSize:.05;value:Services.Settings.data.appearance.roundness.master;onMoved:Services.Settings.setRoundness("master",value)}
     }
+    SettingsUI.SettingsRow {
+        Label { text: "Settings navigation accent"; Layout.fillWidth: true }
+        SettingsUI.SettingsSelector {
+            Accessible.name: "Settings navigation accent"
+            model: ["background","surface","elevated","overlay","text","subtext","muted","accent","blue","lavender","green","yellow","peach","red","teal","border"]
+            currentIndex: model.indexOf(Services.Settings.data.appearance.navigationAccent)
+            onActivated: Services.Settings.setValue("appearance", "navigationAccent", currentText)
+        }
+    }
+    SettingsUI.SettingsHelp { text: "Shared design-system settings below also affect feature editors. Hub, Bar and Control Centre own their feature-specific controls." }
+    SettingsUI.SurfaceStyleSettings { title: "Expanded-surface borders — shared"; group: "surfaceBorders" }
+    SettingsUI.SettingsHelp { text: "Border colour and width affect Hub content/selector, Control Centre, Wi-Fi and Bluetooth menus. Enable each border in its owning editor." }
+    SettingsUI.SettingsSection {
+        title: "Shared shell roundness"
+        collapsible: false
+        Label { text: "Roundness"; font.bold: true }
+        Label { text: "Square (0) → reference (1) → rounder (2). Role defaults follow Master."; wrapMode: Text.Wrap; Layout.fillWidth: true; color: Theme.Theme.text }
+        Repeater {
+            model: [
+                {id:"surface",label:"Surfaces and cards — shared"},
+                {id:"action",label:"Buttons and switches — shared"}]
+            GridLayout {
+                columns: 3
+                id: radiusRow
+                required property var modelData
+                readonly property var setting: modelData.id === "master" ? Services.Settings.data.appearance.roundness.master
+                    : Services.Settings.data.appearance.roundness.roles[modelData.id]
+                Layout.fillWidth: true
+                Label { text: radiusRow.modelData.label; Layout.fillWidth: true; Layout.columnSpan: 3; wrapMode: Text.Wrap }
+                SettingsUI.SettingsSlider {
+                    Layout.fillWidth: true
+                    from: 0; to: 2; stepSize: .05
+                    value: parent.setting === null ? Services.Settings.data.appearance.roundness.master : parent.setting
+                    onMoved: Services.Settings.setRoundness(parent.modelData.id, value)
+                }
+                Label { text: parent.setting === null ? "Default" : Number(parent.setting).toFixed(2); Layout.preferredWidth: 55 }
+                SettingsUI.SettingsButton { text: "Default"; onClicked: Services.Settings.setRoundness(parent.modelData.id, parent.modelData.id === "master" ? 1 : null) }
+            }
+        }
+    }
+    SettingsUI.SettingsButton { text: "Reset shared borders"; onClicked: {
+        Services.Settings.setValue("appearance","surfaceBorders", Schema.defaults().appearance.surfaceBorders)
+        Services.Settings.setValue("appearance","notificationBorders", Schema.defaults().appearance.notificationBorders)
+    } }
     SettingsUI.SettingsButton { flat: true; text: "Reset appearance"; onClicked: Services.Settings.resetSection("appearance") }
 
 

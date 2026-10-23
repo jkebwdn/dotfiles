@@ -353,6 +353,10 @@
     "missing": {
       "asset": "missing.svg",
       "colorMode": "semantic"
+    },
+    "hub": {
+      "asset": "hub-apps.svg",
+      "colorMode": "semantic"
     }
   }
 }

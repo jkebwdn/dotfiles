@@ -38,7 +38,7 @@ ShellRoot {
             try {
             Services.SettingsWindowState.shown = true
             wait(100)
-            const names = ["Appearance", "Surfaces", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
+            const names = ["Appearance", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
             for (const theme of ["catppuccin-mocha", "catppuccin-frappe", "everforest-dark-hard", "everforest-light-hard", "catppuccin-latte"]) {
                 Services.Settings.setTheme(theme)
                 for (const size of [Qt.size(720,500), Qt.size(940,720)]) {
@@ -49,7 +49,7 @@ ShellRoot {
                     tryCompare(window.contentItem, "width", size.width)
                     tryCompare(window.contentItem, "height", size.height)
                     for (const name of names) {
-                        const sub = ({Surfaces:"surfaces", Hub:"hub"})[name]
+                        const sub = ({})[name]
                         if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
                         const nav = findChild(window.contentItem, sub ? "appearanceNav-" + sub : "settingsNav-" + name)
                         verify(nav !== null)
@@ -70,7 +70,7 @@ ShellRoot {
                             verify(canvas.width>150 && canvas.width<=current.width,"bounded editor canvas")
                             current.mode="Colours & Look";current.selection.select("controls");wait(20)
                             verify(current.body.width>200 && current.body.width<=current.width,"bounded inspector")
-                        } else verify(current.body.width > 400 && current.body.width <= current.width, "bounded page width")
+                        } else if(name === "Hub") verify(current.body.width > 160 && current.body.width <= current.width, "bounded Hub inspector"); else verify(current.body.width > 400 && current.body.width <= current.width, "bounded page width")
                         compare(current.boundsBehavior, Flickable.StopAtBounds)
                         verify(nav.checked, "selection remains distinct from focus")
                         if (!nav.hovered) compare(nav.background.color, sub ? Theme.Theme.elevated : "#00000000", "navigation levels have distinct selection")

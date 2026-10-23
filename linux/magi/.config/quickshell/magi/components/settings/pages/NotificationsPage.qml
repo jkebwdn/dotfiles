@@ -9,6 +9,18 @@ SettingsUI.SettingsPage {
     id: root
     title: "Notifications"
     description: "History stays in memory for this shell session. Fullscreen suppresses all toasts; DND keeps ordinary notifications in history."
+    SettingsUI.SettingsSection {
+        title: "Notification cards — shared with Clipboard"
+        collapsible: false
+        SettingsUI.CardStylePreview {}
+        SettingsUI.SurfaceStyleSettings {
+            title: "Card borders — shared colour and width"
+            group: "notificationBorders"
+            targets: [{id: "toasts", label: "Toast borders"}, {id: "history", label: "History borders"}]
+        }
+        SettingsUI.SettingsHelp { text: "Colour and width also affect Clipboard cards. Toast and History switches affect only their own presentation. Card roundness follows Appearance → Shared shell roundness." }
+        SettingsUI.SettingsButton { text: "Shared card roundness ↗"; onClicked: Services.SettingsWindowState.page = "Appearance" }
+    }
     Repeater {
         model: [{key:"enabled",label:"Accept notifications"}, {key:"toastsEnabled",label:"Show toasts"},
             {key:"dnd",label:"Do Not Disturb"}, {key:"showBody",label:"Show body previews"},

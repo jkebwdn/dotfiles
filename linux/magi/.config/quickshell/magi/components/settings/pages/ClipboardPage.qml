@@ -11,6 +11,20 @@ SettingsUI.SettingsPage {
     property bool eraseArmed: false
     title: "Clipboard"
     description: "SUPER + C opens history. New copies are collected; the clipboard already present at startup is skipped."
+    SettingsUI.SettingsSection {
+        title: "Clipboard card appearance"
+        collapsible: false
+        SettingsUI.CardStylePreview { clipboard: true }
+        SettingsUI.SurfaceStyleSettings {
+            title: "Clipboard card border"
+            group: "notificationBorders"
+            showSharedControls: false
+            targets: [{id: "clipboard", label: "Clipboard card borders"}]
+        }
+        SettingsUI.SettingsHelp { text: "Border colour and width are shared with Notification cards. Card roundness follows Appearance → Shared shell roundness." }
+        SettingsUI.SettingsButton { text: "Shared card borders ↗"; onClicked: Services.SettingsWindowState.page = "Notifications" }
+        SettingsUI.SettingsButton { text: "Shared card roundness ↗"; onClicked: Services.SettingsWindowState.page = "Appearance" }
+    }
     Repeater {
         model: [{key:"enabled",label:"Collect clipboard history"},
             {key:"includeImages",label:"Include PNG and JPEG images"},

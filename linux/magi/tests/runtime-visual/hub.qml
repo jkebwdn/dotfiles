@@ -30,8 +30,8 @@ ShellRoot {
                 compare(hub.mask.item,hub.content.surface)
                 compare(hub.mask.regions[0].item,hub.content.selectorPill)
                 verify(hub.content.x+hub.content.width < hub.previewOrigin.x)
-                for (const page of ["Appearance","Profile","Bar","Date & time","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Surfaces","Hub","Control Centre"]) {
-                    const sub = ({Bar:"bar", Surfaces:"surfaces", Hub:"hub", "Control Centre":"controlcentre"})[page]
+                for (const page of ["Appearance","Profile","Bar","Date & time","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Hub","Control Centre"]) {
+                    const sub = ({})[page]
                     if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
                     const nav = findChild(content,sub ? "appearanceNav-" + sub : "settingsNav-"+page)
                     nav.forceActiveFocus(); wait(20); mouseClick(nav); wait(50)

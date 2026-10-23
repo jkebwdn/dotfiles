@@ -1,5 +1,18 @@
 # MAGI — Quickshell Technical Reference
 
+## Phase 12E: shared Hub presenters (2026-10-23)
+
+Verified locally on Quickshell 0.3.2 (Arch Linux). `HubSelector.qml` and
+`HubSurface.qml` extract the existing production QML without introducing new
+Quickshell APIs. Runtime retains `modeButtons`, selector/surface aliases, focus
+routing and service dispatch; editor uses local mode requests. `ClipboardCardFrame`
+shares the existing card background/radius/SurfaceBorder contract. Notification
+samples use the production NotificationCard with synthetic data and inert callbacks.
+QtTest pointer, keyboard, lifecycle and palette regressions exercise these paths.
+Software offscreen captures are architecture evidence, not native compositor acceptance.
+See [Phase 12E](design/phase12e-hub-settings-ownership.md) for scope and limitations.
+
+
 ## Phase 12B — existing palette bindings (2026-10-22)
 
 No new Quickshell API is introduced. ThemeRegistry FileView feeds Theme bindings;

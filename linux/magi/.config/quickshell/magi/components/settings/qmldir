@@ -35,3 +35,5 @@ BarCanvas 1.0 BarCanvas.qml
 CCControlPreview 1.0 CCControlPreview.qml
 CCSectionPreview 1.0 CCSectionPreview.qml
 CCInspector 1.0 CCInspector.qml
+HubPreview 1.0 HubPreview.qml
+CardStylePreview 1.0 CardStylePreview.qml

@@ -73,8 +73,10 @@ ShellRoot {
             try {
                 wait(150)
                 verify(findChild(settings,"settingsNav-Icons") === null)
-                const sidebar=findChild(settings,"settingsSidebar"), tabs=findChild(settings,"appearanceNavigation")
-                compare(sidebar.mapToItem(settings,0,0).y,tabs.mapToItem(settings,0,0).y)
+                const sidebar=findChild(settings,"settingsSidebar")
+                verify(sidebar.mapToItem(settings,0,0).y >= 0)
+                verify(findChild(settings,"appearanceNavigation") === null, "Phase12E retires competing appearance subroutes")
+                verify(findChild(settings,"settingsNav-Hub") !== null, "Hub is first class")
                 const status=findChild(settings,"settingsSaveStatus")
                 compare(status.horizontalAlignment,Text.AlignHCenter)
                 const pair=findChild(settings,"themeAndIconPack")
@@ -99,8 +101,8 @@ ShellRoot {
                 findChild(settings,"settingsPage-Bar").mode="Colours & Look";findChild(settings,"settingsPage-Bar").selection.select("wifi");wait(20)
                 verify(findChild(settings,"visualSetting-statusIconSize").visible)
                 snap(settings,"bar")
-                Services.SettingsWindowState.page="Surfaces"; wait(80)
-                verify(findChild(findChild(settings,"settingsPage-Surfaces"),"visualSetting-statusIconSize") === null)
+                Services.SettingsWindowState.page="Appearance"; wait(80)
+                verify(findChild(findChild(settings,"settingsPage-Appearance"),"visualSetting-statusIconSize") === null)
                 Services.Settings.setValue("appearance","mediaProgressRole","green")
                 Services.Settings.setValue("appearance","hubToggleRole","teal")
                 for(const id of Theme.ThemeRegistry.ids) {

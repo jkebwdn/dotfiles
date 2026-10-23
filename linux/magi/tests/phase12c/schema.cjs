@@ -20,5 +20,5 @@ for(const lane of ['left','center','right']){const doc=structuredClone(base);doc
 const duplicates=structuredClone(base);duplicates.bar.left=['wifi'];duplicates.bar.right=['wifi'];assert(ctx.analyze(duplicates).warnings.length);assert.deepEqual(plain(ctx.analyze(duplicates).effective.bar.right),[]);
 const schemaSource=fs.readFileSync(root+'/settings/SettingsSchema.js','utf8');const barSource=fs.readFileSync(root+'/components/bar/Bar.qml','utf8');
 for(const id of vm.runInContext('barIds',ctx))assert(barSource.includes('"'+id+'":'),id);
-const surfaces=fs.readFileSync(root+'/components/settings/pages/SurfacesPage.qml','utf8');assert(!surfaces.includes('id:"wifi"')&&!surfaces.includes('id:"bluetooth"')&&!surfaces.includes('id:"barPill"'));
+assert(!fs.existsSync(root+'/components/settings/pages/SurfacesPage.qml'),'Phase12E retires Surfaces; Bar ownership remains in BarInspector');
 console.log('Phase12C schema: exact migration preservation, defaults, bounds, semantic roles, singleton registry and ownership PASS');

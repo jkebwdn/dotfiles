@@ -7,9 +7,11 @@ SettingsSection {
     id: root
     required property string group
     property var targets: []
+    property bool showSharedControls: true
     readonly property var style: Services.Settings.data.appearance[group]
     function set(key, value) { Services.Settings.setValue("appearance",group,Object.assign({},style,{[key]:value})) }
     RowLayout {
+        visible: root.showSharedControls
         Layout.fillWidth: true
         Label { text: "Colour" }
         SettingsSelector {

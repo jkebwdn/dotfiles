@@ -155,15 +155,13 @@ Pane {
             model: root.service.rows
             onMovementStarted: root.resetPending = false
             ScrollBar.vertical: ScrollBar {}
-            delegate: Rectangle {
+            delegate: ClipboardCardFrame {
                 id: card
                 required property var modelData
                 required property int index
                 width: history.width - 10
                 height: modelData.category === "image" ? 132 : 100
-                radius: Theme.Theme.radius("surface", 11, width, height)
-                color: root.selectedId === modelData.id ? Theme.Theme.overlay : Theme.Theme.elevated
-                Controls.SurfaceBorder { objectName: "clipboardCardBorder"; family: "notificationBorders"; surfaceId: "clipboard"; radius: parent.radius }
+                selected: root.selectedId === modelData.id
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
