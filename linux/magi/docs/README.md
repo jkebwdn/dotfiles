@@ -1,5 +1,12 @@
 # MAGI documentation
 
+## Phase 12B — theme library (natively accepted)
+
+Eight canonical semantic palettes add Rosé Pine, Moon and Dawn, Nord and Tokyo
+Night, Storm, Moon and Day (eight total; no invented Nord variants). Schema remains
+16; existing selections and role names are preserved. Native review passed; Catppuccin Mocha was restored.
+[Design, mappings, tests and gallery](design/phase12b-theme-library.md).
+
 ## Phase 12A — visual configurator (accepted and complete)
 
 Settings has larger navigation icons, independent Hub selection/toggle colours,
@@ -8,7 +15,7 @@ Centre preview. Production presenters and section layout are reused; drag handle
 reorder within each type through the existing auto-save contract. Schema 16
 preserves the old Hub selected colour on migration. Native review and integration passed; local Settings migrated to schema 16
 without unrelated value changes. [Architecture, tests, offline previews and review limits](design/phase12a-control-centre-configurator.md).
-Phase 12B/C/D and hardware acceptance remain deferred.
+Phase 12B is natively accepted; 12C/D and hardware acceptance remain deferred.
 
 
 ## Phase 11A — fingerprint groundwork (accepted and complete)

@@ -1,5 +1,14 @@
 # MAGI — Quickshell Technical Reference
 
+## Phase 12B — existing palette bindings (2026-10-22)
+
+No new Quickshell API is introduced. ThemeRegistry FileView feeds Theme bindings;
+Settings selectors consume labels and IDs. QtTest switches all 18 themes in an
+isolated HOME/XDG setup, tests production presenters and the asynchronous Process
+bridge. Software Qt capture cannot validate shader-rendered icons/artwork.
+
+[Phase 12B evidence and limits](design/phase12b-theme-library.md).
+
 ## Phase 12A — preview configuration input (2026-10-22)
 
 Installed Quickshell 0.3.2 / Qt 6.12.0. PreviewControlGrid reuses the existing

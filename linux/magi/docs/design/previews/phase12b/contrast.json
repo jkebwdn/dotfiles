@@ -1,0 +1,248 @@
+[
+  {
+    "id": "rose-pine",
+    "ratios": {
+      "text/background": 13.39,
+      "text/surface": 12.5,
+      "text/elevated": 11.51,
+      "on/accent": 8.43,
+      "accent/surface": 7.88,
+      "on/red": 6.07,
+      "red/surface": 5.67,
+      "on/peach": 10.45,
+      "peach/surface": 9.76,
+      "on/yellow": 10.77,
+      "yellow/surface": 10.06,
+      "on/green": 5.22,
+      "green/surface": 3.16,
+      "on/teal": 10.37,
+      "teal/surface": 9.68,
+      "on/blue": 10.37,
+      "blue/surface": 9.68,
+      "on/lavender": 8.43,
+      "lavender/surface": 7.88,
+      "muted/surface": 3.2
+    },
+    "below45": [
+      "green/surface",
+      "muted/surface"
+    ]
+  },
+  {
+    "id": "rose-pine-moon",
+    "ratios": {
+      "text/background": 11.86,
+      "text/surface": 10.9,
+      "text/elevated": 8.82,
+      "on/accent": 7.47,
+      "accent/surface": 6.87,
+      "on/red": 5.38,
+      "red/surface": 4.94,
+      "on/peach": 7.13,
+      "peach/surface": 6.55,
+      "on/yellow": 9.55,
+      "yellow/surface": 8.77,
+      "on/green": 5.76,
+      "green/surface": 3.94,
+      "on/teal": 9.19,
+      "teal/surface": 8.44,
+      "on/blue": 9.19,
+      "blue/surface": 8.44,
+      "on/lavender": 7.47,
+      "lavender/surface": 6.87,
+      "muted/surface": 2.79
+    },
+    "below45": [
+      "green/surface",
+      "muted/surface"
+    ]
+  },
+  {
+    "id": "rose-pine-dawn",
+    "ratios": {
+      "text/background": 6.66,
+      "text/surface": 7.0,
+      "text/elevated": 6.07,
+      "on/accent": 5.54,
+      "accent/surface": 3.65,
+      "on/red": 5.01,
+      "red/surface": 4.04,
+      "on/peach": 7.38,
+      "peach/surface": 2.74,
+      "on/yellow": 9.37,
+      "yellow/surface": 2.16,
+      "on/green": 5.59,
+      "green/surface": 5.88,
+      "on/teal": 6.13,
+      "teal/surface": 3.3,
+      "on/blue": 6.13,
+      "blue/surface": 3.3,
+      "on/lavender": 5.54,
+      "lavender/surface": 3.65,
+      "muted/surface": 2.87
+    },
+    "below45": [
+      "accent/surface",
+      "red/surface",
+      "peach/surface",
+      "yellow/surface",
+      "teal/surface",
+      "blue/surface",
+      "lavender/surface",
+      "muted/surface"
+    ]
+  },
+  {
+    "id": "nord",
+    "ratios": {
+      "text/background": 10.84,
+      "text/surface": 8.73,
+      "text/elevated": 7.49,
+      "on/accent": 6.24,
+      "accent/surface": 5.03,
+      "on/red": 5.13,
+      "red/surface": 2.46,
+      "on/peach": 7.38,
+      "peach/surface": 3.54,
+      "on/yellow": 8.0,
+      "yellow/surface": 6.44,
+      "on/green": 6.13,
+      "green/surface": 4.94,
+      "on/teal": 5.99,
+      "teal/surface": 4.83,
+      "on/blue": 4.64,
+      "blue/surface": 3.74,
+      "on/lavender": 7.41,
+      "lavender/surface": 3.55,
+      "muted/surface": 7.45
+    },
+    "below45": [
+      "red/surface",
+      "peach/surface",
+      "blue/surface",
+      "lavender/surface"
+    ]
+  },
+  {
+    "id": "tokyo-night",
+    "ratios": {
+      "text/background": 10.59,
+      "text/surface": 11.14,
+      "text/elevated": 8.32,
+      "on/accent": 6.79,
+      "accent/surface": 7.14,
+      "on/red": 6.46,
+      "red/surface": 6.8,
+      "on/peach": 8.4,
+      "peach/surface": 8.84,
+      "on/yellow": 8.55,
+      "yellow/surface": 8.99,
+      "on/green": 9.35,
+      "green/surface": 9.84,
+      "on/teal": 7.09,
+      "teal/surface": 7.47,
+      "on/blue": 6.79,
+      "blue/surface": 7.14,
+      "on/lavender": 7.39,
+      "lavender/surface": 7.77,
+      "muted/surface": 2.91
+    },
+    "below45": [
+      "muted/surface"
+    ]
+  },
+  {
+    "id": "tokyo-night-storm",
+    "ratios": {
+      "text/background": 9.02,
+      "text/surface": 9.63,
+      "text/elevated": 8.32,
+      "on/accent": 5.78,
+      "accent/surface": 6.18,
+      "on/red": 5.51,
+      "red/surface": 5.88,
+      "on/peach": 7.16,
+      "peach/surface": 7.65,
+      "on/yellow": 7.28,
+      "yellow/surface": 7.78,
+      "on/green": 7.97,
+      "green/surface": 8.51,
+      "on/teal": 6.05,
+      "teal/surface": 6.46,
+      "on/blue": 5.78,
+      "blue/surface": 6.18,
+      "on/lavender": 6.3,
+      "lavender/surface": 6.72,
+      "muted/surface": 2.51
+    },
+    "below45": [
+      "muted/surface"
+    ]
+  },
+  {
+    "id": "tokyo-night-moon",
+    "ratios": {
+      "text/background": 10.26,
+      "text/surface": 10.8,
+      "text/elevated": 8.28,
+      "on/accent": 6.66,
+      "accent/surface": 7.01,
+      "on/red": 5.9,
+      "red/surface": 6.21,
+      "on/peach": 7.16,
+      "peach/surface": 7.54,
+      "on/yellow": 9.96,
+      "yellow/surface": 10.49,
+      "on/green": 11.1,
+      "green/surface": 11.69,
+      "on/teal": 8.51,
+      "teal/surface": 8.96,
+      "on/blue": 6.66,
+      "blue/surface": 7.01,
+      "on/lavender": 6.73,
+      "lavender/surface": 7.08,
+      "muted/surface": 3.27
+    },
+    "below45": [
+      "muted/surface"
+    ]
+  },
+  {
+    "id": "tokyo-night-day",
+    "ratios": {
+      "text/background": 4.52,
+      "text/surface": 3.99,
+      "text/elevated": 3.52,
+      "on/accent": 5.23,
+      "accent/surface": 2.74,
+      "on/red": 5.4,
+      "red/surface": 2.65,
+      "on/peach": 4.77,
+      "peach/surface": 3.25,
+      "on/yellow": 4.85,
+      "yellow/surface": 3.3,
+      "on/green": 5.23,
+      "green/surface": 3.56,
+      "on/teal": 5.03,
+      "teal/surface": 2.85,
+      "on/blue": 5.23,
+      "blue/surface": 2.74,
+      "on/lavender": 4.87,
+      "lavender/surface": 2.94,
+      "muted/surface": 2.24
+    },
+    "below45": [
+      "text/surface",
+      "text/elevated",
+      "accent/surface",
+      "red/surface",
+      "peach/surface",
+      "yellow/surface",
+      "green/surface",
+      "teal/surface",
+      "blue/surface",
+      "lavender/surface",
+      "muted/surface"
+    ]
+  }
+]

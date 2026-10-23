@@ -23,6 +23,8 @@ Scope {
         const seen = []
         document.themes = document.themes.filter(theme => {
             const valid = typeof theme.id === "string" && seen.indexOf(theme.id) < 0
+                && typeof theme.label === "string" && theme.label.trim().length > 0
+                && typeof theme.family === "string" && theme.family.trim().length > 0
                 && typeof theme.dark === "boolean" && theme.roles
                 && required.every(role => /^#[0-9a-fA-F]{6}$/.test(theme.roles[role]))
                 && document.accentRoles.every(role => /^#[0-9a-fA-F]{6}$/.test(theme.roles[role]))

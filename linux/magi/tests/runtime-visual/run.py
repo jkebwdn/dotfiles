@@ -66,7 +66,7 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
     if len(sys.argv) > 1 and sys.argv[1] == 'weather.qml':
         (config/'services/weather.py').rename(config/'services/weather_backend.py')
         shutil.copy(root/'tests/weather/fixture.py',config/'services/weather.py')
-    (config/'test.qml').write_text(Path(__file__).with_name(sys.argv[1] if len(sys.argv) > 1 else 'runtime.qml').read_text().replace('../../.config/quickshell/magi/',''))
+    (config/'test.qml').write_text((Path(__file__).parent / (sys.argv[1] if len(sys.argv) > 1 else 'runtime.qml')).read_text().replace('../../.config/quickshell/magi/',''))
     runtime=stage/'runtime';runtime.mkdir(mode=0o700)
     env=dict(os.environ,QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime),XDG_STATE_HOME=str(stage/'state'), HOME=str(stage), XDG_CONFIG_HOME=str(stage/'xdg-config'), XDG_DATA_HOME=str(stage/'data'), XDG_CACHE_HOME=str(stage/'cache'))
     env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None)
@@ -76,4 +76,4 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
                       and 'This plugin does not support setting window masks' not in line
                       and 'WARN: Unable to find hyprland socket. Cannot connect to hyprland.' not in line)
     print(checked)
-    assert result.returncode==0 and 'PASS' in output and ({'typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
+    assert result.returncode==0 and 'PASS' in output and ({'../phase12b/surfaces.qml':'Phase12B surfaces PASS','typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked

@@ -1,5 +1,15 @@
 # MAGI — Decisions and Debugging History
 
+## Phase 12B — upstream colours, stable semantics (2026-10-22)
+
+Ship eight additions, including only canonical Nord. Prefer Rosé Pine distributed
+CSS over stale root JSON and Tokyo Night resolved Day output over a local inversion
+implementation. Preserve canonical RGB; derive only paired ink by contrast. Keep
+the flat selector, seven accent choices, existing IDs and schema 16. Flag muted
+and small accent text contrast for native review rather than recolouring upstream.
+
+[Phase 12B evidence and limits](design/phase12b-theme-library.md).
+
 ## Phase 12A — safe embedded preview, existing save contract (2026-10-22)
 
 Reuse production presenters with injected synthetic profile/media data, disable

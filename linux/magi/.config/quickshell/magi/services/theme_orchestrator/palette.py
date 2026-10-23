@@ -25,9 +25,10 @@ def resolve(theme_id):
     r = theme['roles']
     if any(not re.fullmatch(r'#[0-9a-fA-F]{6}', r.get(k, '')) for k in ROLES):
         raise ValueError('Incomplete semantic palette')
-    # Explicit family mappings: no accent-derived rainbow and no false light mode.
-    magenta = {'catppuccin-mocha': '#f5c2e7', 'catppuccin-macchiato': '#f5bde6',
-               'catppuccin-frappe': '#f4b8e4', 'catppuccin-latte': '#ea76cb'}.get(theme_id, r['lavender'])
+    # Optional upstream ANSI accent belongs to the shared canonical registry.
+    magenta = theme.get('ansiMagenta', r['lavender'])
+    if not re.fullmatch(r'#[0-9a-fA-F]{6}', magenta):
+        raise ValueError('Invalid ANSI magenta')
     ansi = [r['elevated'], r['red'], r['green'], r['yellow'], r['blue'], magenta,
             r['teal'], r['subtext'], r['overlay'], r['red'], r['green'], r['yellow'],
             r['blue'], magenta, r['teal'], r['text']]

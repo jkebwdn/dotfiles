@@ -20,7 +20,13 @@ ShellRoot {
             switch (test.step++) {
             case 0: Services.ThemeOrchestrator.activate(); break
             case 1:
-                test.check(Services.ThemeOrchestrator.targets.length === 13, "registry reaches Settings")
+                // c7c9426 retired the Hyprlock target. Assert identities as well as
+                // count so a missing/replaced adapter cannot make this test pass.
+                const expected = ["magi", "hyprland", "ghostty", "gtk", "zen", "yazi",
+                    "neovim", "starship", "fastfetch", "btop", "qt", "hyprtoolkit"]
+                const actual = Services.ThemeOrchestrator.targets.map(target => target.id)
+                test.check(JSON.stringify(actual.slice().sort()) === JSON.stringify(expected.slice().sort()),
+                    "exact supported/deferred registry reaches Settings; Hyprlock remains retired")
                 Services.ThemeOrchestrator.preview("ghostty", "")
                 break
             case 2:

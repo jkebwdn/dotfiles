@@ -1,5 +1,14 @@
 # MAGI — Architecture
 
+## Phase 12B — canonical palette expansion (2026-10-22)
+
+Eighteen registry entries now serve the same shell and orchestrator paths. Optional
+ANSI magenta metadata removes the last Python Catppuccin colour table without
+changing output. All new themes supply 33 roles; schema stays 16. New light themes
+reuse existing semantic shading. No adapter or component theme-name branching.
+
+[Phase 12B evidence and limits](design/phase12b-theme-library.md).
+
 ## Phase 12A — accepted configurator architecture (2026-10-22)
 
 The Settings Control Centre page embeds ControlCentrePreview with production
