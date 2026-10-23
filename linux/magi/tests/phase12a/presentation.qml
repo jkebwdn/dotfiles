@@ -19,7 +19,7 @@ ShellRoot {
    try {
     Services.SettingsWindowState.page="Control Centre";wait(250)
     const page=item("settingsPage-Control Centre"), preview=item("controlCentrePreview"), editor=item("controlCentreEditor")
-    page.mode="Colours & Look";wait(80)
+    page.mode="Appearance";wait(80)
     verify(preview.width>=300);verify(editor.width>=400)
     for(const columns of [1,2,4]){
       Services.Settings.setValue("controlCentre","columns",columns);wait(20)
@@ -81,9 +81,8 @@ ShellRoot {
       verify(preview.mapToItem(page,0,0).x>=0);verify(preview.mapToItem(page,preview.width,0).x<=page.width)
       if(size.width===720){
         capture("compact")
-        mouseClick(item("expandControlCentrePreview"));verify(page.expandedPreview);verify(!editor.visible)
-        wait(100);verify(preview.height>300);capture("compact-expanded")
-        mouseClick(item("expandControlCentrePreview"));verify(!page.expandedPreview);verify(editor.visible)
+        verify(editor.visible);verify(preview.visible)
+        verify(preview.composition.height*preview.fitScale<=preview.height+1)
       }
     }
     page.resetAppearance();wait(40)

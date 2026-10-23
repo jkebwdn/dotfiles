@@ -19,8 +19,10 @@ SettingsSection {
             required property var modelData
             Layout.fillWidth: true
             columns: 2
-            Label { text: numberRow.modelData.label; Layout.fillWidth: true; Layout.columnSpan: 2; wrapMode: Text.Wrap }
+            rowSpacing: 2
+            Label { text: numberRow.modelData.label; Layout.fillWidth: true;  wrapMode: Text.Wrap }
             SettingsSlider {
+                Layout.row: 1; Layout.columnSpan: 2
                 objectName: "visualSetting-" + numberRow.modelData.key
                 Accessible.name: numberRow.modelData.label
                 Layout.fillWidth: true
@@ -33,6 +35,9 @@ SettingsSection {
                 text: numberRow.modelData.shade
                     ? (setting > 0 ? "+" : "") + Math.round(setting * 100) + "%"
                     : Number(setting).toFixed(numberRow.modelData.step < 1 ? 2 : 0)
+                Layout.row: 0; Layout.column: 1
+                horizontalAlignment: Text.AlignRight
+                color: Theme.Theme.subtext
                 Layout.preferredWidth: 56
             }
         }

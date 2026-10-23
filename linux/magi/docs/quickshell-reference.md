@@ -617,3 +617,39 @@ RoundedArtwork's layered MultiEffect mask are reused. Production tests verify me
 Calendar geometry, embedded Wallpaper routing and thumbnail delegate release, and media
 size/radius/capability bounds on the installed Qt/Quickshell runtime. Software captures
 cannot certify GPU mask edges or compositor dispatch. [Tests and native checkpoint](design/runtime-phase2d.md).
+
+
+## Settings visual choices and wheel ownership — Phase 12F
+
+Locally verified with Qt **6.12.0** on 2026-10-23. `WheelHandler` can accept Mouse
+and TouchPad devices; `WheelEvent` exposes pixel/angle deltas. Blocking handlers and
+explicit ancestor handoff avoid double application in nested Settings regions.
+`Flickable` retains StopAtBounds and its default touch kinetics; wheel movement sets
+content coordinates directly after cancelFlick. Tests cover fractional angle input,
+normal/repeated detents, inner-bound handoff, sidebar and horizontal galleries.
+Physical touchpad phases/frame pacing remain native-only acceptance.
+
+Sources inspected 2026-10-23: [WheelHandler](https://doc.qt.io/qt-6/qml-qtquick-wheelhandler.html),
+[WheelEvent](https://doc.qt.io/qt-6/qml-qtquick-wheelevent.html),
+[Flickable](https://doc.qt.io/qt-6/qml-qtquick-flickable.html).
+Implementation: `components/settings/ScrollInput.qml`, `SettingsScroll.js`,
+`SettingsGallery.qml`; executable evidence: `tests/phase12f/presentation.qml`.
+Software offscreen Qt cannot render MultiEffect-tinted SVGs; do not interpret missing
+SVG pixels in software galleries as a successful native icon review. Icon resolver
+and fallback assertions run separately from captures.
+
+Phase 12F final refinement uses the same Qt Quick Controls button/focus path for
+reset and navigation utilities (`SettingsButton.actionKind`). `SettingsPage.titleSize`
+lets contextual inspectors use section hierarchy without another page-size title.
+The Phase 12F fixture exercises Space activation of disclosures, hidden/revealed
+precision controls, and settings invariance during disclosure. Scroll implementation
+fingerprints are unchanged during this refinement. Subsequent operator native acceptance
+covered gesture feel and actual SVG tint; those results are operator observations, not
+claims established by the offscreen fixture.
+
+Phase 12F scope fixture additionally exercises pointer/Tab/Space/Return selection of
+CC regions and Bar family headings, family/item outline differences, disclosure scroll
+clamping and invariant Settings revisions. `EditorSelection.familyKeys` is transient.
+The existing reorder board accepts a read-only family-membership highlight callback;
+no drag/drop or persisted model is replaced. Focus transfers to the existing drag handle
+when entering Layout from a focused appearance item.

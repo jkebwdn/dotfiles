@@ -29,16 +29,10 @@ Item {
         transformOrigin: Item.TopLeft
         x: (root.width - width * scale) / 2
         y: (root.height - height * scale) / 2
-        Rectangle {
+        // The production host supplies its own surface; the editor canvas stays quiet.
+        MouseArea {
             anchors.fill: parent
-            radius: 16
-            color: Theme.Theme.background
-            border.width: 1
-            border.color: Theme.Theme.border
-            MouseArea {
-                anchors.fill: parent
-                onClicked: root.selected("")
-            }
+            onClicked: root.selected("")
         }
         Label {
             x: 20
@@ -61,6 +55,11 @@ Item {
                 width: parent.width
                 height: root.contentHeight
                 clip: true
+                activeFocusOnTab: true
+                Accessible.name: root.mode === "settings" ? "Hub toggles" : "Hub content"
+                Accessible.description: "Escape closes Hub. Outside clicks pass through without dismissing it."
+                Keys.onSpacePressed: root.selected(root.mode === "settings" ? "toggles" : "")
+                Keys.onReturnPressed: root.selected(root.mode === "settings" ? "toggles" : "")
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 22
@@ -78,7 +77,7 @@ Item {
                         color: Theme.Theme.text
                     }
                     Label {
-                        text: "Representative content · editor only"
+                        text: "Preview"
                         color: Theme.Theme.subtext
                         font.pixelSize: 12
                     }
@@ -176,7 +175,7 @@ Item {
             x: 20
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 12
-            text: "Select framing or navigation · sample content is inert"
+            text: ""
             font.pixelSize: 11
             color: Theme.Theme.subtext
         }

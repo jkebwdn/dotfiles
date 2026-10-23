@@ -9,16 +9,17 @@ SettingsUI.SettingsPage {
     id: root
     title: "Bar"
     maximumBodyWidth: 1200
-    description: "Compose your Bar, then select a pill to edit its family and identity. Preview controls are inert."
+    description: ""
     property string mode: "Layout"
     property alias selection: selection
     SettingsUI.EditorSelection {
         id: selection
+        familyKeys: ["statusPills", "workspaces"]
         familyForInstance: function(id) { return id === "workspaces" ? "workspacePills" : "statusPills" }
     }
     RowLayout {
         Repeater {
-            model: ["Layout","Colours & Look","Behaviour"]
+            model: ["Layout","Appearance","Behaviour"]
             SettingsUI.SettingsButton {
                 required property string modelData
                 text: modelData; primary: root.mode === modelData
@@ -27,6 +28,8 @@ SettingsUI.SettingsPage {
         }
     }
     SettingsUI.VisualEditorFrame {
+        // A horizontal object uses the full canvas width in every mode.
+        columns: 1
         SettingsUI.BarCanvas {
             id: canvas
             objectName: "barCanvas"
@@ -34,35 +37,22 @@ SettingsUI.SettingsPage {
             Layout.minimumWidth: 0
             viewport: root
             editing: root.mode === "Layout"
+            styling: root.mode === "Appearance"
             selectedKey: selection.instance
             onSelected: key => selection.select(key)
-            onPlacedChanged: selection.reconcile(placed)
+            onPlacedChanged: selection.reconcile(placed.concat(["statusPills"]))
         }
         SettingsUI.BarInspector {
-            visible: root.mode === "Colours & Look"
+            id: inspector
+            objectName: "barAppearanceInspector"
+            visible: root.mode === "Appearance"
             Layout.alignment: Qt.AlignTop
-            Layout.preferredWidth: 360
             Layout.minimumWidth: 0
             selection: root.selection
         }
     }
-    SettingsUI.SettingsHelp {
-        visible: root.mode === "Layout"
-        text: "Drag a grip into Left, Centre, Right or Available. Focus a grip: Alt+↑/↓ reorder; Alt+←/→ change region; Escape cancels. Empty regions disappear."
-    }
-    Flow {
-        visible: root.mode === "Layout" && selection.instance !== ""
-        Layout.fillWidth: true; spacing: 8
-        Repeater {
-            model: [{id:"left",label:"Move to Left"},{id:"center",label:"Move to Centre"},{id:"right",label:"Move to Right"},{id:"hidden",label:"Remove from Bar"}]
-            SettingsUI.SettingsButton {
-                required property var modelData
-                text: modelData.label
-                onClicked: Services.Settings.placeBar(selection.instance,modelData.id)
-            }
-        }
-    }
     ColumnLayout {
+        objectName: "barBehaviourControls"
         visible: root.mode === "Behaviour"
         Layout.fillWidth: true
     Label { font.bold: true; text: "Bar placement" }
@@ -97,12 +87,13 @@ SettingsUI.SettingsPage {
         checked: Services.Settings.data.bar.externalDisplays
         onClicked: Services.Settings.setValue("bar", "externalDisplays", checked)
     }
-    SettingsUI.SettingsHelp { text: "Distances use logical pixels. Each bar reserves 48 px plus its edge offset at the selected edge. On narrow outputs the inset shrinks, then workspace and left modules hide to keep status controls usable." }
+
     }
-    SettingsUI.SettingsButton { flat:true; text:"Select Bar background"; visible:root.mode === "Colours & Look"; onClicked:selection.select("") }
-    SettingsUI.SettingsHelp { text: "Changes preview immediately and use Settings autosave. Reload from Disk restores the persisted layout and styling. Runtime placement waits for active menu interactions to finish." }
+
+
     SettingsUI.SettingsButton {
-        flat: true
+        actionKind: "reset";
+        visible: root.mode !== "Appearance" || selection.scope !== "module" || inspector.familySection.expanded
         text: "Reset Bar"
         onClicked: Services.Settings.resetSection("bar")
     }

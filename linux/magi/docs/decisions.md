@@ -850,3 +850,47 @@ Accepted visuals and native security boundaries remain intact. The bounded
 early-key compatibility fix and 37-path final allowlist are documented in the
 Phase 9 visual and resume-input checkpoints. Host offline validation is complete;
 final post-suspend host health verification passed; repository finalization is authorized.
+
+
+## 2026-10-23 — Phase 12F visual-first Settings candidate
+
+- Revised roadmap: Settings product design is 12F; application opacity/blur is 12G.
+- Fresh `magi-phase12f-design` worktree from accepted `bea9cf9`; interrupted worktree
+  inspected and left untouched. Only reviewed Settings refinements carried forward.
+- Visual choices should be chosen visually whenever practical. Theme/Icon Pack
+  registries drive galleries; exact master roundness remains available behind samples.
+- Less UI means fewer persistent mechanics, not fewer capabilities. Whole-item drag,
+  keyboard/context actions and one CC Layout replace grips/move rows/Arrange/Expand.
+- Scroll changes address input ownership and immediate deltas, not an unexplained
+  speed multiplier. A nonblocking handler double-delivered gallery input in tests;
+  blocking handlers with explicit ancestor handoff are the verified solution.
+- Passive drag hints avoid a Popup intercepting a later drag. Scope remains clear
+  through concise shared/individual sections, not repeated implementation prose.
+- Schema remains 18; native optical/scroll acceptance is pending. No live integration
+  or Phase 12G work. [Audit and review decisions](design/phase12f-settings-product-design.md).
+
+Phase 12F final refinement: common intent precedes precision. Module accent, shared
+shape and common appearance choices remain visible; numerical CC tuning stays
+reachable through Fine tune. Reset/navigation actions receive a consistent quiet
+surface. Clipboard keeps the unencrypted-history warning visible and discloses the
+full privacy explanation. Dark/Light filtering, sidebar grouping, compact CC zoom
+and return-navigation state are explicitly deferred. No persisted data changes.
+
+Phase 12F final scope decision: click the group to style the group; click an item to
+edit its own options. Family styling stays available via a closed contextual disclosure.
+Use this distinction only for real families. Workspace pills and Hub modes have no
+individual visual state, and no such state is introduced. Family highlights are subtle;
+item outlines stronger. Notifications remains preview-plus-controls rather than becoming
+another editor. Selection/disclosure remain transient; schema stays 18.
+
+Phase 12F pre-integration decision: Bar is a horizontal editor archetype. Its preview
+stays full width above Layout, Appearance and Behaviour controls. CC/Hub retain their
+vertical side-by-side composition. Family/item selection and schema 18 are unchanged.
+
+
+Phase 12F native finalization: the operator accepted the integrated product design,
+then requested the original elevated background behind the left Settings navigation.
+That semantic background was restored without changing navigation geometry, scrolling
+or editor behavior; the operator explicitly confirmed the correction and finalization.
+The native review gate covered mouse wheel/touchpad, horizontal galleries, SVG tint,
+light theme and editor scope/composition. Schema stays 18; Phase 12G remains deferred.

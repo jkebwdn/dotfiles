@@ -1,0 +1,131 @@
+status	category	path
+M	visual pickers / presenter adapters	linux/magi/.config/quickshell/magi/components/controls/CompactToggle.qml
+M	visual pickers / presenter adapters	linux/magi/.config/quickshell/magi/components/controls/Icon.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/BarCanvas.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/BarInspector.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/CCInspector.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/CardStylePreview.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/ControlCentrePreview.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/EditorSelection.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/HubPreview.qml
+A	visual pickers / presenter adapters	linux/magi/.config/quickshell/magi/components/settings/IconPackGallery.qml
+A	visual pickers / presenter adapters	linux/magi/.config/quickshell/magi/components/settings/RoundnessPicker.qml
+A	scroll/input	linux/magi/.config/quickshell/magi/components/settings/ScrollInput.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsButton.qml
+A	visual pickers / presenter adapters	linux/magi/.config/quickshell/magi/components/settings/SettingsChoiceCard.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsContent.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/SettingsDragHandle.qml
+A	visual pickers / presenter adapters	linux/magi/.config/quickshell/magi/components/settings/SettingsGallery.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsMetrics.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsNumber.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsPage.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/SettingsReorderBoard.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsRow.qml
+A	scroll/input	linux/magi/.config/quickshell/magi/components/settings/SettingsScroll.js
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsSection.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsSelector.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsSlider.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SettingsTextField.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/SurfaceStyleSettings.qml
+A	visual pickers / presenter adapters	linux/magi/.config/quickshell/magi/components/settings/SwitchStylePicker.qml
+A	visual pickers / presenter adapters	linux/magi/.config/quickshell/magi/components/settings/ThemeGallery.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/VisualSettingsGroup.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/AppearancePage.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/pages/BarPage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/CalendarPage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/ClipboardPage.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/pages/ControlCentrePage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/DisplaysPage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/EmojiPage.qml
+M	editor refinements	linux/magi/.config/quickshell/magi/components/settings/pages/HubPage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/LauncherPage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/NotificationsPage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/PowerIdlePage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/ProfilePage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/SecurityPage.qml
+M	conventional pages / previews	linux/magi/.config/quickshell/magi/components/settings/pages/WallpaperPage.qml
+M	Settings design system / navigation	linux/magi/.config/quickshell/magi/components/settings/qmldir
+M	visual pickers / presenter adapters	linux/magi/.config/quickshell/magi/icons/IconRegistry.qml
+M	documentation	linux/magi/README.md
+M	documentation	linux/magi/docs/README.md
+M	documentation	linux/magi/docs/architecture.md
+M	documentation	linux/magi/docs/decisions.md
+A	documentation	linux/magi/docs/design/phase12f-actions.tsv
+A	documentation	linux/magi/docs/design/phase12f-paths.tsv
+A	documentation	linux/magi/docs/design/phase12f-settings-product-design.md
+A	preview assets	linux/magi/docs/design/previews/phase12f/README.md
+A	preview assets	linux/magi/docs/design/previews/phase12f/all-pages.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/appearance.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/bar-appearance.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/bar-behaviour.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/bar-family-status.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/bar-family-workspace.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/bar-item-bluetooth.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/bar-item-wifi.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/bar-layout.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/before-profile.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-family-primary.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-family-secondary.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-family-sliders.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-fine-tune.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-host.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-item-dnd.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-item-volume.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-item-wifi.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-media.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-profile.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-volume.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/cc-wifi.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/clipboard-appearance.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/clipboard-history-details.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/clipboard.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/compact-appearance.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/compact-bar-family-status.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/compact-bar-item-wifi.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/compact-cc-family-primary.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/compact-control-centre.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/compact-hub.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/compact-profile.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/control-centre.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/date-time.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/displays.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/emoji.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/hub-clipboard.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/hub-emoji.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/hub-host.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/hub-notifications.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/hub-selector.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/hub-settings.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/hub.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/icon-pack-shapes-only.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/index.html
+A	preview assets	linux/magi/docs/design/previews/phase12f/large-control-centre.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/launcher.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/light-control-centre.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/light-hub.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/light-notifications.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/light-profile.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/notifications.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/palette-everforest-dark-hard.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/palette-nord.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/palette-rose-pine-dawn.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/palette-rose-pine.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/palette-tokyo-night-moon.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/power-idle.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/profile.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/roundness-fine-tune.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/security.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/switch-style-picker.png
+A	preview assets	linux/magi/docs/design/previews/phase12f/wallpaper.png
+M	documentation	linux/magi/docs/quickshell-reference.md
+M	tests	linux/magi/tests/phase10a/refinement.qml
+M	tests	linux/magi/tests/phase12a/presentation.qml
+M	tests	linux/magi/tests/phase12a/run.py
+M	tests	linux/magi/tests/phase12c/presentation.qml
+M	tests	linux/magi/tests/phase12d/presentation.qml
+M	tests	linux/magi/tests/phase12e/ownership.cjs
+M	tests	linux/magi/tests/phase12e/presentation.qml
+A	tests	linux/magi/tests/phase12f/presentation.qml
+A	tests	linux/magi/tests/phase12f/run.py
+M	tests	linux/magi/tests/settings/presentation.qml
+M	tests	linux/magi/tests/theme-orchestrator/pointer.qml

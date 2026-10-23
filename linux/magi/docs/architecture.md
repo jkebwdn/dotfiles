@@ -741,3 +741,42 @@ Accepted visuals and native security boundaries remain intact. The bounded
 early-key compatibility fix and 37-path final allowlist are documented in the
 Phase 9 visual and resume-input checkpoints. Host offline validation is complete;
 final post-suspend host health verification passed; repository finalization is authorized.
+
+
+## Phase 12F Settings product-design layer
+
+The presentation layer gains `SettingsChoiceCard`/`SettingsGallery`, registry-backed
+Theme/Icon Pack galleries, master-roundness samples with exact precision disclosure,
+and production switch-style samples. `Icon.previewPack` and `IconRegistry.resolvePack`
+are read-only preview adapters through the existing fallback authority. CompactToggle
+allows a preview binding; production still follows the same shared Settings style.
+
+The shared row metrics, focus/button/input treatment and progressive disclosure do
+not add settings data. CC's existing structural and module boards now coexist in
+one Layout; Bar and CC whole-item drag retains canonical race checks and keyboard
+moves. CC/Hub remove prose-only/redundant modes; accepted runtime composition is intact.
+
+`SettingsScroll.js` owns wheel-delta conversion and bounded movement. `ScrollInput`
+consumes a gesture once and explicitly hands off at bounds; galleries reserve
+horizontal/Shift input and forward ordinary vertical input. Touch flick kinetics
+remain Qt's defaults. Page/inspector/navigation/diff-review containers share this.
+No schema, application visual policy, hardware activation or production lifecycle
+changes are part of this phase. See [design checkpoint](design/phase12f-settings-product-design.md).
+
+The Phase 12F final refinement keeps the same UI architecture: reset and navigation
+utilities share `SettingsButton.actionKind`, CC precision groups use the existing
+section disclosure, and Hub's editor-only outer frame is removed. Production hosts,
+schema 18 and Settings scroll/input ownership are unchanged. See the checkpoint's
+final refinement audit and complete action inventory.
+
+Phase 12F selection scope follows the preview target: family/region selection exposes
+shared styling; module selection exposes identity with its family collapsed. Existing
+`EditorSelection` IDs gain transient family classification. CC singleton components
+and host surfaces stay direct. Bar workspace numbers and Hub modes select their real
+family; Notifications/Clipboard retain their simpler forms. No Settings schema/state
+or production composition change is involved.
+
+Settings visual-editor composition follows the object's aspect ratio: Control Centre
+and Hub keep vertical preview-left/inspector-right layouts; Bar uses a full-width
+horizontal preview above its controls in all modes and at compact widths. This is a
+Bar-page composition choice, not a change to the shared selection or scroll model.

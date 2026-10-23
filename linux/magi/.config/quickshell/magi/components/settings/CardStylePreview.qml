@@ -17,7 +17,7 @@ ColumnLayout {
                 id: "preview",
                 appName: "MAGI",
                 summary: "A quiet workspace",
-                body: "Your cards follow the shared border colour and width.",
+                body: "Everything you need, right where you left it.",
                 actions: []
             })
         property var notification: null

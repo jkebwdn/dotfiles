@@ -10,10 +10,10 @@ ColumnLayout {
     property bool collapsible: false
     property bool expanded: !collapsible
     Layout.fillWidth: true
-    spacing: 12
-    Layout.topMargin: 18
+    spacing: SettingsMetrics.compactGap
+    Layout.topMargin: title.length > 0 ? SettingsMetrics.sectionGap : 0
     Label {
-        visible: !root.collapsible
+        visible: !root.collapsible && root.title.length > 0
         text: root.title
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -25,6 +25,8 @@ ColumnLayout {
     SettingsButton {
         id: disclosure
         flat: true
+        leftPadding: 0
+        rightPadding: 0
         contentItem: Text {
             text: disclosure.text
             font.pixelSize: SettingsMetrics.sectionSize
@@ -47,6 +49,8 @@ ColumnLayout {
     ColumnLayout {
         id: content
         visible: root.expanded
+        opacity: root.expanded ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: SettingsMetrics.transitionDuration } }
         Layout.fillWidth: true
         spacing: 10
     }

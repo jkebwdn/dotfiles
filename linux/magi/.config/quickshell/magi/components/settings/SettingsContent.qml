@@ -56,6 +56,7 @@ FocusScope {
                     }
                     ScrollView {
                         id: navigationScroll
+                        ScrollInput { view: navigationScroll.contentItem }
                         objectName: "settingsNavigation"
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -64,7 +65,7 @@ FocusScope {
                         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                         ColumnLayout {
                             width: parent.width
-                            spacing: 2
+                            spacing: 0
                             Repeater {
                                 model: ["Appearance", "Bar", "Control Centre", "Hub", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
                                 SettingsNavigationItem {
@@ -131,7 +132,6 @@ FocusScope {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 0
-                Layout.topMargin: Services.SettingsWindowState.inAppearance ? SettingsMetrics.sidebarInset : 0
                 Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true

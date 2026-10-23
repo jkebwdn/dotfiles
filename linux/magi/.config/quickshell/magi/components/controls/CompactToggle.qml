@@ -6,7 +6,7 @@ Switch {
     id: root
     property color activeColor: Theme.Theme.accent
     property bool indicatorOnRight: false
-    readonly property string toggleStyle: Services.Settings.data.appearance.toggleStyle
+    property string toggleStyle: Services.Settings.data.appearance.toggleStyle
     implicitWidth: 40
     implicitHeight: 30
     padding: 4

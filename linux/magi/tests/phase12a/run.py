@@ -17,5 +17,5 @@ with tempfile.TemporaryDirectory(prefix='magi-phase12a-ui-') as tmp:
  known=['Failed to start IPC server','This plugin does not support setting window masks','Unable to find hyprland socket','Could not connect to DBus','Could not find an available backend']
  checked='\n'.join(l for l in output.splitlines() if not any(k in l for k in known))
  assert result.returncode==0 and 'Phase12A presentation PASS' in output and not any(k in checked for k in ['FAIL','WARN','ERROR'])
- assert all((previews/(name+'.png')).stat().st_size>1000 for name in ['overall','default','profile','media','reorder','hub','compact','compact-expanded','frappe','everforest'])
+ assert all((previews/(name+'.png')).stat().st_size>1000 for name in ['overall','default','profile','media','reorder','hub','compact','frappe','everforest'])
  print('Phase12A production-component previews:',previews)

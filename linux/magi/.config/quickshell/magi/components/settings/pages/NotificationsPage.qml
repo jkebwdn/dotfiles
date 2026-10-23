@@ -8,18 +8,24 @@ import ".." as SettingsUI
 SettingsUI.SettingsPage {
     id: root
     title: "Notifications"
-    description: "History stays in memory for this shell session. Fullscreen suppresses all toasts; DND keeps ordinary notifications in history."
-    SettingsUI.SettingsSection {
-        title: "Notification cards — shared with Clipboard"
-        collapsible: false
-        SettingsUI.CardStylePreview {}
-        SettingsUI.SurfaceStyleSettings {
-            title: "Card borders — shared colour and width"
-            group: "notificationBorders"
-            targets: [{id: "toasts", label: "Toast borders"}, {id: "history", label: "History borders"}]
+    description: ""
+    GridLayout {
+        Layout.fillWidth: true
+        columns: width > 580 ? 2 : 1
+        columnSpacing: SettingsUI.SettingsMetrics.sectionGap
+        SettingsUI.CardStylePreview { Layout.preferredWidth: 320; Layout.maximumWidth: 380 }
+        ColumnLayout {
+            Layout.fillWidth: true; Layout.alignment: Qt.AlignTop
+            SettingsUI.SurfaceStyleSettings {
+                title: "Card borders"
+                Layout.topMargin: 0
+                group: "notificationBorders"
+                targets: [{id: "toasts", label: "Toast borders"}, {id: "history", label: "History borders"}]
+            }
+            SettingsUI.SettingsHelp { text: "Colour and width also apply to Clipboard." }
+            SettingsUI.SettingsButton {
+                actionKind: "navigation";  text: "Shared card roundness ↗"; onClicked: Services.SettingsWindowState.page = "Appearance" }
         }
-        SettingsUI.SettingsHelp { text: "Colour and width also affect Clipboard cards. Toast and History switches affect only their own presentation. Card roundness follows Appearance → Shared shell roundness." }
-        SettingsUI.SettingsButton { text: "Shared card roundness ↗"; onClicked: Services.SettingsWindowState.page = "Appearance" }
     }
     Repeater {
         model: [{key:"enabled",label:"Accept notifications"}, {key:"toastsEnabled",label:"Show toasts"},
@@ -36,9 +42,10 @@ SettingsUI.SettingsPage {
         Label { text: "History retention"; Layout.fillWidth: true }
         SettingsUI.SettingsSelector { model: ["2 hours","6 hours","24 hours","Until cleared"]; currentIndex: [2,6,24,0].indexOf(Services.Settings.data.notifications.retentionHours); onActivated: Services.Settings.setValue("notifications","retentionHours",[2,6,24,0][currentIndex]) }
     }
-    SettingsUI.SettingsHelp { text: "Critical notifications are exempt from age-based pruning. Toast duration is independent; history is not written to disk." }
+    SettingsUI.SettingsHelp { text: "Critical notifications stay until cleared. History lasts for this session." }
     SettingsUI.SettingsSection {
         title: "Limits and timing"
+        collapsible: true
         Repeater {
             model: [{key:"fallbackTimeout",label:"Default timeout (seconds)",min:1,max:30,step:1,scale:1000},
                 {key:"maxVisible",label:"Maximum visible toasts",min:1,max:4,step:1,scale:1},
@@ -57,6 +64,7 @@ SettingsUI.SettingsPage {
             }
         }
     }
-    SettingsUI.SettingsButton { flat: true; text: "Reset notification settings"; onClicked: Services.Settings.resetSection("notifications") }
+    SettingsUI.SettingsButton {
+        actionKind: "reset";  text: "Reset notification settings"; onClicked: Services.Settings.resetSection("notifications") }
 
 }

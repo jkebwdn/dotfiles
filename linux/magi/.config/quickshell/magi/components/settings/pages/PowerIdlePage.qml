@@ -36,15 +36,15 @@ SettingsUI.SettingsPage {
             }
         }
     }
-    SettingsUI.SettingsHelp { text: "Locks before sleeping. Never disables only that idle timer; manual locking and locking before sleep remain available." }
+    SettingsUI.SettingsHelp { text: "Locks before sleep. “Never” disables only the selected timer." }
     SettingsUI.SettingsHelp {
         visible: !root.validOrder
         text: "Enabled timers must run in order: lock, display off, then suspend."
     }
-    SettingsUI.SettingsRow {
+    RowLayout {
         SettingsUI.SettingsButton {
             objectName: "powerIdle-apply"
-            text: "Apply"
+            primary: true; text: "Apply"
             enabled: Services.Settings.ready && root.validOrder && Services.Settings.saveState !== "pending"
             onClicked: Services.Settings.setPowerIdle(root.draft)
         }

@@ -37,3 +37,11 @@ CCSectionPreview 1.0 CCSectionPreview.qml
 CCInspector 1.0 CCInspector.qml
 HubPreview 1.0 HubPreview.qml
 CardStylePreview 1.0 CardStylePreview.qml
+
+ScrollInput 1.0 ScrollInput.qml
+SettingsChoiceCard 1.0 SettingsChoiceCard.qml
+SettingsGallery 1.0 SettingsGallery.qml
+ThemeGallery 1.0 ThemeGallery.qml
+IconPackGallery 1.0 IconPackGallery.qml
+RoundnessPicker 1.0 RoundnessPicker.qml
+SwitchStylePicker 1.0 SwitchStylePicker.qml

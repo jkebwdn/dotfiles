@@ -68,7 +68,7 @@ ShellRoot {
                         if(name === "Control Centre") {
                             const canvas=findChild(current,"controlCentrePreview")
                             verify(canvas.width>150 && canvas.width<=current.width,"bounded editor canvas")
-                            current.mode="Colours & Look";current.selection.select("controls");wait(20)
+                            current.mode="Appearance";current.selection.select("controls");wait(20)
                             verify(current.body.width>200 && current.body.width<=current.width,"bounded inspector")
                         } else if(name === "Hub") verify(current.body.width > 160 && current.body.width <= current.width, "bounded Hub inspector"); else verify(current.body.width > 400 && current.body.width <= current.width, "bounded page width")
                         compare(current.boundsBehavior, Flickable.StopAtBounds)
@@ -88,14 +88,16 @@ ShellRoot {
                 }
             }
             Services.SettingsWindowState.page = "Bar"; wait(50)
-            page("Bar").mode="Colours & Look";page("Bar").selection.select("wifi");wait(30)
+            page("Bar").mode="Appearance";wait(30)
+            mouseClick(findChild(page("Bar"), "barFamilyTarget-statusPills"));wait(30)
+            compare(page("Bar").selection.scope,"family")
             const slider = findChild(page("Bar"), "visualSetting-statusIconSize")
             verify(slider.visible, "surface controls remain reachable")
             const iconSize = Services.Settings.data.appearance.visual.statusIconSize
             slider.forceActiveFocus(Qt.TabFocusReason); keyClick(Qt.Key_Up)
             compare(Services.Settings.data.appearance.visual.statusIconSize, iconSize + 1, "production slider writes existing visual setting")
             Services.SettingsWindowState.page = "Control Centre"; wait(50)
-            page("Control Centre").mode="Colours & Look";page("Control Centre").selection.select("controls");wait(40)
+            page("Control Centre").mode="Appearance";page("Control Centre").selection.select("controls");wait(40)
             const primary = findChild(page("Control Centre"), "primaryColumns")
             const secondaryBefore = Services.Settings.data.controlCentre.actionColumns
             const primaryBefore = Services.Settings.data.controlCentre.columns

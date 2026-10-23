@@ -5,10 +5,11 @@ import "../../theme" as Theme
 Item {
     id: root
     property string role: "missing"
+    property string previewPack: ""
     property string moduleId: ""
     property real size: 16
     property color color: Theme.Theme.text
-    readonly property var requested: Icons.IconRegistry.resolve(role)
+    readonly property var requested: previewPack ? Icons.IconRegistry.resolvePack(role, previewPack) : Icons.IconRegistry.resolve(role)
     readonly property var canonical: Icons.IconRegistry.resolve(role, true)
     property int failureStage: 0
     readonly property var resolved: failureStage === 0 ? requested : failureStage === 1 ? canonical

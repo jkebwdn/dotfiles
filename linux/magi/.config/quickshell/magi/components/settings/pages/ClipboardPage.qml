@@ -10,21 +10,8 @@ SettingsUI.SettingsPage {
     id: root
     property bool eraseArmed: false
     title: "Clipboard"
-    description: "SUPER + C opens history. New copies are collected; the clipboard already present at startup is skipped."
-    SettingsUI.SettingsSection {
-        title: "Clipboard card appearance"
-        collapsible: false
-        SettingsUI.CardStylePreview { clipboard: true }
-        SettingsUI.SurfaceStyleSettings {
-            title: "Clipboard card border"
-            group: "notificationBorders"
-            showSharedControls: false
-            targets: [{id: "clipboard", label: "Clipboard card borders"}]
-        }
-        SettingsUI.SettingsHelp { text: "Border colour and width are shared with Notification cards. Card roundness follows Appearance → Shared shell roundness." }
-        SettingsUI.SettingsButton { text: "Shared card borders ↗"; onClicked: Services.SettingsWindowState.page = "Notifications" }
-        SettingsUI.SettingsButton { text: "Shared card roundness ↗"; onClicked: Services.SettingsWindowState.page = "Appearance" }
-    }
+    description: "Super + C opens history."
+
     Repeater {
         model: [{key:"enabled",label:"Collect clipboard history"},
             {key:"includeImages",label:"Include PNG and JPEG images"},
@@ -39,7 +26,7 @@ SettingsUI.SettingsPage {
     }
     Label {
         Layout.fillWidth: true; wrapMode: Text.Wrap
-        text: "Sensitive hints are respected; unmarked secrets cannot be detected. History, including pins, is normally session-only. Persistence saves unencrypted clipboard data in your user storage. Turning it off removes MAGI's saved history; backups may retain it."
+        text: "History is session-only by default. Saved history is unencrypted."
         color: Theme.Theme.text
     }
     SettingsUI.SettingsRow {
@@ -51,19 +38,39 @@ SettingsUI.SettingsPage {
             onValueModified: Services.Settings.setValue("clipboard", "historyLimit", value)
         }
     }
-    Label {
-        Layout.fillWidth: true; wrapMode: Text.Wrap
-        text: "Sensitive-marked copies are ignored, but apps may omit that hint. Wayland does not reliably identify the source app. Pause collection before copying private content. Images and history have additional memory limits; lowering the entry limit may unpin excess items."
-        color: Theme.Theme.text
+    SettingsUI.SettingsSection {
+        objectName: "clipboardHistoryPrivacy"
+        title: "About Clipboard history"
+        collapsible: true
+        SettingsUI.SettingsHelp { text: "Sensitive hints are respected; unmarked secrets cannot be detected. History, including pins, is normally session-only. Persistence saves unencrypted clipboard data in your user storage. Turning it off removes MAGI's saved history; backups may retain it." }
+        SettingsUI.SettingsHelp { text: "Pause collection before copying private content. Lowering the history limit may unpin older items." }
+    }
+    SettingsUI.SettingsSection {
+        objectName: "clipboardAppearance"
+        title: "Card appearance"
+        collapsible: true
+        SettingsUI.CardStylePreview { clipboard: true }
+        SettingsUI.SurfaceStyleSettings {
+            title: ""
+            group: "notificationBorders"
+            showSharedControls: false
+            targets: [{id: "clipboard", label: "Clipboard card borders"}]
+        }
+        SettingsUI.SettingsHelp { text: "Borders follow Notifications; shape follows Appearance." }
+        SettingsUI.SettingsButton {
+            actionKind: "navigation";  text: "Shared card borders ↗"; onClicked: Services.SettingsWindowState.page = "Notifications" }
+        SettingsUI.SettingsButton {
+            actionKind: "navigation";  text: "Shared card roundness ↗"; onClicked: Services.SettingsWindowState.page = "Appearance" }
     }
     SettingsUI.SettingsSection {
         title: "History actions"
         RowLayout {
             SettingsUI.SettingsButton {
-                text: "Clear unpinned"; enabled: Services.Clipboard.ready
+                destructive: true; text: "Clear unpinned"; enabled: Services.Clipboard.ready
                 onClicked: Services.Clipboard.clear()
             }
             SettingsUI.SettingsButton {
+                destructive: true
                 text: root.eraseArmed ? "Confirm erase including pins" : "Erase all history…"
                 enabled: Services.Clipboard.ready
                 onClicked: {
@@ -79,7 +86,8 @@ SettingsUI.SettingsPage {
             color: Services.Clipboard.error ? Theme.Theme.warning : Theme.Theme.subtext
         }
     }
-    SettingsUI.SettingsButton { flat: true; text: "Reset clipboard settings"; onClicked: Services.Settings.resetSection("clipboard") }
+    SettingsUI.SettingsButton {
+        actionKind: "reset";  text: "Reset clipboard settings"; onClicked: Services.Settings.resetSection("clipboard") }
 
     Timer { id: disarm; interval: 5000; onTriggered: root.eraseArmed = false }
 }

@@ -31,62 +31,22 @@ SettingsUI.SettingsPage {
         return "Details"
     }
     title: "Appearance"
-    description: "Palette and shape changes preview immediately."
+    description: ""
     property int packRequest: 0
     property string packError: ""
-    GridLayout {
-        objectName: "themeAndIconPack"
-        Layout.fillWidth: true
-        columns: root.body.width >= 440 ? 2 : 1
-        columnSpacing: SettingsUI.SettingsMetrics.gap
-        ColumnLayout {
-            Layout.fillWidth: true; Layout.minimumWidth: 0
-            Label { text: "Theme"; font.bold: true }
-            SettingsUI.SettingsSelector {
-                Accessible.name: "Theme"
-                Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.maximumWidth: Infinity
-                model: Theme.ThemeRegistry.themes
-                textRole: "label"
-                currentIndex: Theme.ThemeRegistry.ids.indexOf(Services.Settings.data.appearance.theme)
-                onActivated: index => Services.Settings.setTheme(model[index].id)
-            }
-        }
-        ColumnLayout {
-            Layout.fillWidth: true; Layout.minimumWidth: 0
-            Label { text: "Icon Pack"; font.bold: true }
-            SettingsUI.SettingsSelector {
-                objectName: "iconPackSelector"
-                Accessible.name: "Icon Pack"
-                Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.maximumWidth: Infinity
-                model: Icons.IconRegistry.packs
-                textRole: "label"
-                currentIndex: model.findIndex(p => p.id === Services.Settings.data.icons.pack)
-                onActivated: index => Services.Settings.setIconPack(model[index].id)
-            }
-        }
-    }
-    SettingsUI.SettingsButton { text: "Install icon pack…"; onClicked: packDialog.open() }
-    SettingsUI.SettingsHelp {
-        text: root.packError || (!Icons.IconRegistry.packs.some(p => p.id === Services.Settings.data.icons.pack)
-            ? "Selected icon pack is unavailable; using MAGI Default." : "Shell icons follow this pack. Application icons use the system icon theme.")
-    }
+    Label { text: "Theme"; font.pixelSize: SettingsUI.SettingsMetrics.sectionSize; font.bold: true }
+    SettingsUI.ThemeGallery {}
     RowLayout {
-        Repeater {
-            model: ["background", "surface", "text", "accent", "blue", "green", "yellow", "red"]
-            Rectangle {
-                required property string modelData
-                implicitWidth: 24
-                implicitHeight: 24
-                radius: Theme.Theme.radiusSmall
-                color: Theme.Theme.roles[modelData]
-                border.color: Theme.Theme.border
-                border.width: 1
-                ToolTip.visible: hover.hovered
-                ToolTip.text: modelData
-                HoverHandler { id: hover }
-            }
-        }
+        Layout.fillWidth: true
+        Label { text: "Icon Pack"; font.pixelSize: SettingsUI.SettingsMetrics.sectionSize; font.bold: true; Layout.fillWidth: true }
+        SettingsUI.SettingsButton { text: "Install icon pack…"; onClicked: packDialog.open() }
     }
+    SettingsUI.IconPackGallery {}
+    SettingsUI.SettingsHelp {
+        visible: root.packError.length > 0 || !Icons.IconRegistry.packs.some(p => p.id === Services.Settings.data.icons.pack)
+        text: root.packError || "Selected pack unavailable; using MAGI Default."
+    }
+    SettingsUI.RoundnessPicker {}
     SettingsUI.SettingsHelp { visible: Theme.Theme.diagnostic.length > 0; text: Theme.Theme.diagnostic; color: Theme.Theme.warning }
     SettingsUI.SettingsHelp {
         objectName: "applicationThemeAttention"
@@ -101,8 +61,8 @@ SettingsUI.SettingsPage {
         collapsible: true
         readonly property var supportedApplications: Services.ThemeOrchestrator.targets.filter(t => t.id !== "magi" && t.available)
         title: "Application themes · " + supportedApplications.filter(t => t.enabled).length
-            + " of " + supportedApplications.length + " applications following MAGI"
-        description: "Choose which applications follow MAGI. Expand a row for integration details."
+            + " of " + supportedApplications.length + " following MAGI"
+        description: ""
         SettingsUI.SettingsHelp {
             visible: Services.ThemeOrchestrator.busy
             text: Services.ThemeOrchestrator.summary
@@ -245,6 +205,8 @@ SettingsUI.SettingsPage {
                         Layout.fillWidth: true; wrapMode: Text.Wrap
                     }
                     ScrollView {
+                        id: reviewScroll
+                        SettingsUI.ScrollInput { view: reviewScroll.contentItem }
                         Layout.fillWidth: true; Layout.preferredHeight: 140
                         TextArea {
                             readOnly: true; wrapMode: TextEdit.Wrap
@@ -272,10 +234,10 @@ SettingsUI.SettingsPage {
             onClicked: Services.ThemeOrchestrator.refresh()
         }
     }
-    SettingsUI.SettingsRow {
-        Label {text:"Master roundness";Layout.fillWidth:true}
-        SettingsUI.SettingsSlider {Layout.fillWidth:true;from:0;to:2;stepSize:.05;value:Services.Settings.data.appearance.roundness.master;onMoved:Services.Settings.setRoundness("master",value)}
-    }
+    SettingsUI.SettingsSection {
+        objectName: "advancedShellStyling"
+        title: "Advanced shell styling"
+        collapsible: true
     SettingsUI.SettingsRow {
         Label { text: "Settings navigation accent"; Layout.fillWidth: true }
         SettingsUI.SettingsSelector {
@@ -285,14 +247,13 @@ SettingsUI.SettingsPage {
             onActivated: Services.Settings.setValue("appearance", "navigationAccent", currentText)
         }
     }
-    SettingsUI.SettingsHelp { text: "Shared design-system settings below also affect feature editors. Hub, Bar and Control Centre own their feature-specific controls." }
+
     SettingsUI.SurfaceStyleSettings { title: "Expanded-surface borders — shared"; group: "surfaceBorders" }
     SettingsUI.SettingsHelp { text: "Border colour and width affect Hub content/selector, Control Centre, Wi-Fi and Bluetooth menus. Enable each border in its owning editor." }
     SettingsUI.SettingsSection {
         title: "Shared shell roundness"
         collapsible: false
-        Label { text: "Roundness"; font.bold: true }
-        Label { text: "Square (0) → reference (1) → rounder (2). Role defaults follow Master."; wrapMode: Text.Wrap; Layout.fillWidth: true; color: Theme.Theme.text }
+        Label { text: "Defaults follow Master roundness."; wrapMode: Text.Wrap; Layout.fillWidth: true; color: Theme.Theme.text }
         Repeater {
             model: [
                 {id:"surface",label:"Surfaces and cards — shared"},
@@ -312,15 +273,20 @@ SettingsUI.SettingsPage {
                     onMoved: Services.Settings.setRoundness(parent.modelData.id, value)
                 }
                 Label { text: parent.setting === null ? "Default" : Number(parent.setting).toFixed(2); Layout.preferredWidth: 55 }
-                SettingsUI.SettingsButton { text: "Default"; onClicked: Services.Settings.setRoundness(parent.modelData.id, parent.modelData.id === "master" ? 1 : null) }
+                SettingsUI.SettingsButton {
+                    actionKind: "reset"; text: "Default"; onClicked: Services.Settings.setRoundness(parent.modelData.id, parent.modelData.id === "master" ? 1 : null) }
             }
         }
     }
-    SettingsUI.SettingsButton { text: "Reset shared borders"; onClicked: {
+    SettingsUI.SettingsButton {
+        actionKind: "reset"; text: "Reset shared borders"; onClicked: {
         Services.Settings.setValue("appearance","surfaceBorders", Schema.defaults().appearance.surfaceBorders)
         Services.Settings.setValue("appearance","notificationBorders", Schema.defaults().appearance.notificationBorders)
     } }
-    SettingsUI.SettingsButton { flat: true; text: "Reset appearance"; onClicked: Services.Settings.resetSection("appearance") }
+
+    }
+    SettingsUI.SettingsButton {
+        actionKind: "reset";  text: "Reset appearance"; onClicked: Services.Settings.resetSection("appearance") }
 
 
     FileDialog {

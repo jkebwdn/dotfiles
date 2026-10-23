@@ -87,7 +87,8 @@ UI.SettingsPage {
     UI.SettingsHelp {visible:!!root.state.error || !!root.state.validation;text:root.state.error || root.state.validation}
     UI.SettingsButton {visible:root.state.warnings.length>0;text:"Acknowledge review";enabled:!root.pending;onClicked:Services.Displays.send({op:"review"})}
     UI.SettingsRow {
-        UI.SettingsButton {text:"Revert edits";enabled:!root.pending;onClicked:Services.Displays.send({op:"reset"})}
+        UI.SettingsButton {
+            actionKind: "reset";text:"Revert edits";enabled:!root.pending;onClicked:Services.Displays.send({op:"reset"})}
         UI.SettingsButton {objectName:"displayApplyPreview";text:"Apply preview";enabled:!root.pending && !root.state.validation && !root.state.warnings.length;onClicked:Services.Displays.send({op:"apply"})}
         Label {text:"No changes to physical displays";color:Theme.Theme.text;Layout.fillWidth:true;wrapMode:Text.Wrap}
     }
@@ -107,7 +108,7 @@ UI.SettingsPage {
         TextField {id:profileName;placeholderText:"Profile name";Accessible.name:"Profile name";Layout.fillWidth:true;maximumLength:80}
         UI.SettingsButton {text:"Save as…";enabled:profileName.text.trim().length>0 && !root.pending;onClicked:Services.Displays.send({op:"save",name:profileName.text})}
         UI.SettingsButton {text:"Rename";enabled:root.state.profiles.length>root.profileIndex && profileName.text.trim().length>0;onClicked:Services.Displays.send({op:"rename",id:root.state.profiles[root.profileIndex].id,name:profileName.text})}
-        UI.SettingsButton {text:"Delete";enabled:root.state.profiles.length>root.profileIndex;onClicked:Services.Displays.send({op:"delete",id:root.state.profiles[root.profileIndex].id})}
+        UI.SettingsButton {destructive:true;text:"Delete";enabled:root.state.profiles.length>root.profileIndex;onClicked:Services.Displays.send({op:"delete",id:root.state.profiles[root.profileIndex].id})}
     }
     UI.SettingsHelp {visible:root.state.profileErrors.length>0;text:root.state.profileErrors.join("\n")}
     UI.SettingsButton {text:"Inspect Hyprmon profiles";onClicked:Services.Displays.send({op:"import"})}

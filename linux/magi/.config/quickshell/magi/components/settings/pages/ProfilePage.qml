@@ -13,7 +13,8 @@ SettingsUI.SettingsPage {
     property int avatarRequest: 0
     property string importError: ""
     title: "Profile"
-    description: "Only information you configure here is shown by MAGI."
+    maximumBodyWidth: 520
+    description: ""
     RowLayout {
         spacing: 16
         Controls.RoundedArtwork {
@@ -28,12 +29,14 @@ SettingsUI.SettingsPage {
         ColumnLayout {
             SettingsUI.SettingsButton { text: "Choose avatar…"; onClicked: avatarDialog.open() }
             SettingsUI.SettingsButton {
+                flat: true
                 text: "Clear avatar"; enabled: Services.Settings.data.profile.avatar !== null
                 onClicked: Services.Settings.setValue("profile", "avatar", null)
             }
         }
     }
-    Label { text: "Display name"; font.bold: true }
+    SettingsUI.SettingsRow {
+    Label { text: "Display name"; Layout.fillWidth: true }
     SettingsUI.SettingsTextField {
         Layout.fillWidth: true
         text: Services.Settings.data.profile.displayName
@@ -42,12 +45,15 @@ SettingsUI.SettingsPage {
         onTextEdited: Services.Settings.setValue("profile", "displayName", text)
         onEditingFinished: Services.Settings.setValue("profile", "displayName", text.trim())
     }
+    }
     SettingsUI.SettingsToggle {
-        text: "Show an optional third profile line"
+        text: "Personal message"
         checked: Services.Settings.data.profile.subtitleMode === "custom"
         onToggled: Services.Settings.setValue("profile", "subtitleMode", checked ? "custom" : "greeting")
     }
-    Label { text: "Optional third line"; font.bold: true }
+    SettingsUI.SettingsRow {
+    visible: Services.Settings.data.profile.subtitleMode === "custom"
+    Label { text: "Message"; Layout.fillWidth: true }
     SettingsUI.SettingsTextField {
         Layout.fillWidth: true
         text: Services.Settings.data.profile.subtitle
@@ -56,13 +62,17 @@ SettingsUI.SettingsPage {
         onTextEdited: Services.Settings.setValue("profile", "subtitle", text)
         onEditingFinished: Services.Settings.setValue("profile", "subtitle", text.trim())
     }
+    }
     SettingsUI.SettingsSection {
         title: "Weather"; collapsible: true; expanded: true
         SettingsUI.SettingsToggle {
             text: "Enable weather"; checked: Services.Settings.data.weather.enabled
             onToggled: Services.Settings.setValue("weather", "enabled", checked)
         }
-        Label { text: "Weather location" }
+        ColumnLayout {
+        visible: Services.Settings.data.weather.enabled
+        Layout.fillWidth: true
+        Label { text: "Location" }
         SettingsUI.SettingsTextField {
             id: weatherLocation
             objectName: "weatherLocation"
@@ -89,12 +99,16 @@ SettingsUI.SettingsPage {
                 || (Services.Weather.resolvedLocation ? "Weather for " + Services.Weather.resolvedLocation : "Set a location and enable weather.")
         }
         SettingsUI.SettingsHelp { text: "Weather by Open-Meteo; locations by GeoNames. Your saved location is sent only when enabled. Refreshes every 30 minutes." }
-        SettingsUI.SettingsButton { text: "Reset weather"; onClicked: Services.Settings.resetSection("weather") }
+        SettingsUI.SettingsButton {
+            actionKind: "reset";  text: "Reset weather"; onClicked: Services.Settings.resetSection("weather") }
+        }
     }
     Label { visible: root.importError.length > 0; text: root.importError; color: Theme.Theme.red; wrapMode: Text.Wrap; Layout.fillWidth: true }
     RowLayout {
-        SettingsUI.SettingsButton { text: "Open Control Centre"; onClicked: Services.MenuController.open("controlcentre") }
-        SettingsUI.SettingsButton { flat: true; text: "Reset profile"; onClicked: Services.Settings.resetSection("profile") }
+        SettingsUI.SettingsButton {
+            actionKind: "navigation"; text: "Open Control Centre"; onClicked: Services.MenuController.open("controlcentre") }
+        SettingsUI.SettingsButton {
+            actionKind: "reset";  text: "Reset profile"; onClicked: Services.Settings.resetSection("profile") }
     }
 
     FileDialog {

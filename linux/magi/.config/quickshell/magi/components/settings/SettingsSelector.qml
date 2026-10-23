@@ -5,18 +5,20 @@ import QtQuick.Layouts
 import "../../theme" as Theme
 ComboBox {
     id: root
+    wheelEnabled: false
     objectName: "settingsSelector-" + Accessible.name
-    property bool leftAligned: false
+    property bool leftAligned: true
     readonly property bool roleSelector: {
         if (!model || !model.length) return false
         for (let i = 0; i < model.length; ++i)
             if (typeof model[i] !== "string" || Theme.Theme.roles[model[i]] === undefined) return false
         return true
     }
-    implicitWidth: 208
+    implicitWidth: SettingsMetrics.selectorWidth
+    Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
     implicitHeight: SettingsMetrics.controlHeight
     Layout.maximumWidth: 260
-    leftPadding: 10; rightPadding: 28
+    leftPadding: SettingsMetrics.fieldPadding; rightPadding: 28
     focusPolicy: Qt.StrongFocus
     opacity: enabled ? 1 : SettingsMetrics.disabledOpacity
     palette.buttonText: Theme.Theme.text

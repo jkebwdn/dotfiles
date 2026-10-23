@@ -22,7 +22,7 @@ ShellRoot {
    for(let i=0;i<5;++i){mouseClick(preview.selector.modeButtons.itemAt(i));compare(preview.mode,["apps","clipboard","notifications","emoji","settings"][i]);compare(page.selection.instance,"selector")}
    mouseClick(item("settingsToggle-Sample enabled preference"));compare(page.selection.instance,"toggles");compare(item("settingsToggle-Sample enabled preference").checked,true)
    compare(JSON.stringify(Services.Settings.data),initial);compare(Services.Hub.mode,hubMode)
-   page.mode="Colours & Look"
+   page.mode="Appearance"
    for(const key of ["","selector","toggles"]){page.selection.select(key);preview.mode=key==="toggles"?"settings":"apps";capture("hub-"+(key||"host"))}
    compare(JSON.stringify(Services.Settings.data),initial)
    const toggle=Theme.Theme.hubToggleColor,nav=Theme.Theme.navigationAccent
@@ -33,7 +33,7 @@ ShellRoot {
    for(const style of ["pill","filled","minimal"]){Services.Settings.setValue("appearance","toggleStyle",style);wait(20);compare(item("settingsToggle-Sample enabled preference").toggleStyle,style)}
    for(const pos of ["above","below"]){Services.Settings.setValue("hub","selectorPosition",pos);wait(30);compare(preview.selector.y<preview.surface.y,pos==="above")}
    page.mode="Layout";Services.Settings.setValue("hub","verticalPosition",.2);Services.Settings.setValue("hub","selectorPosition","above");capture("hub-above")
-   Services.Settings.setValue("hub","selectorPosition","below");page.mode="Colours & Look";page.selection.select("selector");preview.mode="apps"
+   Services.Settings.setValue("hub","selectorPosition","below");page.mode="Appearance";page.selection.select("selector");preview.mode="apps"
    for(const theme of ["catppuccin-mocha","everforest-dark-hard","rose-pine","nord","tokyo-night-moon","rose-pine-dawn"]){Services.Settings.setTheme(theme);capture(theme)}
    // Production border overlays consume the same shared token; feature flags remain independent.
    const borderBefore=Services.Settings.data.appearance.notificationBorders
@@ -46,6 +46,7 @@ ShellRoot {
    const card=findChild(notifications,"notificationStylePreview"),outline=card.children.find(c=>c.family==="notificationBorders")
    verify(outline!==undefined);tryCompare(outline.border,"width",0);compare(outline.border.color,Theme.Theme.red)
    Services.SettingsWindowState.page="Clipboard";wait(100)
+   item("clipboardAppearance").expanded=true;wait(50)
    const clipboardPage=item("settingsPage-Clipboard"),clipToggle=item("settingsToggle-Clipboard card borders")
    clipboardPage.contentY=Math.max(0,clipToggle.mapToItem(clipboardPage.contentItem,0,0).y-80);wait(50)
    mouseClick(clipToggle);compare(Services.Settings.data.appearance.notificationBorders.clipboard,false)
@@ -57,7 +58,7 @@ ShellRoot {
    Services.SettingsWindowState.page="Hub";Services.Settings.setTheme("catppuccin-mocha");wait(100)
    for(const size of [Qt.size(1450,1000),Qt.size(1080,780),Qt.size(720,500)]){
     win.contentItem.Window.window.width=size.width;win.contentItem.Window.window.height=size.height;wait(100)
-    for(const mode of ["Layout","Colours & Look","Behaviour"]){page.mode=mode;wait(50);verify(preview.sceneHeight*preview.fitScale<=preview.height+1);verify(preview.sceneWidth*preview.fitScale<=preview.width+1);if(size.width>=720)verify(inspector.mapToItem(page,0,0).x>=preview.mapToItem(page,preview.width,0).x);capture("fit-"+size.width+"-"+mode.replace(/ /g,"-"))}
+    for(const mode of ["Layout","Appearance"]){page.mode=mode;wait(50);verify(preview.sceneHeight*preview.fitScale<=preview.height+1);verify(preview.sceneWidth*preview.fitScale<=preview.width+1);if(size.width>=720)verify(inspector.mapToItem(page,0,0).x>=preview.mapToItem(page,preview.width,0).x);capture("fit-"+size.width+"-"+mode.replace(/ /g,"-"))}
    }
    tryCompare(Services.Settings,"saveState","saved");wait(200)
    const saved=JSON.stringify(Services.Settings.data)

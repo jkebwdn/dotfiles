@@ -19,8 +19,10 @@ Item {
     property string canonicalRevision: ""
     onCanonicalRevisionChanged: if (dragging || candidate) cancel()
     property bool canvasMode: false
+    property string removeLane: ""
     property bool editing: true
     property string selectedKey: ""
+    property var familySelection: function(key) { return false }
     signal selected(string key)
     property real rowHeight: 100
     property real gap: 8
@@ -255,7 +257,7 @@ Item {
             Label {
                 x: root.inset + 8; y: root.inset + root.headingHeight
                 width: parent.width - root.inset * 2 - 16; height: root.rowHeight
-                visible: modelData.keys.length === 0 && (!root.canvasMode || root.editing)
+                visible: modelData.height > 0 && modelData.keys.length === 0 && (!root.canvasMode || root.editing)
                 text: modelData.emptyLabel || (root.multiLane ? "Drop a module here" : "No items configured")
                 color: Theme.Theme.text; font.pixelSize: 12; wrapMode: Text.Wrap
                 verticalAlignment: Text.AlignVCenter
@@ -272,10 +274,11 @@ Item {
             readonly property var entry: root.entryFor(entryKey)
             readonly property var slot: root.location(entryKey)
             readonly property bool moving: root.dragKey === entryKey
+            readonly property bool familyHighlighted: !root.editing && root.familySelection(entryKey)
             visible: !root.canvasMode || slot.index >= 0
-            activeFocusOnTab: root.canvasMode
+            activeFocusOnTab: root.canvasMode && (!root.editing || row.activeFocus)
             Accessible.role: Accessible.Button
-            Accessible.name: entry ? entry.label : ""
+            Accessible.name: entry ? entry.label + (root.canvasMode && !root.editing ? " appearance" : "") : ""
             Accessible.onPressAction: root.selected(entryKey)
             Keys.onSpacePressed: root.selected(entryKey)
             Keys.onReturnPressed: root.selected(entryKey)
@@ -285,9 +288,10 @@ Item {
             width: moving ? root.dragWidth : slot.width; height: slot.height || root.rowHeight
             z: moving ? 10 : 1
             opacity: moving ? 0.92 : 1
-            color: root.canvasMode ? "transparent" : root.multiLane ? Theme.Theme.background : Theme.Theme.surface
+            color: row.familyHighlighted ? Qt.alpha(Theme.Theme.accent, 0.04) : root.canvasMode ? "transparent" : root.multiLane ? Theme.Theme.background : Theme.Theme.surface
             radius: Theme.Theme.radius("action", 8, width, height)
-            border.width: moving || (root.canvasMode && root.selectedKey === entryKey) ? 1 : 0; border.color: Theme.Theme.accent
+            border.width: root.editing ? (moving || (root.canvasMode && root.selectedKey === entryKey) ? 1 : 0) : row.familyHighlighted ? (row.activeFocus ? 2 : 1) : row.activeFocus || (root.canvasMode && root.selectedKey === entryKey) ? 2 : 0
+            border.color: row.familyHighlighted && !row.activeFocus ? Qt.alpha(Theme.Theme.accent, 0.4) : Theme.Theme.accent
             Behavior on x { enabled: !row.moving; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
             Behavior on y { enabled: !row.moving; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
             Loader {
@@ -298,21 +302,47 @@ Item {
             }
             MouseArea {
                 anchors.fill: parent
-                visible: root.canvasMode
-                onClicked: root.selected(row.entryKey)
+                visible: root.canvasMode && !root.editing
+                onClicked: { row.forceActiveFocus(Qt.MouseFocusReason); root.selected(row.entryKey) }
+            }
+            Menu {
+                id: actions
+                objectName: root.objectName + "-actions-" + row.entryKey
+                MenuItem { text: "Move previous"; enabled: row.entry && row.entry.position > 0; onTriggered: root.moveKey(row.entryKey,-1) }
+                MenuItem { text: "Move next"; onTriggered: root.moveKey(row.entryKey,1) }
+                Repeater {
+                    model: root.lanes
+                    MenuItem {
+                        required property var modelData
+                        objectName: root.objectName + "-move-" + row.entryKey + "-" + modelData.id
+                        text: modelData.id === root.removeLane ? "Remove" : "Move to " + modelData.label
+                        enabled: row.entry && row.entry.lane !== modelData.id && root.canPlace(row.entryKey,modelData.id)
+                        onTriggered: root.request(row.entryKey,modelData.id,root.canonicalKeys(modelData.id).length,true)
+                    }
+                }
+            }
+            Connections {
+                target: root
+                function onEditingChanged() {
+                    if (root.editing && row.activeFocus)
+                        Qt.callLater(() => handle.forceActiveFocus(Qt.TabFocusReason))
+                }
             }
             SettingsDragHandle {
                 id: handle
+                readonly property var contextMenu: actions
                 objectName: root.objectName + "-handle-" + row.entryKey
                 visible: root.editing
-                x: root.canvasMode ? (parent.width - width) / 2 : parent.width - width - 4; y: root.locationProvider ? 2 : root.canvasMode ? -20 : 8
-                width: 28; height: 28
+                x: root.canvasMode ? 0 : parent.width - width - 4; y: root.canvasMode ? 0 : 8
+                width: root.canvasMode ? parent.width : 28; height: root.canvasMode ? parent.height : 28
                 label: row.entry ? row.entry.label : ""
                 hasLanes: root.multiLane
                 cancellingDrag: root.dragging || root.candidate.length > 0
                 onDragPressed: (px, py) => root.begin(row.entryKey, handle, px, py)
                 onDragMoved: (px, py) => root.motion(handle, px, py)
                 onDragReleased: (px, py) => root.release(handle, px, py)
+                onSelectionRequested: root.selected(row.entryKey)
+                onContextRequested: actions.popup()
                 onDragCancelled: root.cancel()
                 onMoveRequested: delta => root.moveKey(row.entryKey, delta)
                 onEdgeRequested: last => root.moveEdge(row.entryKey, last)

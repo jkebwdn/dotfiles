@@ -52,9 +52,9 @@ ShellRoot {
    Services.Settings.setRoundness("controlTile",1.4);wait(100)
    compare(item("ccPreview-wifi").presenter.radius,item("ccPreview-bluetooth").presenter.radius)
    compare(item("ccPreview-wifi").presenter.accentRole,"red");compare(item("ccPreview-bluetooth").presenter.accentRole,"lavender")
-   page.mode="Colours & Look"
+   page.mode="Appearance"
    for(const id of ["","profile","controls","wifi","sliders","volume","actions","dnd","media"]){page.selection.select(id);capture(id||"host")}
-   page.selection.select("wifi");mouseClick(item("settingsButton-Individual accent ↓"));capture("wifi-identity");page.contentY=0
+   page.selection.select("wifi");capture("wifi-identity");page.contentY=0
    Services.Settings.setVisual("tileBorderWidth",2);wait(20)
    compare(item("ccPreview-wifi").presenter.border.width,2);compare(item("ccPreview-bluetooth").presenter.border.width,2)
    Services.Settings.setVisual("sliderTrack","blue");Services.Settings.setRoundness("slider",.7);wait(20)
@@ -70,7 +70,7 @@ ShellRoot {
    compare(item("ccPreview-wifi").presenter.children[0].border.width,2);compare(item("ccPreview-bluetooth").presenter.children[0].border.width,2)
    verify(item("ccPreview-wifi").presenter.children[0].color!==item("ccPreview-bluetooth").presenter.children[0].color)
    Services.Settings.placeCCModule("bluetooth","controls",0)
-   page.mode="Layout";preview.arrangeStructure=true;capture("structure")
+   page.mode="Layout";capture("structure")
    const structure=preview.structureBoard,mediaHandle=item("ccStructureBoard-handle-media")
    const saved=JSON.stringify(Services.Settings.data.controlCentre.layout)
    mousePress(mediaHandle,12,12,Qt.LeftButton);mouseMove(structure,30,25,40);verify(structure.dragging)
@@ -80,7 +80,7 @@ ShellRoot {
    mousePress(staleStructure,12,12,Qt.LeftButton);mouseMove(structure,45,90,40);verify(structure.dragging)
    Services.Settings.placeCCSection("profile",0);wait(20);verify(!structure.dragging);mouseRelease(structure,45,90,Qt.LeftButton)
    for(const id of ["profile","media","sliders"]){const style=JSON.stringify(Services.Settings.data.appearance);Services.Settings.placeCCSection(id,-1);verify(!Services.Settings.data.controlCentre.layout.includes(id));Services.Settings.placeCCSection(id,0);compare(JSON.stringify(Services.Settings.data.appearance),style)}
-   preview.arrangeStructure=false
+
    for(const entry of Services.Settings.data.controlCentre.controls.slice())Services.Settings.placeCCModule(entry.module,"available")
    wait(100);capture("empty-primary");verify(preview.moduleBoard.geometry.some(l=>l.id==="controls"))
    Services.Settings.placeCCModule("wifi","controls",0)
@@ -89,14 +89,14 @@ ShellRoot {
    Services.Settings.placeCCSection("profile",2);Services.Settings.setRoundness("controlTile",.1)
    verify(Services.Settings.discardAndReload());tryCompare(Services.Settings,"ready",true);compare(JSON.stringify(Services.Settings.data.controlCentre),persisted)
    for(const theme of ["catppuccin-mocha","everforest-dark-hard","rose-pine","nord","tokyo-night-moon","rose-pine-dawn"]){Services.Settings.setTheme(theme);capture(theme)}
-   page.mode="Behaviour";compare(page.selection.instance,"media");capture("behaviour")
-   page.mode="Colours & Look";Services.Settings.setTheme("rose-pine-dawn");capture("light")
+   page.mode="Appearance";page.selection.select("media");capture("media-behaviour")
+   page.mode="Appearance";Services.Settings.setTheme("rose-pine-dawn");capture("light")
    win.contentItem.Window.window.width=720;win.contentItem.Window.window.height=900;capture("compact")
    Services.Settings.resetSection("controlCentre");Services.Settings.resetSection("appearance")
    for(const size of [Qt.size(1080,780),Qt.size(720,500)]) {
     win.contentItem.Window.window.width=size.width;win.contentItem.Window.window.height=size.height
-    for(const mode of ["Layout","Colours & Look","Behaviour"]) {
-     page.mode=mode;preview.arrangeStructure=false;wait(180)
+    for(const mode of ["Layout","Appearance"]) {
+     page.mode=mode;;wait(180)
      verify(preview.composition.height*preview.fitScale<=preview.height+1,"entire composition fits vertically")
      verify(preview.sceneWidth*preview.fitScale<=preview.width+1,"canvas and palette fit horizontally")
      const inspector=item("controlCentreEditor")
@@ -105,7 +105,7 @@ ShellRoot {
       verify(inspector.mapToItem(page,0,0).x>=preview.mapToItem(page,preview.width,0).x,"inspector stays to the right")
       compare(Math.round(inspector.mapToItem(page,0,0).y),Math.round(preview.mapToItem(page,0,0).y))
      }
-     if(size.width===1080)capture("fit-"+({"Layout":"layout","Colours & Look":"look","Behaviour":"behaviour"})[mode])
+     if(size.width===1080)capture("fit-"+({"Layout":"layout","Appearance":"look","Behaviour":"behaviour"})[mode])
     }
    }
    console.log("Phase12D presentation PASS")

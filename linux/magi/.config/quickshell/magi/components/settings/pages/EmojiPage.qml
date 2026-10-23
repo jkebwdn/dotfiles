@@ -36,9 +36,10 @@ SettingsUI.SettingsPage {
     }
     Label {
         Layout.fillWidth: true; wrapMode: Text.Wrap; color: Theme.Theme.text
-        text: "Search covers every category. Recently Used is saved in MAGI Settings. Clear or reset below to erase it. Skin-tone variants are individual results."
+        text: "Recents are saved between sessions. Clear them below."
     }
-    SettingsUI.SettingsButton { text: "Clear Recently Used"; onClicked: Services.Settings.setValue("emoji", "recents", []) }
-    SettingsUI.SettingsButton { flat: true; text: "Reset Emoji settings and history"; onClicked: Services.Settings.resetSection("emoji") }
+    SettingsUI.SettingsButton { destructive: true; text: "Clear Recently Used"; onClicked: Services.Settings.setValue("emoji", "recents", []) }
+    SettingsUI.SettingsButton {
+        actionKind: "reset";  destructive: true; text: "Reset Emoji settings and history"; onClicked: Services.Settings.resetSection("emoji") }
 
 }

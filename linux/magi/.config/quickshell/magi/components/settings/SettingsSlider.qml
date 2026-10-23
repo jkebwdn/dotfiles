@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import "../../theme" as Theme
 Slider {
     id: root
+    wheelEnabled: false
     background: Rectangle {
         x: root.leftPadding; y: (root.height - height) / 2
         width: root.availableWidth; height: 4; radius: 2

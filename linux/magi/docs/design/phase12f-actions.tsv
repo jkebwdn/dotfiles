@@ -1,0 +1,90 @@
+source	line	action	hierarchy	treatment
+BarCanvas.qml	74	modelData === "statusPills" ? "Status pills" : "Workspace pills"	Tertiary / quiet	SettingsButton: quiet hover/focus
+BarInspector.qml	121	root.family === "workspacePills" ? "Follow Bar pill roundness" : "Follow Master roundness"	Reset	SettingsButton: utility surface
+CCInspector.qml	91	"Default"	Reset	SettingsButton: utility surface
+CCInspector.qml	217	"Default"	Reset	SettingsButton: utility surface
+CCInspector.qml	379	"Default"	Reset	SettingsButton: utility surface
+SettingsContent.qml	113	"Reload from disk"	Secondary	SettingsButton: standard surface
+SettingsContent.qml	119	"Close CC preview"	Tertiary / quiet	SettingsButton: quiet hover/focus
+SettingsDragHandle.qml	4	""	Tertiary / quiet	SettingsButton: quiet hover/focus
+SettingsNavigationItem.qml	4	root.text	Navigation	SettingsButton: selected / hover surface
+SettingsReorderBoard.qml	311	"Move previous"	Tertiary / quiet	focus/context menu
+SettingsReorderBoard.qml	312	"Move next"	Tertiary / quiet	focus/context menu
+SettingsReorderBoard.qml	315	modelData.id === root.removeLane ? "Remove" : "Move to " + modelData.label	Tertiary / quiet	focus/context menu
+SettingsSection.qml	25	disclosure.text	Tertiary / quiet	SettingsButton: quiet hover/focus
+pages/AppearancePage.qml	42	"Install icon pack…"	Secondary	SettingsButton: standard surface
+pages/AppearancePage.qml	127	targetRow.expanded ? "▾" : "▸"	Tertiary / quiet	SettingsButton: quiet hover/focus
+pages/AppearancePage.qml	154	"Retry"	Tertiary / quiet	SettingsButton: quiet hover/focus
+pages/AppearancePage.qml	160	"Remove hooks"	Secondary	SettingsButton: standard surface
+pages/AppearancePage.qml	175	"Copy"	Secondary	SettingsButton: standard surface
+pages/AppearancePage.qml	218	"Enable Follow MAGI Theme"	Primary	SettingsButton: standard surface
+pages/AppearancePage.qml	223	"Cancel"	Secondary	SettingsButton: standard surface
+pages/AppearancePage.qml	231	Services.ThemeOrchestrator.busy ? "Updating targets…" : "Refresh targets"	Secondary	SettingsButton: standard surface
+pages/AppearancePage.qml	276	"Default"	Reset	SettingsButton: utility surface
+pages/AppearancePage.qml	281	"Reset shared borders"	Reset	SettingsButton: utility surface
+pages/AppearancePage.qml	288	"Reset appearance"	Reset	SettingsButton: utility surface
+pages/BarPage.qml	23	modelData	Navigation	SettingsButton: selected / hover surface
+pages/BarPage.qml	94	"Reset Bar"	Reset	SettingsButton: utility surface
+pages/CalendarPage.qml	45	"Reset date & time settings"	Reset	SettingsButton: utility surface
+pages/ClipboardPage.qml	60	"Shared card borders ↗"	Navigation	SettingsButton: utility surface
+pages/ClipboardPage.qml	62	"Shared card roundness ↗"	Navigation	SettingsButton: utility surface
+pages/ClipboardPage.qml	68	"Clear unpinned"	Destructive	SettingsButton: destructive surface
+pages/ClipboardPage.qml	72	root.eraseArmed ? "Confirm erase including pins" : "Erase all history…"	Destructive	SettingsButton: destructive surface
+pages/ClipboardPage.qml	89	"Reset clipboard settings"	Reset	SettingsButton: utility surface
+pages/ControlCentrePage.qml	69	modelData	Navigation	SettingsButton: selected / hover surface
+pages/ControlCentrePage.qml	112	"Reset Control Centre appearance"	Reset	SettingsButton: utility surface
+pages/ControlCentrePage.qml	118	"Reset composition"	Reset	SettingsButton: utility surface
+pages/ControlCentrePage.qml	126	"Reset composition"	Reset	SettingsButton: utility surface
+pages/DisplaysPage.qml	27	"Read connected displays"	Secondary	SettingsButton: standard surface
+pages/DisplaysPage.qml	84	({left:"← Left",right:"Right →",above:"↑ Above",below:"↓ Below"})[modelData]	Secondary	SettingsButton: standard surface
+pages/DisplaysPage.qml	88	"Acknowledge review"	Secondary	SettingsButton: standard surface
+pages/DisplaysPage.qml	90	"Revert edits"	Reset	SettingsButton: utility surface
+pages/DisplaysPage.qml	92	"Apply preview"	Secondary	SettingsButton: standard surface
+pages/DisplaysPage.qml	98	"Revert"	Secondary	SettingsButton: standard surface
+pages/DisplaysPage.qml	99	"Keep preview"	Secondary	SettingsButton: standard surface
+pages/DisplaysPage.qml	105	"Preview"	Secondary	SettingsButton: standard surface
+pages/DisplaysPage.qml	109	"Save as…"	Secondary	SettingsButton: standard surface
+pages/DisplaysPage.qml	110	"Rename"	Secondary	SettingsButton: standard surface
+pages/DisplaysPage.qml	111	"Delete"	Destructive	SettingsButton: destructive surface
+pages/DisplaysPage.qml	114	"Inspect Hyprmon profiles"	Secondary	SettingsButton: standard surface
+pages/EmojiPage.qml	41	"Clear Recently Used"	Destructive	SettingsButton: destructive surface
+pages/EmojiPage.qml	42	"Reset Emoji settings and history"	Destructive	SettingsButton: utility surface
+pages/HubPage.qml	41	modelData	Navigation	SettingsButton: selected / hover surface
+pages/HubPage.qml	129	"Shared surface appearance ↗"	Navigation	SettingsButton: utility surface
+pages/HubPage.qml	173	"Follow Master roundness"	Reset	SettingsButton: utility surface
+pages/HubPage.qml	179	"Shared selector borders ↗"	Navigation	SettingsButton: utility surface
+pages/HubPage.qml	211	Edit Clipboard / Notifications / Emoji ↗	Navigation	SettingsButton: utility surface
+pages/HubPage.qml	225	"Reset Hub appearance"	Reset	SettingsButton: utility surface
+pages/LauncherPage.qml	158	"Restore"	Reset	SettingsButton: utility surface
+pages/LauncherPage.qml	172	"Reset launcher settings and restore hidden apps"	Reset	SettingsButton: utility surface
+pages/NotificationsPage.qml	26	"Shared card roundness ↗"	Navigation	SettingsButton: utility surface
+pages/NotificationsPage.qml	67	"Reset notification settings"	Reset	SettingsButton: utility surface
+pages/PowerIdlePage.qml	45	"Apply"	Primary	SettingsButton: standard surface
+pages/PowerIdlePage.qml	51	"Cancel"	Tertiary / quiet	SettingsButton: quiet hover/focus
+pages/ProfilePage.qml	30	"Choose avatar…"	Secondary	SettingsButton: standard surface
+pages/ProfilePage.qml	31	"Clear avatar"	Tertiary / quiet	SettingsButton: quiet hover/focus
+pages/ProfilePage.qml	84	"Save location"	Secondary	SettingsButton: standard surface
+pages/ProfilePage.qml	102	"Reset weather"	Reset	SettingsButton: utility surface
+pages/ProfilePage.qml	108	"Open Control Centre"	Navigation	SettingsButton: utility surface
+pages/ProfilePage.qml	110	"Reset profile"	Reset	SettingsButton: utility surface
+pages/SecurityPage.qml	53	"Preview adding left index finger"	Secondary	SettingsButton: standard surface
+pages/SecurityPage.qml	56	"Simulate scan stage"	Secondary	SettingsButton: standard surface
+pages/SecurityPage.qml	57	"Simulate completion"	Secondary	SettingsButton: standard surface
+pages/SecurityPage.qml	58	"Cancel preview"	Secondary	SettingsButton: standard surface
+pages/WallpaperPage.qml	38	"Save directories"	Primary	SettingsButton: standard surface
+pages/WallpaperPage.qml	55	"Clear recent wallpapers"	Destructive	SettingsButton: destructive surface
+pages/WallpaperPage.qml	56	"Reset Wallpaper preferences"	Reset	SettingsButton: utility surface
+SettingsChoiceCard.qml	—	Theme / icon-pack / roundness / switch-style samples	Secondary	visual card; selection and keyboard focus
+SemanticPaletteSelector.qml	—	Semantic colour samples	Secondary	named swatch; keyboard and selected state
+SettingsGallery.qml	—	Gallery keyboard navigation / selection	Navigation	roving focus; current card reveal
+SettingsReorderBoard.qml	—	Select / drag / keyboard move / remove	Tertiary / quiet	object hit area; hover/focus; context menu
+BarCanvas.qml	—	Select Bar host / Status family / Workspace family / module	Tertiary / quiet	canvas selection outline
+ControlCentrePreview.qml	—	Select CC host / singleton / family region / module	Tertiary / quiet	canvas selection outline
+HubPreview.qml	—	Select host / selector / switches; five preview modes	Tertiary / quiet	production selector; inert host hit area
+CardStylePreview.qml	—	Sample-card interaction	Tertiary / quiet	inert pointer guard; no clipboard/notification actions
+DisplayCanvas.qml	—	Select / drag / keyboard place display	Tertiary / quiet	domain canvas; preview-only transaction
+SettingsSelector.qml	—	Open choice popup / choose value	Secondary	shared selector surface; keyboard/focus
+SettingsNumber.qml	—	Increment / decrement value	Secondary	shared stepper surface; keyboard/focus
+SettingsToggle.qml	—	Toggle preference	Secondary	shared switch; accessible row label
+SettingsSlider.qml	—	Adjust continuous value	Secondary	shared track/thumb; keyboard/focus
+pages/WallpaperPage.qml	—	Pick monitor / wallpaper thumbnail (production grid)	Secondary	domain gallery; selection and focus

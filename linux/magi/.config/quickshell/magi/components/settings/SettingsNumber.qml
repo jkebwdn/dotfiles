@@ -4,7 +4,10 @@ import QtQuick.Layouts
 import "../../theme" as Theme
 SpinBox {
     id: root
-    implicitWidth: 118
+    wheelEnabled: false
+    readonly property bool compactControl: true
+    implicitWidth: SettingsMetrics.stepperWidth
+    Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
     implicitHeight: SettingsMetrics.controlHeight
     leftPadding: 32; rightPadding: 32
     focusPolicy: Qt.StrongFocus

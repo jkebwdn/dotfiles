@@ -11,7 +11,6 @@ Item {
     id: root
     readonly property color color: Theme.Theme.roles[Services.Settings.data.appearance.controlCentreBackgroundRole]
     property bool editing: false
-    property bool arrangeStructure: false
     property bool playing: true
     property string selectedKey: ""
     property alias moduleBoard: moduleBoard
@@ -31,11 +30,11 @@ Item {
     readonly property real canvasWidth: 380
     readonly property bool paletteBeside: editing
     readonly property real paletteX: canvasWidth + 24
-    readonly property real paletteWidth: 340
+    readonly property real paletteWidth: 240
     readonly property real sceneWidth: editing ? paletteX + paletteWidth : canvasWidth
-    readonly property real sceneHeight: Math.max(composition.height, editing ? (arrangeStructure ? structureBoard.implicitHeight : moduleBoard.implicitHeight) : 0)
+    readonly property real sceneHeight: Math.max(composition.height, editing ? Math.max(structureBoard.implicitHeight, moduleBoard.implicitHeight) : 0)
     readonly property real fitScale: Math.min(1, width / sceneWidth, height / Math.max(1, sceneHeight))
-    readonly property var order: structureBoard.preview ? structureBoard.order("structure") : editing ? layout.layout.concat(["controls", "actions"].filter(id => !layout.layout.includes(id))) : layout.layout
+    readonly property var order: structureBoard.preview ? structureBoard.order("structure") : editing ? layout.layout.concat(["controls", "actions"].filter(id => !layout.layout.includes(id))) : layout.layout.concat(["controls", "actions", "sliders"].filter(id => !layout.layout.includes(id)))
     readonly property var composition: compose()
     readonly property string fingerprint: JSON.stringify([layout.layout, layout.controls, layout.actions, layout.sliders])
     implicitHeight: Math.max(400, composition.height + 28)
@@ -69,7 +68,7 @@ Item {
     }
     function compose() {
         const gap = [Theme.Theme.visual.profileControlsGap, Theme.Theme.visual.controlsSlidersGap, Theme.Theme.visual.slidersActionsGap, Theme.Theme.visual.actionsMediaGap, Theme.Theme.visual.mediaSectionGap];
-        const visible = ids.map(id => order.includes(id) && (["profile", "media"].includes(id) || count(id) > 0 || editing));
+        const visible = ids.map(id => order.includes(id));
         const arranged = SectionLayout.compose(order, visible, ids.map(id => sectionHeight(id) + 30), gap);
         const positions = {};
         ids.forEach((id, i) => {
@@ -127,9 +126,9 @@ Item {
         if (editing)
             result.push({
                 id: "available",
-                label: "AVAILABLE CONTROLS",
+                label: "Controls",
                 x: paletteX,
-                y: paletteBeside ? 0 : composition.height + 20,
+                y: structureBoard.order("availableStructure").length || structureBoard.dragging ? 44 + Math.max(1, structureBoard.order("availableStructure").length) * 48 : 0,
                 width: paletteWidth,
                 height: Math.ceil(moduleBoard.order("available").length / Math.max(1, Math.floor(paletteWidth / 100))) * 78 + 38,
                 keys: moduleBoard.order("available"),
@@ -185,12 +184,12 @@ Item {
             },
             {
                 id: "availableStructure",
-                label: "AVAILABLE COMPONENTS",
-                emptyLabel: "Drop a component here",
+                label: structureBoard.order("availableStructure").length || structureBoard.dragging ? "Components" : "",
+                emptyLabel: "Drag here to remove",
                 x: paletteX,
                 y: paletteBeside ? 0 : composition.height + 20,
                 width: paletteWidth,
-                height: 240,
+                height: structureBoard.order("availableStructure").length || structureBoard.dragging ? 36 + Math.max(1, structureBoard.order("availableStructure").length) * 48 : 0,
                 keys: structureBoard.order("availableStructure")
             }
         ];
@@ -212,9 +211,9 @@ Item {
             lane: lane,
             index: i,
             x: lane.x + 14,
-            y: placed ? (composition.positions[key] ?? 14) : lane.y + 30 + i * 64,
+            y: placed ? (composition.positions[key] ?? 14) : lane.y + 30 + i * 48,
             width: lane.width - 28,
-            height: placed ? sectionHeight(key) + 30 : 54
+            height: placed ? (["profile", "media"].includes(key) ? sectionHeight(key) + 30 : 26) : 40
         };
     }
     Flickable {
@@ -243,13 +242,23 @@ Item {
                 }
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: root.selected("")
+                    onClicked: { root.forceActiveFocus(Qt.MouseFocusReason); root.selected("") }
                 }
             }
             Repeater {
-                model: root.arrangeStructure && root.editing ? [] : root.order
+                model: root.editing ? [] : root.order
                 Item {
+                    id: region
                     required property string modelData
+                    objectName: "ccAppearanceRegion-" + modelData
+                    property bool pointerFocus: false
+                    onActiveFocusChanged: if (!activeFocus) pointerFocus = false
+                    activeFocusOnTab: true
+                    Accessible.role: Accessible.Button
+                    Accessible.name: root.labels[modelData] + " appearance"
+                    Accessible.onPressAction: root.selected(modelData)
+                    Keys.onSpacePressed: { pointerFocus = false; root.selected(modelData) }
+                    Keys.onReturnPressed: { pointerFocus = false; root.selected(modelData) }
                     x: 14
                     y: root.composition.positions[modelData] ?? 0
                     width: root.canvasWidth - 28
@@ -257,14 +266,14 @@ Item {
                     visible: root.composition.positions[modelData] !== undefined
                     Text {
                         text: root.labels[parent.modelData]
-                        color: Theme.Theme.subtext
+                        color: root.selectedKey === region.modelData ? Theme.Theme.accent : Theme.Theme.subtext
                         font.pixelSize: 11
                         font.bold: true
                     }
                     MouseArea {
-                        width: parent.width
-                        height: 26
-                        onClicked: root.selected(parent.modelData)
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: { region.forceActiveFocus(Qt.MouseFocusReason); region.pointerFocus = true; root.selected(parent.modelData) }
                     }
                     CCSectionPreview {
                         y: 30
@@ -276,16 +285,17 @@ Item {
                     }
                     Rectangle {
                         anchors.fill: parent
-                        visible: root.selectedKey === parent.modelData
-                        color: "transparent"
-                        border.width: 1
-                        border.color: Theme.Theme.accent
-                        radius: 8
+                        objectName: "ccFamilyHighlight-" + region.modelData
+                        visible: root.selectedKey === region.modelData || region.activeFocus
+                        color: Qt.alpha(Theme.Theme.accent, 0.04)
+                        border.width: region.activeFocus && !region.pointerFocus ? 2 : 1
+                        border.color: Qt.alpha(Theme.Theme.accent, region.activeFocus && !region.pointerFocus ? 1 : 0.4)
+                        radius: Theme.Theme.radius("action", 8, width, height)
                     }
                     MouseArea {
                         anchors.fill: parent
                         visible: ["profile", "media"].includes(parent.modelData)
-                        onClicked: root.selected(parent.modelData)
+                        onClicked: { region.forceActiveFocus(Qt.MouseFocusReason); region.pointerFocus = true; root.selected(parent.modelData) }
                     }
                 }
             }
@@ -293,7 +303,8 @@ Item {
                 id: moduleBoard
                 objectName: "ccModuleBoard"
                 width: root.sceneWidth
-                visible: !root.editing || !root.arrangeStructure
+                visible: true
+                removeLane: "available"
                 viewport: view
                 canvasMode: true
                 editing: root.editing
@@ -357,7 +368,8 @@ Item {
                 id: structureBoard
                 objectName: "ccStructureBoard"
                 width: root.sceneWidth
-                visible: root.editing && root.arrangeStructure
+                visible: root.editing
+                removeLane: "availableStructure"
                 viewport: view
                 canvasMode: true
                 editing: visible
@@ -394,7 +406,7 @@ Item {
                             y: 30
                             width: parent.width
                             height: parent.height - 30
-                            visible: parent.placed
+                            visible: parent.placed && ["profile", "media"].includes(parent.entry.key)
                             section: parent.entry.key
                             playing: root.playing
                             entries: ["controls", "actions", "sliders"].includes(section) ? root.entries(section) : []

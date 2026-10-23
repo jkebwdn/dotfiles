@@ -13,6 +13,9 @@ Scope {
     function resolve(role, skipSelected) {
         return Resolver.resolve(registry, Services.Settings.data.icons, role, skipSelected)
     }
+    function resolvePack(role, pack) {
+        return Resolver.resolve(registry, {pack: pack}, role, false)
+    }
     function signalRole(strength) {
         return State.signalRole(strength)
     }

@@ -1,5 +1,19 @@
 # MAGI
 
+## Phase 12F — Settings product design (natively accepted)
+
+Settings now uses visual Theme/Icon Pack galleries, roundness and switch-style
+samples, aligned controls and progressive disclosure. CC has one Layout workspace;
+Bar/CC use whole-item dragging with keyboard/context actions. Shared wheel handling
+is immediate and bounded, with explicit gallery/nested-scroll ownership. Schema
+remains 18. Native review accepted the pickers, wheel/touchpad and gallery interaction,
+icon tint, family/item selection and horizontal Bar composition. The original elevated
+sidebar background was restored at the operator’s request and explicitly accepted.
+Application opacity/blur is postponed to **Phase 12G**.
+
+[Design audit, evidence and operator review](docs/design/phase12f-settings-product-design.md).
+
+
 ## Phase 12E — Hub editor and ownership (natively accepted)
 
 Hub now has a first-class visual editor with a fitted production-frame preview and
@@ -11,7 +25,7 @@ Switch style is honestly labelled shared with Wi-Fi/Bluetooth; Hub toggle colour
 continues to affect Hub-hosted Settings switches. Bar and CC editors remain unchanged.
 The reviewed Phase 12E paths are integrated and natively accepted. Schema remains
 18; the operator restored preferences and all protected local state is unchanged.
-Phase 12F remains a separate future task.
+Phase 12E ownership remains intact; the integrated Phase 12F presentation is documented above.
 [Ownership audit, test limits and review gallery](docs/design/phase12e-hub-settings-ownership.md).
 
 

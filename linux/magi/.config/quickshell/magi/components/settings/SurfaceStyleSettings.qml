@@ -10,10 +10,10 @@ SettingsSection {
     property bool showSharedControls: true
     readonly property var style: Services.Settings.data.appearance[group]
     function set(key, value) { Services.Settings.setValue("appearance",group,Object.assign({},style,{[key]:value})) }
-    RowLayout {
+    SettingsRow {
         visible: root.showSharedControls
         Layout.fillWidth: true
-        Label { text: "Colour" }
+        Label { text: "Colour"; Layout.fillWidth: true }
         SettingsSelector {
             Accessible.name: root.title + " colour"
             Layout.fillWidth: true; Layout.minimumWidth: 0
@@ -21,11 +21,14 @@ SettingsSection {
             currentIndex: model.indexOf(root.style.role)
             onActivated: root.set("role",currentText)
         }
-        Label { text: "Width" }
+    }
+    SettingsRow {
+        visible: root.showSharedControls
+        Label { text: "Width"; Layout.fillWidth: true }
         SettingsNumber { Accessible.name: root.title + " width"; from: 0; to: 5; value: root.style.width; onValueModified: root.set("width", value) }
     }
-    Flow {
-        Layout.fillWidth: true; spacing: 12
+    ColumnLayout {
+        Layout.fillWidth: true; spacing: SettingsMetrics.compactGap
         Repeater {
             model: root.targets
             SettingsToggle {

@@ -40,6 +40,8 @@ UI.SettingsPage {
     }
     UI.SettingsSection {
         title:"Manage fingerprints · synthetic preview"
+        objectName: "fingerprintDemo"
+        collapsible: true
         UI.SettingsHelp {text:"These disposable examples never contact a sensor or change existing fingerprints. Password entry remains immediately available."}
         UI.SettingsSelector {
             objectName:"fingerprintFixture"

@@ -52,7 +52,8 @@ SettingsUI.SettingsPage {
             onValueModified: Services.Settings.setValue("wallpaper", "thumbnailSize", value)
         }
     }
-    SettingsUI.SettingsButton { text: "Clear recent wallpapers"; enabled: !Services.Wallpaper.busy; onClicked: Services.Wallpaper.start({op:"clearRecents"}) }
-    SettingsUI.SettingsButton { flat: true; text: "Reset Wallpaper preferences"; onClicked: Services.Settings.resetSection("wallpaper") }
+    SettingsUI.SettingsButton { destructive: true; text: "Clear recent wallpapers"; enabled: !Services.Wallpaper.busy; onClicked: Services.Wallpaper.start({op:"clearRecents"}) }
+    SettingsUI.SettingsButton {
+        actionKind: "reset";  text: "Reset Wallpaper preferences"; onClicked: Services.Settings.resetSection("wallpaper") }
 
 }

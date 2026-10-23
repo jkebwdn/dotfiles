@@ -47,7 +47,7 @@ ShellRoot {
     for(const lane of ["left","center","right"])Services.Settings.setValue("bar",lane,[])
     compare(canvas.placed.length,0)
     Services.Settings.resetSection("bar");wait(100)
-    page.mode="Colours & Look";page.selection.select("");capture("host")
+    page.mode="Appearance";page.selection.select("");capture("host")
     const inspector=item("barFamilyInspector")
     const before=JSON.stringify(Services.Settings.data)
     const activeMenu=Services.MenuController.activeMenu
@@ -75,7 +75,7 @@ ShellRoot {
     visual=JSON.parse(JSON.stringify(visual));visual.statusPills.enabled=false;Services.Settings.setValue("bar","visual",visual);compare(Theme.Theme.statusPillBackground.a,0);capture("pills-off")
     for(const theme of ["catppuccin-mocha","everforest-dark-hard","rose-pine","nord","tokyo-night-moon","rose-pine-dawn"]){Services.Settings.setTheme(theme);capture(theme)}
     page.mode="Behaviour";Services.Settings.setValue("bar","position","bottom");Services.Settings.setValue("bar","horizontalInset",24);Services.Settings.setValue("bar","edgeOffset",12);capture("behaviour")
-    page.mode="Colours & Look";page.selection.select("wifi");win.contentItem.Window.window.width=720;win.contentItem.Window.window.height=900;wait(200);capture("compact")
+    page.mode="Appearance";page.selection.select("wifi");win.contentItem.Window.window.width=720;win.contentItem.Window.window.height=900;wait(200);capture("compact")
     verify(page.contentWidth<=page.width);verify(canvas.width<=page.width)
     win.contentItem.Window.window.width=1100;capture("normal")
     page.selection.select("wifi");Services.Settings.placeBar("wifi","hidden");compare(page.selection.scope,"host")

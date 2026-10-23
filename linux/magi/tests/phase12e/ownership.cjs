@@ -6,8 +6,8 @@ const nav=read('components/settings/SettingsContent.qml');
 assert(!nav.includes('Surfaces'));assert(!nav.includes('appearanceNav-'));assert(nav.includes('"Control Centre", "Hub"'));
 assert(read('services/SettingsWindowState.qml').includes('({theme:"Appearance"})'));
 const hub=read('components/settings/pages/HubPage.qml');
-for(const key of ['hubSelectionRole','hubToggleRole','toggleStyle','hubContent','hubSelector','verticalPosition','selectorPosition'])assert(hub.includes(key),key);
-assert(hub.includes('Style affects all Settings switches and the Wi-Fi/Bluetooth'));
+for(const key of ['hubSelectionRole','hubToggleRole','toggleStyle','hubContent','hubSelector','verticalPosition','selectorPosition'])assert((hub+read('components/settings/SwitchStylePicker.qml')).includes(key),key);
+assert(hub.includes('Style: Settings, Wi-Fi and Bluetooth. Colour: Settings switches only.'));
 assert(read('components/settings/pages/AppearancePage.qml').includes('Settings navigation accent'));
 assert(!hub.includes('navigationAccent'));
 const pages=['Appearance','Hub','Notifications','Clipboard'].map(p=>read('components/settings/pages/'+p+'Page.qml')).join('\n');
@@ -21,7 +21,7 @@ console.log('Phase12E ownership PASS: all former Surfaces controls mapped, no co
 function files(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(d=>d.isDirectory()?files(path.join(dir,d.name)):[path.join(dir,d.name)])}
 const qml=files(root).filter(p=>p.endsWith('.qml'));
 const consumers=token=>qml.filter(p=>fs.readFileSync(p,'utf8').includes(token)).map(p=>path.relative(root,p));
-assert.deepEqual(consumers('readonly property string toggleStyle:'),['components/controls/CompactToggle.qml']);
+assert.deepEqual(consumers('property string toggleStyle:'),['components/controls/CompactToggle.qml']);
 for(const p of ['components/settings/SettingsToggle.qml','plugins/bar/wifi/WifiMenuContent.qml','plugins/bar/bluetooth/Bluetooth.qml'])assert(read(p).includes('CompactToggle {'),p);
 assert.deepEqual(consumers('Theme.Theme.navigationAccent'),['components/settings/SettingsNavigationItem.qml']);
 assert(read('components/settings/SettingsToggle.qml').includes('activeColor: Theme.Theme.hubToggleColor'));

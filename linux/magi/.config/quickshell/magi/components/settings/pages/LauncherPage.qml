@@ -41,6 +41,7 @@ SettingsUI.SettingsPage {
     }
     SettingsUI.SettingsSection {
         title: "Dimensions"
+        collapsible: true
         description: "List and grid sizes are configured independently."
         Repeater {
             model: [{key:"panelWidth",label:"List width",min:320,max:800}, {key:"gridWidth",label:"Grid width",min:420,max:1200},
@@ -62,6 +63,7 @@ SettingsUI.SettingsPage {
     }
     SettingsUI.SettingsSection {
         title: "Artwork"
+        collapsible: true
         description: "Local header artwork, inset within the Hub surface."
         Repeater {
             model: [{key:"headerEnabled",label:"Show header image"}]
@@ -154,6 +156,7 @@ SettingsUI.SettingsPage {
                     }
                 }
                 SettingsUI.SettingsButton {
+                    actionKind: "reset";
                     text: "Restore"
                     Accessible.name: "Restore " + hiddenRow.modelData.name
                     onClicked: Services.Launcher.restore(hiddenRow.modelData.id)
@@ -166,6 +169,7 @@ SettingsUI.SettingsPage {
             color: Theme.Theme.text
         }
     }
-    SettingsUI.SettingsButton { flat: true; text: "Reset launcher settings and restore hidden apps"; onClicked: Services.Settings.resetSection("launcher") }
+    SettingsUI.SettingsButton {
+        actionKind: "reset";  text: "Reset launcher settings and restore hidden apps"; onClicked: Services.Settings.resetSection("launcher") }
 
 }

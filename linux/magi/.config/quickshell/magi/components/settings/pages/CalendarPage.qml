@@ -8,7 +8,7 @@ import ".." as SettingsUI
 SettingsUI.SettingsPage {
     id: root
     title: "Date & time"
-    description: "Click the bar time or date to expand the calendar. Formats below apply to both the bar and its expanded header."
+    description: "Formats apply to the Bar and calendar."
     Repeater {
         model: [{key:"firstDay",label:"First day of week",names:["System locale","Monday","Sunday"],values:["locale","monday","sunday"]},
             {key:"density",label:"Calendar spacing",names:["Compact","Comfortable"],values:["compact","comfortable"]},
@@ -39,9 +39,10 @@ SettingsUI.SettingsPage {
     }
     Label {
         Layout.fillWidth: true; wrapMode: Text.Wrap
-        text: "Week numbers use the ISO week containing each row's Thursday. Reopening returns to today. Arrow keys select a day, Page Up/Down change month, and Home returns to today."
+        text: "Calendar: arrows select a day; Page Up/Down changes month; Home returns to today."
         color: Theme.Theme.text
     }
-    SettingsUI.SettingsButton { flat: true; text: "Reset date & time settings"; onClicked: Services.Settings.resetSection("calendar") }
+    SettingsUI.SettingsButton {
+        actionKind: "reset";  text: "Reset date & time settings"; onClicked: Services.Settings.resetSection("calendar") }
 
 }
