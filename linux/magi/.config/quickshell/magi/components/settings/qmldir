@@ -21,3 +21,13 @@ SurfaceStyleSettings 1.0 SurfaceStyleSettings.qml
 SemanticPaletteSelector 1.0 SemanticPaletteSelector.qml
 ControlCentrePreview 1.0 ControlCentrePreview.qml
 PreviewControlGrid 1.0 PreviewControlGrid.qml
+
+BarModulePreview 1.0 BarModulePreview.qml
+
+BarInspector 1.0 BarInspector.qml
+
+EditorSelection 1.0 EditorSelection.qml
+
+VisualEditorFrame 1.0 VisualEditorFrame.qml
+
+BarCanvas 1.0 BarCanvas.qml

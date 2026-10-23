@@ -63,7 +63,7 @@ MagiBar.ExpandableModule {
     viewBottomPadding: Theme.RenderTokens.padding
     viewRadius: Theme.RenderTokens.outerRadius
     viewSurfaceColor: Theme.Theme.surface
-    color: sharedSurface ? Qt.alpha(Theme.Theme.surface, 1 - sharedSurface.expansion) : Theme.Theme.surface
+    color: sharedSurface ? Qt.alpha(Theme.Theme.statusPillBackground, Theme.Theme.statusPillBackground.a * (1 - sharedSurface.expansion)) : Theme.Theme.statusPillBackground
     Connections {
         target: Services.MenuController
         function onActiveMenuChanged() {

@@ -12,6 +12,10 @@ Item {
     required property var entries // [{key, label, lane, position, data?}]; data stays canonical
     property var lanes: [{id: "items", label: ""}]
     required property Component rowContent
+    property bool canvasMode: false
+    property bool editing: true
+    property string selectedKey: ""
+    signal selected(string key)
     property real rowHeight: 100
     property real gap: 8
     readonly property bool multiLane: lanes.length > 1
@@ -52,13 +56,29 @@ Item {
     onEntriesChanged: synchronize()
     onLanesChanged: { cancel(); synchronize() }
     Component.onCompleted: synchronize()
+    onEditingChanged: cancel()
     onVisibleChanged: if (!visible) cancel()
     onWidthChanged: if (dragging) cancel()
     Connections {
         target: root.Window.window
         function onActiveChanged() { if (target && !target.active) root.cancel() }
     }
+    function itemWidth(key) { const entry = entryFor(key); return entry && entry.width ? entry.width : 64 }
     function layout() {
+        if (canvasMode) {
+            const placed = lanes.filter(l => !l.palette)
+            const total = placed.reduce((sum,l) => sum + Math.max(180, order(l.id).reduce((n,k) => n + itemWidth(k) + gap, 0) + 20), 0)
+            const result = []; let x = 0
+            for (const lane of placed) {
+                const natural = Math.max(180, order(lane.id).reduce((n,k) => n + itemWidth(k) + gap, 0) + 20)
+                const w = width * natural / total
+                result.push({id:lane.id,label:lane.label,alignment:lane.alignment || "left",x:x,y:0,width:w,height:80,keys:order(lane.id)})
+                x += w
+            }
+            const palette = lanes.find(l => l.palette)
+            if (editing && palette) result.push({id:palette.id,label:palette.label,x:0,y:110,width:width,height:80,keys:order(palette.id)})
+            return result
+        }
         const result = []
         let y = 0
         for (let start = 0; start < lanes.length; start += laneColumns) {
@@ -81,6 +101,9 @@ Item {
     function location(key) {
         for (const lane of geometry) {
             const index = lane.keys.indexOf(key)
+            if (index >= 0 && canvasMode) return {lane:lane,index:index,
+                x:lane.x + (lane.alignment === "center" ? (lane.width - lane.keys.reduce((n,k) => n + itemWidth(k) + gap, -gap))/2 : lane.alignment === "right" ? lane.width - 10 - lane.keys.reduce((n,k) => n + itemWidth(k) + gap, -gap) : 10) + lane.keys.slice(0,index).reduce((n,k) => n + itemWidth(k) + gap,0),
+                y:lane.y + 34,width:itemWidth(key)}
             if (index >= 0) return {lane:lane, index:index, x:lane.x + inset,
                 y:lane.y + inset + headingHeight + index * (rowHeight + gap), width:lane.width - inset * 2}
         }
@@ -92,7 +115,7 @@ Item {
     }
     function begin(key, handle, px, py) {
         cancel()
-        if (!entryFor(key)) return
+        if (!editing || !entryFor(key)) return
         candidate = key
         dragBaseline = fingerprint()
         pointerPosition = handle.mapToItem(viewport, px, py)
@@ -129,7 +152,7 @@ Item {
         let index = 0
         for (const key of others) {
             const slot = location(key)
-            if (boardPointer.y > slot.y + rowHeight / 2) ++index
+            if (canvasMode ? boardPointer.x > slot.x + slot.width / 2 : boardPointer.y > slot.y + rowHeight / 2) ++index
         }
         if (lanes.find(l => l.id === lane.id).ordered === false)
             index = others.concat(dragKey).sort((a,b) => entryFor(a).label.localeCompare(entryFor(b).label)).indexOf(dragKey)
@@ -209,19 +232,19 @@ Item {
             objectName: root.objectName + "-lane-" + modelData.id
             x: modelData.x; y: modelData.y; width: modelData.width; height: modelData.height
             radius: Theme.Theme.radius("surface", 10, width, height)
-            color: root.multiLane ? Theme.Theme.surface : "transparent"
+            color: root.canvasMode ? "transparent" : root.multiLane ? Theme.Theme.surface : "transparent"
             border.width: root.dragging && root.targetLane === modelData.id && root.multiLane ? 1 : 0
             border.color: Theme.Theme.accent
             Label {
                 x: 10; y: 8; width: parent.width - 20
-                text: modelData.label; visible: root.multiLane
+                text: modelData.label; visible: root.multiLane && (!root.canvasMode || root.editing || modelData.keys.length > 0)
                 font.pixelSize: 11; font.bold: true; color: Theme.Theme.text
                 elide: Text.ElideRight
             }
             Label {
                 x: root.inset + 8; y: root.inset + root.headingHeight
                 width: parent.width - root.inset * 2 - 16; height: root.rowHeight
-                visible: modelData.keys.length === 0
+                visible: modelData.keys.length === 0 && (!root.canvasMode || root.editing)
                 text: root.multiLane ? "Drop a module here" : "No items configured"
                 color: Theme.Theme.text; font.pixelSize: 12; wrapMode: Text.Wrap
                 verticalAlignment: Text.AlignVCenter
@@ -238,26 +261,39 @@ Item {
             readonly property var entry: root.entryFor(entryKey)
             readonly property var slot: root.location(entryKey)
             readonly property bool moving: root.dragKey === entryKey
+            visible: !root.canvasMode || slot.index >= 0
+            activeFocusOnTab: root.canvasMode
+            Accessible.role: Accessible.Button
+            Accessible.name: entry ? entry.label : ""
+            Accessible.onPressAction: root.selected(entryKey)
+            Keys.onSpacePressed: root.selected(entryKey)
+            Keys.onReturnPressed: root.selected(entryKey)
             objectName: root.objectName + "-row-" + entryKey
             x: moving ? Math.max(0, Math.min(root.width - width, root.boardPointer.x - root.offset.x)) : slot.x
             y: moving ? root.boardPointer.y - root.offset.y : slot.y
             width: moving ? root.dragWidth : slot.width; height: root.rowHeight
             z: moving ? 10 : 1
             opacity: moving ? 0.92 : 1
-            color: root.multiLane ? Theme.Theme.background : Theme.Theme.surface
+            color: root.canvasMode ? "transparent" : root.multiLane ? Theme.Theme.background : Theme.Theme.surface
             radius: Theme.Theme.radius("action", 8, width, height)
-            border.width: moving ? 1 : 0; border.color: Theme.Theme.accent
+            border.width: moving || (root.canvasMode && root.selectedKey === entryKey) ? 1 : 0; border.color: Theme.Theme.accent
             Behavior on x { enabled: !row.moving; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
             Behavior on y { enabled: !row.moving; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
             Loader {
                 readonly property var entry: row.entry
-                anchors { left: parent.left; top: parent.top; bottom: parent.bottom; right: handle.left; margins: 8 }
+                anchors { left: parent.left; top: parent.top; bottom: parent.bottom; right: root.canvasMode ? parent.right : handle.left; margins: root.canvasMode ? 2 : 8 }
                 sourceComponent: root.rowContent
+            }
+            MouseArea {
+                anchors.fill: parent
+                visible: root.canvasMode
+                onClicked: root.selected(row.entryKey)
             }
             SettingsDragHandle {
                 id: handle
                 objectName: root.objectName + "-handle-" + row.entryKey
-                x: parent.width - width - 4; y: 8
+                visible: root.editing
+                x: root.canvasMode ? (parent.width - width) / 2 : parent.width - width - 4; y: root.canvasMode ? -20 : 8
                 width: 28; height: 28
                 label: row.entry ? row.entry.label : ""
                 hasLanes: root.multiLane
@@ -276,7 +312,8 @@ Item {
         objectName: root.objectName + "-insertion"
         visible: root.dragging && root.targetLane !== ""
         readonly property var slot: root.location(root.dragKey)
-        x: slot.x; y: slot.y - 3; width: slot.width; height: 2; radius: 1
+        x: root.canvasMode ? slot.x - 3 : slot.x; y: root.canvasMode ? slot.y : slot.y - 3
+        width: root.canvasMode ? 2 : slot.width; height: root.canvasMode ? root.rowHeight : 2; radius: 1
         color: Theme.Theme.accent; z: 20
     }
 }

@@ -56,7 +56,7 @@ ShellRoot {
             for (let i = 0; i < 140; ++i) {
                 const lane = board.geometry.find(l => l.id === laneId)
                 const slot = targetKey ? board.location(targetKey) : null
-                const x = lane.x + lane.width / 2
+                const x = board.canvasMode && slot ? slot.x + slot.width * (after ? .8 : .2) : lane.x + lane.width / 2
                 const y = slot ? slot.y + board.rowHeight * (after ? 0.8 : 0.2)
                     : lane.y + board.inset + board.headingHeight + board.rowHeight / 2
                 const point = board.mapToItem(page, x, y)
@@ -210,7 +210,7 @@ ShellRoot {
                 Services.Settings.resetSection("bar")
                 open("Bar")
                 const barBoard = find("barOrder")
-                equal(barBoard.laneColumns, size.width === 720 ? 1 : 3, "responsive bar lanes")
+                check(barBoard.canvasMode && barBoard.parent.scale <= 1, "responsive fit-to-width canvas")
                 barBoard.viewport.contentY = 0; wait(140); capture("bar-arranger")
                 drag(barBoard, "clock", "left", "date", true)
                 equal(Services.Settings.data.bar.left, ["date", "clock"])

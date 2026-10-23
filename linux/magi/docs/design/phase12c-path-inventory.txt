@@ -1,0 +1,90 @@
+Phase 12C exact final path inventory
+Base: c619375dbb052f0fdf7fb5b9161dc9807860601a
+Integrated checkout: /home/jkebwdn/dotfiles
+Source worktree: /home/jkebwdn/magi-phase12c
+Total: 68 paths (31 added, 37 modified, 0 deleted)
+
+Editor primitives (4)
+linux/magi/.config/quickshell/magi/components/settings/EditorSelection.qml
+linux/magi/.config/quickshell/magi/components/settings/SettingsPage.qml
+linux/magi/.config/quickshell/magi/components/settings/SettingsReorderBoard.qml
+linux/magi/.config/quickshell/magi/components/settings/VisualEditorFrame.qml
+
+Bar implementation (16)
+linux/magi/.config/quickshell/magi/components/bar/Bar.qml
+linux/magi/.config/quickshell/magi/components/bar/BatteryPillContent.qml
+linux/magi/.config/quickshell/magi/components/bar/ExpandablePlugin.qml
+linux/magi/.config/quickshell/magi/components/bar/StatusPill.qml
+linux/magi/.config/quickshell/magi/components/bar/UtilityPill.qml
+linux/magi/.config/quickshell/magi/components/calendar/TimeDatePill.qml
+linux/magi/.config/quickshell/magi/components/settings/BarCanvas.qml
+linux/magi/.config/quickshell/magi/components/settings/BarInspector.qml
+linux/magi/.config/quickshell/magi/components/settings/BarModulePreview.qml
+linux/magi/.config/quickshell/magi/components/settings/pages/BarPage.qml
+linux/magi/.config/quickshell/magi/plugins/bar/battery/Battery.qml
+linux/magi/.config/quickshell/magi/plugins/bar/bluetooth/Bluetooth.qml
+linux/magi/.config/quickshell/magi/plugins/bar/controlcentre/ControlCentre.qml
+linux/magi/.config/quickshell/magi/plugins/bar/volume/Volume.qml
+linux/magi/.config/quickshell/magi/plugins/bar/wifi/Wifi.qml
+linux/magi/.config/quickshell/magi/plugins/bar/workspaces/Workspaces.qml
+
+Settings/schema (9)
+linux/magi/.config/quickshell/magi/components/settings/SettingsContent.qml
+linux/magi/.config/quickshell/magi/components/settings/pages/SurfacesPage.qml
+linux/magi/.config/quickshell/magi/components/settings/qmldir
+linux/magi/.config/quickshell/magi/services/SettingsWindowState.qml
+linux/magi/.config/quickshell/magi/settings/SettingsMigrations.js
+linux/magi/.config/quickshell/magi/settings/SettingsSchema.js
+linux/magi/.config/quickshell/magi/settings/SettingsStore.qml
+linux/magi/.config/quickshell/magi/settings/persist.py
+linux/magi/.config/quickshell/magi/theme/Theme.qml
+
+Tests (14)
+linux/magi/tests/hub/composition.qml
+linux/magi/tests/phase10b/policy.cjs
+linux/magi/tests/phase10c1/schema.cjs
+linux/magi/tests/phase12a/schema.cjs
+linux/magi/tests/phase12b/schema.cjs
+linux/magi/tests/phase12c/presentation.qml
+linux/magi/tests/phase12c/run.py
+linux/magi/tests/phase12c/schema.cjs
+linux/magi/tests/settings/appearance.py
+linux/magi/tests/settings/presentation.qml
+linux/magi/tests/settings/reorder.qml
+linux/magi/tests/settings/run.py
+linux/magi/tests/settings/schema.cjs
+linux/magi/tests/settings/store.qml
+
+Docs (6)
+linux/magi/README.md
+linux/magi/docs/README.md
+linux/magi/docs/architecture.md
+linux/magi/docs/decisions.md
+linux/magi/docs/design/phase12c-bar-visual-builder.md
+linux/magi/docs/design/phase12c-path-inventory.txt
+
+Preview assets (19)
+linux/magi/docs/design/previews/phase12c/available.png
+linux/magi/docs/design/previews/phase12c/background.png
+linux/magi/docs/design/previews/phase12c/behaviour.png
+linux/magi/docs/design/previews/phase12c/bluetooth.png
+linux/magi/docs/design/previews/phase12c/catppuccin-mocha.png
+linux/magi/docs/design/previews/phase12c/compact.png
+linux/magi/docs/design/previews/phase12c/dragging.png
+linux/magi/docs/design/previews/phase12c/everforest-dark-hard.png
+linux/magi/docs/design/previews/phase12c/host.png
+linux/magi/docs/design/previews/phase12c/index.html
+linux/magi/docs/design/previews/phase12c/layout.png
+linux/magi/docs/design/previews/phase12c/nord.png
+linux/magi/docs/design/previews/phase12c/normal.png
+linux/magi/docs/design/previews/phase12c/pills-off.png
+linux/magi/docs/design/previews/phase12c/rose-pine-dawn.png
+linux/magi/docs/design/previews/phase12c/rose-pine.png
+linux/magi/docs/design/previews/phase12c/tokyo-night-moon.png
+linux/magi/docs/design/previews/phase12c/wifi.png
+linux/magi/docs/design/previews/phase12c/workspace.png
+
+Protected state: all unrelated regular-file hashes and symlink targets match the snapshot.
+settings.json: excluded; schema 17 and accepted Bar visual/accent preferences saved. All prior preferences preserved. Yazi flavor symlink untouched.
+Generated/temp: 0 unintended repository artifacts. /tmp logs and snapshots excluded.
+Native acceptance complete. This exact allowlist is authorized for commit and normal push.

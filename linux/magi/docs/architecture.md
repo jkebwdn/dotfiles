@@ -1,5 +1,15 @@
 # MAGI — Architecture
 
+## Phase 12C Bar editor architecture
+
+Bar has a first-class navigation entry and Layout / Colours & Look / Behaviour
+modes sharing an inert production-presenter canvas. Family geometry and background
+are shared; Wi-Fi/Bluetooth accents are individual. Schema 17 preserves prior
+appearance. Native editor and production Bar review are operator-accepted; schema 17 is saved.
+Phase 12D remains separate and has not started.
+[Ownership audit, implementation, tests and previews](design/phase12c-bar-visual-builder.md).
+
+
 ## Phase 12B — canonical palette expansion (2026-10-22)
 
 Eighteen registry entries now serve the same shell and orchestrator paths. Optional

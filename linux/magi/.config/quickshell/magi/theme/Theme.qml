@@ -106,6 +106,16 @@ QtObject {
     readonly property real radiusMedium: radius("surface", 10, 1000, 1000)
     readonly property real radiusLarge: radius("surface", 14, 1000, 1000)
     readonly property int barPillHeight: 28
+    readonly property var barVisual: MagiServices.Settings.data.bar.visual
+    readonly property color barBackground: barVisual.host.enabled
+        ? Qt.alpha(roles[barVisual.host.role], barVisual.host.opacity) : "transparent"
+    readonly property color statusPillBackground: barVisual.statusPills.enabled
+        ? Qt.alpha(roles[barVisual.statusPills.role], barVisual.statusPills.opacity) : "transparent"
+    readonly property color statusPillHoverBackground: barVisual.statusPills.enabled
+        ? Qt.alpha(elevated, barVisual.statusPills.opacity) : "transparent"
+    readonly property real workspacePillRadius: barVisual.workspacePills.roundness === null
+        ? barPillRadius : Math.min(14, 8 * barVisual.workspacePills.roundness)
+    function barAccent(id) { return roles[MagiServices.Settings.data.bar.modules[id].accentRole] }
     readonly property real barPillRadius: radius("barPill", 8, 28, 28)
     readonly property int barSectionSpacing: 6
     readonly property int barEdgeMargin: 14

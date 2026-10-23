@@ -7,7 +7,7 @@ import "../../services" as MagiServices
 import "../../theme" as MagiTheme
 import "menu" as MenuHosts
 
-Rectangle {
+StatusPill {
     id: root
 
     // ---------------------------------------------------------
@@ -104,7 +104,7 @@ Rectangle {
         ? 0
         : MagiTheme.Theme.barPillRadius
 
-    color: MagiTheme.Theme.surface
+    color: MagiTheme.Theme.statusPillBackground
 
     // ---------------------------------------------------------
     // Animation coordination

@@ -8,32 +8,63 @@ import "../../../theme" as Theme
 SettingsUI.SettingsPage {
     id: root
     title: "Bar"
-    description: "Arrange modules across your bar. Modules in Available are hidden from the bar and remain available in Control Centre."
-    readonly property var knownModules: ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre"]
-    readonly property var labels: ({clock:"Time", date:"Date", workspaces:"Workspaces", volume:"Volume",
-        wifi:"Wi-Fi", bluetooth:"Bluetooth", battery:"Battery", notifications:"Notifications", clipboard:"Clipboard", controlcentre:"Control Centre"})
-    function arrangedModules() {
-        const bar = Services.Settings.data.bar
-        // Include any already-configured schema-supported IDs without inventing defaults.
-        const ids = [...new Set(knownModules.concat(bar.left, bar.center, bar.right))]
-        const hidden = ids.filter(id => !["left", "center", "right"].some(l => bar[l].includes(id)))
-            .sort((a,b) => (labels[a] || a).localeCompare(labels[b] || b))
-        return ids.map(id => {
-            const lane = ["left", "center", "right"].find(l => bar[l].includes(id)) || "hidden"
-            return {key:id, label:labels[id] || id, lane:lane,
-                position:lane === "hidden" ? hidden.indexOf(id) : bar[lane].indexOf(id)}
-        })
+    maximumBodyWidth: 1200
+    description: "Compose your Bar, then select a pill to edit its family and identity. Preview controls are inert."
+    property string mode: "Layout"
+    property alias selection: selection
+    SettingsUI.EditorSelection {
+        id: selection
+        familyForInstance: function(id) { return id === "workspaces" ? "workspacePills" : "statusPills" }
     }
-    function placeModule(id, lane, position) {
-        const bar = Services.Settings.data.bar
-        const from = ["left", "center", "right"].find(l => bar[l].includes(id)) || "hidden"
-        if (lane === "hidden") { if (from !== lane) Services.Settings.placeBar(id, "hidden"); return }
-        if (from !== lane && !Services.Settings.placeBar(id, lane)) return
-        // placeBar removes the ID from all regions and appends it to the destination.
-        // moveBar then places it at the dropped index, using the same validated writer.
-        const index = Services.Settings.data.bar[lane].indexOf(id)
-        if (index >= 0 && index !== position) Services.Settings.moveBar(lane, index, position - index)
+    RowLayout {
+        Repeater {
+            model: ["Layout","Colours & Look","Behaviour"]
+            SettingsUI.SettingsButton {
+                required property string modelData
+                text: modelData; primary: root.mode === modelData
+                onClicked: root.mode = modelData
+            }
+        }
     }
+    SettingsUI.VisualEditorFrame {
+        SettingsUI.BarCanvas {
+            id: canvas
+            objectName: "barCanvas"
+            Layout.alignment: Qt.AlignTop
+            Layout.minimumWidth: 0
+            viewport: root
+            editing: root.mode === "Layout"
+            selectedKey: selection.instance
+            onSelected: key => selection.select(key)
+            onPlacedChanged: selection.reconcile(placed)
+        }
+        SettingsUI.BarInspector {
+            visible: root.mode === "Colours & Look"
+            Layout.alignment: Qt.AlignTop
+            Layout.preferredWidth: 360
+            Layout.minimumWidth: 0
+            selection: root.selection
+        }
+    }
+    SettingsUI.SettingsHelp {
+        visible: root.mode === "Layout"
+        text: "Drag a grip into Left, Centre, Right or Available. Focus a grip: Alt+↑/↓ reorder; Alt+←/→ change region; Escape cancels. Empty regions disappear."
+    }
+    Flow {
+        visible: root.mode === "Layout" && selection.instance !== ""
+        Layout.fillWidth: true; spacing: 8
+        Repeater {
+            model: [{id:"left",label:"Move to Left"},{id:"center",label:"Move to Centre"},{id:"right",label:"Move to Right"},{id:"hidden",label:"Remove from Bar"}]
+            SettingsUI.SettingsButton {
+                required property var modelData
+                text: modelData.label
+                onClicked: Services.Settings.placeBar(selection.instance,modelData.id)
+            }
+        }
+    }
+    ColumnLayout {
+        visible: root.mode === "Behaviour"
+        Layout.fillWidth: true
     Label { font.bold: true; text: "Bar placement" }
     SettingsUI.SettingsRow {
         Label { text: "Position"; Layout.fillWidth: true }
@@ -67,28 +98,13 @@ SettingsUI.SettingsPage {
         onClicked: Services.Settings.setValue("bar", "externalDisplays", checked)
     }
     SettingsUI.SettingsHelp { text: "Distances use logical pixels. Each bar reserves 48 px plus its edge offset at the selected edge. On narrow outputs the inset shrinks, then workspace and left modules hide to keep status controls usable." }
-    SettingsUI.VisualSettingsGroup {
-        collapsible: false
-        title: "Status icons"
-        numbers: [{key:"statusIconSize",label:"Status icon size",min:16,max:28,step:1}]
     }
-    SettingsUI.SettingsReorderBoard {
-        objectName: "barOrder"
-        viewport: root
-        rowHeight: 44
-        lanes: [{id:"left",label:"LEFT"}, {id:"center",label:"CENTRE"},
-            {id:"right",label:"RIGHT"}, {id:"hidden",label:"AVAILABLE · HIDDEN FROM BAR",ordered:false}]
-        entries: root.arrangedModules()
-        onMoveRequested: (key, lane, position) => root.placeModule(key, lane, position)
-        rowContent: Component {
-            Label {
-                text: parent.entry ? parent.entry.label : ""
-                color: Theme.Theme.text
-                verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
-            }
-        }
+    SettingsUI.SettingsButton { flat:true; text:"Select Bar background"; visible:root.mode === "Colours & Look"; onClicked:selection.select("") }
+    SettingsUI.SettingsHelp { text: "Changes preview immediately and use Settings autosave. Reload from Disk restores the persisted layout and styling. Runtime placement waits for active menu interactions to finish." }
+    SettingsUI.SettingsButton {
+        flat: true
+        text: "Reset Bar"
+        onClicked: Services.Settings.resetSection("bar")
     }
-    SettingsUI.SettingsHelp { text: "Bar placement updates when open menus and network/password interactions have finished." }
-    SettingsUI.SettingsButton { flat: true; text: "Reset bar placement"; onClicked: Services.Settings.resetSection("bar") }
+
 }

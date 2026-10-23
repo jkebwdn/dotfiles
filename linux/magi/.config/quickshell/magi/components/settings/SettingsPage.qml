@@ -11,6 +11,7 @@ Flickable {
     signal revisited()
     Component.onCompleted: initialized = true
     onVisibleChanged: if (visible && initialized) revisited()
+    property real maximumBodyWidth: 760
     property string title: ""
     property string description: ""
     contentHeight: body.implicitHeight + SettingsMetrics.pagePadding * 2
@@ -22,7 +23,7 @@ Flickable {
         id: body
         x: Math.max(SettingsMetrics.pagePadding, (root.width - width) / 2)
         y: SettingsMetrics.pagePadding
-        width: Math.max(0, Math.min(760, root.width - SettingsMetrics.pagePadding * 2))
+        width: Math.max(0, Math.min(root.maximumBodyWidth, root.width - SettingsMetrics.pagePadding * 2))
         spacing: SettingsMetrics.gap
         Label {
             text: root.title

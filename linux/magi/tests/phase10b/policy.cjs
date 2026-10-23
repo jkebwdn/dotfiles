@@ -26,7 +26,7 @@ for(const screen of [e,h,{width:320,height:240},{width:80,height:60}])
  }
 vm.runInContext(fs.readFileSync(root+'/settings/SettingsSchema.js','utf8')+'\n'+fs.readFileSync(root+'/settings/SettingsMigrations.js','utf8'),ctx);
 const before=JSON.parse(fs.readFileSync(root+'/settings.json','utf8'));before.schemaVersion=13;
-const after=ctx.analyze(ctx.migrate(before));assert.equal(after.effective.schemaVersion,16);
+const after=ctx.analyze(ctx.migrate(before));assert.equal(after.effective.schemaVersion,17);
 const defaults=ctx.defaults();assert.equal(defaults.bar.externalDisplays,false);assert.equal(defaults.bar.position,'top');
 assert.equal(defaults.bar.horizontalInset,0);assert.equal(defaults.bar.edgeOffset,0);
 for(const key of ['externalDisplays','position','horizontalInset','edgeOffset'])

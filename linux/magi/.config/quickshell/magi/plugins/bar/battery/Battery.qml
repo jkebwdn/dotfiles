@@ -1,12 +1,11 @@
 
 import QtQuick
-import "../../../icons" as Icons
-import "../../../components/controls" as Controls
+import "../../../components/bar" as Bar
 import Quickshell
 import "../../../theme" as MagiTheme
 import "../../../services" as MagiServices
 
-Rectangle {
+Bar.StatusPill {
     id: root
 
     property real sharedExpansion: 0
@@ -17,25 +16,15 @@ Rectangle {
     radius: MagiTheme.Theme.barPillRadius
 
     color: batteryMouse.containsMouse
-        ? MagiTheme.Theme.elevated
-        : Qt.alpha(MagiTheme.Theme.surface, 1 - sharedExpansion)
+        ? MagiTheme.Theme.statusPillHoverBackground
+        : Qt.alpha(MagiTheme.Theme.statusPillBackground, MagiTheme.Theme.statusPillBackground.a * (1 - sharedExpansion))
 
-    Row {
+    Bar.BatteryPillContent {
         id: batteryLabel
         anchors.centerIn: parent
-        spacing: 4
-        Controls.Icon {
-            anchors.verticalCenter: parent.verticalCenter
-            role: Icons.IconRegistry.batteryRole(MagiServices.Battery.available, MagiServices.Battery.charging, MagiServices.Battery.percentage)
-            moduleId: "battery"; size: MagiTheme.Theme.statusIconSize
-        }
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: MagiServices.Battery.available ? MagiServices.Battery.percentage + "%" : ""
-            color: MagiTheme.Theme.text
-            font.family: MagiTheme.Theme.fontFamily
-            font.pixelSize: 11
-        }
+        available: MagiServices.Battery.available
+        charging: MagiServices.Battery.charging
+        percentage: MagiServices.Battery.percentage
     }
 
     MouseArea {

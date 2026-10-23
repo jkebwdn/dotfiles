@@ -25,8 +25,8 @@ MagiBar.ExpandableModule {
     expandedWidth: 326
     menuHeight: 350
     color: sharedSurface
-        ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion)
-        : MagiTheme.Theme.surface
+        ? Qt.alpha(MagiTheme.Theme.statusPillBackground, MagiTheme.Theme.statusPillBackground.a * (1 - sharedSurface.expansion))
+        : MagiTheme.Theme.statusPillBackground
     barVisible: MagiServices.Bluetooth.connectedCount > 0
 
     pillContent: Component {
@@ -44,7 +44,7 @@ MagiBar.ExpandableModule {
                     ? "Connected"
                     : MagiServices.Bluetooth.enabled ? "On" : "Off"
             iconColor: root.connectedDevice
-                ? MagiTheme.Theme.accent
+                ? MagiTheme.Theme.barAccent("bluetooth")
                 : MagiServices.Bluetooth.enabled
                     ? MagiTheme.Theme.text
                     : MagiTheme.Theme.muted

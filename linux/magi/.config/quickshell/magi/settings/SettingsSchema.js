@@ -30,7 +30,7 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 16,
+    return {schemaVersion: 17,
         appearance: {mediaProgressRole: "accent", hubToggleRole: "accent", hubSelectionRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null}},
             surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, hubContent:true, hubSelector:true},
@@ -69,7 +69,10 @@ function defaults() {
         notifications: {retentionHours:6, enabled: true, toastsEnabled: true, dnd: false,
             fallbackTimeout: 5000, maxVisible: 3, historyLimit: 100,
             showBody: true, criticalBypassDnd: true},
-        bar: {position: "top", horizontalInset: 0, edgeOffset: 0, externalDisplays: false, left: ["clock", "date"], center: ["workspaces"],
+        bar: {visual: {host: {enabled:false, role:"surface", opacity:1},
+            statusPills: {enabled:true, role:"surface", opacity:1},
+            workspacePills: {roundness:null}},
+            modules: {wifi: {accentRole:"accent"}, bluetooth: {accentRole:"accent"}}, position: "top", horizontalInset: 0, edgeOffset: 0, externalDisplays: false, left: ["clock", "date"], center: ["workspaces"],
             right: ["volume", "wifi", "bluetooth", "battery", "controlcentre"]},
         controlCentre: {columns: 4, actionColumns: 6, sections: {
             profile: true, quickControls: true, sliders: true, actions: true, media: true
@@ -99,7 +102,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 16) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 17) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -136,6 +139,27 @@ function analyze(input) {
     if (typeof a.theme !== "string" || !a.theme.length) { valid(false, "appearance.theme", ""); a.theme = "catppuccin-mocha" }
 
     const semanticRoles = ["background","surface","elevated","overlay","text","subtext","muted","accent","blue","lavender","green","yellow","peach","red","teal","border"]
+    for (const family of ["host", "statusPills"]) {
+        const style = effective.bar.visual[family], fallback = defaults().bar.visual[family]
+        for (const key of ["enabled", "role", "opacity"]) {
+            const value = style[key]
+            const good = key === "enabled" ? typeof value === "boolean"
+                : key === "role" ? semanticRoles.includes(value)
+                : typeof value === "number" && isFinite(value) && value >= 0 && value <= 1
+            if (!good) { errors.push("bar.visual." + family + "." + key + ": invalid value"); style[key] = fallback[key] }
+        }
+    }
+    const workspaceRadius = effective.bar.visual.workspacePills.roundness
+    if (workspaceRadius !== null && !(typeof workspaceRadius === "number" && isFinite(workspaceRadius) && workspaceRadius >= 0 && workspaceRadius <= 2)) {
+        errors.push("bar.visual.workspacePills.roundness: invalid value")
+        effective.bar.visual.workspacePills.roundness = null
+    }
+    for (const id of ["wifi", "bluetooth"]) {
+        if (!semanticRoles.includes(effective.bar.modules[id].accentRole)) {
+            errors.push("bar.modules." + id + ".accentRole: invalid value")
+            effective.bar.modules[id].accentRole = "accent"
+        }
+    }
     for (const key of ["mediaProgressRole", "hubToggleRole", "hubSelectionRole"]) {
         if (["accent", "blue", "lavender", "green", "yellow", "peach", "red", "teal"].indexOf(a[key]) < 0) {
             warnings.push("appearance." + key + ": using accent")

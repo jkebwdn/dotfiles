@@ -305,7 +305,7 @@ PanelWindow {
         width: bar.geometry.width
         height: 48
         z: 9
-        color: "transparent"
+        color: MagiTheme.Theme.barBackground
     }
 
     // ---------------------------------------------------------

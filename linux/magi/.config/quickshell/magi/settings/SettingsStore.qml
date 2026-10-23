@@ -149,13 +149,15 @@ Scope {
         return setValue("appearance", "roundness", roundness)
     }
     // Structural edits are atomic snapshots; presentation owners choose safe timing.
-    function placeBar(id, section) {
+    function placeBar(id, section, position) {
+        if (!Schema.barIds.includes(id)) return false
         const next = Schema.clone(state.document)
         next.bar = Schema.clone(data.bar)
         for (const key of ["left", "center", "right"]) next.bar[key] = next.bar[key].filter(value => value !== id)
         if (section !== "hidden") {
             if (["left", "center", "right"].indexOf(section) < 0) return false
-            next.bar[section].push(id)
+            next.bar[section].splice(position === undefined ? next.bar[section].length
+                : Math.max(0, Math.min(next.bar[section].length, position)), 0, id)
         }
         return commit(next)
     }

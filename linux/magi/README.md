@@ -1,5 +1,15 @@
 # MAGI
 
+## Phase 12C — Bar visual builder (accepted and complete)
+
+Bar has a first-class navigation entry and Layout / Colours & Look / Behaviour
+modes sharing an inert production-presenter canvas. Family geometry and background
+are shared; Wi-Fi/Bluetooth accents are individual. Schema 17 preserves prior
+appearance. Native editor and production Bar review are operator-accepted; schema 17 is saved.
+Phase 12D remains separate and has not started.
+[Ownership audit, implementation, tests and previews](docs/design/phase12c-bar-visual-builder.md).
+
+
 ## Phase 12B — theme library (natively accepted)
 
 Eight canonical semantic palettes add Rosé Pine, Moon and Dawn, Nord and Tokyo
@@ -15,7 +25,7 @@ Centre preview. Production presenters and section layout are reused; drag handle
 reorder within each type through the existing auto-save contract. Schema 16
 preserves the old Hub selected colour on migration. Native review and integration passed; local Settings migrated to schema 16
 without unrelated value changes. [Architecture, tests, offline previews and review limits](docs/design/phase12a-control-centre-configurator.md).
-Phase 12B is natively accepted; 12C/D and hardware acceptance remain deferred.
+Phase 12B and 12C are natively accepted; Phase 12D and deferred hardware acceptance remain separate.
 
 
 ## Phase 11A — fingerprint groundwork (accepted and complete)

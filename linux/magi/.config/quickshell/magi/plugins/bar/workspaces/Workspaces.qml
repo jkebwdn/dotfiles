@@ -7,12 +7,13 @@ import "WorkspaceModel.js" as WorkspaceModel
 Rectangle {
     id: root
 
+    property bool preview: false
     property var outputScreen: null
-    readonly property var outputMonitor: outputScreen ? Hyprland.monitorFor(outputScreen) : null
+    readonly property var outputMonitor: !preview && outputScreen ? Hyprland.monitorFor(outputScreen) : null
     readonly property var activeWorkspace: outputMonitor ? outputMonitor.activeWorkspace : null
     // One continuous workspace chip, styled by MAGI's active palette.
     color: MagiTheme.Theme.surface
-    radius: MagiTheme.Theme.barPillRadius
+    radius: MagiTheme.Theme.workspacePillRadius
 
     implicitWidth: workspaceRow.implicitWidth
     implicitHeight: MagiTheme.Theme.barPillHeight
@@ -25,7 +26,7 @@ Rectangle {
         spacing: 0
 
         Repeater {
-            model: WorkspaceModel.normalWorkspaces(Hyprland.workspaces.values)
+            model: root.preview ? [{id:1},{id:2},{id:3}] : WorkspaceModel.normalWorkspaces(Hyprland.workspaces.values)
 
             delegate: Rectangle {
                 id: workspace
@@ -33,7 +34,7 @@ Rectangle {
                 required property var modelData
 
                 readonly property bool isActive:
-                    root.activeWorkspace !== null
+                    root.preview ? modelData.id === 2 : root.activeWorkspace !== null
                     && modelData.id === root.activeWorkspace.id
 
                 implicitWidth: 28
@@ -77,6 +78,7 @@ Rectangle {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
 
+                    enabled: !root.preview
                     onClicked: Hyprland.dispatch(
                         'hl.dsp.focus({workspace="' + workspace.modelData.id + '"})'
                     )

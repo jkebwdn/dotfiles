@@ -25,8 +25,8 @@ MagiBar.ExpandableModule {
     onPrimaryTriggered: MagiServices.Audio.toggleMute()
     onWheelTriggered: steps => MagiServices.Audio.adjustVolume(steps)
     color: sharedSurface
-        ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion)
-        : MagiTheme.Theme.surface
+        ? Qt.alpha(MagiTheme.Theme.statusPillBackground, MagiTheme.Theme.statusPillBackground.a * (1 - sharedSurface.expansion))
+        : MagiTheme.Theme.statusPillBackground
 
     pillContent: Component {
         MagiControls.MorphingPillContent {

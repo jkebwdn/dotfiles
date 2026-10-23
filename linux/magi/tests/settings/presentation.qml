@@ -49,7 +49,7 @@ ShellRoot {
                     tryCompare(window.contentItem, "width", size.width)
                     tryCompare(window.contentItem, "height", size.height)
                     for (const name of names) {
-                        const sub = ({Bar:"bar", "Control Centre":"controlcentre", Surfaces:"surfaces", Hub:"hub"})[name]
+                        const sub = ({"Control Centre":"controlcentre", Surfaces:"surfaces", Hub:"hub"})[name]
                         if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
                         const nav = findChild(window.contentItem, sub ? "appearanceNav-" + sub : "settingsNav-" + name)
                         verify(nav !== null)
@@ -83,10 +83,11 @@ ShellRoot {
                 }
             }
             Services.SettingsWindowState.page = "Bar"; wait(50)
+            page("Bar").mode="Colours & Look";page("Bar").selection.select("wifi");wait(30)
             const slider = findChild(page("Bar"), "visualSetting-statusIconSize")
             verify(slider.visible, "surface controls remain reachable")
             const iconSize = Services.Settings.data.appearance.visual.statusIconSize
-            slider.forceActiveFocus(Qt.TabFocusReason); keyClick(Qt.Key_Right)
+            slider.forceActiveFocus(Qt.TabFocusReason); keyClick(Qt.Key_Up)
             compare(Services.Settings.data.appearance.visual.statusIconSize, iconSize + 1, "production slider writes existing visual setting")
             Services.SettingsWindowState.page = "Control Centre"; wait(50)
             const primary = findChild(page("Control Centre"), "primaryColumns")

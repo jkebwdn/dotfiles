@@ -34,7 +34,7 @@ MagiBar.ExpandableModule {
     expandedWidth: 344
     menuHeight: Math.min(barWindow && hostMode === "combined" ? barWindow.height - 100 : 640,
         baseHeight + (authenticating ? 124 : connectionError ? 38 : 0))
-    color: sharedSurface ? Qt.alpha(MagiTheme.Theme.surface, 1 - sharedSurface.expansion) : MagiTheme.Theme.surface
+    color: sharedSurface ? Qt.alpha(MagiTheme.Theme.statusPillBackground, MagiTheme.Theme.statusPillBackground.a * (1 - sharedSurface.expansion)) : MagiTheme.Theme.statusPillBackground
 
     function signalIcon(strength) { return Icons.IconRegistry.signalRole(strength) }
     function updateScanning() { MagiServices.Network.setScanning(requestedOpen || connecting, root) }
@@ -115,7 +115,7 @@ MagiBar.ExpandableModule {
                 ? MagiServices.Network.signalStrength + "%"
                 : MagiServices.Network.wifiEnabled ? "Scanning" : "Off"
             iconColor: MagiServices.Network.connected
-                ? MagiTheme.Theme.accent
+                ? MagiTheme.Theme.barAccent("wifi")
                 : MagiTheme.Theme.muted
         }
     }

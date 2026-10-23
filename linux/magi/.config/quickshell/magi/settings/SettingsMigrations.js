@@ -119,5 +119,6 @@ function migrate(input) {
             doc.appearance.hubSelectionRole = doc.appearance.hubToggleRole === undefined ? "accent" : doc.appearance.hubToggleRole
         doc.schemaVersion = 16
     }
+    if (doc.schemaVersion === 16) doc.schemaVersion = 17
     return doc
 }
