@@ -25,7 +25,7 @@ SettingsUI.SettingsPage {
         }
     }
     SettingsUI.SurfaceStyleSettings { title: "Expanded surface border"; group: "surfaceBorders"; targets: [
-        {id:"controlcentre",label:"Control Centre"},
+
         {id:"hubContent",label:"Hub content"},{id:"hubSelector",label:"Hub selector"}] }
     SettingsUI.SurfaceStyleSettings { title: "History and notification card borders"; group: "notificationBorders"; targets: [
         {id:"toasts",label:"Toast borders"},{id:"history",label:"Notification history"},{id:"clipboard",label:"Clipboard card borders"}] }
@@ -35,9 +35,9 @@ SettingsUI.SettingsPage {
         Label { text: "Roundness"; font.bold: true }
         Label { text: "Square (0) → reference (1) → rounder (2). Role defaults follow Master."; wrapMode: Text.Wrap; Layout.fillWidth: true; color: Theme.Theme.text }
         Repeater {
-            model: [{id:"master",label:"Master"},
-                {id:"surface",label:"Expanded surfaces"},{id:"controlTile",label:"Control Centre tiles"},
-                {id:"slider",label:"Sliders"},{id:"action",label:"Buttons / actions"}]
+            model: [
+                {id:"surface",label:"Expanded surfaces"},
+                {id:"action",label:"Buttons / actions"}]
             GridLayout {
                 columns: 3
                 id: radiusRow

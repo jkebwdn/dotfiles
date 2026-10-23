@@ -31,3 +31,7 @@ EditorSelection 1.0 EditorSelection.qml
 VisualEditorFrame 1.0 VisualEditorFrame.qml
 
 BarCanvas 1.0 BarCanvas.qml
+
+CCControlPreview 1.0 CCControlPreview.qml
+CCSectionPreview 1.0 CCSectionPreview.qml
+CCInspector 1.0 CCInspector.qml

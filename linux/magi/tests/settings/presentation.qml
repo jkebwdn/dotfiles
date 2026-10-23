@@ -49,7 +49,7 @@ ShellRoot {
                     tryCompare(window.contentItem, "width", size.width)
                     tryCompare(window.contentItem, "height", size.height)
                     for (const name of names) {
-                        const sub = ({"Control Centre":"controlcentre", Surfaces:"surfaces", Hub:"hub"})[name]
+                        const sub = ({Surfaces:"surfaces", Hub:"hub"})[name]
                         if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
                         const nav = findChild(window.contentItem, sub ? "appearanceNav-" + sub : "settingsNav-" + name)
                         verify(nav !== null)
@@ -65,7 +65,12 @@ ShellRoot {
                         const title = name === "Emoji" ? "Emoji Picker" : name === "Launcher" ? "Application Launcher" : name
                         const current = page(title)
                         verify(current !== null && current.visible, "production page opens: " + name)
-                        verify(current.body.width > 400 && current.body.width <= current.width, "bounded page width")
+                        if(name === "Control Centre") {
+                            const canvas=findChild(current,"controlCentrePreview")
+                            verify(canvas.width>150 && canvas.width<=current.width,"bounded editor canvas")
+                            current.mode="Colours & Look";current.selection.select("controls");wait(20)
+                            verify(current.body.width>200 && current.body.width<=current.width,"bounded inspector")
+                        } else verify(current.body.width > 400 && current.body.width <= current.width, "bounded page width")
                         compare(current.boundsBehavior, Flickable.StopAtBounds)
                         verify(nav.checked, "selection remains distinct from focus")
                         if (!nav.hovered) compare(nav.background.color, sub ? Theme.Theme.elevated : "#00000000", "navigation levels have distinct selection")
@@ -90,10 +95,8 @@ ShellRoot {
             slider.forceActiveFocus(Qt.TabFocusReason); keyClick(Qt.Key_Up)
             compare(Services.Settings.data.appearance.visual.statusIconSize, iconSize + 1, "production slider writes existing visual setting")
             Services.SettingsWindowState.page = "Control Centre"; wait(50)
+            page("Control Centre").mode="Colours & Look";page("Control Centre").selection.select("controls");wait(40)
             const primary = findChild(page("Control Centre"), "primaryColumns")
-            const secondary = findChild(page("Control Centre"), "secondaryColumns")
-            compare(primary.mapToItem(page("Control Centre"), primary.width, 0).x,
-                secondary.mapToItem(page("Control Centre"), secondary.width, 0).x, "column steppers align")
             const secondaryBefore = Services.Settings.data.controlCentre.actionColumns
             const primaryBefore = Services.Settings.data.controlCentre.columns
             primary.forceActiveFocus(Qt.TabFocusReason); keyClick(Qt.Key_Up)

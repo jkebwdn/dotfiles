@@ -1,12 +1,12 @@
 const fs=require('fs'),path=require('path'),assert=require('assert');
 const root=path.resolve(__dirname,'../../.config/quickshell/magi');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
-const preview=read('components/settings/ControlCentrePreview.qml');
+const preview=['ControlCentrePreview.qml','CCControlPreview.qml','CCSectionPreview.qml'].map(n=>read('components/settings/'+n)).join('\n');
 // Presenters may read Settings; backend dispatch belongs exclusively to production CC.
 assert.deepEqual([...new Set([...preview.matchAll(/Services\.(\w+)/g)].map(m=>m[1]))],['Settings']);
 for(const token of ['ControlCatalog','Quickshell.Io','Process {','onPrimaryTriggered','onSecondaryTriggered','onValueMoved','onTriggered:'])assert(!preview.includes(token),token);
 for(const presenter of ['CC.ProfileHeader','CC.ControlTile','Controls.IconSlider','CC.ActionButton','CC.MediaSection'])assert(preview.includes(presenter),presenter);
-assert(preview.includes('SectionLayout.arrange('));
+assert(preview.includes('SectionLayout.compose('));
 const grid=read('components/settings/PreviewControlGrid.qml');
 assert(!grid.includes('Services.') && !grid.includes('Process'));
 assert(/enabled:\s*false/.test(grid));

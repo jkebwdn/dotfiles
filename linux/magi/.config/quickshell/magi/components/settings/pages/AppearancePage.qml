@@ -271,6 +271,10 @@ SettingsUI.SettingsPage {
             onClicked: Services.ThemeOrchestrator.refresh()
         }
     }
+    SettingsUI.SettingsRow {
+        Label {text:"Master roundness";Layout.fillWidth:true}
+        SettingsUI.SettingsSlider {Layout.fillWidth:true;from:0;to:2;stepSize:.05;value:Services.Settings.data.appearance.roundness.master;onMoved:Services.Settings.setRoundness("master",value)}
+    }
     SettingsUI.SettingsButton { flat: true; text: "Reset appearance"; onClicked: Services.Settings.resetSection("appearance") }
 
 

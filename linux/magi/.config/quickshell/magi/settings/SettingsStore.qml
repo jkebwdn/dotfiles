@@ -98,6 +98,9 @@ Scope {
         if (!ready || state.future || state.status === "conflict"
                 || (state.parseInvalid && !repairMalformed)) return false
         try {
+            // Never persist retired projections, including through compatibility writers.
+            if (document.controlCentre) delete document.controlCentre.sections
+            if (document.media) delete document.media.enabled
             const result = Schema.analyze(document)
             if (result.errors.length || result.future) { state.error = result.errors.join("; "); return false }
             publish(result)
@@ -122,6 +125,8 @@ Scope {
         return accepted
     }
     function setValue(section, key, value) {
+        if (section === "media" && key === "enabled") return setControlSection("media", value)
+        if (section === "controlCentre" && key === "sections") return false
         if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji", "wallpaper", "hub", "weather", "powerIdle"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         // Fill missing defaults, but retain unknown fields and diagnosed raw values.
@@ -174,10 +179,39 @@ Scope {
         return setValue("controlCentre", group, entries)
     }
     function setControlSection(section, enabled) {
-        if (["profile", "quickControls", "sliders", "media", "actions"].indexOf(section) < 0) return false
-        const sections = Schema.clone(data.controlCentre.sections)
-        sections[section] = enabled
-        return setValue("controlCentre", "sections", sections)
+        const id = section === "quickControls" ? "controls" : section
+        return placeCCSection(id, enabled ? data.controlCentre.layout.length : -1)
+    }
+    function placeCCSection(id, position) {
+        if (!["profile", "controls", "sliders", "actions", "media"].includes(id)) return false
+        const order = data.controlCentre.layout.filter(x => x !== id)
+        if (position >= 0) order.splice(Math.min(order.length, position), 0, id)
+        return setValue("controlCentre", "layout", order)
+    }
+    function placeCCModule(id, group, position) {
+        const definition = Schema.controlDefinitions().find(d => d.id === id)
+        const presentation = {controls:"tile", actions:"action", sliders:"slider"}[group]
+        if (!definition || (group !== "available" && (!presentation || !definition.presentations.includes(presentation)))) return false
+        const next = Schema.clone(state.document), cc = Schema.clone(data.controlCentre)
+        delete cc.sections
+        let entry = null, origin = ""
+        for (const g of ["controls", "actions", "sliders"]) {
+            const found = cc[g].find(e => e.module === id)
+            if (found && (!entry || found.enabled)) { entry = found; origin = g }
+            cc[g] = cc[g].filter(e => e.module !== id)
+        }
+        if (!entry) entry = {key:id, module:id, accent:definition.accent || "lavender"}
+        const target = group === "available" ? origin || (definition.presentations.includes("slider") ? "sliders" : "controls") : group
+        entry.presentation = {controls:"tile", actions:"action", sliders:"slider"}[target]
+        entry.enabled = group !== "available"
+        if (target === "controls" && !entry.accent) entry.accent = definition.accent || "lavender"
+        const active = cc[target].filter(e => e.enabled), hidden = cc[target].filter(e => !e.enabled)
+        if (entry.enabled) active.splice(Math.max(0, Math.min(active.length, position === undefined ? active.length : position)),0,entry)
+        else hidden.push(entry)
+        cc[target] = active.concat(hidden)
+        if (entry.enabled && !cc.layout.includes(target)) cc.layout.push(target)
+        next.controlCentre = cc
+        return commit(next)
     }
     function editEntry(group, key, field, value) {
         if (["controls", "sliders", "actions"].indexOf(group) < 0) return false

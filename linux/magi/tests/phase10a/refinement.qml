@@ -96,6 +96,7 @@ ShellRoot {
                 snap(settings,"theme-narrow")
                 window.contentItem.Window.window.width=1000; wait(80)
                 Services.SettingsWindowState.page="Bar"; wait(80)
+                findChild(settings,"settingsPage-Bar").mode="Colours & Look";findChild(settings,"settingsPage-Bar").selection.select("wifi");wait(20)
                 verify(findChild(settings,"visualSetting-statusIconSize").visible)
                 snap(settings,"bar")
                 Services.SettingsWindowState.page="Surfaces"; wait(80)

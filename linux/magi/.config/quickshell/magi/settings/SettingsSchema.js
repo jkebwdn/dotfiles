@@ -21,26 +21,29 @@ function controlDefinitions() {
         {id:"notifications", label:"Notifications", icon:"notifications", accent:"lavender", presentations:["action"], route:"hub", mode:"notifications"},
         {id:"emoji", label:"Emoji", icon:"emoji", accent:"yellow", presentations:["action"], route:"hub", mode:"emoji"},
         {id:"clipboard", label:"Clipboard", icon:"clipboard", accent:"blue", presentations:["action"], route:"hub", mode:"clipboard"}
-    ]
+    ].map(d => {
+        if (!d.presentations.includes("slider")) d.presentations = [...new Set(d.presentations.concat(["tile", "action"]))]
+        return d
+    })
 }
 const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre"]
-const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar", "albumArt", "hubSelector"]
+const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar", "albumArt", "hubSelector", "secondaryControl"]
 const controlAccentRoles = ["red", "peach", "yellow", "green", "teal", "blue", "lavender"]
 const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "green",
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 17,
-        appearance: {mediaProgressRole: "accent", hubToggleRole: "accent", hubSelectionRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
-            roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null}},
+    return {schemaVersion: 18,
+        appearance: {controlCentreBackgroundRole: "surface", mediaProgressRole: "accent", hubToggleRole: "accent", hubSelectionRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
+            roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null, secondaryControl: null}},
             surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, hubContent:true, hubSelector:true},
             notificationBorders: {role:"border", width:1, toasts:true, history:true, clipboard:true},
             profileBackground: {enabled:false, role:"elevated"},
             visual: {profileGreetingWeight: 700, profileWeatherWeight: 400, profileThirdLineWeight: 400,
                 mediaTitleSize: 13, mediaArtistSize: 11, mediaTitleWeight: 700, mediaArtistWeight: 400, mediaProgressBorderWidth: 2,
                 profileGreetingSize: 16, profileWeatherSize: 12, profileThirdLineSize: 11,
-                profileControlsGap: 20, controlsSlidersGap: 20, slidersActionsGap: 20, actionsMediaGap: 20,
-                primaryIconSize: 32, primaryContainerSize: 68, secondaryIconSize: 32,
+                profileControlsGap: 20, controlsSlidersGap: 20, slidersActionsGap: 20, actionsMediaGap: 20, mediaSectionGap: 20,
+                primaryIconSize: 32, primaryContainerSize: 68, secondaryIconSize: 32, secondaryContainerSize: 38, secondaryBackgroundOpacity: .18, secondaryBorderWidth: 0, secondaryBorder: "border",
                 avatarSize: 76, mediaArtworkSize: 80, statusIconSize: 18, tileBackgroundShade: 0.28, tileBorderShade: 0.48,
                 tileBorderWidth: 4, controlOn: "text",
                 controlOff: "background", controlOffOpacity: 0.28, controlOffShade: 0,
@@ -53,7 +56,7 @@ function defaults() {
         weather: {enabled: false, location: "", units: "metric"},
         profile: {greetingStyle: "compact", displayName: "", subtitle: "", subtitleMode: "greeting", avatar: null},
         hub: {selectorPosition:"below", verticalPosition:2/3},
-        media: {controlsVisibility:"active", enabled: true, preferredPlayer: null, emptyState: "collapse"},
+        media: {controlsVisibility:"active", preferredPlayer: null, emptyState: "collapse"},
         calendar: {firstDay: "locale", showWeekNumbers: false, showAdjacentDays: true,
             density: "comfortable", timeFormat: "24h", dateFormat: "numeric"},
         wallpaper: {enabled: true, directories: ["~/Pictures/wallpapers"], thumbnailSize: 220},
@@ -74,9 +77,7 @@ function defaults() {
             workspacePills: {roundness:null}},
             modules: {wifi: {accentRole:"accent"}, bluetooth: {accentRole:"accent"}}, position: "top", horizontalInset: 0, edgeOffset: 0, externalDisplays: false, left: ["clock", "date"], center: ["workspaces"],
             right: ["volume", "wifi", "bluetooth", "battery", "controlcentre"]},
-        controlCentre: {columns: 4, actionColumns: 6, sections: {
-            profile: true, quickControls: true, sliders: true, actions: true, media: true
-        }, controls: [
+        controlCentre: {columns: 4, actionColumns: 6, layout: ["profile", "controls", "sliders", "actions", "media"], controls: [
             {key: "network", module: "wifi", accent: "teal", enabled: true, presentation: "tile"},
             {key: "wireless", module: "bluetooth", accent: "blue", enabled: true, presentation: "tile"},
             {key: "power-saver", module: "power-saver", accent: "green", enabled: true, presentation: "tile"},
@@ -102,7 +103,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 17) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 18) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -160,6 +161,10 @@ function analyze(input) {
             effective.bar.modules[id].accentRole = "accent"
         }
     }
+    if (!semanticRoles.includes(a.controlCentreBackgroundRole)) {
+        errors.push("appearance.controlCentreBackgroundRole: invalid role")
+        a.controlCentreBackgroundRole = "surface"
+    }
     for (const key of ["mediaProgressRole", "hubToggleRole", "hubSelectionRole"]) {
         if (["accent", "blue", "lavender", "green", "yellow", "peach", "red", "teal"].indexOf(a[key]) < 0) {
             warnings.push("appearance." + key + ": using accent")
@@ -202,10 +207,10 @@ function analyze(input) {
     }
     const visualDefaults = defaults().appearance.visual
     const integerVisual = ["mediaTitleSize", "mediaArtistSize", "profileGreetingSize", "profileWeatherSize", "profileThirdLineSize",
-        "profileControlsGap", "controlsSlidersGap", "slidersActionsGap", "actionsMediaGap"]
+        "profileControlsGap", "controlsSlidersGap", "slidersActionsGap", "actionsMediaGap", "mediaSectionGap"]
     const numberRanges = {mediaTitleSize:[10,24], mediaArtistSize:[10,20], mediaProgressBorderWidth:[0,5], profileGreetingSize: [12, 24], profileWeatherSize: [10, 20], profileThirdLineSize: [10, 20],
-        profileControlsGap: [0, 48], controlsSlidersGap: [0, 48], slidersActionsGap: [0, 48], actionsMediaGap: [0, 48], primaryIconSize: [16, 48], primaryContainerSize: [60, 96],
-        secondaryIconSize: [16, 36], avatarSize: [48, 112], mediaArtworkSize: [48, 112], statusIconSize: [16, 28], tileBackgroundShade: [-1, 1],
+        profileControlsGap: [0, 48], controlsSlidersGap: [0, 48], slidersActionsGap: [0, 48], actionsMediaGap: [0, 48], mediaSectionGap: [0, 48], primaryIconSize: [16, 48], primaryContainerSize: [60, 96],
+        secondaryIconSize: [16, 36], secondaryContainerSize:[32,72], secondaryBackgroundOpacity:[0,1], secondaryBorderWidth:[0,6], avatarSize: [48, 112], mediaArtworkSize: [48, 112], statusIconSize: [16, 28], tileBackgroundShade: [-1, 1],
         tileBorderShade: [-1, 1], tileBorderWidth: [0, 6],
         controlOffOpacity: [0, 1], controlOffShade: [-1, 1], secondaryOffShade: [-1, 1],
         secondaryOffOpacity: [0, 1], sliderBorderWidth: [0, 5], avatarBorderWidth: [0, 5]}
@@ -316,9 +321,7 @@ function analyze(input) {
                 || !/^avatar:[a-f0-9]{64}\.(png|jpg|webp)$/.test(effective.profile.avatar))) {
         valid(false, "profile.avatar", null); effective.profile.avatar = null
     }
-    if (typeof effective.media.enabled !== "boolean") {
-        valid(false, "media.enabled", true); effective.media.enabled = true
-    }
+
     if (effective.media.preferredPlayer !== null
             && (typeof effective.media.preferredPlayer !== "string" || effective.media.preferredPlayer.length > 256)) {
         valid(false, "media.preferredPlayer", null); effective.media.preferredPlayer = null
@@ -351,12 +354,19 @@ function analyze(input) {
         })
     }
     const cc = effective.controlCentre
-    for (const section of ["profile", "quickControls", "sliders", "media", "actions"]) {
-        if (typeof cc.sections[section] !== "boolean") {
-            valid(false, "controlCentre.sections." + section, defaults().controlCentre.sections[section])
-            cc.sections[section] = defaults().controlCentre.sections[section]
-        }
+    // Compatibility input is read once. The v18 document has one structural authority.
+    if (input.schemaVersion < 18 && input.controlCentre && !input.controlCentre.layout) {
+        const legacy = input.controlCentre.sections || {}
+        const names = {controls:"quickControls", actions:"actions", profile:"profile", sliders:"sliders", media:"media"}
+        cc.layout = defaults().controlCentre.layout.filter(id => legacy[names[id]] !== false && !(id === "media" && input.media && input.media.enabled === false))
     }
+    const sectionIds = ["profile", "controls", "sliders", "actions", "media"]
+    if (!Array.isArray(cc.layout) || cc.layout.some(id => !sectionIds.includes(id)) || new Set(cc.layout).size !== cc.layout.length) {
+        errors.push("controlCentre.layout: invalid or duplicate section")
+        cc.layout = defaults().controlCentre.layout
+    }
+    delete cc.sections
+    delete effective.media.enabled
     if (!Number.isInteger(cc.columns) || cc.columns < 1 || cc.columns > 16) {
         valid(false, "controlCentre.columns", 4); cc.columns = 4
     }
@@ -378,7 +388,7 @@ function analyze(input) {
             keys.push(entry.key); modules.push(entry.module)
             const supported = catalogue.filter(d => d.presentations.indexOf(presentation) >= 0).map(d => d.id)
             if (supported.indexOf(entry.module) < 0) { warnings.push("Unavailable CC module: " + entry.module); return false }
-            if (group === "controls" && controlAccentRoles.indexOf(entry.accent) < 0) {
+            if ((group === "controls" || (group === "actions" && entry.accent !== undefined && entry.accent !== null)) && controlAccentRoles.indexOf(entry.accent) < 0) {
                 errors.push("controlCentre.controls." + entry.key + ".accent: invalid value")
                 entry.accent = controlAccentDefaults[entry.module] || "lavender"
             }

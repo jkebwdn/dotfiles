@@ -25,14 +25,14 @@ MagiBar.ExpandableModule {
     readonly property var controls: layout.controls.filter(e => e.enabled && Modules.ControlCatalog.definition(e.module))
     readonly property var sliders: layout.sliders.filter(e => e.enabled)
     readonly property var actions: layout.actions.filter(e => e.enabled && Modules.ControlCatalog.supports(e.module, "action"))
-    readonly property var sections: layout.sections
+    readonly property var sections: layout.layout
     readonly property bool profileAvailable: !!(Services.Settings.data.profile.displayName
         || Services.Settings.data.profile.subtitle || Services.Settings.data.profile.avatar)
-    readonly property bool showProfile: sections.profile && profileAvailable
-    readonly property bool showControls: sections.quickControls && controls.length > 0
-    readonly property bool showSliders: sections.sliders && sliders.length > 0
-    readonly property bool showActions: sections.actions && actions.length > 0
-    readonly property bool showMedia: sections.media && Services.Settings.data.media.enabled
+    readonly property bool showProfile: sections.includes("profile") && profileAvailable
+    readonly property bool showControls: sections.includes("controls") && controls.length > 0
+    readonly property bool showSliders: sections.includes("sliders") && sliders.length > 0
+    readonly property bool showActions: sections.includes("actions") && actions.length > 0
+    readonly property bool showMedia: sections.includes("media")
     readonly property real tileGap: 12
     readonly property real availableWidth: barWindow ? Math.max(88, barWindow.width - 28) : 1200
     readonly property int columns: Math.max(1, Math.min(layout.columns,
@@ -48,11 +48,11 @@ MagiBar.ExpandableModule {
         + (showSliders ? 1 : 0) + (showActions ? 1 : 0) + (showMedia ? 1 : 0)
     property real measuredMediaHeight: Theme.RenderTokens.mediaHeight
     property real measuredProfileHeight: Theme.RenderTokens.profileHeight
-    readonly property var sectionLayout: SectionLayout.arrange(
+    readonly property var sectionLayout: SectionLayout.compose(layout.layout,
         [showProfile, showControls, showSliders, showActions, showMedia],
         [measuredProfileHeight, gridHeight, Theme.RenderTokens.sliderHeight, actionHeight, measuredMediaHeight],
         [Theme.Theme.visual.profileControlsGap, Theme.Theme.visual.controlsSlidersGap,
-         Theme.Theme.visual.slidersActionsGap, Theme.Theme.visual.actionsMediaGap])
+         Theme.Theme.visual.slidersActionsGap, Theme.Theme.visual.actionsMediaGap, Theme.Theme.visual.mediaSectionGap])
     readonly property real naturalHeight: sectionLayout.height
     readonly property real availableHeight: barWindow && hostMode === "combined" ? Math.max(80, barWindow.height - 90) : 700
     expandedWidth: Math.min(availableWidth, Math.max(300,
@@ -62,7 +62,7 @@ MagiBar.ExpandableModule {
     viewTopPadding: 12
     viewBottomPadding: Theme.RenderTokens.padding
     viewRadius: Theme.RenderTokens.outerRadius
-    viewSurfaceColor: Theme.Theme.surface
+    viewSurfaceColor: Theme.Theme.roles[Services.Settings.data.appearance.controlCentreBackgroundRole]
     color: sharedSurface ? Qt.alpha(Theme.Theme.statusPillBackground, Theme.Theme.statusPillBackground.a * (1 - sharedSurface.expansion)) : Theme.Theme.statusPillBackground
     Connections {
         target: Services.MenuController
@@ -164,7 +164,9 @@ MagiBar.ExpandableModule {
                             toggle: Modules.ControlCatalog.isToggle(modelData.module)
                             active: live.active
                             available: live.available
+                            accentRole: modelData.accent || ""
                             danger: !!definition.danger
+                            onSecondaryTriggered: Modules.ControlCatalog.secondary(modelData.module)
                             onTriggered: Modules.ControlCatalog.primary(modelData.module)
                         }
                     }

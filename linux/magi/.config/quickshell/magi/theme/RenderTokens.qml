@@ -18,7 +18,7 @@ QtObject {
     readonly property real tileBorder: Theme.visual.tileBorderWidth
     readonly property real tileIconSize: Theme.visual.primaryIconSize
     readonly property real actionIconSize: Theme.visual.secondaryIconSize
-    readonly property real actionSize: Math.max(38, actionIconSize + 6)
+    readonly property real actionSize: Math.max(Theme.visual.secondaryContainerSize, actionIconSize + 6)
     readonly property int tileSliderGap: 24
     readonly property int sliderHeight: 48
     readonly property int sliderGap: 20

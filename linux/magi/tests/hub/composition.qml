@@ -103,7 +103,7 @@ ShellRoot {
                 const settings = window.content.currentContent
                 verify(Services.SettingsWindowState.shown)
                 for (const page of ["Appearance","Profile","Bar","Date & time","Control Centre","Notifications","Clipboard","Launcher","Emoji","Wallpaper"]) {
-                    const sub = ({"Control Centre":"controlcentre"})[page]
+                    const sub = undefined
                     if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
                     const nav = findChild(settings,sub ? "appearanceNav-" + sub : "settingsNav-"+page)
                     nav.forceActiveFocus(); wait(20); keyClick(Qt.Key_Space); wait(40)

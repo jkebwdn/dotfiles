@@ -12,6 +12,12 @@ Item {
     required property var entries // [{key, label, lane, position, data?}]; data stays canonical
     property var lanes: [{id: "items", label: ""}]
     required property Component rowContent
+    // Optional geometry adapters for embedded, variable-height/grid composition.
+    property var geometryProvider: null
+    property var locationProvider: null
+    property var canPlace: function(key, lane) { return true }
+    property string canonicalRevision: ""
+    onCanonicalRevisionChanged: if (dragging || candidate) cancel()
     property bool canvasMode: false
     property bool editing: true
     property string selectedKey: ""
@@ -65,6 +71,7 @@ Item {
     }
     function itemWidth(key) { const entry = entryFor(key); return entry && entry.width ? entry.width : 64 }
     function layout() {
+        if (geometryProvider) return geometryProvider()
         if (canvasMode) {
             const placed = lanes.filter(l => !l.palette)
             const total = placed.reduce((sum,l) => sum + Math.max(180, order(l.id).reduce((n,k) => n + itemWidth(k) + gap, 0) + 20), 0)
@@ -99,6 +106,7 @@ Item {
         return result
     }
     function location(key) {
+        if (locationProvider) return locationProvider(key, geometry)
         for (const lane of geometry) {
             const index = lane.keys.indexOf(key)
             if (index >= 0 && canvasMode) return {lane:lane,index:index,
@@ -116,6 +124,7 @@ Item {
     function begin(key, handle, px, py) {
         cancel()
         if (!editing || !entryFor(key)) return
+        selected(key)
         candidate = key
         dragBaseline = fingerprint()
         pointerPosition = handle.mapToItem(viewport, px, py)
@@ -125,8 +134,9 @@ Item {
         const heights = {}
         for (const lane of geometry) heights[lane.id] = lane.height
         heldHeights = heights
-        const top = row.mapToItem(viewport, 0, 0)
-        offset = Qt.point(pointerPosition.x - top.x, pointerPosition.y - top.y)
+        const top = row.mapToItem(root, 0, 0)
+        const press = viewport.mapToItem(root, pointerPosition.x, pointerPosition.y)
+        offset = Qt.point(press.x - top.x, press.y - top.y)
     }
     function motion(handle, px, py) {
         if (!candidate && !dragging) return
@@ -147,12 +157,13 @@ Item {
                 || pointerPosition.y < 0 || pointerPosition.y > viewport.height) return
         const lane = geometry.find(l => boardPointer.x >= l.x && boardPointer.x <= l.x + l.width
             && boardPointer.y >= l.y && boardPointer.y <= l.y + l.height)
-        if (!lane) return
+        if (!lane || !canPlace(dragKey, lane.id)) return
         const others = lane.keys.filter(key => key !== dragKey)
         let index = 0
         for (const key of others) {
             const slot = location(key)
-            if (canvasMode ? boardPointer.x > slot.x + slot.width / 2 : boardPointer.y > slot.y + rowHeight / 2) ++index
+            if (lane.columns ? (boardPointer.y > slot.y + (slot.height || rowHeight) || (boardPointer.y >= slot.y && boardPointer.x > slot.x + slot.width / 2))
+                : canvasMode && !locationProvider ? boardPointer.x > slot.x + slot.width / 2 : boardPointer.y > slot.y + (slot.height || rowHeight) / 2) ++index
         }
         if (lanes.find(l => l.id === lane.id).ordered === false)
             index = others.concat(dragKey).sort((a,b) => entryFor(a).label.localeCompare(entryFor(b).label)).indexOf(dragKey)
@@ -176,7 +187,7 @@ Item {
     }
     function request(key, lane, index, keyboard) {
         const source = entryFor(key)
-        if (!source || !lanes.some(l => l.id === lane)) return
+        if (!source || !lanes.some(l => l.id === lane) || !canPlace(key,lane)) return
         if (source.lane === lane && lanes.find(l => l.id === lane).ordered === false) return
         const max = canonicalKeys(lane).length - (source.lane === lane ? 1 : 0)
         index = Math.max(0, Math.min(max, index))
@@ -245,7 +256,7 @@ Item {
                 x: root.inset + 8; y: root.inset + root.headingHeight
                 width: parent.width - root.inset * 2 - 16; height: root.rowHeight
                 visible: modelData.keys.length === 0 && (!root.canvasMode || root.editing)
-                text: root.multiLane ? "Drop a module here" : "No items configured"
+                text: modelData.emptyLabel || (root.multiLane ? "Drop a module here" : "No items configured")
                 color: Theme.Theme.text; font.pixelSize: 12; wrapMode: Text.Wrap
                 verticalAlignment: Text.AlignVCenter
             }
@@ -271,7 +282,7 @@ Item {
             objectName: root.objectName + "-row-" + entryKey
             x: moving ? Math.max(0, Math.min(root.width - width, root.boardPointer.x - root.offset.x)) : slot.x
             y: moving ? root.boardPointer.y - root.offset.y : slot.y
-            width: moving ? root.dragWidth : slot.width; height: root.rowHeight
+            width: moving ? root.dragWidth : slot.width; height: slot.height || root.rowHeight
             z: moving ? 10 : 1
             opacity: moving ? 0.92 : 1
             color: root.canvasMode ? "transparent" : root.multiLane ? Theme.Theme.background : Theme.Theme.surface
@@ -281,6 +292,7 @@ Item {
             Behavior on y { enabled: !row.moving; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
             Loader {
                 readonly property var entry: row.entry
+                readonly property string previewLane: row.slot.lane.id
                 anchors { left: parent.left; top: parent.top; bottom: parent.bottom; right: root.canvasMode ? parent.right : handle.left; margins: root.canvasMode ? 2 : 8 }
                 sourceComponent: root.rowContent
             }
@@ -293,7 +305,7 @@ Item {
                 id: handle
                 objectName: root.objectName + "-handle-" + row.entryKey
                 visible: root.editing
-                x: root.canvasMode ? (parent.width - width) / 2 : parent.width - width - 4; y: root.canvasMode ? -20 : 8
+                x: root.canvasMode ? (parent.width - width) / 2 : parent.width - width - 4; y: root.locationProvider ? 2 : root.canvasMode ? -20 : 8
                 width: 28; height: 28
                 label: row.entry ? row.entry.label : ""
                 hasLanes: root.multiLane
@@ -312,8 +324,9 @@ Item {
         objectName: root.objectName + "-insertion"
         visible: root.dragging && root.targetLane !== ""
         readonly property var slot: root.location(root.dragKey)
-        x: root.canvasMode ? slot.x - 3 : slot.x; y: root.canvasMode ? slot.y : slot.y - 3
-        width: root.canvasMode ? 2 : slot.width; height: root.canvasMode ? root.rowHeight : 2; radius: 1
+        readonly property bool horizontalFlow: root.canvasMode && (!root.locationProvider || !!slot.lane.columns)
+        x: horizontalFlow ? slot.x - 3 : slot.x; y: horizontalFlow ? slot.y : slot.y - 3
+        width: horizontalFlow ? 2 : slot.width; height: horizontalFlow ? (slot.height || root.rowHeight) : 2; radius: 1
         color: Theme.Theme.accent; z: 20
     }
 }

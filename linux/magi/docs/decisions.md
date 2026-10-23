@@ -1,12 +1,23 @@
 # MAGI — Decisions and Debugging History
 
+## Phase 12D — Control Centre visual editor (accepted and complete)
+
+Control Centre has a first-class visual editor with ordered structural composition,
+Primary/Secondary presentation assignment, inert production presenters and contextual
+family/individual inspectors. Schema 18 migrates the previous visibility flags without
+changing the initial appearance. The Phase12C drag board now accepts generic geometry
+adapters; Bar regression remains covered. The implementation is integrated, schema 18 is saved, and native functionality and
+the fitted left-preview/right-inspector layout are operator-accepted. Regression
+and migration checks pass; Phase 12E remains separate.
+[Architecture, migration, tests and review gallery](design/phase12d-control-centre-visual-editor.md).
+
 ## Phase 12C: family styling and contextual Bar ownership
 
 Bar has a first-class navigation entry and Layout / Colours & Look / Behaviour
 modes sharing an inert production-presenter canvas. Family geometry and background
 are shared; Wi-Fi/Bluetooth accents are individual. Schema 17 preserves prior
 appearance. Native editor and production Bar review are operator-accepted; schema 17 is saved.
-Phase 12D remains separate and has not started.
+Phase 12D is accepted; the Phase 12C architecture and Bar editor remain intact.
 [Ownership audit, implementation, tests and previews](design/phase12c-bar-visual-builder.md).
 
 

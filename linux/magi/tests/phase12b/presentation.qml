@@ -49,14 +49,14 @@ ShellRoot {
     }
     Services.SettingsWindowState.page="Control Centre";wait(20)
     compare(item("mediaTitle").color,Theme.Theme.text)
-    const preview=item("controlCentrePreview"),grid=item("previewControls")
+    const preview=item("controlCentrePreview"),grid=preview.moduleBoard
     compare(preview.color,Theme.Theme.surface);verify(!item("previewMedia").interactive)
-    const before=JSON.stringify(Services.Settings.data.controlCentre.controls),key=grid.keys[0]
-    grid.begin(key,item("preview-handle-controls-"+key),10,10)
-    grid.motion(grid,grid.width-2,grid.height-2)
-    verify(item("preview-insertion-controls").visible);compare(item("preview-insertion-controls").color,Theme.Theme.accent)
-    grid.cancel()
-    verify(!grid.drop("sliders",key,0));compare(JSON.stringify(Services.Settings.data.controlCentre.controls),before)
+    const before=JSON.stringify(Services.Settings.data.controlCentre.controls),key=grid.canonicalKeys("controls")[0]
+    grid.begin(key,item("ccModuleBoard-handle-"+key),10,10)
+    const lane=grid.geometry.find(l=>l.id==="actions")
+    grid.motion(grid,lane.x+20,lane.y+40)
+    verify(grid.dragging);compare(JSON.stringify(Services.Settings.data.controlCentre.controls),before)
+    grid.cancel();verify(!grid.canPlace(key,"sliders"))
     if(theme.family==="Rosé Pine"||theme.family==="Nord"||theme.family==="Tokyo Night"){
      wait(80);grabImage(win.contentItem).save(Quickshell.env("MAGI_PHASE12B_PREVIEWS")+"/"+theme.id+".png")
     }

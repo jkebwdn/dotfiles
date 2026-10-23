@@ -120,5 +120,21 @@ function migrate(input) {
         doc.schemaVersion = 16
     }
     if (doc.schemaVersion === 16) doc.schemaVersion = 17
+    if (doc.schemaVersion === 17) {
+        doc.controlCentre = doc.controlCentre || {}
+        const cc = doc.controlCentre, flags = cc.sections || {}
+        if (cc.layout === undefined) {
+            const map = {profile:"profile", controls:"quickControls", sliders:"sliders", actions:"actions", media:"media"}
+            cc.layout = ["profile", "controls", "sliders", "actions", "media"].filter(id =>
+                flags[map[id]] !== false && !(id === "media" && doc.media && doc.media.enabled === false))
+        }
+        delete cc.sections
+        if (doc.media) delete doc.media.enabled
+        doc.appearance = doc.appearance || {}
+        const roundness = doc.appearance.roundness
+        if (roundness && roundness.roles && roundness.roles.secondaryControl === undefined)
+            roundness.roles.secondaryControl = roundness.roles.action === undefined ? null : roundness.roles.action
+        doc.schemaVersion = 18
+    }
     return doc
 }

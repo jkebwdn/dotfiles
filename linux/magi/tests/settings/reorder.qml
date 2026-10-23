@@ -160,52 +160,18 @@ ShellRoot {
                 Services.Settings.editControl("wireless", "accent", "red")
                 Services.Settings.editEntry("actions", "vpn", "enabled", false)
                 open("Control Centre")
-                equal(find("primaryOrder").entries.length, 3, "legacy disabled primary is available, not configured")
-                check(find("availableControls").model.some(d => d.id === "wifi"), "disabled primary appears in Available")
-                check(find("availableActions").model.some(d => d.id === "vpn"), "disabled action appears in Available")
-                cc("controls", "primaryOrder")
-                cc("actions", "secondaryOrder")
-                equal(Services.Settings.data.controlCentre.columns, 7)
-                equal(Services.Settings.data.controlCentre.actionColumns, 3)
-                const secondary = find("secondaryOrder")
-                const actionCount = keyOrder("actions").length
-                const removeActionKey = keyOrder("actions")[0]
-                const removedAction = Services.Settings.data.controlCentre.actions.find(e => e.key === removeActionKey).module
-                reveal(secondary, removeActionKey)
-                mouseClick(find("removeAction-" + removeActionKey))
-                equal(keyOrder("actions").length, actionCount - 1)
-                const availableActions = find("availableActions")
-                availableActions.currentIndex = availableActions.model.findIndex(d => d.id === removedAction)
-                check(availableActions.currentIndex >= 0, "removed action is available")
-                const addAction = find("settingsButton-Add action")
-                secondary.viewport.contentY = Math.max(0, Math.min(secondary.viewport.contentHeight - secondary.viewport.height,
-                    addAction.mapToItem(secondary.viewport.contentItem, 0, 0).y - 100))
-                wait(150); mouseClick(addAction)
-                equal(keyOrder("actions").length, actionCount, "production add action works")
-                check(keyOrder("actions").includes(removeActionKey), "re-add retains action key")
-                const primary = find("primaryOrder")
-                const removeKey = keyOrder("controls")[0]
-                const record = Services.Settings.data.controlCentre.controls.find(e => e.key === removeKey)
-                const removed = record.module
-                const oldAccent = record.accent
-                reveal(primary, removeKey)
-                mouseClick(find("removeControl-" + removeKey))
-                check(!Services.Settings.data.controlCentre.controls.some(e => e.module === removed && e.enabled))
-                const availableControls = find("availableControls")
-                availableControls.currentIndex = availableControls.model.findIndex(d => d.id === removed)
-                check(availableControls.currentIndex >= 0, "removed control is available")
-                const add = find("settingsButton-Add control")
-                primary.viewport.contentY = Math.max(0, Math.min(primary.viewport.contentHeight - primary.viewport.height,
-                    add.mapToItem(primary.viewport.contentItem, 0, 0).y - 100))
-                wait(150); mouseClick(add)
-                equal(keyOrder("controls").length, 3, "production add control works")
-                check(keyOrder("controls").includes(removeKey), "re-add retains primary key")
-                equal(Services.Settings.data.controlCentre.controls.find(e => e.key === removeKey).accent, oldAccent)
-                for (const group of ["controls", "actions"]) {
-                    const entries = Services.Settings.data.controlCentre[group]
-                    equal(new Set(entries.map(e => e.module)).size, entries.length, "no duplicate identities")
-                    equal(new Set(entries.map(e => e.key)).size, entries.length, "no duplicate keys")
-                }
+                const ccBoard=find("ccModuleBoard")
+                check(ccBoard.canonicalKeys("available").includes("wifi"),"disabled module is available")
+                const before=Services.Settings.data.controlCentre.controls.find(e=>e.module==="bluetooth")
+                ccBoard.request("bluetooth","actions",0,true)
+                equal(Services.Settings.data.controlCentre.actions[0].accent,"red","accent follows presentation")
+                ccBoard.request("bluetooth","available",0,true)
+                check(ccBoard.canonicalKeys("available").includes("bluetooth"))
+                ccBoard.request("bluetooth","controls",0,true)
+                equal(Services.Settings.data.controlCentre.controls[0].key,before.key,"stable identity")
+                equal(Services.Settings.data.controlCentre.columns,7)
+                equal(Services.Settings.data.controlCentre.actionColumns,3)
+                // Full pointer/race and structural coverage lives in phase12d/presentation.qml.
 
                 Services.Settings.resetSection("bar")
                 open("Bar")

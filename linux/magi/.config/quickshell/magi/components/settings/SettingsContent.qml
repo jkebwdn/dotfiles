@@ -66,13 +66,13 @@ FocusScope {
                             width: parent.width
                             spacing: 2
                             Repeater {
-                                model: ["Appearance", "Bar", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
+                                model: ["Appearance", "Bar", "Control Centre", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
                                 SettingsNavigationItem {
                                     id: navigationButton
                                     required property string modelData
                                     objectName: "settingsNav-" + modelData
                                     Layout.fillWidth: true
-                                    iconRole: ({"Bar":"menu","Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image","Power & Idle":"power","Displays":"settings","Security":"lock"})[modelData]
+                                    iconRole: ({"Control Centre":"settings","Bar":"menu","Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image","Power & Idle":"power","Displays":"settings","Security":"lock"})[modelData]
                                     text: modelData
                                     checked: modelData === "Appearance" ? Services.SettingsWindowState.inAppearance : Services.SettingsWindowState.page === modelData
                                     onClicked: Services.SettingsWindowState.page = modelData
@@ -139,7 +139,7 @@ FocusScope {
                     Layout.leftMargin: 16; Layout.rightMargin: 16
                     spacing: 2
                     Repeater {
-                        model: [{id:"theme",label:"Theme"},{id:"surfaces",label:"Surfaces"},{id:"controlcentre",label:"Control Centre"},{id:"hub",label:"Hub"}]
+                        model: [{id:"theme",label:"Theme"},{id:"surfaces",label:"Surfaces"},{id:"hub",label:"Hub"}]
                         SettingsNavigationItem {
                             required property var modelData
                             subsection: true
