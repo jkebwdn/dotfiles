@@ -16,7 +16,7 @@ Rectangle {
     width: 5 * 36 + 4 * 4 + 16
     height: 44
     radius: Theme.Theme.radius("hubSelector", 22, width, height)
-    color: Theme.Theme.surface
+    color: Theme.Theme.surfaceBackground(Theme.Theme.surface)
     Controls.SurfaceBorder {
         surfaceId: "hubSelector"
         radius: parent.radius

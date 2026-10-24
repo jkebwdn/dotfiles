@@ -15,6 +15,14 @@ class Conflict(RuntimeError):
     pass
 
 
+def sync_directory(path):
+    fd = os.open(path, os.O_DIRECTORY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
 def atomic(path, text):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -27,6 +35,7 @@ def atomic(path, text):
         if path.exists():
             os.chmod(temporary, stat.S_IMODE(path.stat().st_mode))
         os.replace(temporary, path)
+        sync_directory(path.parent)
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
@@ -190,6 +199,7 @@ class Store:
             temporary.unlink()
         temporary.symlink_to(Path('generations') / digest)
         os.replace(temporary, pointer)
+        sync_directory(root)
         return True
 
     def prune(self, target, digest):

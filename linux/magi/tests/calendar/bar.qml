@@ -30,6 +30,9 @@ ShellRoot {
             if(!Services.Settings.ready) return
             switch(step++) {
             case 0:
+                Services.Settings.setValue("applicationAppearance","managed",true)
+                Services.Settings.setValue("applicationAppearance","backgroundOpacity",0.7)
+                Services.Settings.setValue("applicationAppearance","blurEnabled",true)
                 surface=find(bar.contentItem);check(!!surface,"surface exists")
                 clockWidth=bar.clockAnchor.width;dateWidth=bar.dateAnchor.width
                 bar.clockAnchor.triggered();break
@@ -79,6 +82,7 @@ ShellRoot {
                 openCheck();check(bar.fullSurface,"legacy host temporary full-height")
                 Services.MenuController.close();break
             case 14:
+                Services.Settings.setValue("applicationAppearance","managed",false)
                 check(!bar.fullSurface && surface.phase===0,"legacy bar compact restored")
                 console.log("Calendar real Bar clicks, suppression, slots, left/center/right, CC handoff, fullscreen, rapid toggle and fallback PASS")
                 Qt.quit()

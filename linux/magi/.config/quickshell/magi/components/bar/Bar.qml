@@ -105,6 +105,27 @@ PanelWindow {
         : 48
     color: "transparent"
     mask: fullSurface ? combinedInputMask : null
+    BackgroundEffect.blurRegion: MagiTheme.Theme.sharedBlur ? paintedBlur : null
+    Region {
+        id: paintedBlur
+        Region { regions: pillBlurRegions.instances }
+        PaintedBlurRegion { target: barStrip; painted: barStrip.color.a > 0; cornerRadius: barStrip.radius }
+        PaintedBlurRegion { target: statusSurface.paintedBackground; painted: bar.combinedMode && statusSurface.phase !== 0; cornerRadius: statusSurface.paintedBackground.radius }
+        PaintedBlurRegion { target: calendarSurface.paintedBackground; painted: calendarSurface.absorbed; cornerRadius: calendarSurface.paintedBackground.radius }
+    }
+    Variants {
+        id: pillBlurRegions
+        model: [...(leftSection.opacity > 0 ? leftSection.children : []),
+            ...(centerSection.opacity > 0 ? centerSection.children : []),
+            ...(statusSurface.phase === 0 ? statusSurface.paintedPills : [])].filter(child => child["item"] !== undefined && child.item && child.visible)
+        delegate: PaintedBlurRegion {
+            required property var modelData
+            target: modelData.item
+            painted: MagiTheme.Theme.barVisual.statusPills.enabled || modelData.modelData === "workspaces"
+            cornerRadius: MagiTheme.Theme.barPillRadius
+        }
+    }
+
 
     // ---------------------------------------------------------
     // Enabled plugins and positions

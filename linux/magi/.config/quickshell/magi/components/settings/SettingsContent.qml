@@ -67,14 +67,14 @@ FocusScope {
                             width: parent.width
                             spacing: 0
                             Repeater {
-                                model: ["Appearance", "Bar", "Control Centre", "Hub", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
+                                model: ["Appearance", "Applications", "Bar", "Control Centre", "Hub", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
                                 SettingsNavigationItem {
                                     id: navigationButton
                                     required property string modelData
                                     objectName: "settingsNav-" + modelData
                                     Layout.fillWidth: true
-                                    iconRole: ({"Hub":"hub","Control Centre":"settings","Bar":"menu","Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image","Power & Idle":"power","Displays":"settings","Security":"lock"})[modelData]
-                                    text: modelData
+                                    iconRole: ({"Applications":"apps","Hub":"hub","Control Centre":"settings","Bar":"menu","Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image","Power & Idle":"power","Displays":"settings","Security":"lock"})[modelData]
+                                    text: modelData === "Applications" ? "Transparency" : modelData
                                     checked: modelData === "Appearance" ? Services.SettingsWindowState.inAppearance : Services.SettingsWindowState.page === modelData
                                     onClicked: Services.SettingsWindowState.page = modelData
                                     onActiveFocusChanged: if (activeFocus) {
@@ -136,7 +136,7 @@ FocusScope {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Repeater {
-                        model: ["Appearance", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
+                        model: ["Appearance", "Applications", "Hub", "Profile", "Bar", "Date & time", "Control Centre", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Security"]
                         Loader {
                             required property string modelData
                             property bool visited: false
@@ -146,7 +146,8 @@ FocusScope {
                             active: visited || selected
                             onSelectedChanged: if (selected) visited = true
                             Component.onCompleted: if (selected) visited = true
-                            sourceComponent: modelData === "Appearance" ? appearance
+                            sourceComponent: modelData === "Applications" ? applications
+                                : modelData === "Appearance" ? appearance
                                 : modelData === "Hub" ? hubAppearance
                                 : modelData === "Profile" ? profile
                                 : modelData === "Bar" ? bar
@@ -168,6 +169,7 @@ FocusScope {
         }
     }
     Component { id: hubAppearance; Pages.HubPage {} }
+    Component { id: applications; Pages.ApplicationsPage {} }
     Component { id: appearance; Pages.AppearancePage {} }
     Component { id: profile; Pages.ProfilePage {} }
     Component { id: security; Pages.SecurityPage {} }

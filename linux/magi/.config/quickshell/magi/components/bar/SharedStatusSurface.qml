@@ -25,6 +25,8 @@ Item {
     }
     property int headerAlignment: Qt.AlignRight
     property Component statusContent: null
+    property alias paintedBackground: expandedBackground
+    readonly property var paintedPills: statusLoader.item ? statusLoader.item.children : []
     property var modules: []
     property var requestedModule: null
     property var displayedModule: null
@@ -221,13 +223,14 @@ Item {
     }
 
     Rectangle {
+        id: expandedBackground
         anchors.fill: parent
         visible: root.combined && root.phase !== 0
         opacity: root.expansion
         radius: MagiTheme.Theme.barPillRadius + root.expansion *
             (root.presentation(root.displayedModule, "viewRadius", MagiTheme.Theme.radiusMedium) - MagiTheme.Theme.barPillRadius)
-        color: root.presentation(root.displayedModule, "viewSurfaceColor",
-            MagiTheme.Theme.surface)
+        color: MagiTheme.Theme.surfaceBackground(root.presentation(root.displayedModule, "viewSurfaceColor",
+            MagiTheme.Theme.surface))
 
         Controls.SurfaceBorder {
             objectName: "expandedSurfaceBorder"

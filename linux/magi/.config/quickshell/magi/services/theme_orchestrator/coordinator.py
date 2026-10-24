@@ -42,8 +42,12 @@ class Orchestrator:
                 if text_hash(current) == item['beforeHash']:
                     raise Conflict('Integration was removed outside MAGI')
 
-    def render(self, adapter, palette):
-        files = adapter.render(palette, self.store)
+    def render(self, adapter, palette, appearance=None):
+        if adapter.id == 'ghostty':
+            policy = self.store.load().get('applicationAppearance') if appearance is None else appearance
+            files = adapter.render(palette, self.store, policy)
+        else:
+            files = adapter.render(palette, self.store)
         if files:
             files['palette.json'] = json.dumps(palette, sort_keys=True, indent=2) + '\n'
         return files, fingerprint({'renderer': adapter.version, 'files': files})
@@ -102,6 +106,8 @@ class Orchestrator:
             self.store.save(state)
 
     def disable(self, state, target):
+        if target == 'ghostty' and state.get('applicationAppearance', {}).get('managed'):
+            raise Conflict('Release application appearance before removing Ghostty integration')
         record = state['targets'].setdefault(target, {})
         record['enabled'] = False  # Pause immediately even if cleanup conflicts.
         record['phase'] = 'removing'
@@ -214,6 +220,12 @@ class Orchestrator:
         target = request.get('target', '')
         with self.store.locked():
             state = self.store.load()
+            if op == 'application-appearance':
+                from application_appearance.coordinator import ApplicationAppearanceCoordinator
+                from application_appearance.executor import BlurExecutor
+                return ApplicationAppearanceCoordinator(self, BlurExecutor()).apply(state, request.get('policy'), palette)
+            if state.get('applicationAppearancePending'):
+                raise Conflict('Recover pending application appearance transaction before theme updates')
             if op == 'plan':
                 if target not in ADAPTERS or target == 'magi':
                     raise ValueError('Invalid enrollment target')

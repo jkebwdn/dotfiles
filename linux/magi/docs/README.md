@@ -1,4 +1,59 @@
+## Phase 12G accepted — final ownership
+
+The operator accepted Ghostty background-only alpha/blur, shared MAGI outer-panel
+transparency including the Bar, global blur amount and exact default restoration.
+Text/icons/controls/artwork stay opaque. Individual surface styles are preserved.
+Whole-client opacity remains rejected. Theme Orchestrator is the sole Ghostty
+publisher. **Transparency → Transparency & blur** owns shared controls; global
+amount is explicitly compositor-wide and separate from participation. Schema 19
+is neutral on migration. Phase 12H activation work remains deferred.
+[Final acceptance, compatibility, tests and history](design/phase12g-window-visuals.md).
+
+## Current Phase 12G extension: shared transparency and blur
+
+The operator included MAGI menus and the Bar in one shared background-only
+opacity/blur policy. The unified **Transparency & blur** page also hosts the
+previously approved global amount. Native per-surface blur regions exclude
+transparent input catchers; wallpaper/lock remain separate. Individual styles
+are preserved underneath. This supersedes earlier application-only shell
+exclusions below. Implementation, offline checks and operator native acceptance are complete. See [design](design/phase12g-window-visuals.md).
+
 # MAGI documentation
+
+## Phase 12G approved extension — global blur amount
+
+After native Ghostty blur was visually confirmed working, the operator explicitly
+approved a separate global control. **Appearance → Advanced shell styling → Global
+blur** now offers opt-in amount (size 1–40). The UI clearly states that this affects
+all blurred desktop surfaces. Passes, blur enablement, client opacity, fullscreen
+and per-surface participation are untouched. Applications remains the separate
+background-alpha/participation owner. Earlier prohibitions on global blur writes
+below describe the application-only scope; this separate opt-in control supersedes
+those prohibitions for blur size only.
+
+See [Phase12G design](design/phase12g-window-visuals.md) for transactions and native acceptance.
+
+## Phase 12G correction — application background alpha and blur
+
+Whole-client opacity is rejected: native testing faded foreground content. Live
+management was released and 1/1 opacity restored, with fullscreen 1 and blur 8/4
+unchanged; the operator confirmed visual rollback. Corrected work is isolated.
+Applications now proposes one native background alpha plus independent blur,
+Ghostty as reference, and honest deferred/inherited support. Theme Orchestrator
+remains the sole Ghostty generated-file writer; no competing overlay. The proposed
+narrow no-blur handle never writes client opacity or global blur. Schema 19 is
+redesigned before commit, production activation is unwired in this candidate,
+and Phase 12H is not begun. Prior entries below are historical checkpoints.
+[Current design, capability matrix, rollback and gallery](design/phase12g-window-visuals.md).
+
+
+
+## Phase 12G — isolated architecture ready for native gate
+
+Windows UI, neutral schema 19 and baseline-aware transactions are implemented.
+Runtime client opacity defaults plus a fixed toggle-only no-blur rule replace the
+rejected mutable-rule mechanism. Production activation remains unwired; no live
+operator file was changed. [Report, exact bootstrap, tests and gallery](design/phase12g-window-visuals.md).
 
 ## Phase 12F — Settings product design (natively accepted)
 

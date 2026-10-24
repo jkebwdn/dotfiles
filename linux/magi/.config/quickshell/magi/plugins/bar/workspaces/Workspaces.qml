@@ -12,7 +12,7 @@ Rectangle {
     readonly property var outputMonitor: !preview && outputScreen ? Hyprland.monitorFor(outputScreen) : null
     readonly property var activeWorkspace: outputMonitor ? outputMonitor.activeWorkspace : null
     // One continuous workspace chip, styled by MAGI's active palette.
-    color: MagiTheme.Theme.surface
+    color: MagiTheme.Theme.surfaceBackground(MagiTheme.Theme.surface)
     radius: MagiTheme.Theme.workspacePillRadius
 
     implicitWidth: workspaceRow.implicitWidth

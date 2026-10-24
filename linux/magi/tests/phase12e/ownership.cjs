@@ -29,9 +29,9 @@ assert(read('components/hub/HubSelector.qml').includes('Theme.Theme.hubSelection
 const schema=vm.createContext({});
 for(const p of ['SettingsSchema.js','SettingsMigrations.js'])vm.runInContext(read('settings/'+p),schema);
 const plain=x=>JSON.parse(JSON.stringify(x));
-const defaults=plain(schema.defaults());assert.equal(defaults.schemaVersion,18);
+const defaults=plain(schema.defaults());assert.equal(defaults.schemaVersion,19);
 const fixture=process.env.MAGI_PHASE12E_FIXTURE?JSON.parse(fs.readFileSync(process.env.MAGI_PHASE12E_FIXTURE)):defaults;
-assert.equal(fixture.schemaVersion,18);assert.deepEqual(plain(schema.migrate(fixture)),fixture,'schema18 input needs no migration');
+assert.equal(fixture.schemaVersion,19);assert.deepEqual(plain(schema.migrate(fixture)),fixture,'current input needs no migration');
 assert.deepEqual(plain(schema.analyze(fixture).errors),[]);
 const custom=structuredClone(defaults);
 Object.assign(custom.appearance,{hubSelectionRole:'red',hubToggleRole:'teal',navigationAccent:'blue',toggleStyle:'minimal'});

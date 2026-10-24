@@ -48,20 +48,38 @@ class Hyprland(Adapter):
 class Ghostty(Adapter):
     id, label, executable = 'ghostty', 'Ghostty', 'ghostty'
     config_path = 'ghostty/config.ghostty'
+    version = 3
     boundary = 'Reload required — Ghostty reload_config (Ctrl+Shift+,)'
 
     def plan(self, store, options):
         body = 'config-file = ?' + str(store.current(self.id) / 'colors.conf')
         return [change(self.path(store), lambda t: block(t, body))]
 
-    def render(self, p, store):
+    def render(self, p, store, appearance=None):
         t = p['terminal']
         fields = {'background': t['background'], 'foreground': t['foreground'],
                   'cursor-color': t['cursor'], 'cursor-text': t['cursorText'],
                   'selection-background': t['selection'], 'selection-foreground': t['selectionText']}
         text = '# MAGI generated theme v1\n' + ''.join(f'{k} = {v}\n' for k, v in fields.items())
         text += ''.join(f'palette = {i}={color}\n' for i, color in enumerate(p['ansi']))
-        return {'colors.conf': text}
+        from application_appearance.policy import normalize
+        policy = normalize(appearance)
+        files = {}
+        if policy['managed']:
+            text += 'background-opacity = ' + format(policy['backgroundOpacity'], '.6g') + '\n'
+            text += 'background-opacity-cells = false\n'
+            # GTK 4.24 advertises ext-background-effect even without a blur region.
+            # Ghostty 1.3.1 needs an explicit backdrop request. This provider is
+            # loaded only inside Ghostty; .window is its main-window CSS class.
+            # GTK 4.24 gskblurutils.c requires radius >= 20 to emit a region.
+            # Hyprland uses the requested region, not this CSS radius: strength
+            # remains compositor-owned. Keep the request stable across toggles;
+            # the immutable no-blur rule independently gates participation.
+            css_path = (store.current(self.id) if store else Path('.')) / 'background-blur.css'
+            text += 'gtk-custom-css = ' + str(css_path) + '\n'
+            files['background-blur.css'] = '/* MAGI: Ghostty-only compositor blur request. */\nwindow.window { backdrop-filter: blur(20px); }\n'
+        # Releasing ownership omits these keys, so the existing operator config wins.
+        return {**files, 'colors.conf': text}
 
 
 class Gtk(Adapter):

@@ -33,3 +33,7 @@ singleton Weather 1.0 Weather.qml
 singleton SurfaceOrigin 1.0 SurfaceOrigin.qml
 
 singleton Displays 1.0 Displays.qml
+
+singleton ApplicationAppearanceService 1.0 ApplicationAppearanceService.qml
+
+singleton GlobalBlurService 1.0 GlobalBlurService.qml

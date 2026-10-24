@@ -17,7 +17,7 @@ Rectangle {
     readonly property bool defaultAction: record && record.notification
         && (entry.actions || []).some(a => a.identifier === "default")
     implicitHeight: Math.max(64, content.implicitHeight) + 28
-    color: root.historyCard ? Theme.Theme.elevated : Theme.Theme.surface
+    color: root.historyCard ? Theme.Theme.elevated : Theme.Theme.surfaceBackground(Theme.Theme.surface)
     radius: Theme.Theme.radius("surface", 12, width, height)
     Controls.SurfaceBorder { z: 2; family: "notificationBorders"; surfaceId: root.historyCard ? "history" : "toasts"; radius: parent.radius }
     clip: true

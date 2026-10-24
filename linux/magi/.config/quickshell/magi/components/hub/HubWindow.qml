@@ -7,6 +7,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import "../../services" as Services
+import "../../theme" as Theme
 
 PanelWindow {
     id: root
@@ -33,6 +34,13 @@ PanelWindow {
     WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     visible: Services.Hub.opened && !Services.Hub.suppressed && (readyToOpen || presented || previewPinned)
     color: "transparent"
+    BackgroundEffect.blurRegion: Theme.Theme.sharedBlur ? panelBlur : null
+    Region {
+        id: panelBlur
+        item: content.surface
+        radius: content.surface.radius
+        Region { item: content.selectorPill; radius: content.selectorPill.radius }
+    }
     // Only the visible Hub surfaces own pointer input. Desktop/app clicks pass through.
     mask: Region {
         item: content.surface

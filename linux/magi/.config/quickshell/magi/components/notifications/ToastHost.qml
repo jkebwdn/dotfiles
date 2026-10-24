@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import "../../theme" as Theme
 
 PanelWindow {
     id: root
@@ -23,6 +24,8 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     color: "transparent"
+    BackgroundEffect.blurRegion: Theme.Theme.sharedBlur ? toastBlur : null
+    Region { id: toastBlur; regions: toastRegions.instances }
     visible: !suppressed && service.toasts.count > 0
     // Union of the painted, non-exiting cards only. No stack bounding-box mask.
     mask: Region {

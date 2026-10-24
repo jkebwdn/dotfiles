@@ -1,4 +1,52 @@
+## Phase 12G accepted — final ownership
+
+The operator accepted Ghostty background-only alpha/blur, shared MAGI outer-panel
+transparency including the Bar, global blur amount and exact default restoration.
+Text/icons/controls/artwork stay opaque. Individual surface styles are preserved.
+Whole-client opacity remains rejected. Theme Orchestrator is the sole Ghostty
+publisher. **Transparency → Transparency & blur** owns shared controls; global
+amount is explicitly compositor-wide and separate from participation. Schema 19
+is neutral on migration. Phase 12H activation work remains deferred.
+[Final acceptance, compatibility, tests and history](design/phase12g-window-visuals.md).
+
+## Current Phase 12G extension: shared transparency and blur
+
+The operator included MAGI menus and the Bar in one shared background-only
+opacity/blur policy. The unified **Transparency & blur** page also hosts the
+previously approved global amount. Native per-surface blur regions exclude
+transparent input catchers; wallpaper/lock remain separate. Individual styles
+are preserved underneath. This supersedes earlier application-only shell
+exclusions below. Implementation, offline checks and operator native acceptance are complete. See [design](design/phase12g-window-visuals.md).
+
 # MAGI — Quickshell Technical Reference
+
+## Phase 12G approved extension — global blur amount
+
+After native Ghostty blur was visually confirmed working, the operator explicitly
+approved a separate global control. **Appearance → Advanced shell styling → Global
+blur** now offers opt-in amount (size 1–40). The UI clearly states that this affects
+all blurred desktop surfaces. Passes, blur enablement, client opacity, fullscreen
+and per-surface participation are untouched. Applications remains the separate
+background-alpha/participation owner. Earlier prohibitions on global blur writes
+below describe the application-only scope; this separate opt-in control supersedes
+those prohibitions for blur size only.
+
+See [Phase12G design](design/phase12g-window-visuals.md) for transactions and native acceptance.
+
+## Phase 12G correction — application background alpha and blur
+
+Whole-client opacity is rejected: native testing faded foreground content. Live
+management was released and 1/1 opacity restored, with fullscreen 1 and blur 8/4
+unchanged; the operator confirmed visual rollback. Corrected work is isolated.
+Applications now proposes one native background alpha plus independent blur,
+Ghostty as reference, and honest deferred/inherited support. Theme Orchestrator
+remains the sole Ghostty generated-file writer; no competing overlay. The proposed
+narrow no-blur handle never writes client opacity or global blur. Schema 19 is
+redesigned before commit, production activation is unwired in this candidate,
+and Phase 12H is not begun. Prior entries below are historical checkpoints.
+[Current design, capability matrix, rollback and gallery](design/phase12g-window-visuals.md).
+
+
 
 ## Phase 12E: shared Hub presenters (2026-10-23)
 
@@ -653,3 +701,19 @@ clamping and invariant Settings revisions. `EditorSelection.familyKeys` is trans
 The existing reorder board accepts a read-only family-membership highlight callback;
 no drag/drop or persisted model is replaced. Focus transfers to the existing drag handle
 when entering Layout from a focused appearance item.
+
+## Phase 12G isolated Windows presentation and lifecycle — 2026-10-24
+
+Installed Quickshell 0.3.2 (Arch). Verified against local generated API descriptions:
+`/usr/lib/qt6/qml/Quickshell/Io/quickshell-io.qmltypes` exposes Socket.connected,
+path, connectionStateChanged and SplitParser; the Hyprland `_Ipc` qmltypes exposes
+eventSocketPath. The service uses a passive event socket, bounded startup retry,
+450 ms edit debounce and existing Process/StdioCollector patterns. Its lifecycle
+is tested with a disposable fake worker; actual socket loss/reconnect is untested.
+The service is not activated from shell.qml pending the controlled native gate.
+The adapter uses pinned Lua hl.config/get_config and fixed rule handle toggles,
+with persisted baseline ownership and reload generation checks. No runtime rule
+effects are updated and no whole compositor reload is requested.
+No new blur rendering API is claimed: the synthetic preview uses ordinary QML
+rectangles/alpha and labels its blur treatment illustrative.
+[Current capability gate and gallery](design/phase12g-window-visuals.md).

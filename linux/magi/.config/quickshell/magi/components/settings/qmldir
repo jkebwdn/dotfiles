@@ -45,3 +45,4 @@ ThemeGallery 1.0 ThemeGallery.qml
 IconPackGallery 1.0 IconPackGallery.qml
 RoundnessPicker 1.0 RoundnessPicker.qml
 SwitchStylePicker 1.0 SwitchStylePicker.qml
+ApplicationAppearancePreview 1.0 ApplicationAppearancePreview.qml

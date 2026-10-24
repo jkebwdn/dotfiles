@@ -14,6 +14,8 @@ ShellRoot {
         Services.Notifications.activateServer()
         Services.Clipboard.activate()
         Services.ThemeOrchestrator.activate()
+        Services.ApplicationAppearanceService.activate()
+        Services.GlobalBlurService.activate()
         // Keep restore/topology ownership alive without a standalone manager window.
         Services.Wallpaper.initialize()
         Services.Weather.activate()

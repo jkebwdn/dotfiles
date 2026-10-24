@@ -127,7 +127,7 @@ Scope {
     function setValue(section, key, value) {
         if (section === "media" && key === "enabled") return setControlSection("media", value)
         if (section === "controlCentre" && key === "sections") return false
-        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji", "wallpaper", "hub", "weather", "powerIdle"].indexOf(section) < 0) return false
+        if (["applicationAppearance", "appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji", "wallpaper", "hub", "weather", "powerIdle"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         // Fill missing defaults, but retain unknown fields and diagnosed raw values.
         if (next[section] === undefined) next[section] = Schema.defaults()[section]
@@ -257,7 +257,7 @@ Scope {
     function addControl(module) { return addEntry("controls", module) }
     function removeControl(key) { return removeEntry("controls", key) }
     function resetSection(section) {
-        if (["appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji", "wallpaper", "hub", "weather", "powerIdle"].indexOf(section) < 0) return false
+        if (["applicationAppearance", "appearance", "icons", "bar", "controlCentre", "profile", "media", "notifications", "clipboard", "launcher", "calendar", "emoji", "wallpaper", "hub", "weather", "powerIdle"].indexOf(section) < 0) return false
         const next = Schema.clone(state.document)
         next[section] = Schema.defaults()[section]
         return commit(next)

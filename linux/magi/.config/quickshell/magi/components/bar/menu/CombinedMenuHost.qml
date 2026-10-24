@@ -45,7 +45,7 @@ Item {
     Rectangle {
         anchors.fill: parent
 
-        color: root.menuColor
+        color: MagiTheme.Theme.surfaceBackground(root.menuColor)
 
         topLeftRadius: 0
         topRightRadius: 0

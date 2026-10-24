@@ -1,4 +1,52 @@
+## Phase 12G accepted — final ownership
+
+The operator accepted Ghostty background-only alpha/blur, shared MAGI outer-panel
+transparency including the Bar, global blur amount and exact default restoration.
+Text/icons/controls/artwork stay opaque. Individual surface styles are preserved.
+Whole-client opacity remains rejected. Theme Orchestrator is the sole Ghostty
+publisher. **Transparency → Transparency & blur** owns shared controls; global
+amount is explicitly compositor-wide and separate from participation. Schema 19
+is neutral on migration. Phase 12H activation work remains deferred.
+[Final acceptance, compatibility, tests and history](design/phase12g-window-visuals.md).
+
+## Current Phase 12G extension: shared transparency and blur
+
+The operator included MAGI menus and the Bar in one shared background-only
+opacity/blur policy. The unified **Transparency & blur** page also hosts the
+previously approved global amount. Native per-surface blur regions exclude
+transparent input catchers; wallpaper/lock remain separate. Individual styles
+are preserved underneath. This supersedes earlier application-only shell
+exclusions below. Implementation, offline checks and operator native acceptance are complete. See [design](design/phase12g-window-visuals.md).
+
 # MAGI — Decisions and Debugging History
+
+## Phase 12G approved extension — global blur amount
+
+After native Ghostty blur was visually confirmed working, the operator explicitly
+approved a separate global control. **Appearance → Advanced shell styling → Global
+blur** now offers opt-in amount (size 1–40). The UI clearly states that this affects
+all blurred desktop surfaces. Passes, blur enablement, client opacity, fullscreen
+and per-surface participation are untouched. Applications remains the separate
+background-alpha/participation owner. Earlier prohibitions on global blur writes
+below describe the application-only scope; this separate opt-in control supersedes
+those prohibitions for blur size only.
+
+See [Phase12G design](design/phase12g-window-visuals.md) for transactions and native acceptance.
+
+## Phase 12G correction — application background alpha and blur
+
+Whole-client opacity is rejected: native testing faded foreground content. Live
+management was released and 1/1 opacity restored, with fullscreen 1 and blur 8/4
+unchanged; the operator confirmed visual rollback. Corrected work is isolated.
+Applications now proposes one native background alpha plus independent blur,
+Ghostty as reference, and honest deferred/inherited support. Theme Orchestrator
+remains the sole Ghostty generated-file writer; no competing overlay. The proposed
+narrow no-blur handle never writes client opacity or global blur. Schema 19 is
+redesigned before commit, production activation is unwired in this candidate,
+and Phase 12H is not begun. Prior entries below are historical checkpoints.
+[Current design, capability matrix, rollback and gallery](design/phase12g-window-visuals.md).
+
+
 
 ## Phase 12E — Hub editor and ownership (natively accepted)
 
@@ -894,3 +942,53 @@ That semantic background was restored without changing navigation geometry, scro
 or editor behavior; the operator explicitly confirmed the correction and finalization.
 The native review gate covered mouse wheel/touchpad, horizontal galleries, SVG tint,
 light theme and editor scope/composition. Schema stays 18; Phase 12G remains deferred.
+
+
+## Phase 12G audit gate — 2026-10-24
+
+Stop before implementation: shared Hyprland blur strength/passes are not an
+application-only setting. The checked config has no layer blur requests, but
+runtime isolation cannot be verified with IPC unavailable. Do not claim a
+necessary current shell regression or an absence of reversible Hyprland APIs.
+No schema bump, runtime rule, bootstrap or generated state is introduced.
+A reduced client-only policy preserving operator blur parameters is the safest
+review alternative; it requires an explicit scope decision. Named-rule disabling
+is supported, but full lifecycle/readback/precedence acceptance remains open.
+[Full evidence and alternatives](design/phase12g-window-visuals.md).
+
+
+## Phase 12G continuation — approved scope; new activation gate
+
+The operator accepted client opacity/blur participation and rejected application
+blur strength controls. Implemented isolated Windows presentation, neutral schema
+19 and offline service/planner/transaction tests. Fullscreen compositor opacity
+is a fixed proposed 100% default, subject to later operator rules; no extra slider.
+
+Rejected repeated named-rule updates after checking RuleWithEffects.hpp: effect
+vectors append even though named objects retain position. Corrected the fake model
+and removed production shell activation. The production executor now refuses all
+apply attempts before subprocess execution. Do not mistake passing fake transaction
+tests for compositor capability. Whole-config reconstruction avoids accumulation
+but can reset unrelated runtime state; it remains an operator architecture decision.
+[Current report and preserved initial audit](design/phase12g-window-visuals.md).
+
+
+## Phase 12G third architecture decision — 2026-10-24
+
+Selected runtime decoration active/inactive client defaults and one static,
+disabled-by-default no-blur rule, toggled through its retained Lua handle. Named
+rule effect mutation remains rejected; generated-fragment whole reload is rejected
+for routine application. The Lua operator setup requires hyprctl eval/repl APIs,
+not legacy keyword writes. Fullscreen stays operator-owned and independently selected.
+
+Baseline ownership persists outside Git, keyed by compositor signature and a
+per-config-load UUID. A read-only config.reloaded callback captures configured
+opacity defaults before IPC notification, including reloads missed while MAGI is
+stopped. Guarded transactions restore exact baseline on disable and prior active
+values on failure. No global blur parameters, layer rules, shell tokens or Theme
+Orchestrator border ownership change. Fixed no-blur rule is appended after existing
+rules; later/higher-priority external overrides retain Hyprland's normal semantics.
+
+Windows UI/schema 19 remain neutral. Production activation is unwired. The exact
+bootstrap, source evidence, precedence limits, future App Rules/global blur split
+and native gate are in the [current report](design/phase12g-window-visuals.md).

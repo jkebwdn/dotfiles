@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Wayland
 
 import "../../../theme" as MagiTheme
 
@@ -66,11 +67,19 @@ PopupWindow {
 
     visible: root.revealedHeight > 0
     color: "transparent"
+    BackgroundEffect.blurRegion: MagiTheme.Theme.sharedBlur && root.menuColor.a > 0 ? menuBlur : null
+    Region {
+        id: menuBlur
+        width: root.width; height: root.height
+        topLeftRadius: 0; topRightRadius: 0
+        bottomLeftRadius: Math.min(MagiTheme.Theme.radiusMedium, height / 2)
+        bottomRightRadius: bottomLeftRadius
+    }
 
     Rectangle {
         anchors.fill: parent
 
-        color: root.menuColor
+        color: MagiTheme.Theme.surfaceBackground(root.menuColor)
         clip: true
 
         topLeftRadius: 0

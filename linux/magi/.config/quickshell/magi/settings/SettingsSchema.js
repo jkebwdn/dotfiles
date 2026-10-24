@@ -33,8 +33,9 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 18,
-        appearance: {controlCentreBackgroundRole: "surface", mediaProgressRole: "accent", hubToggleRole: "accent", hubSelectionRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
+    return {schemaVersion: 19,
+        applicationAppearance: {managed: false, backgroundOpacity: 1.0, blurEnabled: true},
+        appearance: {globalBlur: {managed: false, size: 8}, controlCentreBackgroundRole: "surface", mediaProgressRole: "accent", hubToggleRole: "accent", hubSelectionRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null, secondaryControl: null}},
             surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, hubContent:true, hubSelector:true},
             notificationBorders: {role:"border", width:1, toasts:true, history:true, clipboard:true},
@@ -103,7 +104,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 18) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 19) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -121,6 +122,16 @@ function analyze(input) {
         if (!test) { errors.push(path + ": invalid value"); return clone(fallback) }
         return null
     }
+    const applicationPolicy = effective.applicationAppearance
+    for (const key of ["managed", "blurEnabled", "backgroundOpacity"]) {
+        const value = applicationPolicy[key]
+        const good = key !== "backgroundOpacity" ? typeof value === "boolean"
+            : typeof value === "number" && isFinite(value) && value >= .5 && value <= 1
+        if (!good) { errors.push("applicationAppearance." + key + ": invalid value"); applicationPolicy[key] = defaults().applicationAppearance[key] }
+    }
+    const globalBlur = effective.appearance.globalBlur
+    if (typeof globalBlur.managed !== "boolean") { errors.push("appearance.globalBlur.managed: invalid value"); globalBlur.managed = false }
+    if (!Number.isInteger(globalBlur.size) || globalBlur.size < 1 || globalBlur.size > 40) { errors.push("appearance.globalBlur.size: invalid value"); globalBlur.size = 8 }
     const durations = [0,60,120,300,600,900,1800,3600]
     const suspendDurations = [0,300,600,900,1800,3600,7200]
     for (const key of ["lockAfter", "displayOffAfter", "suspendAfter"]) {

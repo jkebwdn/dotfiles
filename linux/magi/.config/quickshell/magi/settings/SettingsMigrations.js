@@ -136,5 +136,11 @@ function migrate(input) {
             roundness.roles.secondaryControl = roundness.roles.action === undefined ? null : roundness.roles.action
         doc.schemaVersion = 18
     }
+    if (doc.schemaVersion === 18) {
+        if (doc.applicationAppearance === undefined) doc.applicationAppearance = {managed: false, backgroundOpacity: 1.0, blurEnabled: true}
+        doc.appearance = doc.appearance || {}
+        if (doc.appearance.globalBlur === undefined) doc.appearance.globalBlur = {managed: false, size: 8}
+        doc.schemaVersion = 19
+    }
     return doc
 }

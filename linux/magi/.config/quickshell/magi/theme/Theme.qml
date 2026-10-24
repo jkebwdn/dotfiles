@@ -4,6 +4,12 @@ import "../services" as MagiServices
 
 QtObject {
     id: theme
+    // Outer painted surfaces only. Palette/foreground tokens remain opaque.
+    readonly property var transparency: MagiServices.Settings.data.applicationAppearance
+    readonly property bool sharedBlur: transparency.managed && transparency.blurEnabled
+    function surfaceBackground(base) {
+        return transparency.managed && base.a > 0 ? Qt.alpha(base, transparency.backgroundOpacity) : base
+    }
     readonly property string selectedTheme: MagiServices.Settings.data.appearance.theme
     readonly property var definition: ThemeRegistry.resolve(selectedTheme)
     readonly property string effectiveTheme: definition.id
@@ -108,11 +114,11 @@ QtObject {
     readonly property int barPillHeight: 28
     readonly property var barVisual: MagiServices.Settings.data.bar.visual
     readonly property color barBackground: barVisual.host.enabled
-        ? Qt.alpha(roles[barVisual.host.role], barVisual.host.opacity) : "transparent"
+        ? surfaceBackground(Qt.alpha(roles[barVisual.host.role], barVisual.host.opacity)) : "transparent"
     readonly property color statusPillBackground: barVisual.statusPills.enabled
-        ? Qt.alpha(roles[barVisual.statusPills.role], barVisual.statusPills.opacity) : "transparent"
+        ? surfaceBackground(Qt.alpha(roles[barVisual.statusPills.role], barVisual.statusPills.opacity)) : "transparent"
     readonly property color statusPillHoverBackground: barVisual.statusPills.enabled
-        ? Qt.alpha(elevated, barVisual.statusPills.opacity) : "transparent"
+        ? surfaceBackground(Qt.alpha(elevated, barVisual.statusPills.opacity)) : "transparent"
     readonly property real workspacePillRadius: barVisual.workspacePills.roundness === null
         ? barPillRadius : Math.min(14, 8 * barVisual.workspacePills.roundness)
     function barAccent(id) { return roles[MagiServices.Settings.data.bar.modules[id].accentRole] }

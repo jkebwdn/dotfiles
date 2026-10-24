@@ -238,6 +238,7 @@ SettingsUI.SettingsPage {
         objectName: "advancedShellStyling"
         title: "Advanced shell styling"
         collapsible: true
+
     SettingsUI.SettingsRow {
         Label { text: "Settings navigation accent"; Layout.fillWidth: true }
         SettingsUI.SettingsSelector {
