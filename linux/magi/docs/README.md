@@ -1,3 +1,15 @@
+## Phase 12H — native acceptance complete (2026-10-24)
+
+The operator accepted automatic Ghostty activation, preserved transparency/blur,
+independent-instance coverage reporting, the Application themes disclosure and
+btop's corrected palette/enrollment. Final regression suites passed; schema is 19.
+All-target preflight precedes per-target atomic publication, and runtime activation
+starts only after complete publication. Publication failures block activation with
+safe compensation where possible; activation failures remain local. This is not
+global filesystem atomicity. Runtime status remains separate from Settings, and
+Theme Orchestrator remains the sole generated-config publisher.
+See [native results, architecture and exact inventory](design/phase12h-theme-activation.md).
+
 ## Phase 12G accepted — final ownership
 
 The operator accepted Ghostty background-only alpha/blur, shared MAGI outer-panel

@@ -45,7 +45,7 @@ UI.SettingsPage {
             }
             UI.SettingsHelp { text: "For the Bar, MAGI menus and supported applications. Text and content stay opaque." }
             UI.SettingsHelp { text: "Wallpaper and lock-screen styling stay separate." }
-            UI.SettingsHelp { text: Services.ApplicationAppearanceService.active ? ({"released":"Using individual defaults","reload-required":"Reload Ghostty to finish","error":"Could not apply appearance"})[Services.ApplicationAppearanceService.status] || "" : "Preview only · native review pending" }
+            UI.SettingsHelp { text: Services.ApplicationAppearanceService.active ? ({"released":"Using individual defaults","reload-required":"Reload Ghostty to finish","reload_requested":"Ghostty reload requested","next_launch":"Ready for next launch","reload_required":"Reload independent Ghostty instances","error":"Could not apply appearance"})[Services.ApplicationAppearanceService.status] || "" : "Preview only · native review pending" }
         }
     }
     UI.SettingsSection {
@@ -98,7 +98,7 @@ UI.SettingsPage {
         UI.SettingsHelp { text: "MAGI panels update immediately. Ghostty background changes need a configuration reload." }
         Repeater {
             model: [
-                {name:"Ghostty",status:"Reload required",detail:"Native background alpha. Ctrl+Shift+, reloads configuration. Coloured terminal cells remain opaque."},
+                {name:"Ghostty",status:Services.ThemeOrchestrator.targets.find(t => t.id === "ghostty")?.statusLabel || "Applies next launch",detail:"Native background alpha. Safe reload is requested for the running application owner; independent instances may need Reload Configuration. Coloured cells remain opaque."},
                 {name:"Zen",status:"Partial · deferred",detail:"Chrome transparency exists on Linux. Current workspace styling needs verification; webpage content is unchanged."},
                 {name:"GTK / Thunar",status:"Deferred",detail:"Views, toolbars and dialogs need coherent transparency. Existing appearance is preserved."},
                 {name:"Neovim / btop",status:"Via Ghostty",detail:"Base backgrounds inherit the terminal. Floating panels and deliberate coloured backgrounds remain opaque."},

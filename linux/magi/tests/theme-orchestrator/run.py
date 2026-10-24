@@ -21,13 +21,21 @@ from theme_orchestrator.coordinator import Orchestrator
 MOCHA, FOREST = 'catppuccin-mocha', 'everforest-dark-hard'
 
 
+class FakeActivation:
+    def activate(self, target, adapter, store):
+        from theme_activation.capabilities import result, CAPABILITIES
+        if target == 'hyprland': return result('applied',adapter.activate(store))
+        if target == 'ghostty': return result('reload_requested','Fake accepted action')
+        kind=CAPABILITIES[target].kind
+        return result(kind, CAPABILITIES[target].detail)
+
 class Lifecycle(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='magi-orchestrator-')
         self.addCleanup(self.tmp.cleanup)
         self.home = Path(self.tmp.name)
         self.store = Store(self.home, self.home/'config', self.home/'data', self.home/'state')
-        self.worker = Orchestrator(self.store)
+        self.worker = Orchestrator(self.store, FakeActivation())
         self.theme = MOCHA
         env = patch.dict(os.environ, {'STARSHIP_CONFIG': ''})
         env.start(); self.addCleanup(env.stop)
@@ -123,16 +131,18 @@ class Lifecycle(unittest.TestCase):
         self.assertFalse(row['enabled']); self.assertTrue(row['error'])
         self.assertEqual(p.read_bytes(), before)
 
-    def test_failure_isolation_and_missing(self):
+    def test_generation_preflight_aborts_all_targets_and_missing(self):
         self.enable('ghostty'); self.enable('neovim')
         with patch.object(ADAPTERS['ghostty'], 'render', side_effect=ValueError('deliberate renderer failure')):
             self.theme = FOREST
             result = self.request('apply')
             rows = {r['id']: r for r in result['targets']}
             self.assertIn('deliberate', rows['ghostty']['error'])
-            self.assertEqual(rows['neovim']['publishedPalette'], FOREST)
+            self.assertEqual(rows['neovim']['publishedPalette'], MOCHA)
             self.assertEqual(json.loads((self.store.current('ghostty')/'palette.json').read_text())['id'], MOCHA)
-            self.assertIn('Partial failure', result['summary'])
+            self.assertIn('failure', result['summary'].lower())
+            self.assertEqual(rows['neovim']['phase'], 'ready')
+            self.assertEqual(self.worker.activation.snapshot('neovim')['files']['palette.json'], json.dumps(resolve(MOCHA),sort_keys=True,indent=2)+'\n')
         with patch('theme_orchestrator.adapters.base.shutil.which', return_value=None):
             self.assertFalse(self.request('status')['targets'][1]['available'])
             with self.assertRaises(RuntimeError): self.request('plan', target='btop')
@@ -272,7 +282,7 @@ class Lifecycle(unittest.TestCase):
 
     def test_failed_first_activation_pauses_and_resumes_safely(self):
         plan = self.request('plan', target='ghostty')['plan']
-        with patch.object(ADAPTERS['ghostty'], 'activate', side_effect=RuntimeError('activation unavailable')):
+        with patch.object(self.worker.activation.executor, 'activate', side_effect=RuntimeError('activation unavailable')):
             result = self.request('enable', target='ghostty', token=plan['token'])
         row = next(r for r in result['targets'] if r['id'] == 'ghostty')
         self.assertFalse(row['enabled'])

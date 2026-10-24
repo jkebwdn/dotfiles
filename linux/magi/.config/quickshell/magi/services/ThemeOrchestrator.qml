@@ -21,7 +21,7 @@ Scope {
     property string copyMessage: ""
     onSelectedThemeChanged: {
         copyMessage = ""
-        if (active) { applyPending = true; Qt.callLater(drain) }
+        if (active) { applyPending = true; settle.restart() }
     }
     function copyZenWorkspaceColor() {
         if (copyingZenColor) return
@@ -50,12 +50,14 @@ Scope {
         path: root.starshipTarget ? root.starshipTarget.path : ""
         watchChanges: true
         printErrors: false
-        onFileChanged: { root.applyPending = true; Qt.callLater(root.drain) }
+        onFileChanged: { root.applyPending = true; settle.restart() }
     }
 
-    function activate() { active = true; applyPending = true; Qt.callLater(drain) }
+    function activate() { active = true; applyPending = true; settle.restart() }
+    // Settle external activation; the internal MAGI palette stays reactive.
+    Timer { id: settle; interval: 450; onTriggered: root.drain() }
     function drain() {
-        if (!active || !Settings.ready || busy || !applyPending) return
+        if (!active || !Settings.ready || busy || !applyPending || settle.running) return
         applyPending = false
         start({op:"apply"})
     }
@@ -108,9 +110,11 @@ Scope {
                     if (result.plan) root.plan = result.plan
                 } else root.applyPending = true
             } catch (exception) {
-                root.error = String(exception)
-                if (root.request.target) root.targetError(root.request.target, root.error)
-                root.plan = null
+                if (root.request.theme === root.selectedTheme) {
+                    root.error = String(exception)
+                    if (root.request.target) root.targetError(root.request.target, root.error)
+                    root.plan = null
+                } else root.applyPending = true
             }
             root.busy = false; root.request = null; stdinEnabled = true
             Qt.callLater(root.drain)

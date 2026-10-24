@@ -129,28 +129,47 @@ class Starship(Adapter):
 
 class Btop(Adapter):
     id, label, executable = 'btop', 'btop', 'btop'
+    version = 2
     config_path = 'btop/btop.conf'
     boundary = 'Reload/restart required — reselect theme in btop or reopen'
 
     def plan(self, store, options):
-        path = str(store.current(self.id) / 'magi.theme')
+        # btop resolves only entries enumerated in its theme directories; an
+        # arbitrary generated-file path silently falls back to Default (1.4.7).
+        link = store.config / 'btop/themes/magi.theme'
+        if link.exists() or link.is_symlink():
+            raise Conflict('Existing btop magi.theme entry requires explicit migration')
+        path = str(link)
         def transform(t):
             pattern = r'(?m)^color_theme\s*=.*$'
             if len(re.findall(pattern, t)) != 1:
                 raise Conflict('btop color_theme is missing or ambiguous')
             return re.sub(pattern, '# MAGI THEME BEGIN\ncolor_theme = ' + json.dumps(path) + '\n# MAGI THEME END', t)
-        return [change(self.path(store), transform)]
+        return [change(self.path(store), transform),
+                {'kind': 'symlink', 'path': str(link),
+                 'destination': str(store.current(self.id) / 'magi.theme')}]
 
     def render(self, p, store):
         r = p['roles']
-        fields = dict(main_bg='background', main_fg='text', title='text', hi_fg='accent',
-                      selected_bg='surface', selected_fg='accent', inactive_fg='inactive',
+        fields = dict(main_bg='background', main_fg='text', title='text', hi_fg='focus',
+                      selected_bg='accent', selected_fg='onAccent', inactive_fg='muted',
                       graph_text='subtext', meter_bg='surface', proc_misc='lavender',
                       cpu_box='blue', mem_box='lavender', net_box='teal', proc_box='accent', div_line='border')
-        text = '# MAGI generated btop theme v1\n' + ''.join(f'theme[{k}]="{r[v]}"\n' for k, v in fields.items())
-        for name in ('temp', 'cpu', 'free', 'cached', 'available', 'used', 'download', 'upload', 'process'):
-            roles = ('blue', 'yellow', 'red') if name in ('temp', 'used', 'cpu') else ('teal', 'blue', 'lavender')
-            text += ''.join(f'theme[{name}_{step}]="{r[role]}"\n' for step, role in zip(('start', 'mid', 'end'), roles))
+        text = '# MAGI generated btop theme v2 — semantic resources; host background policy unchanged\n'
+        text += ''.join(f'theme[{k}]="{r[v]}"\n' for k, v in fields.items())
+        gradients = {
+            'temp': ('success','warning','danger'),
+            'cpu': ('blue','warning','danger'),
+            'free': ('teal','green','success'),
+            'cached': ('blue','teal','green'),
+            'available': ('teal','green','success'),
+            'used': ('lavender','warning','danger'),
+            'download': ('teal','teal','teal'),
+            'upload': ('peach','peach','peach'),
+            'process': ('blue','lavender','focus'),
+        }
+        for name, roles in gradients.items():
+            text += ''.join(f'theme[{name}_{step}]="{r[role]}"\n' for step, role in zip(('start','mid','end'), roles))
         return {'magi.theme': text}
 
 

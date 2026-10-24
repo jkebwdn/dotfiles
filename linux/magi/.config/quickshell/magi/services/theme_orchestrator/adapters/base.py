@@ -55,5 +55,14 @@ class Adapter:
     def render(self, palette, store):
         return {}
 
+    @property
+    def capability(self):
+        from theme_activation.capabilities import CAPABILITIES
+        return CAPABILITIES[self.id]
+
+    def validate(self, files):
+        from theme_activation.validation import validate
+        validate(self.id, files)
+
     def activate(self, store):
         return self.boundary

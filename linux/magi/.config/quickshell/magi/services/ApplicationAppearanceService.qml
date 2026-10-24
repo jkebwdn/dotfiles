@@ -43,9 +43,16 @@ Scope {
             try {
                 if (code !== 0) throw new Error(errors.text || "Application appearance worker failed")
                 const result = JSON.parse(output.text)
-                root.outcome = result
-                root.status = result.status || "error"; root.error = result.error || ""
-            } catch (e) { root.status = "error"; root.error = String(e) }
+                if (root.request.theme === Settings.data.appearance.theme && JSON.stringify(root.request.policy) === root.desired) {
+                    root.outcome = result
+                    root.status = result.status || "error"; root.error = result.error || ""
+                    if (ThemeOrchestrator.active) ThemeOrchestrator.refresh()
+                } else root.schedule()
+            } catch (e) {
+                if (root.request.theme === Settings.data.appearance.theme && JSON.stringify(root.request.policy) === root.desired) {
+                    root.status = "error"; root.error = String(e)
+                } else root.schedule()
+            }
             root.busy = false; stdinEnabled = true
             if (root.pending) debounce.restart()
         }

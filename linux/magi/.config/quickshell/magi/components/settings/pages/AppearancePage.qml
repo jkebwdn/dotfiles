@@ -62,7 +62,8 @@ SettingsUI.SettingsPage {
         readonly property var supportedApplications: Services.ThemeOrchestrator.targets.filter(t => t.id !== "magi" && t.available)
         title: "Application themes · " + supportedApplications.filter(t => t.enabled).length
             + " of " + supportedApplications.length + " following MAGI"
-        description: ""
+        description: supportedApplications.filter(t => t.enabled && t.statusLabel === "Applies next launch").length
+            + " next launch · " + supportedApplications.filter(t => t.enabled && t.statusLabel === "Restart required").length + " restart required"
         SettingsUI.SettingsHelp {
             visible: Services.ThemeOrchestrator.busy
             text: Services.ThemeOrchestrator.summary
@@ -81,11 +82,11 @@ SettingsUI.SettingsPage {
                 readonly property bool needsAttention: !!modelData.error || reviewing
                     || (modelData.available && !modelData.configured)
                     || (modelData.enabled && /manual/i.test(modelData.result || ""))
-                readonly property string shortStatus: pending ? "Working…" : modelData.error ? "Error"
+                readonly property string shortStatus: pending ? "Working…" : modelData.error ? "Apply failed"
                     : !modelData.available ? (modelData.result === "Deferred" ? "Deferred" : "Unavailable")
                     : !modelData.configured ? "Setup" : reviewing ? "Review"
                     : !modelData.enabled ? (modelData.installed ? "Paused" : "Not following")
-                    : root.compactThemeResult(modelData.result)
+                    : modelData.statusLabel || root.compactThemeResult(modelData.result)
                 spacing: 4
                 readonly property bool reviewing: Services.ThemeOrchestrator.plan !== null
                     && Services.ThemeOrchestrator.plan.target === modelData.id

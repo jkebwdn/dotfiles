@@ -9,8 +9,10 @@ from .storage import Conflict, atomic, install, removal, text_hash
 
 
 class Orchestrator:
-    def __init__(self, store):
+    def __init__(self, store, executor=None):
         self.store = store
+        from theme_activation.coordinator import ThemeActivationCoordinator
+        self.activation = ThemeActivationCoordinator(self, executor)
 
     def probe(self, adapter):
         try:
@@ -83,6 +85,7 @@ class Orchestrator:
         self.store.save(state)
         adapter = ADAPTERS[target]
         files, digest = self.render(adapter, palette)
+        adapter.validate(files)
         if files:
             self.store.publish(target, files, digest)
         for item in record['edits']:
@@ -149,49 +152,16 @@ class Orchestrator:
         record.update(installed=False, edits=[], phase='disabled', error='',
                       result='Disabled — loaded colours may remain; ' + ADAPTERS[target].boundary)
 
+    def activate_scheme(self, record, palette):
+        for item in record.get('edits', []):
+            if item.get('dynamicScheme'):
+                desired = repr('prefer-dark' if palette['dark'] else 'prefer-light')
+                if item['after'] != desired:
+                    command(['gsettings', 'set', item['schema'], item['key'], desired])
+                    item['after'] = desired
+
     def apply_target(self, state, adapter, palette, force=False):
-        target = adapter.id
-        record = state['targets'][target]
-        stage = 'detect'
-        try:
-            probe = self.ready(adapter)
-            if target == 'zen' and probe.get('profile') != record.get('options', {}).get('confirmedProfile'):
-                raise Conflict('Zen profile selection changed; new enrollment required')
-            if record.get('probe', {}).get('resolved') != probe.get('resolved'):
-                raise Conflict('Audited configuration identity changed; re-enroll target')
-            stage = 'integration'
-            self.check_hooks(record)
-            stage = 'render'
-            files, digest = self.render(adapter, palette)
-            stage = 'publish'
-            changed = self.store.publish(target, files, digest) if files else False
-            record.update(desiredPalette=palette['id'], publishedPalette=palette['id'], generation=digest)
-            if files:
-                history = [g for g in record.get('generations', []) if g != digest] + [digest]
-                # Current + previous; altered/unknown artifacts are never deleted.
-                retained = [g for g in history[:-2] if not self.store.prune(target, g)]
-                record['generations'] = retained + history[-2:]
-            if target == 'fastfetch':
-                ghostty = state['targets'].get('ghostty', {})
-                if not ghostty.get('enabled') or ghostty.get('publishedPalette') != palette['id'] or ghostty.get('error'):
-                    raise RuntimeError('Waiting for enabled Ghostty palette; Fastfetch has no independent RGB config')
-            stage = 'activate'
-            for item in record.get('edits', []):
-                if item.get('dynamicScheme'):
-                    desired = repr('prefer-dark' if palette['dark'] else 'prefer-light')
-                    if item['after'] != desired:
-                        command(['gsettings', 'set', item['schema'], item['key'], desired])
-                        item['after'] = desired
-                        self.store.save(state)
-            if changed or force or record.get('error') or not record.get('result'):
-                record['result'] = adapter.activate(self.store)
-            record.update(error='', stage='ready', phase='ready', installed=True)
-            # A generated palette is not a claim of visible application.
-            record['appliedPalette'] = palette['id'] if target == 'magi' else None
-        except Exception as error:
-            record.update(error=str(error)[:800], stage=stage,
-                          result='Ownership conflict' if isinstance(error, Conflict) else 'Failed')
-        self.store.save(state)
+        return self.activation.apply(state, {adapter.id: adapter}, palette, force)
 
     def status(self, state, palette):
         rows = []
@@ -205,7 +175,11 @@ class Orchestrator:
                              appliedPalette=palette['id'] if target == 'magi' else record.get('appliedPalette'),
                              result='Applied — reactive palette' if target == 'magi' else record.get('result', 'Not enrolled'),
                              error=record.get('error', ''), boundary=adapter.boundary,
-                             phase=record.get('phase', 'disabled')))
+                             phase=record.get('phase', 'disabled'),
+                             activationKind=adapter.capability.kind, automaticSafe=adapter.capability.automatic,
+                             statusLabel='Live' if target == 'magi' else record.get('activation', {}).get('label', ''),
+                             activationGeneration=record.get('activation', {}).get('generation', ''),
+                             activationDetail=record.get('activation', {}).get('detail', adapter.capability.detail)))
         for item in DEFERRED:
             rows.append(dict(item, available=False, configured=False, enabled=False, installed=False,
                              result='Deferred', error='', boundary='Deferred'))
@@ -223,7 +197,21 @@ class Orchestrator:
             if op == 'application-appearance':
                 from application_appearance.coordinator import ApplicationAppearanceCoordinator
                 from application_appearance.executor import BlurExecutor
-                return ApplicationAppearanceCoordinator(self, BlurExecutor()).apply(state, request.get('policy'), palette)
+                before = state['targets'].get('ghostty', {}).get('generation')
+                outcome = ApplicationAppearanceCoordinator(self, BlurExecutor(), validator=ADAPTERS['ghostty'].validate).apply(state, request.get('policy'), palette)
+                if outcome.get('ok') and outcome.get('status') != 'released':
+                    state = self.store.load()
+                    record = state['targets']['ghostty']
+                    from .palette import fingerprint as generation_id
+                    generation = generation_id([palette['fingerprint'],state.get('applicationAppearance'),record['generation']])
+                    candidates = {'ghostty':dict(adapter=ADAPTERS['ghostty'],digest=record['generation'],record=record,palette=palette)}
+                    activation = self.activation.activate_published(candidates,generation,
+                        changed={'ghostty':before != record['generation']})
+                    self.store.save(state)
+                    row = activation.get('targets', {}).get('ghostty', {})
+                    outcome.update(status=row.get('status','reload-required'), activation=row,
+                                   error=row.get('detail','') if row.get('status')=='error' else '')
+                return outcome
             if state.get('applicationAppearancePending'):
                 raise Conflict('Recover pending application appearance transaction before theme updates')
             if op == 'plan':
@@ -255,11 +243,10 @@ class Orchestrator:
                     state['targets'][target].update(error=str(error)[:800], result='Updates stopped; removal conflict')
                 self.store.save(state)
             elif op in ('apply', 'retry'):
-                for key, adapter in ADAPTERS.items():
-                    if key == 'magi' or not state['targets'].get(key, {}).get('enabled'):
-                        continue
-                    if op == 'apply' or key == target:
-                        self.apply_target(state, adapter, palette, force=op == 'retry')
+                selected = {key: adapter for key, adapter in ADAPTERS.items()
+                            if key != 'magi' and state['targets'].get(key, {}).get('enabled')
+                            and (op == 'apply' or key == target)}
+                self.activation.apply(state, selected, palette, force=op == 'retry')
             elif op != 'status':
                 raise ValueError('Unknown theme operation')
             return self.status(state, palette)
