@@ -33,7 +33,8 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 19,
+    return {schemaVersion: 20,
+        lockScreen: {layoutVersion:1, preset:"centered", elements:{}},
         applicationAppearance: {managed: false, backgroundOpacity: 1.0, blurEnabled: true},
         appearance: {globalBlur: {managed: false, size: 8}, controlCentreBackgroundRole: "surface", mediaProgressRole: "accent", hubToggleRole: "accent", hubSelectionRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null, secondaryControl: null}},
@@ -104,7 +105,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 19) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 20) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {
@@ -122,6 +123,26 @@ function analyze(input) {
         if (!test) { errors.push(path + ": invalid value"); return clone(fallback) }
         return null
     }
+    const layout = effective.lockScreen
+    const compact = layout.layoutVersion === 1 && layout.preset === "centered"
+        && object(layout.elements) && Object.keys(layout.elements).length === 0
+    let layoutValid = compact
+    if (!compact && layout.layoutVersion === 1 && ["screen","composition"].includes(layout.space)
+        && ["centered","editorial","corner","split","minimal","custom"].includes(layout.preset)
+        && object(layout.elements) && Object.keys(layout.elements).sort().join() === "authentication,identity,time") {
+        const seen = []
+        layoutValid = ["time","identity","authentication"].every(id => {
+            const e = layout.elements[id]
+            if (!object(e) || !["top-left","top-center","top-right","center-left","center","center-right","bottom-left","bottom-center","bottom-right"].includes(e.anchor)
+                || !["left","center","right"].includes(e.alignment) || typeof e.visible !== "boolean"
+                || !Number.isInteger(e.z) || e.z < 0 || e.z > 2 || seen.includes(e.z)) return false
+            seen.push(e.z)
+            return ["offsetX","offsetY","size"].every(k => typeof e[k] === "number" && isFinite(e[k]))
+                && Math.abs(e.offsetX) <= 1 && Math.abs(e.offsetY) <= 1 && e.size >= .75 && e.size <= 1.25
+                && (id !== "authentication" || (e.visible && e.z === 2 && e.size >= 1))
+        })
+    }
+    if (!layoutValid) { errors.push("lockScreen: invalid layout; using Centered"); effective.lockScreen = defaults().lockScreen }
     const applicationPolicy = effective.applicationAppearance
     for (const key of ["managed", "blurEnabled", "backgroundOpacity"]) {
         const value = applicationPolicy[key]

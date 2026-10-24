@@ -45,6 +45,8 @@ VisualData VisualData::load(const QString& config, const QString& state, const Q
         {"subtext","#bac2de"},{"accent","#b4befe"},{"danger","#f38ba8"},{"warning","#f9e2af"},
         {"wallpaperTint",wallpaperTint},{"fontFamily","JetBrainsMono Nerd Font"},{"displayName",identity},{"avatarRadius",12.0}};
     const auto settings=read(config+"/settings.json");
+    // Bounded JSON data only; the presentation normalizer rejects malformed layouts.
+    result.values["lockScreen"]=settings["lockScreen"].toObject().toVariantMap();
     const auto appearance=settings["appearance"].toObject();
     const auto registry=read(config+"/theme/palettes/registry.json");
     if (registry["formatVersion"].toInt()==1) {

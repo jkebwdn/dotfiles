@@ -1,5 +1,5 @@
 # Structural regression: presentation has no input widget/handler or credential API.
-file(GLOB qml_files "${SOURCE}/qml/*.qml")
+file(GLOB qml_files "${SOURCE}/qml/*.qml" "${SOURCE}/qml/*.js")
 set(qml "")
 foreach(path IN LISTS qml_files)
     file(READ "${path}" content)

@@ -17,7 +17,7 @@ ShellRoot {
   function test_background(){
    Services.SettingsWindowState.page="Applications";wait(200)
    const p=item("settingsPage-Transparency & blur"),preview=item("applicationPreview"),fg=item("applicationForeground"),bg=item("applicationBackground"),photo=item("previewOpaqueImage")
-   compare(Services.Settings.data.schemaVersion,19)
+   compare(Services.Settings.data.schemaVersion,20)
    const foreground=Theme.Theme.text, surface=Theme.Theme.surface
    const localBar=Theme.Theme.statusPillBackground
    const original=JSON.parse(JSON.stringify(Services.Settings.data));delete original.applicationAppearance

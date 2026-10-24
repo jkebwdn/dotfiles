@@ -849,3 +849,15 @@ Settings visual-editor composition follows the object's aspect ratio: Control Ce
 and Hub keep vertical preview-left/inspector-right layouts; Bar uses a full-width
 horizontal preview above its controls in all modes and at compact widths. This is a
 Bar-page composition choice, not a change to the shared selection or scroll model.
+
+## Phase 13A: data-driven lock presentation
+
+The accepted designer stores desired lock layout in schema 20. Native ownership and
+authentication authority are unchanged. A versioned, validated presentation map
+feeds the shared LockElementHost renderer; presets are data, not theme code paths.
+One responsive definition is resolved per existing output scene. Authentication
+feedback has mandatory visibility, front z-order and a minimum size. Invalid layout
+data falls back to the built-in centered composition; the existing native fallback
+remains independent of QML success. Editor handlers never enter native presentation.
+See [Phase 13A](design/phase13a-lock-screen-designer.md) for the composition-space
+migration, explicit shared component registry and completed native acceptance.

@@ -1,3 +1,13 @@
+## Phase 13A — Lock Screen Designer accepted (2026-10-24)
+
+The operator accepted the native designer and real Centered/custom locks on the
+built-in display. Schema 20 adds responsive, data-driven Time, Identity and
+Authentication groups, five editable presets and a shared synthetic preview.
+Native credentials, PAM, lock ownership and unlock authority remain unchanged.
+Physical external-display acceptance is deferred; Phase 13B and icon work remain
+separate. See [native results and test accounting](design/phase13a-lock-screen-designer.md)
+and the [preview gallery](design/phase13a-previews/index.html).
+
 ## Phase 12H — native acceptance complete (2026-10-24)
 
 The operator accepted automatic Ghostty activation, preserved transparency/blur,

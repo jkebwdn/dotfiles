@@ -20,6 +20,8 @@ Column {
     spacing: 12
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
+        width: Math.min(implicitWidth, root.width)
+        wrapMode: Text.Wrap; horizontalAlignment: implicitWidth > root.width ? Text.AlignHCenter : Text.AlignLeft
         text: root.message; textFormat: Text.PlainText
         color: root.failed || root.unavailable ? tokens.danger : tokens.secondary
         font.family: tokens.family; font.pixelSize: tokens.statusSize

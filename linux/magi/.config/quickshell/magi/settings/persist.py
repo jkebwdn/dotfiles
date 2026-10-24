@@ -17,7 +17,7 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from power_idle import Manager, atomic, policy, PolicyError
 
-CURRENT_VERSION = 19
+CURRENT_VERSION = 20
 
 
 def perform(request):

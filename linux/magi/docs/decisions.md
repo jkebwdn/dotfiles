@@ -1004,3 +1004,16 @@ rules; later/higher-priority external overrides retain Hyprland's normal semanti
 Windows UI/schema 19 remain neutral. Production activation is unwired. The exact
 bootstrap, source evidence, precedence limits, future App Rules/global blur split
 and native gate are in the [current report](design/phase12g-window-visuals.md).
+
+## 2026-10-24 — Phase 13A accepted lock designer decisions
+
+Lock Screen owns presentation; Security continues owning security state. Layout
+customization is data-only and cannot change credentials, PAM, native input, lock
+ownership, readiness or unlock authority. Current elements form Time, Identity and
+Authentication groups; conditional authentication feedback stays together. Presets
+initialize one model. The original content flow is a coordinate space preserved for
+neutral migration, then materialized into responsive screen anchors on editing.
+Editor chrome/input handlers are outside the shared production components. Invalid
+layout falls back safely. Desired layout is schema 20; runtime lock state is not a
+Settings preference. Architecture and native designer/default/custom acceptance are complete on the
+built-in display; physical multi-output review remains deferred. [Details](design/phase13a-lock-screen-designer.md).

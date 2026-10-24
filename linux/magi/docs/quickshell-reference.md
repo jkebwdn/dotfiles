@@ -717,3 +717,15 @@ effects are updated and no whole compositor reload is requested.
 No new blur rendering API is claimed: the synthetic preview uses ordinary QML
 rectangles/alpha and labels its blur treatment illustrative.
 [Current capability gate and gallery](design/phase12g-window-visuals.md).
+
+## Phase 13A synthetic editor pattern (2026-10-24)
+
+Exercised with Quickshell 0.3.2 / Qt 6.12.0 in software/offscreen fixtures: QtQuick
+MouseArea pointer capture with preventStealing, release-time commit (including
+coalesced motion), Keys arrow/Shift/Escape handling, and an attached Screen geometry
+aspect preview. The editor uses the existing SettingsPage Flickable/ScrollInput
+primitives. The native presentation contains no pointer/key handlers; its original
+display-only root property boundary remains unchanged. Settings and native rendering
+reuse the same repository QML through a source link and native QRC embedding.
+These tests demonstrate synthetic interaction, not ext-session-lock or compositor
+pointer acceptance. [Phase 13A test scope](design/phase13a-lock-screen-designer.md).

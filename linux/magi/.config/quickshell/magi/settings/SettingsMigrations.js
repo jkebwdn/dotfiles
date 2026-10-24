@@ -142,5 +142,9 @@ function migrate(input) {
         if (doc.appearance.globalBlur === undefined) doc.appearance.globalBlur = {managed: false, size: 8}
         doc.schemaVersion = 19
     }
+    if (doc.schemaVersion === 19) {
+        if (doc.lockScreen === undefined) doc.lockScreen = {layoutVersion:1, preset:"centered", elements:{}}
+        doc.schemaVersion = 20
+    }
     return doc
 }
