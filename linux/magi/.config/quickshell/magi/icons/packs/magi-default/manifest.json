@@ -243,8 +243,8 @@
       "font": "JetBrainsMono Nerd Font"
     },
     "notifications": {
-      "text": "󰂚",
-      "font": "JetBrainsMono Nerd Font"
+      "asset": "notifications.svg",
+      "colorMode": "semantic"
     },
     "power-profile": {
       "text": "󰓅",
@@ -255,8 +255,12 @@
       "font": "JetBrainsMono Nerd Font"
     },
     "lock": {
-      "text": "󰌾",
-      "font": "JetBrainsMono Nerd Font"
+      "asset": "lock.svg",
+      "colorMode": "semantic"
+    },
+    "unlock": {
+      "asset": "unlock.svg",
+      "colorMode": "semantic"
     },
     "hibernate": {
       "text": "󰒲",
@@ -347,8 +351,8 @@
       "font": "JetBrainsMono Nerd Font"
     },
     "battery-high": {
-      "text": "󰂀",
-      "font": "JetBrainsMono Nerd Font"
+      "asset": "battery-high.svg",
+      "colorMode": "semantic"
     },
     "missing": {
       "asset": "missing.svg",

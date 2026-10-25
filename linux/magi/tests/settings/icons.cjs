@@ -20,6 +20,14 @@ function sameDefault(role) {
  assert.notEqual(result.icon.text,'?');
  if(result.icon.kind==='managed') assert(fs.existsSync(new URL(result.icon.url)),role);
 }
+// Operator SVG registrations use exact semantic IDs in both selected/default paths.
+for (const role of ['battery-high','lock','notifications','unlock']) {
+ assert.equal(canonical.roles[role].asset,role+'.svg');
+ assert.equal(canonical.roles[role].colorMode,'semantic');
+ assert.equal(ctx.resolve(registry,{pack:'magi-default'},role).icon.kind,'managed');
+ assert.equal(ctx.resolve(registry,{pack:'magi-default'},role).icon.url,canonical.baseUrl+role+'.svg');
+ sameDefault(role);
+}
 sameDefault('bluetooth'); // B
 assert.equal(resolve('not-a-role').icon.kind,'placeholder'); // C
 assert.equal(resolve('not-a-role').icon.text,undefined);
