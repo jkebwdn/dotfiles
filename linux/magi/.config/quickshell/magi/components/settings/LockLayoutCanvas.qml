@@ -8,12 +8,20 @@ Item {
     property var palette: ({})
     property string selected: "time"
     property int stateIndex: 0
+    property bool depthPreview: false
     property real aspect: 16/9
     property bool interactive: true
     property var draft: null
     property real guideX: -1
     property real guideY: -1
     readonly property var effective: draft || Model.normalize(layout)
+    // Preview-only module visibility never enters the persisted draft.
+    readonly property var presented: {
+        const value=Model.copy(effective)
+        if (stateIndex===5 || stateIndex===7) value.elements.weather.visible=true
+        if (stateIndex===6 || stateIndex===7) value.elements.media.visible=true
+        return value
+    }
     signal committed(var value)
     signal selectionRequested(string id)
     implicitHeight: width/aspect
@@ -66,7 +74,9 @@ Item {
             objectName: "syntheticScene"
             anchors.fill: parent
             readonly property real unit: Math.max(.8,Math.min(1.15,Math.pow(Math.min(width/1920,height/1080),.45)))
-            visual: Object.assign({},root.palette,{displayName:"Alex Morgan",lockScreen:root.effective})
+            visual: Object.assign({},root.palette,{displayName:"Alex Morgan",lockScreen:root.depthPreview ? Object.assign({},root.presented,{effects:Object.assign({},root.presented.effects,{depth:true})}) : root.presented,depthAvailable:root.depthPreview,weather:{available:true,temperature:"12°",condition:"Partly cloudy",location:"Sample city"},media:{available:true,title:"Morning light",artist:"Sample artist",playing:true,artwork:true}})
+            preparedMediaSource: Qt.resolvedUrl("lock-depth-fixture.svg")
+            preparedDepthSource: Qt.resolvedUrl("lock-depth-fixture.svg")
             timeLabel: "09:41"; dateLabel: "Saturday, 24 October"
             characterCount: root.stateIndex===1 ? 6 : 0
             inputActive: true; capsLock: root.stateIndex===4
@@ -78,7 +88,7 @@ Item {
                 id: overlay
                 required property string modelData
                 Accessible.role: Accessible.Button
-                Accessible.name: ({time:"Clock and date element",identity:"Avatar and username element",authentication:"Authentication element"})[modelData]
+                Accessible.name: ({time:"Clock and date element",identity:"Avatar and username element",authentication:"Authentication element",weather:"Weather element",media:"Media element"})[modelData]
                 Accessible.onPressAction: { root.selectionRequested(modelData);root.forceActiveFocus() }
                 readonly property var box: scene.elementBoxes[modelData]
                 x: box.x*scene.unit; y: box.y*scene.unit

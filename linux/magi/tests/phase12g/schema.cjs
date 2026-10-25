@@ -5,7 +5,7 @@ const plain=v=>JSON.parse(JSON.stringify(v));
 const old=JSON.parse(fs.readFileSync(process.env.MAGI_PHASE12G_FIXTURE || path.join(r,'../settings.json')));
 assert.equal(old.schemaVersion,18);
 const migrated=plain(c.migrate(old)), expected=structuredClone(old);
-expected.appearance.globalBlur={managed:false,size:8};expected.schemaVersion=20;expected.lockScreen=plain(c.defaults().lockScreen);expected.applicationAppearance=plain(c.defaults().applicationAppearance);
+expected.appearance.globalBlur={managed:false,size:8};expected.schemaVersion=21;expected.lockScreen=plain(c.defaults().lockScreen);expected.applicationAppearance=plain(c.defaults().applicationAppearance);
 assert.deepEqual(migrated,expected);assert.deepEqual(plain(c.migrate(migrated)),migrated);
 assert.deepEqual(plain(c.analyze(migrated).errors),[]);
 assert(!('windows' in c.defaults()));

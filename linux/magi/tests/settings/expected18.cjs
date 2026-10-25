@@ -1,5 +1,5 @@
 module.exports = function expected18(input) {
- const doc=structuredClone(input);doc.schemaVersion=20;doc.lockScreen={layoutVersion:1,preset:"centered",elements:{}};
+ const doc=structuredClone(input);doc.schemaVersion=21;doc.lockScreen={layoutVersion:1,preset:"centered",elements:{},effects:{credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false}};
  doc.controlCentre ??= {}; const cc=doc.controlCentre, flags=cc.sections || {};
  const ids=["profile","controls","sliders","actions","media"], map={controls:"quickControls"};
  cc.layout ??= ids.filter(id=>flags[map[id]||id]!==false && !(id==="media" && doc.media?.enabled===false));

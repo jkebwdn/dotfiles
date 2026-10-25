@@ -14,6 +14,9 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QDir>
+#include <QDateTime>
+#include <QCryptographicHash>
+#include <cmath>
 namespace magi {
 namespace {
 QJsonObject read(const QString& path) {
@@ -35,6 +38,11 @@ QImage picture(const QString& path, QSize limit) {
     reader.setScaledSize(size.scaled(limit, Qt::KeepAspectRatio));
     return reader.read();
 }
+}
+static QImage preparedPicture(const QString& path,QSize limit) {
+    QImageReader reader(path);const auto size=reader.size();
+    if(reader.format()!="png" || !size.isValid() || size.width()>limit.width() || size.height()>limit.height() || QFileInfo(path).size()>512*1024) return {};
+    return picture(path,limit);
 }
 VisualData VisualData::load(const QString& config, const QString& state, const QString& data) {
     VisualData result;
@@ -80,6 +88,66 @@ VisualData VisualData::load(const QString& config, const QString& state, const Q
     const auto wallpaper=read(state+"/magi/wallpaper/state.json");
     if (wallpaper["version"].toInt()==1)
         result.prepareWallpaper(picture(wallpaper["shared"].toObject()["path"].toString(),{1920,1080}));
+    // Optional display-only snapshots: never network, MPRIS, or an auth object.
+    const auto layout=settings["lockScreen"].toObject();
+    const auto elements=layout["elements"].toObject();
+    const auto effects=layout["effects"].toObject();
+    const auto now=QDateTime::currentSecsSinceEpoch();
+    const auto cache=QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation)+"/magi";
+    auto text=[](QJsonValue v) { auto t=v.toString().simplified().left(160);t.remove(QRegularExpression("[\\x{0000}-\\x{001f}\\x{007f}]"));return t; };
+    if (elements["weather"].toObject()["visible"].toBool()) {
+        const auto prefs=settings["weather"].toObject();
+        const auto weather=read(cache+"/weather/current.json");
+        const auto key=QString::fromLatin1(QCryptographicHash::hash(prefs["location"].toString().trimmed().toUtf8(),QCryptographicHash::Sha256).toHex());
+        const double observed=weather["observed"].toDouble(-1), temp=weather["temperature"].toDouble(999);
+        const int code=weather["code"].toInt(-1);
+        QString condition;
+        if(code==0) condition="Clear";else if(code<=2 && code>=1) condition="Partly cloudy";
+        else if(code==3) condition="Cloudy";else if(code==45 || code==48) condition="Foggy";
+        else if(QList<int>{51,53,55,56,57,61,63,65,66,67}.contains(code)) condition="Rainy";else if(QList<int>{71,73,75,77}.contains(code)) condition="Snowy";
+        else if(code>=80 && code<=82) condition="Rainy";else if(code==85 || code==86) condition="Snowy";
+        else if(code==95 || code==96 || code==99) condition="Thunderstorms";
+        if(prefs["enabled"].toBool() && weather["key"].toString()==key && observed<=now+900 && observed>=now-10800
+            && std::isfinite(temp) && temp>=-100 && temp<=70 && !condition.isEmpty()) {
+            const bool imperial=prefs["units"].toString()=="imperial";
+            QVariantMap display{{"available",true},{"temperature",QString::number(qRound(imperial ? temp*9/5+32 : temp))+(imperial ? "°F" : "°C")},{"condition",condition}};
+            if(effects["location"].toBool()) display["location"]=text(weather["place"].toObject()["name"]).section(',',0,0);
+            result.values["weather"]=display;
+        }
+    }
+    if (elements["media"].toObject()["visible"].toBool()) {
+        const auto media=read(state+"/magi/lock-auxiliary/media.json");
+        const auto observed=media["observed"].toDouble(-1);
+        const auto title=text(media["title"]);
+        if(observed<=now+60 && observed>=now-10800 && !title.isEmpty()) {
+            QVariantMap display{{"available",true},{"title",title},{"artist",text(media["artist"])},{"playing",media["playing"].toBool()}};
+            const QFileInfo file(media["artwork"].toString());
+            if(effects["artwork"].toBool(true) && file.canonicalPath()==QFileInfo(state+"/magi/lock-auxiliary/artwork").canonicalFilePath() && !file.canonicalPath().isEmpty())
+                result.media=preparedPicture(file.canonicalFilePath(),{256,256});
+            result.mediaIcon=preparedPicture(state+"/magi/lock-auxiliary/media-icon.png",{96,96});
+            display["artwork"]=!result.media.isNull();display["icon"]=!result.mediaIcon.isNull();result.values["media"]=display;
+        }
+    }
+    // Prepared cutout import is deferred. Only a bounded, wallpaper-matched
+    // local prepared asset can opt into compositing; absent/invalid is quiet.
+    if(effects["depth"].toBool()) {
+        const auto depth=read(data+"/magi/lock-depth/current.json");
+        const auto source=wallpaper["shared"].toObject()["path"].toString();
+        const QFileInfo wall(source);
+        const auto path=data+"/magi/lock-depth/subject.png";
+        QImageReader reader(path);
+        const auto dimensions=reader.size();
+        const auto originalSize=QImageReader(source).size();
+        if(!source.isEmpty() && depth["wallpaper"].toString()==source
+            && depth["size"].toDouble()==wall.size() && depth["modified"].toDouble()==wall.lastModified().toSecsSinceEpoch()
+            && reader.format()=="png" && dimensions.isValid() && originalSize.isValid()
+            && qAbs(double(dimensions.width())/dimensions.height()-double(originalSize.width())/originalSize.height())<.01 && dimensions.width()<=960 && dimensions.height()<=960
+            && QFileInfo(path).size()<=4*1024*1024) {
+            auto image=reader.read();
+            if(!image.isNull() && image.hasAlphaChannel()) result.depth=image;
+        }
+    }
+    result.values["depthAvailable"]=!result.depth.isNull();
     return result;
 }
 void VisualData::prepareWallpaper(const QImage& source) {

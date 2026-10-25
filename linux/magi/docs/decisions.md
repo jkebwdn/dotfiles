@@ -1017,3 +1017,24 @@ Editor chrome/input handlers are outside the shared production components. Inval
 layout falls back safely. Desired layout is schema 20; runtime lock state is not a
 Settings preference. Architecture and native designer/default/custom acceptance are complete on the
 built-in display; physical multi-output review remains deferred. [Details](design/phase13a-lock-screen-designer.md).
+
+
+## 2026-10-25 — Phase 13B presentation boundaries (accepted)
+
+- Keep native credential, owner, PAM, readiness and request authority unchanged.
+- Reuse the Phase 13A registry and responsive host; optional modules never replace it.
+- Weather/Media are privacy opt-ins. Auxiliary service failure must hide optional
+  content without affecting authentication or acquiring the lock.
+- Reuse Weather cadence, Media player selection and artwork cache. Prepare bounded
+  thumbnails and semantic fallback icons before locking; do not fetch from lock QML.
+- Preserve immutable visual snapshots in this pass; live media refresh would require
+  a separate reviewed design, not an unannounced owner change.
+- Keep Authentication foremost and contrast-protected against decorative overlap.
+- Prepare subject cutouts outside lock. Missing/malformed/unmatched depth is inert.
+- New credential styles reveal empty/nonempty state only. Existing Dots is unchanged.
+- Additive schema 21 migration preserves the operator's schema-20 custom geometry.
+
+The [implementation record](design/phase13b-lock-modules-effects.md) distinguishes
+completed native acceptance from accepted limits: text-only weather, deferred mask
+import and acquisition-only media snapshots. Host packaging passed normal checks.
+The transient cursor observation cleared without a native owner/input change.

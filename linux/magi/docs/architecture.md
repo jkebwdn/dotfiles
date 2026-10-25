@@ -861,3 +861,17 @@ data falls back to the built-in centered composition; the existing native fallba
 remains independent of QML success. Editor handlers never enter native presentation.
 See [Phase 13A](design/phase13a-lock-screen-designer.md) for the composition-space
 migration, explicit shared component registry and completed native acceptance.
+
+
+## Phase 13B — accepted optional lock presentation data
+
+Auxiliary lock modules are optional, display-only and non-blocking with respect to
+network/services: existing shell services prepare/cache data; the native presentation
+reads a bounded local snapshot. No service object or playback action enters lock QML.
+Weather and media default off, city disclosure separately defaults off. Settings stores
+preferences; runtime exports live outside Git/Settings. Authentication remains above
+all decoration and has contrast protection against media/depth overlap. Depth consumes
+prepared artwork only; segmentation/import is not part of locking. See the
+[Phase 13B review](design/phase13b-lock-modules-effects.md) for exact capabilities,
+immutable-per-lock snapshot semantics, completed native acceptance and deferred
+icon/import capabilities.

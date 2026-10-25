@@ -14,9 +14,11 @@
 #include <QPainterPath>
 namespace {
 class VisualImages final : public QQuickImageProvider {
-    QImage wallpaper_, avatar_;
+    QImage wallpaper_, avatar_, media_, mediaIcon_, depth_;
 public:
-    explicit VisualImages(const magi::VisualData& data) : QQuickImageProvider(Image), wallpaper_(data.wallpaper) {
+    explicit VisualImages(const magi::VisualData& data) : QQuickImageProvider(Image), wallpaper_(data.wallpaper), media_(data.media), depth_(data.depth) {
+        mediaIcon_=data.mediaIcon.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        if(!mediaIcon_.isNull()) {QPainter ink(&mediaIcon_);ink.setCompositionMode(QPainter::CompositionMode_SourceIn);ink.fillRect(mediaIcon_.rect(),QColor(data.values.value("text").toString()));}
         if (!data.avatar.isNull()) {
             avatar_=QImage(192,192,QImage::Format_ARGB32_Premultiplied); avatar_.fill(Qt::transparent);
             QPainter painter(&avatar_); painter.setRenderHint(QPainter::Antialiasing);
@@ -27,7 +29,7 @@ public:
         }
     }
     QImage requestImage(const QString& id, QSize* size, const QSize&) override {
-        auto result=id=="wallpaper" ? wallpaper_ : id=="avatar" ? avatar_ : QImage();
+        auto result=id=="wallpaper" ? wallpaper_ : id=="avatar" ? avatar_ : id=="media" ? media_ : id=="media-icon" ? mediaIcon_ : id=="depth" ? depth_ : QImage();
         if(size) *size=result.size();
         return result;
     }

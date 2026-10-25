@@ -1,5 +1,5 @@
 // Pure presentation geometry. No input, IPC, file access or authentication authority.
-function ids() { return ["time", "identity", "authentication"] }
+function ids() { return ["time", "identity", "authentication", "weather", "media"] }
 function anchors() { return ["top-left","top-center","top-right","center-left","center","center-right","bottom-left","bottom-center","bottom-right"] }
 function copy(v) { return JSON.parse(JSON.stringify(v)) }
 function element(anchor, x, y, size, visible, z) {
@@ -9,7 +9,9 @@ function preset(name) {
     const e = {
         time: element("top-center",0,.06,1,true,0),
         identity: element("center",0,0,1,true,1),
-        authentication: element("bottom-center",0,-.12,1,true,2)
+        authentication: element("bottom-center",0,-.12,1,true,2),
+        weather: element("top-right",-.05,.05,1,false,-2),
+        media: element("bottom-left",.05,-.08,1,false,-1)
     }
     // Content flow is an explicit coordinate space, not a separate renderer.
     let space = "screen"
@@ -32,22 +34,25 @@ function preset(name) {
         e.time = element("top-center",0,.16,.85,true,0)
         e.identity.visible = false
     } else return preset("centered")
-    return {layoutVersion:1, preset:name, space:space, elements:e}
+    return {layoutVersion:1, preset:name, space:space, elements:e, effects:effects(null)}
 }
 function normalize(input) {
     const fallback = preset("centered")
     if (!input || input.layoutVersion !== 1) return fallback
     // The compact migration value denotes the unchanged original composition.
-    if (input.preset === "centered" && input.elements && Object.keys(input.elements).length === 0) return fallback
+    if (input.preset === "centered" && input.elements && Object.keys(input.elements).length === 0) {fallback.effects=effects(input.effects);return fallback}
     if (!["screen","composition"].includes(input.space) || !input.elements) return fallback
-    if (Object.keys(input.elements).sort().join() !== ids().sort().join()) return fallback
+    if (Object.keys(input.elements).some(id => !ids().includes(id))) return fallback
+    input = copy(input)
+    for (const id of ["weather","media"]) if (!input.elements[id]) input.elements[id] = copy(fallback.elements[id])
     const out = copy(fallback), used = []
+    out.effects = effects(input.effects)
     out.space = input.space
     out.preset = ["centered","editorial","corner","split","minimal","custom"].includes(input.preset) ? input.preset : "custom"
     for (const id of ids()) {
         const e = input.elements[id]
         if (!e || !anchors().includes(e.anchor) || !["left","center","right"].includes(e.alignment)
-            || typeof e.visible !== "boolean" || !Number.isInteger(e.z) || e.z < 0 || e.z > 2 || used.includes(e.z)) return fallback
+            || typeof e.visible !== "boolean" || !Number.isInteger(e.z) || e.z < -2 || e.z > 2 || used.includes(e.z)) return fallback
         for (const k of ["offsetX","offsetY","size"]) if (typeof e[k] !== "number" || !isFinite(e[k])) return fallback
         if (Math.abs(e.offsetX) > 1 || Math.abs(e.offsetY) > 1 || e.size < .75 || e.size > 1.25) return fallback
         if (id === "authentication" && (!e.visible || e.z !== 2 || e.size < 1)) return fallback
@@ -80,4 +85,25 @@ function snap(value,extent,limit,others,bypass) {
         if (distance<best) {best=distance;result={value:guide-edge,guide:guide}}
     }
     return result
+}
+
+// Optional appearance data only; unknown values never reach presentation.
+function effects(value) {
+    const v=value && typeof value === "object" ? value : {}
+    function choice(key,allowed,fallback) { return allowed.includes(v[key]) ? v[key] : fallback }
+    return {credential:choice("credential",["dots","line","segments","ring","minimal"],"dots"),
+        avatar:choice("avatar",["plain","ring","glow","frame"],"plain"),
+        weather:choice("weather",["compact","standard","minimal"],"standard"),
+        media:choice("media",["compact","artwork","minimal"],"compact"),
+        location:v.location === true, artwork:v.artwork !== false, depth:v.depth === true}
+}
+
+// Hosts share the presentation plane and use a top-left scale origin.
+// Padding is expressed in that plane, including the authentication backdrop.
+function overlaps(a, b, padding) {
+    return a.width > 0 && a.height > 0 && b.width > 0 && b.height > 0
+        && a.x < b.x + b.width * b.scale + padding
+        && a.x + a.width * a.scale > b.x - padding
+        && a.y < b.y + b.height * b.scale + padding
+        && a.y + a.height * a.scale > b.y - padding
 }

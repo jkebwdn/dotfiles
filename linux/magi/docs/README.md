@@ -1,3 +1,13 @@
+## Phase 13B — rich lock modules accepted (2026-10-25)
+
+Schema 21 preserves the Custom lock layout and adds optional cached Weather/Media,
+credential styles, avatar treatments and prepared depth support. The operator
+accepted the designer and native gate, including the corrected media/auth backdrop.
+The checked production package is installed; lock authority and input are unchanged.
+Weather remains text-only, media is an acquisition snapshot, and depth import is
+deferred. See [native evidence and limitations](design/phase13b-lock-modules-effects.md)
+and the [synthetic gallery](design/phase13b-previews/index.html). Greeter has not begun.
+
 ## Phase 13A — Lock Screen Designer accepted (2026-10-24)
 
 The operator accepted the native designer and real Centered/custom locks on the

@@ -267,7 +267,7 @@ ShellRoot {
    const saved=JSON.stringify(Services.Settings.data)
    Services.Settings.setTheme("nord");verify(Services.Settings.discardAndReload());tryCompare(Services.Settings,"ready",true)
    compare(JSON.stringify(Services.Settings.data),saved)
-   compare(Services.Settings.data.schemaVersion,20)
+   compare(Services.Settings.data.schemaVersion,21)
    console.log("Phase12F presentation PASS")
   }catch(e){console.error("FAIL",e,e.stack)}finally{finish.start()}}
  }

@@ -37,3 +37,5 @@ singleton Displays 1.0 Displays.qml
 singleton ApplicationAppearanceService 1.0 ApplicationAppearanceService.qml
 
 singleton GlobalBlurService 1.0 GlobalBlurService.qml
+
+singleton LockAuxiliary 1.0 LockAuxiliary.qml

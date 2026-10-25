@@ -146,5 +146,10 @@ function migrate(input) {
         if (doc.lockScreen === undefined) doc.lockScreen = {layoutVersion:1, preset:"centered", elements:{}}
         doc.schemaVersion = 20
     }
+    if (doc.schemaVersion === 20) {
+        if (doc.lockScreen && typeof doc.lockScreen === "object" && !doc.lockScreen.effects)
+            doc.lockScreen.effects = {credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false}
+        doc.schemaVersion = 21
+    }
     return doc
 }

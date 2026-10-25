@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 20,
+  "customSentinel": {
+    "preserved": true
+  },
+  "lockScreen": {
+    "layoutVersion": 1,
+    "preset": "custom",
+    "space": "screen",
+    "elements": {
+      "time": {
+        "anchor": "top-left",
+        "offsetX": 0.06,
+        "offsetY": 0.08,
+        "size": 1.15,
+        "visible": true,
+        "alignment": "left",
+        "z": 0
+      },
+      "identity": {
+        "anchor": "bottom-right",
+        "offsetX": -0.1,
+        "offsetY": -0.17,
+        "size": 0.75,
+        "visible": true,
+        "alignment": "center",
+        "z": 1
+      },
+      "authentication": {
+        "anchor": "bottom-right",
+        "offsetX": -0.06,
+        "offsetY": -0.08,
+        "size": 1,
+        "visible": true,
+        "alignment": "center",
+        "z": 2
+      }
+    }
+  }
+}

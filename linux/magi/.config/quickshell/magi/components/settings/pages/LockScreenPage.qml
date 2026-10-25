@@ -15,9 +15,13 @@ UI.SettingsPage {
     property string selected: "time"
     property int previewState: 0
     property int aspectIndex: 0
+    property bool depthPreview: false
     readonly property real aspect: aspectIndex===0 ? Math.max(.5,Screen.width/Math.max(1,Screen.height)) : [16/9,16/9,16/10,21/9][aspectIndex]
     readonly property var colors: ({background:Theme.Theme.background.toString(),surface:Theme.Theme.surface.toString(),text:Theme.Theme.text.toString(),subtext:Theme.Theme.subtext.toString(),accent:Theme.Theme.accent.toString(),danger:Theme.Theme.red.toString(),warning:Theme.Theme.yellow.toString()})
     function save(value) { Services.Settings.setLockLayout(value) }
+    function effect(key,value) {
+        const next=Model.copy(root.layout);next.effects[key]=value;root.save(next)
+    }
     function edit(key,value) {
         canvas.begin()
         const next=Model.copy(canvas.draft)
@@ -41,7 +45,7 @@ UI.SettingsPage {
     Flow {
         Layout.fillWidth:true;Layout.preferredHeight:childrenRect.height;spacing:8
         UI.SettingsSelector {
-            model:["Idle","Typing","Authenticating","Wrong password","Caps Lock"]
+            model:["Idle","Typing","Authenticating","Wrong password","Caps Lock","Preview weather","Preview media","Preview both"]
             currentIndex:root.previewState;Accessible.name:"Synthetic preview state"
             onActivated:root.previewState=currentIndex
         }
@@ -58,7 +62,7 @@ UI.SettingsPage {
             UI.LockLayoutCanvas {
                 id:canvas;objectName:"lockLayoutCanvas"
                 Layout.fillWidth:true;Layout.preferredHeight:width/root.aspect
-                layout:root.layout;palette:root.colors;aspect:root.aspect;stateIndex:root.previewState
+                layout:root.layout;palette:root.colors;aspect:root.aspect;stateIndex:root.previewState;depthPreview:root.depthPreview
                 selected:root.selected
                 onSelectionRequested:id=>root.selected=id
                 onCommitted:value=>root.save(value)
@@ -69,7 +73,7 @@ UI.SettingsPage {
             Layout.fillWidth:true;Layout.preferredWidth:230;Layout.maximumWidth:330;Layout.alignment:Qt.AlignTop;spacing:10
             Label {color:Theme.Theme.text;text:root.layout.preset==="custom" ? "Custom layout" : "Selected element";font.bold:true}
             UI.SettingsSelector {
-                model:["Time · clock & date","Identity · avatar & name","Authentication"]
+                model:["Time · clock & date","Identity · avatar & name","Authentication","Weather","Media"]
                 currentIndex:Model.ids().indexOf(root.selected);Accessible.name:"Select lock screen element"
                 onActivated:root.selected=Model.ids()[currentIndex]
             }
@@ -88,7 +92,7 @@ UI.SettingsPage {
                 onActivated:root.edit("alignment",["left","center","right"][currentIndex])
             }
             UI.SettingsToggle {
-                text:"Show element";enabled:root.selected!=="authentication"
+                text:root.selected==="media" ? "Show media information" : root.selected==="weather" ? "Show weather" : "Show element";enabled:root.selected!=="authentication"
                 checked:root.layout.elements[root.selected].visible
                 onClicked:root.edit("visible",checked)
             }
@@ -96,12 +100,34 @@ UI.SettingsPage {
                 text:root.layout.elements[root.selected].z===0 ? "Bring forward" : "Send backward"
                 enabled:root.selected!=="authentication"
                 onClicked:{
-                    const next=Model.copy(root.layout), other=root.selected==="time" ? "identity" : "time"
+                    const next=Model.copy(root.layout), others=Model.ids().filter(id=>id!=="authentication" && id!==root.selected), other=others.find(id=>next.elements[id].z===(next.elements[root.selected].z<1 ? next.elements[root.selected].z+1 : -2))
                     const z=next.elements[other].z;next.elements[other].z=next.elements[root.selected].z;next.elements[root.selected].z=z
                     next.preset="custom";root.save(next)
                 }
             }
             UI.SettingsHelp {text:root.selected==="authentication" ? "Dots, status and Caps Lock stay together, visible and in front." : "Hidden elements remain available in the element selector."}
+            Flow {
+                Layout.fillWidth:true;Layout.preferredHeight:childrenRect.height;spacing:6
+                Repeater {
+                    model:root.selected==="authentication" ? ["dots","line","segments","ring","minimal"] : root.selected==="identity" ? ["plain","ring","glow","frame"] : root.selected==="weather" ? ["compact","standard","minimal"] : root.selected==="media" ? ["compact","artwork","minimal"] : []
+                    UI.SettingsChoiceCard {
+                        id:styleCard
+                        required property string modelData
+                        readonly property string effectKey:root.selected==="authentication" ? "credential" : root.selected==="identity" ? "avatar" : root.selected
+                        width:100;height:100;text:modelData.charAt(0).toUpperCase()+modelData.slice(1)
+                        selected:root.layout.effects[effectKey]===modelData
+                        onClicked:root.effect(effectKey,modelData)
+                        UI.LockStylePreview {anchors.fill:parent;kind:styleCard.effectKey;choice:styleCard.modelData;palette:root.colors}
+                    }
+                }
+            }
+            UI.SettingsToggle {visible:root.selected==="weather";text:"Show city label";checked:root.layout.effects.location;onClicked:root.effect("location",checked)}
+            UI.SettingsToggle {visible:root.selected==="media";text:"Show artwork";checked:root.layout.effects.artwork;onClicked:root.effect("artwork",checked)}
+            UI.SettingsHelp {visible:root.selected==="media";text:"Opt in to showing track information while locked. Read-only; cached data may be older than the current track."}
+            UI.SettingsHelp {visible:root.selected==="weather";text:"Uses Profile weather settings and cached observations. Preview content is synthetic."}
+            UI.SettingsToggle {text:"Depth effect";enabled:false;checked:root.layout.effects.depth}
+            UI.SettingsToggle {text:"Preview depth effect";checked:root.depthPreview;onClicked:root.depthPreview=checked}
+            UI.SettingsHelp {text:"Depth is unavailable until this wallpaper has a prepared subject cutout. Try the synthetic preview to see the effect."}
             UI.SettingsSection {
                 title:"Fine tune";collapsible:true
                 UI.SettingsSelector {
@@ -116,5 +142,5 @@ UI.SettingsPage {
             }
         }
     }
-    UI.SettingsButton {text:"Reset lock screen layout";flat:true;onClicked:Services.Settings.resetSection("lockScreen")}
+    UI.SettingsButton {text:"Reset lock screen";flat:true;onClicked:Services.Settings.resetSection("lockScreen")}
 }
