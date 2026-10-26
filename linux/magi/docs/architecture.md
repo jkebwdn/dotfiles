@@ -875,3 +875,13 @@ prepared artwork only; segmentation/import is not part of locking. See the
 [Phase 13B review](design/phase13b-lock-modules-effects.md) for exact capabilities,
 immutable-per-lock snapshot semantics, completed native acceptance and deferred
 icon/import capabilities.
+
+## Launcher application lifetime
+
+The tracked launch Process owns only the short-lived GIO dispatch helper, never
+an application's lifetime. Spawned applications receive explicit independent
+stdin/stdout/stderr descriptors pointing to `/dev/null`; no launcher-owned output
+pipe may escape into a long-running GUI. GIO retains desktop-entry/terminal/D-Bus
+semantics and dispatch failure reporting. Hub closure, component destruction and
+shell reload must not affect an already dispatched app. See the
+[stream-lifetime regression](research/application-launcher-apis.md#long-running-application-stream-lifetime--2026-10-26).

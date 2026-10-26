@@ -1,3 +1,9 @@
+## Launcher lifetime correction (2026-10-26)
+
+GIO application launches now receive independent standard streams so later logging
+cannot write into expired launcher pipes. Desktop-entry and terminal behaviour are
+preserved. [Audit and lifecycle regression](research/application-launcher-apis.md#long-running-application-stream-lifetime--2026-10-26).
+
 ## Phase 13B — rich lock modules accepted (2026-10-25)
 
 Schema 21 preserves the Custom lock layout and adds optional cached Weather/Media,

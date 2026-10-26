@@ -1038,3 +1038,12 @@ The [implementation record](design/phase13b-lock-modules-effects.md) distinguish
 completed native acceptance from accepted limits: text-only weather, deferred mask
 import and acquisition-only media snapshots. Host packaging passed normal checks.
 The transient cursor observation cleared without a native owner/input change.
+
+## 2026-10-26 — GUI launch streams outlive launcher components
+
+Keep GIO's desktop-aware dispatch but supply explicit independent standard streams
+using its manager-with-fds API. A successful helper exit is not proof that inherited
+pipes are safe for later application logging. Retain helper result/history/error
+handling; discard app console output through `/dev/null`. Avoid application-specific
+fixes and shell command strings. Tests must write after UI teardown, shell reload
+and shell exit, including a delayed write beyond two minutes.

@@ -7,7 +7,7 @@ import shutil
 import sys
 import gi
 gi.require_version("GioUnix", "2.0")
-from gi.repository import Gio, GioUnix
+from gi.repository import Gio, GioUnix, GLib
 
 
 def applications():
@@ -35,7 +35,15 @@ def launch(desktop_id):
         context.setenv("MAGI_LAUNCHER_TERMINAL", ghostty)
         context.setenv("MAGI_LAUNCHER_PATH", original_path)
         context.setenv("PATH", str(Path(__file__).resolve().parent / "launcher-terminal") + os.pathsep + original_path)
-    if not app.launch([], context):
+    # A GUI outlives this helper and the shell's Process/log pipes. Give the
+    # spawned application independent streams, while retaining helper errors on
+    # stderr and GIO's desktop-entry/terminal/D-Bus activation semantics.
+    with open(os.devnull, "r+b", buffering=0) as streams:
+        started = app.launch_uris_as_manager_with_fds(
+            [], context, GLib.SpawnFlags.SEARCH_PATH,
+            None, None, None, None,
+            streams.fileno(), streams.fileno(), streams.fileno())
+    if not started:
         raise RuntimeError("Application could not be started")
 
 

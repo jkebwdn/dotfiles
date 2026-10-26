@@ -86,3 +86,53 @@ coupling menu lifetime to a delegate that hiding removes. The fixture verifies
 popup focus, the action, subsequent search focus, both layout filters and Restore.
 Live pointer Hide/Restore acceptance remains part of final operator review. This
 is original composition using Qt APIs; no sample implementation or assets copied.
+
+## Long-running application stream lifetime — 2026-10-26
+
+Installed Quickshell 0.3.2-1 and GLib 2.90.1-1 were inspected and tested.
+MAGI's `Launcher.launch()` starts a tracked `Process` for the Python GIO helper;
+only discovery has a `StdioCollector`. No shell pipeline or GUI-process tracker
+is involved. The helper returns after dispatch, closes Hub and updates history.
+
+Source: [Quickshell v0.3.2 process.cpp](https://raw.githubusercontent.com/quickshell-mirror/quickshell/v0.3.2/src/io/process.cpp),
+`startProcessIfReady` and `onFinished`, inspected 2026-10-26. A normal Process uses
+QProcess channels (closing read channels without parsers), and deletes its QProcess
+when the helper exits. A child inheriting those output descriptors outlives their
+reader. The standalone baseline fixture confirms successful GIO launch followed by
+errno 32 on delayed output after pipe-reader closure. This reproduces the generic
+failure mechanism, not a claim to have traced the original Mullvad process.
+
+Source: [GIO explicit-fd launch API](https://docs.gtk.org/gio-unix/method.DesktopAppInfo.launch_uris_as_manager_with_fds.html),
+inspected 2026-10-26 (API since 2.58; documentation library 2.91.0, installed binding
+2.90.1 verified). The replacement supplies open `/dev/null` descriptors for all
+three standard streams. GIO retains XDG resolution, terminal wrapping, field codes,
+cwd and activation; D-Bus activation ignores these descriptors because the bus owns
+that process. No shell interpolation, polling service or Mullvad exception is added.
+The helper still reports launch failure normally; application console output is
+intentionally discarded rather than attached to a short-lived shell pipe.
+
+Source: [Quickshell v0.3.2 desktopentry.hpp](https://raw.githubusercontent.com/quickshell-mirror/quickshell/v0.3.2/src/core/desktopentry.hpp),
+`DesktopEntry::execute`, inspected 2026-10-26. It still documents ignoring terminal
+requirements and field codes. Replacing GIO would regress accepted launch semantics.
+[Quickshell v0.3.2 qmlglobal.cpp](https://raw.githubusercontent.com/quickshell-mirror/quickshell/v0.3.2/src/core/qmlglobal.cpp),
+`execDetached`, uses QProcess startDetached with optional unbound output. Detaching
+only the helper would also remove the dispatch-result channel used by Launcher.
+GIO's explicit stream ownership is the smaller compatible fix.
+
+Regression: `python tests/launcher/lifecycle.py` from `linux/magi` uses synthetic
+XDG entries and the production Launcher/Hub/content in an isolated shell. It closes
+Hub, destroys content, invokes Quickshell.reload(true), exits the shell, then tests
+stdout/stderr writes over two minutes later. Child fd targets must be `/dev/null`.
+`--delay 2` is a development shortcut; the default delayed run is the acceptance
+check. No live shell reload, real application start, or VPN operation is required.
+Existing backend tests retain terminal argv, field-code, cwd and error coverage.
+Existing running applications cannot have their inherited descriptors repaired by
+this change; the new launch policy applies to subsequently spawned processes.
+
+Validation result: the full default lifecycle run passed, including healthy output
+at 127.2 seconds after launch following Hub/content teardown, hard reload and shell
+exit. Launcher backend, UI/service/hidden-entry, search and schema checks pass.
+The schema fixture's stale version-16 expectation was changed to the current
+schema default; no persisted schema or preferences changed. The negative control
+reproduces EPIPE using GIO's old inherited-stream launch path. Native Mullvad was
+not started, stopped or otherwise manipulated by these tests.

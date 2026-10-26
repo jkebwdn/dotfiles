@@ -729,3 +729,12 @@ display-only root property boundary remains unchanged. Settings and native rende
 reuse the same repository QML through a source link and native QRC embedding.
 These tests demonstrate synthetic interaction, not ext-session-lock or compositor
 pointer acceptance. [Phase 13A test scope](design/phase13a-lock-screen-designer.md).
+
+## Launcher lifecycle checkpoint (2026-10-26)
+
+Quickshell 0.3.2's tracked Process owns QProcess stream channels; it is suitable for
+the bounded GIO dispatch helper, not for a long-running GUI inheriting those pipes.
+GIO now supplies independent null-device streams to spawned apps. DesktopEntry.execute
+still omits terminal/field-code support. The isolated lifecycle fixture uses the
+installed `Quickshell.reload(true)` API to destroy/recreate the shell generation.
+[Versioned source and tests](research/application-launcher-apis.md#long-running-application-stream-lifetime--2026-10-26).
