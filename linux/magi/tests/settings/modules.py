@@ -17,6 +17,9 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
       'Bluetooth': '''property bool available: false; property bool enabled: false; property bool discovering: false
         property var primaryDevice: null; property var devices: []; property int connectedCount: 0
         function displayName(d) {return d ? d.name : ""} function batteryPercent(d) {return d && d.batteryAvailable ? Math.round(d.battery*100) : -1}
+        property var prompt: null; property bool busy: false; property string actionPath: ""; property string actionName: ""; property string actionError: ""
+        function stateText(d) {return d ? "Connected" : "Unavailable"} function canAct(d) {return !!d && !busy}
+        function answer(a,v) {} function cancel() {}
         function setEnabled(v) {root.enabled=v} function setDiscovering(v) {} function toggleConnection(d) {}''',
       'Audio': '''property bool available: false; property bool muted: false; property real volume: 0; property int volumePercent: 0
         function setVolume(v) {} function toggleMute() {} function adjustVolume(v) {}''',

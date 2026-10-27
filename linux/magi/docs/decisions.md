@@ -1,3 +1,14 @@
+## Bluetooth pairing/authentication decision (2026-10-27)
+
+The operator requested both a no-PIN speaker fix and support for future authenticated
+devices. Quickshell 0.3.2 exposes Pair but no authentication UI callbacks or error
+results. Use a narrowly scoped BlueZ Agent1 on the same helper connection that
+initiates Pair; never claim the default agent or auto-confirm arbitrary requests.
+Trust only successful intentional pairing. Preserve paired/trusted state after
+connection failure. No bluetoothctl backend, profile-specific hacks, launcher/tray
+changes or Settings schema changes. The operator confirmed native acceptance on 2026-10-27.
+[Evidence and lifecycle rules](design/bluetooth-pairing.md).
+
 ## Phase 12H — native acceptance complete (2026-10-24)
 
 The operator accepted automatic Ghostty activation, preserved transparency/blur,

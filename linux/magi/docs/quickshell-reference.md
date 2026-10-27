@@ -1,3 +1,13 @@
+## Bluetooth 0.3.2 audit (2026-10-27)
+
+Installed metadata confirms pair/cancelPair/connect/disconnect/forget, paired,
+bonded, pairing, state and writable trusted. dbusPath supplies stable identity.
+Pair is asynchronous; its implementation does not explicitly trust/connect. No
+Agent1 QML types/challenges or structured operation errors are exported. MAGI
+therefore uses GIO for application-scoped authentication and actions,
+while keeping Quickshell device properties authoritative for presentation.
+[Versioned sources, compatibility and remaining tests](design/bluetooth-pairing.md).
+
 ## Phase 12G accepted — final ownership
 
 The operator accepted Ghostty background-only alpha/blur, shared MAGI outer-panel

@@ -1,3 +1,12 @@
+## Bluetooth action coordinator (2026-10-27)
+
+Quickshell remains the Bluetooth device/discovery model. The focused pairing fix
+adds one on-demand GIO backend with an application-scoped Agent1 and async Device1
+operations on the same private bus connection. Its coordinator owns user intent,
+trust-after-pair, guarded connection sequencing and errors; the existing menu owns
+presentation and authentication input. Nothing is persisted in Settings.
+[Architecture and native results](design/bluetooth-pairing.md).
+
 ## Phase 12H — native acceptance complete (2026-10-24)
 
 The operator accepted automatic Ghostty activation, preserved transparency/blur,

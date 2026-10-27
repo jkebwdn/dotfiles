@@ -71,10 +71,10 @@ MagiBar.ExpandableModule {
 
                     Text {
                         width: parent.width
-                        text: root.connectedDevice
-                            ? "Connected and ready"
+                        text: MagiServices.Bluetooth.busy ? MagiServices.Bluetooth.actionState
+                            : root.connectedDevice ? "Connected and ready"
                             : MagiServices.Bluetooth.enabled
-                                ? "Ready for known devices"
+                                ? "Ready to pair and connect"
                                 : "Bluetooth is off"
                         color: MagiTheme.Theme.text
                         font.family: MagiTheme.Theme.fontFamily
@@ -115,7 +115,7 @@ MagiBar.ExpandableModule {
                 id: connectedCard
 
                 width: parent.width
-                visible: root.connectedDevice !== null
+                visible: root.connectedDevice !== null && !MagiServices.Bluetooth.prompt
                 height: visible ? 72 : 0
                 radius: MagiTheme.Theme.radiusMedium
                 color: MagiTheme.Theme.elevated
@@ -132,6 +132,7 @@ MagiBar.ExpandableModule {
 
                     Text {
                         width: parent.width
+                        textFormat: Text.PlainText
                         text: root.connectedName
                         color: MagiTheme.Theme.text
                         font.family: MagiTheme.Theme.fontFamily
@@ -142,10 +143,8 @@ MagiBar.ExpandableModule {
 
                     Text {
                         width: parent.width
-                        text: root.connectedBattery >= 0
-                            ? "Battery "
-                                + root.connectedBattery + "%"
-                            : "Connected"
+                        text: MagiServices.Bluetooth.stateText(root.connectedDevice)
+                            + (root.connectedBattery >= 0 ? " · Battery " + root.connectedBattery + "%" : "")
                         color: MagiTheme.Theme.muted
                         font.family: MagiTheme.Theme.fontFamily
                         font.pixelSize: 11
@@ -154,6 +153,7 @@ MagiBar.ExpandableModule {
                 }
 
                 MagiControls.ActionChip {
+                    activeFocusOnTab: true
                     moduleId: "bluetooth"
                     id: disconnectChip
 
@@ -162,8 +162,11 @@ MagiBar.ExpandableModule {
                         rightMargin: 10
                         verticalCenter: parent.verticalCenter
                     }
-                    label: "Disconnect"
-                    available: root.connectedDevice !== null
+                    label: MagiServices.Bluetooth.busy && root.connectedDevice
+                        && root.connectedDevice.dbusPath === MagiServices.Bluetooth.actionPath
+                        ? "Working…" : "Disconnect"
+                    Accessible.name: root.connectedName + ", " + MagiServices.Bluetooth.stateText(root.connectedDevice)
+                    available: MagiServices.Bluetooth.canAct(root.connectedDevice)
                     onTriggered: MagiServices.Bluetooth.toggleConnection(
                         root.connectedDevice
                     )
@@ -172,7 +175,8 @@ MagiBar.ExpandableModule {
 
             Item {
                 width: parent.width
-                height: 28
+                height: visible ? 28 : 0
+                visible: !MagiServices.Bluetooth.prompt
 
                 Text {
                     anchors {
@@ -189,6 +193,7 @@ MagiBar.ExpandableModule {
                 }
 
                 MagiControls.ActionChip {
+                    activeFocusOnTab: true
                     moduleId: "bluetooth"
                     anchors {
                         right: parent.right
@@ -206,14 +211,31 @@ MagiBar.ExpandableModule {
                 }
             }
 
+            BluetoothAuthentication {
+                width: parent.width
+                visible: MagiServices.Bluetooth.prompt !== null
+                height: visible ? implicitHeight : 0
+            }
+
+            Text {
+                width: parent.width
+                visible: text.length > 0 && !MagiServices.Bluetooth.prompt
+                text: MagiServices.Bluetooth.actionError
+                textFormat: Text.PlainText
+                color: MagiTheme.Theme.subtext
+                font.pixelSize: 11
+                wrapMode: Text.WordWrap
+            }
+
             Flickable {
                 width: parent.width
-                height: root.connectedDevice ? 150 : 234
+                height: MagiServices.Bluetooth.prompt ? 0
+                    : (root.connectedDevice ? 150 : 234) - (MagiServices.Bluetooth.actionError ? 42 : 0)
                 contentWidth: width
                 contentHeight: deviceColumn.implicitHeight
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                visible: MagiServices.Bluetooth.enabled
+                visible: MagiServices.Bluetooth.enabled && !MagiServices.Bluetooth.prompt
 
                 Text {
                     width: parent.width
@@ -233,6 +255,7 @@ MagiBar.ExpandableModule {
 
                         delegate: Rectangle {
                             id: deviceRow
+                            objectName: "bluetooth-device-" + modelData.dbusPath
 
                             required property var modelData
 
@@ -240,27 +263,20 @@ MagiBar.ExpandableModule {
                                 MagiServices.Bluetooth.displayName(modelData)
                             readonly property int batteryPercent:
                                 MagiServices.Bluetooth.batteryPercent(modelData)
-                            readonly property bool canConnect:
-                                modelData.connected
-                                || modelData.paired
-                                || modelData.bonded
-                            readonly property bool changing:
-                                modelData.state
-                                    === BluetoothDeviceState.Connecting
-                                || modelData.state
-                                    === BluetoothDeviceState.Disconnecting
-                            readonly property string deviceState: {
-                                if (modelData.state
-                                        === BluetoothDeviceState.Connecting) {
-                                    return "Connecting"
-                                }
-                                if (modelData.state
-                                        === BluetoothDeviceState.Disconnecting) {
-                                    return "Disconnecting"
-                                }
-                                if (modelData.paired || modelData.bonded)
-                                    return "Paired"
-                                return "Available"
+                            readonly property bool changing: !MagiServices.Bluetooth.canAct(modelData)
+                            readonly property string deviceState: MagiServices.Bluetooth.stateText(modelData)
+                            activeFocusOnTab: true
+                            Accessible.role: Accessible.Button
+                            Accessible.name: displayName + ", " + deviceState
+                            Accessible.onPressAction: MagiServices.Bluetooth.toggleConnection(modelData)
+                            Keys.onReturnPressed: MagiServices.Bluetooth.toggleConnection(modelData)
+                            Keys.onSpacePressed: MagiServices.Bluetooth.toggleConnection(modelData)
+                            border.width: activeFocus ? 1 : 0
+                            border.color: MagiTheme.Theme.focus
+
+                            MouseArea {
+                                anchors { left: parent.left; right: deviceAction.left; top: parent.top; bottom: parent.bottom }
+                                onClicked: MagiServices.Bluetooth.toggleConnection(deviceRow.modelData)
                             }
 
                             width: deviceColumn.width
@@ -282,6 +298,7 @@ MagiBar.ExpandableModule {
                                     top: parent.top
                                     topMargin: 5
                                 }
+                                textFormat: Text.PlainText
                                 text: deviceRow.displayName
                                 color: MagiTheme.Theme.text
                                 font.family: MagiTheme.Theme.fontFamily
@@ -297,7 +314,10 @@ MagiBar.ExpandableModule {
                                     leftMargin: 10
                                     bottom: parent.bottom
                                     bottomMargin: 5
+                                    right: deviceAction.left
+                                    rightMargin: 8
                                 }
+                                elide: Text.ElideRight
                                 text: deviceRow.batteryPercent >= 0
                                     ? deviceRow.deviceState + " · Battery "
                                         + deviceRow.batteryPercent + "%"
@@ -308,18 +328,19 @@ MagiBar.ExpandableModule {
                             }
 
                             MagiControls.ActionChip {
-                    moduleId: "bluetooth"
+                                activeFocusOnTab: true
+                                moduleId: "bluetooth"
                                 id: deviceAction
+                                objectName: "bluetooth-action-" + deviceRow.modelData.dbusPath
 
                                 anchors {
                                     right: parent.right
                                     rightMargin: 8
                                     verticalCenter: parent.verticalCenter
                                 }
-                                visible: deviceRow.canConnect
-                                label: deviceRow.changing
-                                    ? deviceRow.deviceState
-                                    : "Connect"
+                                label: MagiServices.Bluetooth.busy && deviceRow.modelData.dbusPath === MagiServices.Bluetooth.actionPath
+                                    ? "Working…" : deviceRow.modelData.paired || deviceRow.modelData.bonded ? "Connect" : "Pair"
+                                Accessible.name: deviceRow.displayName + ", " + deviceRow.deviceState
                                 available: !deviceRow.changing
                                 onTriggered:
                                     MagiServices.Bluetooth.toggleConnection(

@@ -1,3 +1,10 @@
+## Bluetooth pairing fix — natively accepted (2026-10-27)
+
+The accepted fix adds new-device pairing and an application-scoped BlueZ
+Agent1 for PIN/passkey/confirmation flows. Synthetic coordinator, production QML
+and operator-run private-bus checks pass. Schema remains 21. The operator confirmed the live pairing/reconnection checks working.
+Native PIN/passkey hardware remains untested; synthetic authentication checks pass. [Audit, architecture and evidence](design/bluetooth-pairing.md).
+
 ## Phase 14A — System Tray natively accepted (2026-10-27)
 
 System Tray uses one shared Quickshell model with main-output-only Bar rendering,
