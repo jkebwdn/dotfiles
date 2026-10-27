@@ -14,6 +14,7 @@ import "../../modules" as Modules
 import "../../services" as MagiServices
 import "../../theme" as MagiTheme
 import "../calendar" as CalendarUI
+import "../tray" as TrayUI
 import "OutputPolicy.js" as OutputPolicy
 
 PanelWindow {
@@ -46,7 +47,14 @@ PanelWindow {
         && registry.modules[MagiServices.MenuController.activeMenu]?.expandsOnClick
         ? registry.modules[MagiServices.MenuController.activeMenu] : null
     readonly property bool combinedMenuActive: activeExpandablePill !== null || (ownsMenu && MagiServices.Calendar.opened)
-    readonly property bool fullSurface: combinedMode || (ownsMenu && MagiServices.Calendar.opened) || calendarSurface.absorbed
+    readonly property bool fullSurface: trayOpened || combinedMode || (ownsMenu && MagiServices.Calendar.opened) || calendarSurface.absorbed
+    property var trayPresenter: null
+    property bool trayOpened: false
+    property bool trayKeyboardMode: false
+    readonly property bool trayOnOutput: outputScreen === MagiServices.SurfaceOrigin.mainScreen
+    function closeTray() { trayOpened = false; trayKeyboardMode = false }
+    onTrayOnOutputChanged: closeTray()
+    onOutputScreenChanged: closeTray()
     property Item clockAnchor: null
     property Item dateAnchor: null
     function toggleCalendar(item) {
@@ -57,11 +65,12 @@ PanelWindow {
         combinedMode && statusSurface.revealedHeight > 0 ? statusSurface : null
     readonly property bool previewPinned: MagiServices.SettingsWindowState.controlCentrePreview
         && MagiServices.MenuController.activeMenu === "controlcentre"
-    readonly property bool catcherEnabled: combinedMenuActive && !previewPinned
+    readonly property bool catcherEnabled: trayOpened || (combinedMenuActive && !previewPinned)
     readonly property bool combinedKeyboardEnabled:
-        (ownsMenu && MagiServices.Calendar.opened) || (activeExpandablePill !== null && activeExpandablePill.menuKeyboardFocus)
+        trayOpened || (ownsMenu && MagiServices.Calendar.opened) || (activeExpandablePill !== null && activeExpandablePill.menuKeyboardFocus)
 
     function closeActiveCombinedMenu() {
+        closeTray()
         if (combinedMenuActive && !previewPinned)
             MagiServices.MenuController.close()
     }
@@ -78,6 +87,7 @@ PanelWindow {
             item: calendarSurface.absorbed ? calendarSurface : null
             intersection: Intersection.Combine
         }
+        Region { item: trayOverflow.visible ? trayOverflow : null; intersection: Intersection.Combine }
         Region {
             item: bar.catcherEnabled ? clickCatcher : null
             intersection: Intersection.Combine
@@ -109,6 +119,7 @@ PanelWindow {
     Region {
         id: paintedBlur
         Region { regions: pillBlurRegions.instances }
+        PaintedBlurRegion { target: trayOverflow; painted: trayOverflow.visible; cornerRadius: trayOverflow.radius }
         PaintedBlurRegion { target: barStrip; painted: barStrip.color.a > 0; cornerRadius: barStrip.radius }
         PaintedBlurRegion { target: statusSurface.paintedBackground; painted: bar.combinedMode && statusSurface.phase !== 0; cornerRadius: statusSurface.paintedBackground.radius }
         PaintedBlurRegion { target: calendarSurface.paintedBackground; painted: calendarSurface.absorbed; cornerRadius: calendarSurface.paintedBackground.radius }
@@ -167,7 +178,7 @@ PanelWindow {
     }
     Connections {
         target: MagiServices.MenuController
-        function onActiveMenuChanged() { Qt.callLater(bar.syncPlacement) }
+        function onActiveMenuChanged() { if (MagiServices.MenuController.activeMenu) bar.closeTray(); Qt.callLater(bar.syncPlacement) }
     }
 
     // ---------------------------------------------------------
@@ -184,9 +195,46 @@ PanelWindow {
         "battery": batteryComponent,
         "notifications": notificationsComponent,
         "clipboard": clipboardComponent,
-        "controlcentre": controlCentreComponent
+        "controlcentre": controlCentreComponent,
+        "tray": trayComponent
     })
 
+    Component {
+        id: trayComponent
+        TrayUI.TrayGroup {
+            id: tray
+            readonly property bool barVisible: bar.trayOnOutput && items.length > 0
+            items: MagiServices.TrayService.items
+            maximumWidth: Math.max(cellWidth + 8, Math.min(240, (bar.width - 2 * MagiServices.Settings.data.bar.horizontalInset) * .18))
+            bottomUp: bar.bottomBar
+            visible: barVisible
+            onOverflowRequested: {
+                MagiServices.MenuController.close()
+                bar.trayKeyboardMode = false
+                bar.trayOpened = !bar.trayOpened
+            }
+            onBarVisibleChanged: if (!barVisible) bar.closeTray()
+            onOverflowItemsChanged: if (!overflowItems.length) bar.closeTray()
+            Component.onCompleted: bar.trayPresenter = tray
+            Component.onDestruction: { bar.closeTray(); if (bar.trayPresenter === tray) bar.trayPresenter = null }
+        }
+    }
+    TrayUI.TrayOverflow {
+        id: trayOverflow
+        z: 30
+        items: bar.trayPresenter ? (bar.trayKeyboardMode ? bar.trayPresenter.items : bar.trayPresenter.overflowItems) : []
+        opened: bar.trayOpened
+        bottomUp: bar.bottomBar
+        height: Math.min(implicitHeight, Math.max(0, bar.height - 48 - bar.geometry.edgeOffset - 8))
+        x: {
+            const opened = bar.trayOpened
+            if (!bar.trayPresenter) return 0
+            const p = bar.trayPresenter.mapToItem(bar.contentItem, 0, 0)
+            return Math.max(0, Math.min(bar.width - width, p.x))
+        }
+        y: bar.bottomBar ? bar.barY - height - 4 : bar.barY + 48 + 4
+        onCloseRequested: bar.closeTray()
+    }
     Component { id: notificationsComponent; UtilityPill { outputScreen: bar.outputScreen; mode: "notifications"; label: "Notifications" } }
     Component { id: clipboardComponent; UtilityPill { outputScreen: bar.outputScreen; mode: "clipboard"; label: "Clipboard" } }
 
@@ -275,6 +323,13 @@ PanelWindow {
             modulePhases: phases})
     }
     function open(view: string): bool {
+        if (view === "tray") {
+            if (!trayOnOutput || !trayPresenter || !trayPresenter.items.length) return false
+            MagiServices.MenuController.close()
+            trayKeyboardMode = true
+            trayOpened = true
+            return true
+        }
         if (view === "calendar") {
             const anchor = bar.clockAnchor || bar.dateAnchor
             if (!anchor) return false
@@ -287,10 +342,11 @@ PanelWindow {
         return true
     }
     function toggle(view: string): void {
+        if (view === "tray" && trayOpened) { closeTray(); return }
         if (ownsMenu && MagiServices.MenuController.activeMenu === view) MagiServices.MenuController.close()
         else open(view)
     }
-    function close(): void { MagiServices.MenuController.close() }
+    function close(): void { closeTray(); MagiServices.MenuController.close() }
 
     CalendarUI.CalendarSurface {
         id: calendarSurface

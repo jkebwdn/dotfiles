@@ -1,3 +1,15 @@
+## Phase 14A — System Tray natively accepted (2026-10-27)
+
+System Tray uses one shared Quickshell model with main-output-only Bar rendering,
+native application menus, application-owned icons and bounded overflow. The
+operator accepted Mullvad registration, close-window persistence/restoration,
+menus, keyboard controls, reload survival and Steam exit/restart. Root shell.qml
+uses UseQApplication for platform menus. Schema stays 21; new installations keep
+Tray Available, while the operator deliberately placed it in the right status
+region. Physical multi-monitor acceptance is deferred; synthetic hotplug/overflow
+coverage remains. Protected operator state is excluded from the phase commit.
+[Native results, exact inventory and limits](design/phase14a-system-tray.md).
+
 ## Launcher lifetime correction (2026-10-26)
 
 GIO application launches now receive independent standard streams so later logging

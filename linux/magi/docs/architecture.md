@@ -885,3 +885,14 @@ pipe may escape into a long-running GUI. GIO retains desktop-entry/terminal/D-Bu
 semantics and dispatch failure reporting. Hub closure, component destruction and
 shell reload must not affect an already dispatched app. See the
 [stream-lifetime regression](research/application-launcher-apis.md#long-running-application-stream-lifetime--2026-10-26).
+
+## Phase 14A — shared System Tray (natively accepted)
+
+One TrayService wraps Quickshell SystemTray and feeds per-output Bar presentation.
+Items remain reactive runtime QObjects. Main-output-only presentation, bounded
+overflow and native QsMenuAnchor menus use existing Bar surfaces and status-family
+styling. Architecture is integrated and natively accepted. Root shell.qml
+uses UseQApplication because native platform menus require QApplication startup.
+Schema 21 and default placement arrays remain unchanged; System Tray starts
+Available.
+[Native results and accepted limits](design/phase14a-system-tray.md).

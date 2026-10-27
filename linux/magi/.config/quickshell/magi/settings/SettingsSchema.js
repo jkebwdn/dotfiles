@@ -26,7 +26,7 @@ function controlDefinitions() {
         return d
     })
 }
-const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre"]
+const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre", "tray"]
 const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar", "albumArt", "hubSelector", "secondaryControl"]
 const controlAccentRoles = ["red", "peach", "yellow", "green", "teal", "blue", "lavender"]
 const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "green",

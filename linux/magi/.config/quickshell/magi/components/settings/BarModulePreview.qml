@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import "../bar" as Bar
+import "../tray" as Tray
 import "../calendar" as Calendar
 import "../controls" as Controls
 import "../../plugins/bar/workspaces" as Workspaces
@@ -16,9 +17,10 @@ Item {
         id: loader
         anchors.centerIn: parent
         sourceComponent: root.moduleId === "clock" || root.moduleId === "date" ? time
-        : root.moduleId === "workspaces" ? workspace : root.moduleId === "battery" ? battery
+        : root.moduleId === "tray" ? tray : root.moduleId === "workspaces" ? workspace : root.moduleId === "battery" ? battery
         : root.moduleId === "notifications" || root.moduleId === "clipboard" ? utility : status
     }
+    Component { id: tray; Tray.TrayGroup { interactive: false; nativeMenus: false; maximumWidth: 132; items: fixture.items; Tray.TrayPreviewModel { id: fixture } } }
     Component { id: time; Calendar.TimeDatePill { interactive: false; previewText: root.moduleId === "clock" ? "10:24" : "23/10/2026" } }
     Component { id: workspace; Workspaces.Workspaces { preview: true } }
     Component { id: utility; Bar.UtilityPill { interactive: false; mode: root.moduleId; label: root.moduleId } }

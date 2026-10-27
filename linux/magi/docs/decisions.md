@@ -1047,3 +1047,15 @@ pipes are safe for later application logging. Retain helper result/history/error
 handling; discard app console output through `/dev/null`. Avoid application-specific
 fixes and shell command strings. Tests must write after UI teardown, shell reload
 and shell exit, including a delayed write beyond two minutes.
+
+## 2026-10-26 — System Tray ownership rules (Phase 14A accepted)
+
+Application tray icons are application-owned; shell semantic icons use MAGI packs.
+Runtime tray items are not Settings state. One shared tray model feeds all Bar
+presentations. Application-provided menus remain native through Quickshell. No
+Mullvad-specific integration or direct VPN control is permitted. Tray and launcher
+are separate subsystems. Defaults are Available only and main-output only. The
+operator accepted native integration and deliberately placed Tray in the right status region. Native menus
+require root UseQApplication at process startup. Physical multi-output acceptance
+is deferred; there is no per-app persistence or application-specific workaround.
+[Review record](design/phase14a-system-tray.md).

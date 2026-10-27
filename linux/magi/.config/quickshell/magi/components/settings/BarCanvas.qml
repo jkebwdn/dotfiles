@@ -26,7 +26,8 @@ Item {
             battery: "Battery",
             notifications: "Notifications",
             clipboard: "Clipboard",
-            controlcentre: "Control Centre"
+            controlcentre: "Control Centre",
+            tray: "System Tray"
         })
     function entries() {
         return Schema.barIds.map(id => {
@@ -36,7 +37,7 @@ Item {
                 label: !editing && id === "workspaces" ? "Workspace pills" : labels[id],
                 lane: lane,
                 position: lane === "hidden" ? Schema.barIds.indexOf(id) : bar[lane].indexOf(id),
-                width: id === "workspaces" ? 90 : id === "date" ? 92 : id === "clock" || id === "battery" ? 62 : 36
+                width: id === "tray" ? 132 : id === "workspaces" ? 90 : id === "date" ? 92 : id === "clock" || id === "battery" ? 62 : 36
             };
         });
     }

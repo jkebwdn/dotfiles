@@ -21,11 +21,11 @@ Scope {
     Component.onCompleted: { syncOutputs(); Hyprland.refreshWorkspaces() }
     function barFor(screen) { return presentations.find(bar => bar.outputScreen === screen) || null }
     function openFromShortcut(view) {
-        const target = barFor(Services.SurfaceOrigin.shortcutTarget())
+        const target = view === "tray" ? mainBar : barFor(Services.SurfaceOrigin.shortcutTarget())
         return target ? target.open(view) : false
     }
     function toggleFromShortcut(view) {
-        const target = barFor(Services.SurfaceOrigin.shortcutTarget())
+        const target = view === "tray" ? mainBar : barFor(Services.SurfaceOrigin.shortcutTarget())
         if (target) target.toggle(view)
     }
     readonly property var mainBar: barFor(mainScreen)
@@ -50,6 +50,6 @@ Scope {
         function status(): string { return root.mainBar ? root.mainBar.status() : "{}" }
         function open(view: string): bool { return root.openFromShortcut(view) }
         function toggle(view: string): void { root.toggleFromShortcut(view) }
-        function close(): void { Services.MenuController.close() }
+        function close(): void { for (const bar of root.presentations) bar.closeTray(); Services.MenuController.close() }
     }
 }

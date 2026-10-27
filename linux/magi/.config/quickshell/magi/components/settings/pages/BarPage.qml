@@ -80,6 +80,7 @@ SettingsUI.SettingsPage {
             }
         }
     }
+    SettingsUI.SettingsHelp { text: "System Tray appears on the main-output Bar. All background applications remain available through overflow." }
     Label { font.bold: true; text: "Multi-monitor" }
     SettingsUI.SettingsToggle {
         objectName: "externalBars"

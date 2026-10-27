@@ -738,3 +738,19 @@ GIO now supplies independent null-device streams to spawned apps. DesktopEntry.e
 still omits terminal/field-code support. The isolated lifecycle fixture uses the
 installed `Quickshell.reload(true)` API to destroy/recreate the shell generation.
 [Versioned source and tests](research/application-launcher-apis.md#long-running-application-stream-lifetime--2026-10-26).
+
+## Phase 14A — installed 0.3.2 tray API audit
+
+Installed qmltypes confirm SystemTray.items, reactive SystemTrayItem properties,
+activate/secondaryActivate/scroll/display, QsMenuAnchor and QsMenuOpener. Tray icons
+are already Qt Image sources; QsMenuAnchor takes the actual menu handle and an
+originating item anchor. QsMenuOpener exposes children and is not needed for native
+menus. Guard repeated anchor open/close calls. Native compositor placement and
+handle destruction remain acceptance gates; session-bus ownership is inaccessible
+from this sandbox. [Evidence and synthetic coverage](design/phase14a-system-tray.md).
+
+Native correction (2026-10-27): `QsMenuAnchor.open()` requires the process to
+start with `//@ pragma UseQApplication` in root shell.qml. A QML reload cannot
+change QGuiApplication to QApplication. This was proven by the live error and
+isolated old/new-mode regression, then verified by operator native menu testing
+after restarting MAGI. Keep the root pragma in any full production startup.

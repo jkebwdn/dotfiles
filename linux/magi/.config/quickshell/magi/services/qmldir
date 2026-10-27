@@ -39,3 +39,6 @@ singleton ApplicationAppearanceService 1.0 ApplicationAppearanceService.qml
 singleton GlobalBlurService 1.0 GlobalBlurService.qml
 
 singleton LockAuxiliary 1.0 LockAuxiliary.qml
+
+TrayModel 1.0 TrayModel.qml
+singleton TrayService 1.0 TrayService.qml

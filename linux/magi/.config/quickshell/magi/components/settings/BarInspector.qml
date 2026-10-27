@@ -44,7 +44,8 @@ ColumnLayout {
                 battery: "Battery",
                 notifications: "Notifications",
                 clipboard: "Clipboard",
-                controlcentre: "Control Centre"
+                controlcentre: "Control Centre",
+                tray: "System Tray"
             })[root.instance] || ""
         SettingsRow {
             visible: ["wifi", "bluetooth"].includes(root.instance)
@@ -140,7 +141,7 @@ ColumnLayout {
         }
         SettingsHelp {
             visible: root.family === "statusPills"
-            text: "Connected: module accent. Unavailable: muted. Volume: warning when muted."
+            text: root.instance === "tray" ? "System Tray shares Status pill styling. Application icons retain their own artwork and colours." : "Connected: module accent. Unavailable: muted. Volume: warning when muted."
         }
     }
     SurfaceStyleSettings {

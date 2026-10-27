@@ -1,3 +1,5 @@
+//@ pragma UseQApplication
+// Native StatusNotifier menus require Qt widget-backed platform menus.
 import QtQuick
 import Quickshell
 
