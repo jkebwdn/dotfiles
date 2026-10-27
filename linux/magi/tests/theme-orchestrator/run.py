@@ -43,10 +43,10 @@ class Lifecycle(unittest.TestCase):
                  'gtk3': 'gtk-3.0/gtk.css', 'yazi': 'yazi/theme.toml',
                  'nvim': 'nvim/init.lua', 'starship': 'starship.toml', 'fastfetch': 'fastfetch/config.jsonc'}
         def baseline(package, relative):
-            # Operator enrollment modifies stowed sources. Fixtures must start
-            # from the committed pre-enrollment config, never live user state.
+            # Historical legacy-enrollment fixture: explicitly pre-bootstrap source.
+            # New bootstrap coverage separately reads current tracked templates.
             return subprocess.check_output(['git', 'show',
-                'HEAD:linux/t15g/'+package+'/.config/'+relative], cwd=ROOT)
+                '254d4ac9f4a34623397c12aeb96023bfe0c83190:linux/t15g/'+package+'/.config/'+relative], cwd=ROOT)
         for package, relative in paths.items():
             dst = self.store.config/relative
             dst.parent.mkdir(parents=True, exist_ok=True)
@@ -238,11 +238,18 @@ class Lifecycle(unittest.TestCase):
         with self.assertRaises(Conflict): Store(self.home, self.store.config, Path('relative-data'), self.home/'state')
         linked = self.home/'linked'; linked.symlink_to(repo, target_is_directory=True)
         with self.assertRaises(Conflict): Store(self.home, self.store.config, linked/'data', self.home/'state')
-        # An enrolled config may be stowed; only the narrow hook changes that file.
+        # Legacy enrollment must no longer mutate stowed source. Canonical hooks
+        # are read-only and can enroll without a source ownership journal.
         p = self.store.config/'ghostty/config.ghostty'; dest = repo/'ghostty'; p.rename(dest); p.symlink_to(dest)
+        with self.assertRaisesRegex(Conflict, 'Tracked source'):
+            self.request('plan', target='ghostty')
+        self.assertEqual(dest.read_bytes(), self.originals[p])
+        from theme_orchestrator.bootstrap import blocks
+        dest.write_text(dest.read_text() + '\n' + blocks(self.store, 'ghostty')[p] + '\n')
+        canonical = dest.read_bytes()
         self.enable('ghostty'); self.request('disable', target='ghostty')
         self.assertTrue(p.is_symlink())
-        self.assertEqual(dest.read_bytes(), self.originals[p])
+        self.assertEqual(dest.read_bytes(), canonical)
         self.assertEqual(set(repo.iterdir()), {repo/'.git', dest})
 
     def test_interrupted_enrollment_recovery(self):

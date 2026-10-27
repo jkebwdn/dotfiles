@@ -56,7 +56,7 @@ def suites():
                  'emoji/presentation', 'launcher/backend', 'launcher/presentation',
                  'launcher/lifecycle', 'notifications/run', 'notifications/presentation',
                  'wallpaper/backend', 'wallpaper/presentation', 'weather/backend',
-                 'theme-orchestrator/run', 'theme-orchestrator/qml',
+                 'theme-orchestrator/run', 'theme-orchestrator/bootstrap', 'theme-orchestrator/qml',
                  'theme-orchestrator/native', 'phase2e/keybindings'):
         py(path + '.py')
     for path in ('calendar/math', 'calendar/schema', 'clipboard/schema',

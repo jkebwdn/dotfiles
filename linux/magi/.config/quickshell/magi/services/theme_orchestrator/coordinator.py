@@ -5,7 +5,8 @@ from pathlib import Path
 from .adapters import ADAPTERS, DEFERRED
 from .adapters.base import command
 from .palette import resolve, fingerprint
-from .storage import Conflict, atomic, install, removal, text_hash
+from .storage import Conflict, atomic, install, removal, text_hash, sync_directory
+from . import bootstrap
 
 
 class Orchestrator:
@@ -28,7 +29,9 @@ class Orchestrator:
 
     def check_hooks(self, record):
         for item in record.get('edits', []):
-            if item.get('kind') == 'gsettings':
+            if item.get('kind') == 'bootstrap':
+                bootstrap.verify(item)
+            elif item.get('kind') == 'gsettings':
                 value = command(['gsettings', 'get', item['schema'], item['key']])
                 if value != item['after']:
                     raise Conflict('System appearance setting changed outside MAGI: ' + item['key'])
@@ -59,9 +62,15 @@ class Orchestrator:
         probe = self.ready(adapter)
         if self.store.load()['targets'].get(target, {}).get('edits'):
             raise Conflict('Target already has an enrollment; disable/remove it first')
-        edits = adapter.plan(self.store, options)
+        canonical = bootstrap.records(self.store, target)
+        edits = bootstrap.runtime_plan(self.store, target, canonical, command) if canonical else adapter.plan(self.store, options)
         for item in edits:
-            if item.get('kind') == 'gsettings':
+            if item.get('kind') not in ('bootstrap', 'gsettings', 'symlink') and bootstrap.inside_git(item['resolved']):
+                raise Conflict('Tracked source requires a canonical static bootstrap: ' + item['path'])
+        for item in edits:
+            if item.get('kind') == 'bootstrap':
+                item['diff'] = 'Use read-only canonical bootstrap: ' + item['path']
+            elif item.get('kind') == 'gsettings':
                 if item.get('dynamicScheme'):
                     item['after'] = repr('prefer-dark' if palette['dark'] else 'prefer-light')
                 item['diff'] = 'GSettings ' + item['schema'] + ' ' + item['key'] + ': ' + item['before'] + ' → ' + item['after']
@@ -89,7 +98,9 @@ class Orchestrator:
         if files:
             self.store.publish(target, files, digest)
         for item in record['edits']:
-            if item.get('kind') == 'gsettings':
+            if item.get('kind') == 'bootstrap':
+                bootstrap.verify(item)
+            elif item.get('kind') == 'gsettings':
                 if command(['gsettings', 'get', item['schema'], item['key']]) != item['before']:
                     raise Conflict('System appearance setting changed since preview')
                 command(['gsettings', 'set', item['schema'], item['key'], item['after']])
@@ -112,12 +123,20 @@ class Orchestrator:
         if target == 'ghostty' and state.get('applicationAppearance', {}).get('managed'):
             raise Conflict('Release application appearance before removing Ghostty integration')
         record = state['targets'].setdefault(target, {})
+        if any(i.get('kind') not in ('bootstrap', 'gsettings', 'symlink')
+               and bootstrap.inside_git(i['resolved']) for i in record.get('edits', [])):
+            raise Conflict('Migrate legacy checkout integration before disabling it')
         record['enabled'] = False  # Pause immediately even if cleanup conflicts.
         record['phase'] = 'removing'
         self.store.save(state)
         planned = []
+        canonical = any(i.get('kind') == 'bootstrap' for i in record.get('edits', []))
+        if canonical:
+            self.activation.snapshot(target)  # Refuse edited output before runtime cleanup.
         for item in record.get('edits', []):
-            if item.get('kind') == 'gsettings':
+            if item.get('kind') == 'bootstrap':
+                bootstrap.verify(item)
+            elif item.get('kind') == 'gsettings':
                 value = command(['gsettings', 'get', item['schema'], item['key']])
                 if value == item['before']:
                     continue
@@ -149,6 +168,11 @@ class Orchestrator:
                     raise Conflict('Configuration changed while removing integration')
                 if current != text:
                     atomic(Path(item['resolved']), text)
+        if canonical:
+            pointer = self.store.current(target)
+            if pointer.is_symlink():
+                pointer.unlink()
+                sync_directory(pointer.parent)
         record.update(installed=False, edits=[], phase='disabled', error='',
                       result='Disabled — loaded colours may remain; ' + ADAPTERS[target].boundary)
 
@@ -194,6 +218,13 @@ class Orchestrator:
         target = request.get('target', '')
         with self.store.locked():
             state = self.store.load()
+            if op == 'migrate-bootstrap':
+                if state.get('applicationAppearancePending'):
+                    raise Conflict('Recover pending appearance transaction first')
+                from .bootstrap_migration import migrate
+                return migrate(self, state)
+            if state.get('bootstrapMigration'):
+                raise Conflict('Complete pending bootstrap migration before theme operations')
             if op == 'application-appearance':
                 from application_appearance.coordinator import ApplicationAppearanceCoordinator
                 from application_appearance.executor import BlurExecutor

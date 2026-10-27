@@ -35,6 +35,17 @@ with tempfile.TemporaryDirectory(prefix='magi-settings-') as temp:
     assert link.is_symlink() and json.loads(p.read_text()) == {'schemaVersion':3}
     assert not list(p.parent.glob('.settings.json-*'))
     print('Atomic I/O: missing read, migration backup, write, conflict, symlink, temp cleanup PASS')
+    # Live Settings is deliberately absent from source. Saving into a checkout
+    # with the exact ignore contract must not add working-tree noise.
+    subprocess.run(['git','init','-q',str(p.parent)],check=True)
+    (p.parent/'.gitignore').write_text('/settings.json\n')
+    before_status=subprocess.check_output(['git','status','--short'],cwd=p.parent)
+    old=p.read_text();new='{"schemaVersion":22,"custom":42}'
+    assert module.perform({'op':'write','path':str(p),'expected':old,'text':new})['ok']
+    assert p.read_text()==new
+    assert subprocess.check_output(['git','status','--short'],cwd=p.parent)==before_status
+    subprocess.run(['git','check-ignore','-q','settings.json'],cwd=p.parent,check=True)
+    print('Ignored local Settings save leaves Git status unchanged PASS')
     fixtures = {
         'missing': None,
         'legacy': json.dumps({'palette': 'catppuccin', 'barLeftPlugins': ['date', 'clock'],
@@ -48,7 +59,7 @@ with tempfile.TemporaryDirectory(prefix='magi-settings-') as temp:
         config = stage/name
         shutil.copytree(source, config)
         configfile = config/'settings.json'
-        if initial is None: configfile.unlink()
+        if initial is None: configfile.unlink(missing_ok=True)
         else: configfile.write_text(initial)
         harness = Path(__file__).with_name('store.qml').read_text().replace('../../.config/quickshell/magi/', '')
         (config/'test.qml').write_text(harness)

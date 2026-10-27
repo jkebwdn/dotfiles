@@ -26,6 +26,11 @@ not current deployment directions. Research documents preserve investigations an
 rejected alternatives. Do not execute old helpers or restore old architecture from
 those records. Current canonical documents above take precedence.
 
+## Repository ownership maintenance
+
+Stable workstation bootstraps are separated from generated theme payloads; live
+Settings is untracked. See [bootstrap ownership and validation](review/bootstrap-ownership.md).
+
 ## Historical completion and research index
 
 The dated entries below are retained as evidence. TTY login is accepted; Greeter is

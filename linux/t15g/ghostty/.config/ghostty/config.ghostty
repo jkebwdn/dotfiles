@@ -33,3 +33,7 @@ palette = 13=#f5c2e7
 palette = 14=#94e2d5
 palette = 15=#a6adc8
 
+
+# MAGI BOOTSTRAP v1 BEGIN
+config-file = ?~/.local/share/magi/theme-orchestrator/ghostty/current/colors.conf
+# MAGI BOOTSTRAP v1 END

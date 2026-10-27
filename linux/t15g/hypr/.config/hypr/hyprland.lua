@@ -531,6 +531,24 @@ hl.bind(
 --     hl.dsp.exec_cmd("hyprshot -m window -c")
 -- )
 
+-- MAGI BOOTSTRAP v1 BEGIN
+do
+    local path = (os.getenv("XDG_DATA_HOME") or (os.getenv("HOME") .. "/.local/share")) .. "/magi/theme-orchestrator/hyprland/current/colors.lua"
+    local file = io.open(path, "r")
+    if file then file:close(); dofile(path) end
+end
+-- MAGI BOOTSTRAP v1 END
+
+-- hyprmon: managed monitor profile include
+do
+    local path = (os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")) .. "/hypr/hyprmon.lua"
+    local file = io.open(path, "r")
+    if file then
+        file:close()
+        require("hyprmon")
+    end
+end
+
 -- MAGI APPLICATION BACKGROUND BEGIN -- after operator rules/includes
 -- One immutable Ghostty-only rule. No opacity options or generated include.
 do

@@ -1,0 +1,120 @@
+# ---------------------------------------------------------
+# Yazi — T15G
+# Catppuccin Mocha / minimal UI
+# ---------------------------------------------------------
+
+[mgr]
+cwd = { fg = "#b4befe", bold = true }
+
+find_keyword = { fg = "#f9e2af", bold = true }
+find_position = { fg = "#f5c2e7", bg = "reset", bold = true }
+
+symlink_target = { fg = "#89dceb", italic = true }
+
+marker_copied = { fg = "#a6e3a1", bg = "#a6e3a1" }
+marker_cut = { fg = "#f38ba8", bg = "#f38ba8" }
+marker_marked = { fg = "#cba6f7", bg = "#cba6f7" }
+marker_selected = { fg = "#b4befe", bg = "#b4befe" }
+
+count_copied = { fg = "#1e1e2e", bg = "#a6e3a1" }
+count_cut = { fg = "#1e1e2e", bg = "#f38ba8" }
+count_selected = { fg = "#1e1e2e", bg = "#b4befe" }
+
+border_symbol = "│"
+border_style = { fg = "#313244" }
+
+
+# ---------------------------------------------------------
+# Pane indicators
+# No brackets / blocks around the current rows
+# ---------------------------------------------------------
+
+[indicator]
+parent = { fg = "#6c7086", bg = "reset" }
+current = { fg = "#b4befe", bg = "reset" }
+preview = { fg = "#45475a", bg = "reset" }
+
+padding = { open = "", close = "" }
+
+
+# ---------------------------------------------------------
+# Tabs
+# Flat text only — no pill backgrounds
+# ---------------------------------------------------------
+
+[tabs]
+active = { fg = "#b4befe", bg = "reset", bold = true }
+inactive = { fg = "#6c7086", bg = "reset" }
+
+sep_inner = { open = "", close = "" }
+sep_outer = { open = "", close = "" }
+
+
+# ---------------------------------------------------------
+# Modes
+# Keep the information, but stop making NOR a big block
+# ---------------------------------------------------------
+
+[mode]
+normal_main = { fg = "#b4befe", bg = "reset", bold = true }
+normal_alt = { fg = "#6c7086", bg = "reset" }
+
+select_main = { fg = "#cba6f7", bg = "reset", bold = true }
+select_alt = { fg = "#6c7086", bg = "reset" }
+
+unset_main = { fg = "#f38ba8", bg = "reset", bold = true }
+unset_alt = { fg = "#6c7086", bg = "reset" }
+
+
+# ---------------------------------------------------------
+# Status
+# Flat, quiet and transparent
+# ---------------------------------------------------------
+
+[status]
+overall = { fg = "#6c7086", bg = "reset" }
+
+sep_left = { open = "", close = "" }
+sep_right = { open = "", close = "" }
+
+perm_type = { fg = "#b4befe" }
+perm_read = { fg = "#a6e3a1" }
+perm_write = { fg = "#f9e2af" }
+perm_exec = { fg = "#f38ba8" }
+perm_sep = { fg = "#45475a" }
+
+progress_label = { fg = "#bac2de" }
+progress_normal = { fg = "#b4befe", bg = "reset" }
+progress_error = { fg = "#f38ba8", bg = "reset" }
+
+
+# ---------------------------------------------------------
+# File colours
+# ---------------------------------------------------------
+
+[filetype]
+rules = [
+    # Images
+    { mime = "image/*", fg = "#f5c2e7" },
+
+    # Audio / video
+    { mime = "{audio,video}/*", fg = "#cba6f7" },
+
+    # Archives
+    { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd}", fg = "#f9e2af" },
+
+    # Broken symlinks
+    { url = "*", is = "orphan", fg = "#f38ba8" },
+
+    # Executables
+    { url = "*", is = "exec", fg = "#a6e3a1" },
+
+    # Symlinks
+    { url = "*", is = "link", fg = "#89dceb" },
+
+    # Directories
+    { url = "*/", fg = "#89b4fa" },
+
+    # Normal files
+    { url = "*", fg = "#cdd6f4" }
+]

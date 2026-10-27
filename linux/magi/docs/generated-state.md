@@ -1,5 +1,9 @@
 # Generated state and retention
 
+Tracked bootstrap hooks are source; generated payloads and enrollment state are not.
+Live `.config/quickshell/magi/settings.json` is local, untracked and exact-ignored;
+`SettingsSchema.defaults()` remains authoritative. No sample duplicates the schema.
+
 Source, tests, fixtures and documentation belong in `~/dotfiles/linux/magi`.
 Generated output is **not source** and remains in its XDG location. This table uses
 `$DATA`, `$STATE`, `$CACHE` for the corresponding XDG homes (with normal home defaults).
@@ -26,7 +30,7 @@ Theme Orchestrator renders Ghostty, GTK, Zen, Yazi, Neovim, btop and Hyprland bo
 artifacts. Application Appearance composes policy through that publisher rather than
 writing competing output. Global blur manages a separate compositor property.
 Zen workspace colour still requires a manual application step; GTK/Thunar background
-transparency is deferred. Yazi's operator-owned flavour symlink is preserved.
+transparency is deferred. Yazi's runtime-owned flavour symlink remains local and exact-ignored.
 
 Lock presentation comes from shared source under `native/lock/qml`, not a second
 generated authorizer. Bar layout is Settings-owned; active Tray items and Super+T
@@ -47,3 +51,32 @@ create sibling temporary files and remove them after replacement/failure. Future
 development helpers should use one `mktemp` root, never permanent home archives.
 Keep current, last-known-good, pending and modified/conflicted generations; directory
 age alone never proves a generation disposable.
+
+
+## Workstation bootstrap ownership
+
+| Application | Tracked source / bootstrap | Generated payload / runtime owner | Journal and absent-state behavior |
+| --- | --- | --- | --- |
+| Bash/Starship | .bashrc guarded STARSHIP_CONFIG export | Theme Orchestrator Starship current/starship.toml | Read-only hook record; absent file keeps normal Starship config |
+| Ghostty | config.ghostty optional include | Theme Orchestrator current/colors.conf, background fragments | Read-only hook; absent include preserves static preferences |
+| GTK | gtk.css layout; settings.ini fallback | Generated named MAGI theme and runtime GSettings selection | Journal owns runtime theme link/GSettings rollback; absent state uses static theme |
+| Hyprland | hyprland.lua guarded border hook | Theme Orchestrator current/colors.lua | Read-only hook; absent file preserves baseline borders |
+| Neovim | init.lua guarded runtimepath/colourscheme | Theme Orchestrator current/colors/magi.lua | Read-only hook; absent file leaves plugin/default colourscheme |
+| Yazi | init.lua semantic fallback, theme.toml selector, magi-template.toml source colours | Generated current/flavor and yatline.lua; exact-ignored magi.yazi link | Journal owns runtime link only; absent flavour uses Yazi defaults and Lua fallback |
+| HyprMon | conditional Hyprland loader; saved profile JSON | Local exact-ignored hyprmon.lua, owned by HyprMon | No MAGI journal ownership; absent file does not break compositor startup |
+
+Normal enable/switch/disable never rewrites these canonical source hooks. Disable
+restores runtime selection/removes owned links and detaches validated current pointers;
+generations remain for recovery. Loaded application colours can remain until its normal
+reload/restart boundary. Ghostty disable still requires release of managed application
+appearance first; the background-only transparency architecture is unchanged.
+
+An explicit `migrate-bootstrap` operation under the existing journal lock converts old
+source-edit ownership. It validates old ownership and all planned writes, saves resumable
+intent, replaces only integration blocks, then replaces writable journal entries with
+read-only records. Pending intent temporarily contains source replacement text in the
+private state journal; it is removed after success, never logged. Intervening edits or
+path changes stop migration. Startup/apply refuse a pending migration, never guess.
+Legacy non-bootstrap adapters can still enroll non-Git external configurations, but
+writes into a checkout (including Stow-resolved paths) are rejected. See
+[ownership audit and acceptance](review/bootstrap-ownership.md).

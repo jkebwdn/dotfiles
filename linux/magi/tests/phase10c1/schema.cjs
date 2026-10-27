@@ -3,7 +3,8 @@ const root=process.argv[2],c=vm.createContext({});
 for(const file of ['SettingsSchema.js','SettingsMigrations.js']) vm.runInContext(fs.readFileSync(root+'/settings/'+file,'utf8'),c);
 const plain=x=>JSON.parse(JSON.stringify(x));
 assert.deepEqual(plain(c.defaults().powerIdle),{lockAfter:300,displayOffAfter:600,suspendAfter:0});
-const before=JSON.parse(fs.readFileSync(root+'/settings.json'));before.schemaVersion=14;before.unknown={future:'kept'};
+// Synthetic historical input; never read operator preferences.
+const before=plain(c.defaults());before.schemaVersion=14;delete before.powerIdle;before.unknown={future:'kept'};
 const after=c.analyze(c.migrate(before));assert.equal(after.effective.schemaVersion,c.defaults().schemaVersion);
 before.appearance = before.appearance || {};
 before.appearance.hubSelectionRole ??= before.appearance.hubToggleRole ?? "accent";

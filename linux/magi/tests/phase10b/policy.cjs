@@ -25,7 +25,10 @@ for(const screen of [e,h,{width:320,height:240},{width:80,height:60}])
   assert.equal(g.y,bottom?screen.height-48-g.edgeOffset:g.edgeOffset);
  }
 vm.runInContext(fs.readFileSync(root+'/settings/SettingsSchema.js','utf8')+'\n'+fs.readFileSync(root+'/settings/SettingsMigrations.js','utf8'),ctx);
-const before=JSON.parse(fs.readFileSync(root+'/settings.json','utf8'));before.schemaVersion=13;
+// Synthetic historical input; never read operator preferences.
+const before=JSON.parse(JSON.stringify(ctx.defaults()));before.schemaVersion=13;
+for(const key of ['externalDisplays','position','horizontalInset','edgeOffset'])delete before.bar[key];
+before.extra={preserved:['fixture']};
 const after=ctx.analyze(ctx.migrate(before));assert.equal(after.effective.schemaVersion,ctx.defaults().schemaVersion);
 const defaults=ctx.defaults();assert.equal(defaults.bar.externalDisplays,false);assert.equal(defaults.bar.position,'top');
 assert.equal(defaults.bar.horizontalInset,0);assert.equal(defaults.bar.edgeOffset,0);

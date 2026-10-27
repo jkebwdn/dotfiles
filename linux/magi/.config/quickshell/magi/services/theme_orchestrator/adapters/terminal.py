@@ -82,7 +82,9 @@ class Yazi(Adapter):
                                           'destination': str(store.current(self.id) / 'flavor')}]
 
     def render(self, p, store):
-        _, template = self.split(original(store, self.id, self.path(store)))
+        from ..bootstrap import records
+        source = (store.config/'yazi/magi-template.toml').read_text() if records(store, self.id) else original(store, self.id, self.path(store))
+        _, template = self.split(source)
         text = recolor(template, p)
         tomllib.loads(text)
         colors = ','.join(k + '=' + json.dumps(v) for k, v in p['roles'].items())

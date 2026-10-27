@@ -35,7 +35,7 @@ per output. External service state is not serialized into Settings.
 | `components/bar/BarFleet`, `OutputPolicy`, `SurfaceOrigin` | Enabled outputs, main output, invocation-time routing | Bar preferences only; screen objects are runtime | Quickshell screens / Hyprland focus |
 | `MenuController`, shared/anchored surface components | Selection, back stack, geometry and dismissal | Runtime only | Bar click / IPC / CC navigation |
 | `Hub`, `SettingsWindowState` | One utility host, retained Settings session and preview | Runtime selection/drafts | Hub shortcuts / utility links |
-| `Settings`, `settings/SettingsStore`, schema/migrations and disk helper | Canonical preference validation, draft/save/conflict handling | Local settings.json, backups/locks | Explicit edits; defaults and migrations on read |
+| `Settings`, `settings/SettingsStore`, schema/migrations and disk helper | Canonical preference validation, draft/save/conflict handling | Local untracked settings.json, backups/locks | Explicit edits; defaults and migrations on read |
 | `Network` | Wi-Fi discovery, connection, password flow | NetworkManager owns connection credentials | Quickshell NetworkManager API; menus consume state |
 | `Bluetooth`, `bluetooth_actions.py`, `bluetooth_backend.py` | Discovery and one pair/trust/connect coordinator, authentication prompts | BlueZ pairing/trust; no PIN persistence | QS device model + application-scoped Agent1 |
 | `Audio`, `AudioModel` | Default sink/source and grouped playback volume | No MAGI route or stream persistence | PipeWire nodes; WirePlumber remains routing policy owner |
@@ -101,3 +101,9 @@ No whole-file resurrection from legacy worktrees was needed. No runtime QML dele
 is proposed: in particular TrayOverflow and the anchored fallback have live consumers.
 See [technical debt](../technical-debt.md), [security](../security.md), and
 [generated state](../generated-state.md) for the remaining boundaries and risks.
+
+
+Theme integrations now recognize exact canonical static bootstrap blocks as read-only
+source. Their journals own generated state, runtime links and selection rollback, not
+removal of tracked hooks. The explicit legacy-journal conversion and per-application
+fallbacks are described in [generated state](../generated-state.md).

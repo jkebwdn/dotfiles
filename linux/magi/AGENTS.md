@@ -89,3 +89,18 @@ Store render specifications and annotations in docs/design/.
   use one guarded helper for the final fetch/divergence/normal-push sequence. Never
   force push. Remove safe temporary builds/helpers after jobs complete; retain only
   evidence needed for unresolved review. See docs/phase-closeout.md.
+
+## Static bootstrap versus generated payload
+
+- Tracked dotfiles own canonical stable bootstrap hooks and static user configuration.
+  Normal theme enable/apply/switch/disable must leave their bytes unchanged.
+- Generated palettes, active pointers, runtime links, activation receipts and rollback
+  journals belong in XDG runtime/data/state stores. Never commit them to clean status.
+- New adapters should use committed optional/guarded bootstrap hooks. Enrollment must
+  recognize the exact canonical contract without requiring prior journal ownership;
+  foreign/modified hooks remain conflicts. Legacy mutation of Git/Stow source is forbidden.
+- Converting existing writable enrollment journals is an explicit, preflighted migration,
+  not a startup side effect. Preserve unrelated source and retain resumable intent until
+  ownership transfer completes. Never let disable remove committed hooks.
+- Live settings.json is exact-ignored and untracked; Schema.defaults() is authoritative.
+  Do not recreate a tracked live settings file or use index-hiding flags.

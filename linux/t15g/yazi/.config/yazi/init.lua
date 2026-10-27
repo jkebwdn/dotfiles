@@ -1,3 +1,11 @@
+-- MAGI BOOTSTRAP v1 BEGIN
+local magi = {accent="#b4befe", background="#1e1e2e", muted="#9399b2", text="#cdd6f4", green="#a6e3a1", red="#f38ba8", teal="#89dceb"}
+do
+    local path = (os.getenv("XDG_DATA_HOME") or (os.getenv("HOME") .. "/.local/share")) .. "/magi/theme-orchestrator/yazi/current/yatline.lua"
+    local file = io.open(path, "r")
+    if file then file:close(); magi = dofile(path) end
+end
+-- MAGI BOOTSTRAP v1 END
 require("yatline"):setup({
 	show_background = false,
 
@@ -26,30 +34,30 @@ require("yatline"):setup({
 
 	-- Catppuccin Mocha / transparent-looking sections
 	style_a = {
-		fg = "#b4befe",
+		fg = magi.accent,
 		bg_mode = {
-			normal = "#1e1e2e",
-			select = "#1e1e2e",
-			un_set = "#1e1e2e",
+			normal = magi.background,
+			select = magi.background,
+			un_set = magi.background,
 		},
 	},
 
 	style_b = {
-		fg = "#9399b2",
-		bg = "#1e1e2e",
+		fg = magi.muted,
+		bg = magi.background,
 	},
 
 	style_c = {
-		fg = "#cdd6f4",
-		bg = "#1e1e2e",
+		fg = magi.text,
+		bg = magi.background,
 	},
 
 	-- Permission colours
-	permissions_t_fg = "#a6e3a1",
-	permissions_r_fg = "#a6e3a1",
-	permissions_w_fg = "#f38ba8",
-	permissions_x_fg = "#89dceb",
-	permissions_s_fg = "#cdd6f4",
+	permissions_t_fg = magi.green,
+	permissions_r_fg = magi.green,
+	permissions_w_fg = magi.red,
+	permissions_x_fg = magi.teal,
+	permissions_s_fg = magi.text,
 
 	status_line = {
 		left = {

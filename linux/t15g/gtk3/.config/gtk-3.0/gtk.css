@@ -1,36 +1,39 @@
+/* MAGI BOOTSTRAP v1 BEGIN */
+/* Theme colours come from the selected GTK theme; layout remains local. */
+/* MAGI BOOTSTRAP v1 END */
 /* --------------------------------------------------
    Thunar - T15G
    Catppuccin Mocha / Lavender polish
    -------------------------------------------------- */
 
 /* GTK selection colours */
-@define-color theme_selected_bg_color #313244;
-@define-color theme_selected_fg_color #cdd6f4;
+/* MAGI named theme owns: @define-color theme_selected_bg_color #313244; */
+/* MAGI named theme owns: @define-color theme_selected_fg_color #cdd6f4; */
 
 /* Main file view */
 .thunar .standard-view .view {
-    background-color: #1e1e2e;
-    color: #cdd6f4;
+/* MAGI named theme owns: background-color: #1e1e2e; */
+/* MAGI named theme owns: color: #cdd6f4; */
 }
 
 /* Sidebar */
 .thunar treeview.view {
-    background-color: #181825;
-    color: #cdd6f4;
+/* MAGI named theme owns: background-color: #181825; */
+/* MAGI named theme owns: color: #cdd6f4; */
 }
 
 /* Selected sidebar / list rows */
 .thunar treeview.view:selected {
-    background-color: #45475a;
-    color: #cdd6f4;
+/* MAGI named theme owns: background-color: #45475a; */
+/* MAGI named theme owns: color: #cdd6f4; */
 }
 
 /* Hovered rows */
 .thunar treeview.view:hover {
-    background-color: #313244;
+/* MAGI named theme owns: background-color: #313244; */
 }
 
 /* Separators */
 .thunar separator {
-    background-color: #313244;
+/* MAGI named theme owns: background-color: #313244; */
 }

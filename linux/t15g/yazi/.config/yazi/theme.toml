@@ -4,24 +4,24 @@
 # ---------------------------------------------------------
 
 [mgr]
-cwd = { fg = "#b4befe", bold = true }
+# MAGI flavour owns: cwd = { fg = "#b4befe", bold = true }
 
-find_keyword = { fg = "#f9e2af", bold = true }
-find_position = { fg = "#f5c2e7", bg = "reset", bold = true }
+# MAGI flavour owns: find_keyword = { fg = "#f9e2af", bold = true }
+# MAGI flavour owns: find_position = { fg = "#f5c2e7", bg = "reset", bold = true }
 
-symlink_target = { fg = "#89dceb", italic = true }
+# MAGI flavour owns: symlink_target = { fg = "#89dceb", italic = true }
 
-marker_copied = { fg = "#a6e3a1", bg = "#a6e3a1" }
-marker_cut = { fg = "#f38ba8", bg = "#f38ba8" }
-marker_marked = { fg = "#cba6f7", bg = "#cba6f7" }
-marker_selected = { fg = "#b4befe", bg = "#b4befe" }
+# MAGI flavour owns: marker_copied = { fg = "#a6e3a1", bg = "#a6e3a1" }
+# MAGI flavour owns: marker_cut = { fg = "#f38ba8", bg = "#f38ba8" }
+# MAGI flavour owns: marker_marked = { fg = "#cba6f7", bg = "#cba6f7" }
+# MAGI flavour owns: marker_selected = { fg = "#b4befe", bg = "#b4befe" }
 
-count_copied = { fg = "#1e1e2e", bg = "#a6e3a1" }
-count_cut = { fg = "#1e1e2e", bg = "#f38ba8" }
-count_selected = { fg = "#1e1e2e", bg = "#b4befe" }
+# MAGI flavour owns: count_copied = { fg = "#1e1e2e", bg = "#a6e3a1" }
+# MAGI flavour owns: count_cut = { fg = "#1e1e2e", bg = "#f38ba8" }
+# MAGI flavour owns: count_selected = { fg = "#1e1e2e", bg = "#b4befe" }
 
 border_symbol = "│"
-border_style = { fg = "#313244" }
+# MAGI flavour owns: border_style = { fg = "#313244" }
 
 
 # ---------------------------------------------------------
@@ -30,9 +30,9 @@ border_style = { fg = "#313244" }
 # ---------------------------------------------------------
 
 [indicator]
-parent = { fg = "#6c7086", bg = "reset" }
-current = { fg = "#b4befe", bg = "reset" }
-preview = { fg = "#45475a", bg = "reset" }
+# MAGI flavour owns: parent = { fg = "#6c7086", bg = "reset" }
+# MAGI flavour owns: current = { fg = "#b4befe", bg = "reset" }
+# MAGI flavour owns: preview = { fg = "#45475a", bg = "reset" }
 
 padding = { open = "", close = "" }
 
@@ -43,8 +43,8 @@ padding = { open = "", close = "" }
 # ---------------------------------------------------------
 
 [tabs]
-active = { fg = "#b4befe", bg = "reset", bold = true }
-inactive = { fg = "#6c7086", bg = "reset" }
+# MAGI flavour owns: active = { fg = "#b4befe", bg = "reset", bold = true }
+# MAGI flavour owns: inactive = { fg = "#6c7086", bg = "reset" }
 
 sep_inner = { open = "", close = "" }
 sep_outer = { open = "", close = "" }
@@ -56,14 +56,14 @@ sep_outer = { open = "", close = "" }
 # ---------------------------------------------------------
 
 [mode]
-normal_main = { fg = "#b4befe", bg = "reset", bold = true }
-normal_alt = { fg = "#6c7086", bg = "reset" }
+# MAGI flavour owns: normal_main = { fg = "#b4befe", bg = "reset", bold = true }
+# MAGI flavour owns: normal_alt = { fg = "#6c7086", bg = "reset" }
 
-select_main = { fg = "#cba6f7", bg = "reset", bold = true }
-select_alt = { fg = "#6c7086", bg = "reset" }
+# MAGI flavour owns: select_main = { fg = "#cba6f7", bg = "reset", bold = true }
+# MAGI flavour owns: select_alt = { fg = "#6c7086", bg = "reset" }
 
-unset_main = { fg = "#f38ba8", bg = "reset", bold = true }
-unset_alt = { fg = "#6c7086", bg = "reset" }
+# MAGI flavour owns: unset_main = { fg = "#f38ba8", bg = "reset", bold = true }
+# MAGI flavour owns: unset_alt = { fg = "#6c7086", bg = "reset" }
 
 
 # ---------------------------------------------------------
@@ -72,49 +72,55 @@ unset_alt = { fg = "#6c7086", bg = "reset" }
 # ---------------------------------------------------------
 
 [status]
-overall = { fg = "#6c7086", bg = "reset" }
+# MAGI flavour owns: overall = { fg = "#6c7086", bg = "reset" }
 
 sep_left = { open = "", close = "" }
 sep_right = { open = "", close = "" }
 
-perm_type = { fg = "#b4befe" }
-perm_read = { fg = "#a6e3a1" }
-perm_write = { fg = "#f9e2af" }
-perm_exec = { fg = "#f38ba8" }
-perm_sep = { fg = "#45475a" }
+# MAGI flavour owns: perm_type = { fg = "#b4befe" }
+# MAGI flavour owns: perm_read = { fg = "#a6e3a1" }
+# MAGI flavour owns: perm_write = { fg = "#f9e2af" }
+# MAGI flavour owns: perm_exec = { fg = "#f38ba8" }
+# MAGI flavour owns: perm_sep = { fg = "#45475a" }
 
-progress_label = { fg = "#bac2de" }
-progress_normal = { fg = "#b4befe", bg = "reset" }
-progress_error = { fg = "#f38ba8", bg = "reset" }
+# MAGI flavour owns: progress_label = { fg = "#bac2de" }
+# MAGI flavour owns: progress_normal = { fg = "#b4befe", bg = "reset" }
+# MAGI flavour owns: progress_error = { fg = "#f38ba8", bg = "reset" }
 
 
 # ---------------------------------------------------------
 # File colours
 # ---------------------------------------------------------
 
-[filetype]
-rules = [
-    # Images
-    { mime = "image/*", fg = "#f5c2e7" },
+# MAGI filetype rules in flavour
+# MAGI flavour owns: rules = [
+# MAGI flavour owns:     # Images
+# MAGI flavour owns:     { mime = "image/*", fg = "#f5c2e7" },
+# MAGI flavour owns:
+# MAGI flavour owns:     # Audio / video
+# MAGI flavour owns:     { mime = "{audio,video}/*", fg = "#cba6f7" },
+# MAGI flavour owns:
+# MAGI flavour owns:     # Archives
+# MAGI flavour owns:     { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd}", fg = "#f9e2af" },
+# MAGI flavour owns:
+# MAGI flavour owns:     # Broken symlinks
+# MAGI flavour owns:     { url = "*", is = "orphan", fg = "#f38ba8" },
+# MAGI flavour owns:
+# MAGI flavour owns:     # Executables
+# MAGI flavour owns:     { url = "*", is = "exec", fg = "#a6e3a1" },
+# MAGI flavour owns:
+# MAGI flavour owns:     # Symlinks
+# MAGI flavour owns:     { url = "*", is = "link", fg = "#89dceb" },
+# MAGI flavour owns:
+# MAGI flavour owns:     # Directories
+# MAGI flavour owns:     { url = "*/", fg = "#89b4fa" },
+# MAGI flavour owns:
+# MAGI flavour owns:     # Normal files
+# MAGI flavour owns:     { url = "*", fg = "#cdd6f4" }
+# MAGI flavour owns: ]
 
-    # Audio / video
-    { mime = "{audio,video}/*", fg = "#cba6f7" },
-
-    # Archives
-    { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd}", fg = "#f9e2af" },
-
-    # Broken symlinks
-    { url = "*", is = "orphan", fg = "#f38ba8" },
-
-    # Executables
-    { url = "*", is = "exec", fg = "#a6e3a1" },
-
-    # Symlinks
-    { url = "*", is = "link", fg = "#89dceb" },
-
-    # Directories
-    { url = "*/", fg = "#89b4fa" },
-
-    # Normal files
-    { url = "*", fg = "#cdd6f4" }
-]
+# MAGI BOOTSTRAP v1 BEGIN
+[flavor]
+dark = "magi"
+light = "magi"
+# MAGI BOOTSTRAP v1 END
