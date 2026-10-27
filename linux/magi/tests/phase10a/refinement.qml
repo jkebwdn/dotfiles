@@ -92,7 +92,7 @@ ShellRoot {
                 grabImage(settings) // warm the offscreen scene before the saved preview
                 snap(settings,"theme-wide")
                 window.contentItem.Window.window.width=600; wait(100)
-                compare(pair.count,18)
+                compare(pair.count,Theme.ThemeRegistry.themes.length)
                 verify(pair.width <= settings.width-206)
                 snap(settings,"theme-narrow")
                 window.contentItem.Window.window.width=1000; wait(80)

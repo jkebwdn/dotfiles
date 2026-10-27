@@ -131,7 +131,7 @@ ShellRoot {
    }
    let p=page("Appearance"),advanced=item("advancedShellStyling")
    const themes=item("themeGallery"),packs=item("iconPackGallery")
-   compare(themes.count,18);tryVerify(()=>packs.count>=2)
+   compare(themes.count,Theme.ThemeRegistry.themes.length);tryVerify(()=>packs.count>=2)
    for(let i=0;i<themes.count;++i){
     const card=themes.itemAt(i),definition=Theme.ThemeRegistry.themes[i]
     compare(card.text,definition.label);compare(card.modelData.roles,definition.roles)

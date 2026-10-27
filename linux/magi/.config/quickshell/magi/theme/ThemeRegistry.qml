@@ -5,6 +5,8 @@ import Quickshell.Io
 
 Scope {
     id: root
+    // Family labels, light/dark metadata and semantic colours share one registry
+    // with the application-theme renderer; variants need no runtime branches.
     readonly property var registry: readRegistry(source.text())
     readonly property var themes: registry.themes
     readonly property var ids: themes.map(theme => theme.id)

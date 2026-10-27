@@ -14,6 +14,7 @@ base=importlib.util.module_from_spec(spec);spec.loader.exec_module(base)
 BASELINE='e20a3342f8c37d6359f27bfe5c6a17448bcad147'
 registry=json.loads(REGISTRY.read_text())
 new=registry['themes'][10:]
+ADDITIONS=['gruvbox-dark','gruvbox-light','kanagawa-wave','kanagawa-dragon','dracula','one-dark','one-light','ayu-mirage']
 def luminance(c):
     values=[int(c[i:i+2],16)/255 for i in (1,3,5)]
     return sum(w*(v/12.92 if v<=.04045 else ((v+.055)/1.055)**2.4) for v,w in zip(values,[.2126,.7152,.0722]))
@@ -21,7 +22,10 @@ def contrast(a,b):
     lo,hi=sorted([luminance(a),luminance(b)]);return (hi+.05)/(lo+.05)
 class Palettes(unittest.TestCase):
     def test_registry_and_backwards_compatibility(self):
-        themes=registry['themes'];self.assertEqual(len(themes),18)
+        themes=registry['themes'];self.assertEqual(len(themes),26)
+        self.assertEqual([t["id"] for t in themes[18:]],ADDITIONS)
+        accepted=json.loads(subprocess.check_output(["git","show","ed085a6:linux/magi/.config/quickshell/magi/theme/palettes/registry.json"],cwd=ROOT))
+        self.assertEqual(themes[:18],accepted["themes"])
         self.assertEqual(len({t['id'] for t in themes}),len(themes))
         old=json.loads(subprocess.check_output(['git','show',BASELINE+':linux/magi/.config/quickshell/magi/theme/palettes/registry.json'],cwd=ROOT))
         old_code=subprocess.check_output(['git','show',BASELINE+':linux/magi/.config/quickshell/magi/services/theme_orchestrator/palette.py'],cwd=ROOT,text=True)
@@ -35,9 +39,16 @@ class Palettes(unittest.TestCase):
             self.assertEqual(set(t['roles']),set(ROLES))
             self.assertTrue(all(re.fullmatch('#[0-9a-f]{6}',v) for v in t['roles'].values()))
             self.assertEqual(resolve(t['id']),resolve(t['id']))
-        for t in themes[:4]: self.assertEqual(resolve(t['id'])['ansi'][5],t['ansiMagenta'])
+        for t in themes:
+            if 'ansiMagenta' in t:self.assertEqual(resolve(t['id'])['ansi'][5],t['ansiMagenta'])
+        self.assertEqual(resolve('dracula')['ansi'][4:7],['#bd93f9','#ff79c6','#8be9fd'])
+        self.assertEqual([t['family'] for t in themes[18:]],['Gruvbox','Gruvbox','Kanagawa','Kanagawa','Dracula','One','One','Ayu'])
+        self.assertEqual([t['dark'] for t in themes[18:]],[True,False,True,True,True,True,False,True])
+        # Upstream base anchors: catches accidental inversion/variant substitutions.
+        self.assertEqual([t['roles']['background'] for t in themes[18:]],
+                         ['#282828','#fbf1c7','#1f1f28','#181616','#282a36','#282c34','#fafafa','#1f2430'])
         self.assertEqual([t['id'] for t in themes if t['family']=='Nord'],['nord'])
-        self.assertEqual([t['id'] for t in new if not t['dark']],['rose-pine-dawn','tokyo-night-day'])
+        self.assertEqual([t['id'] for t in new if not t['dark']],['rose-pine-dawn','tokyo-night-day','gruvbox-light','one-light'])
         self.assertEqual(next(t for t in new if t['id']=='rose-pine-dawn')['roles']['text'],'#575279')
         self.assertEqual(next(t for t in new if t['id']=='tokyo-night-day')['roles']['background'],'#e1e2e7')
     def test_contrast(self):
@@ -50,6 +61,10 @@ class Palettes(unittest.TestCase):
                 self.assertGreaterEqual(value,4.5,(t['id'],role,value))
                 pairs[role+'/surface']=contrast(r[role],r['surface'])
             pairs['muted/surface']=contrast(r['muted'],r['surface'])
+            for role in ['text','muted','accent','danger']:
+                pairs[role+'/background']=contrast(r[role],r['background'])
+            pairs['selection/background']=contrast(r['accent'],r['background'])
+            pairs['selectedText/selection']=contrast(r['onAccent'],r['accent'])
             report.append(dict(id=t['id'],ratios={k:round(v,2) for k,v in pairs.items()},below45=[k for k,v in pairs.items() if v<4.5]))
         output=Path(os.environ.get('MAGI_PHASE12B_OUTPUT','/tmp/magi12b/output'));output.mkdir(parents=True,exist_ok=True)
         (output/'contrast.json').write_text(json.dumps(report,indent=2)+'\n')

@@ -13,4 +13,4 @@ for(const theme of registry.themes){
  assert.deepStrictEqual(evaluate('analyze(input).effective'),expected);
 }
 ctx.input=fixture;assert.equal(evaluate('analyze(migrate(input)).effective.appearance.theme'),fixture.appearance.theme);
-console.log('Phase12B schema16: all 18 IDs, unchanged migration and unrelated values PASS');
+console.log('Palette schema: all '+registry.themes.length+' IDs, unchanged migration and unrelated values PASS');

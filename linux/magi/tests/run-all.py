@@ -64,7 +64,7 @@ def suites():
                  'notifications/policy', 'wallpaper/schema'):
         js(path + '.cjs')
     py('runtime-visual/run.py')
-    for fixture in ('profile.qml', 'appearance.qml', 'colours.qml', 'feedback.qml',
+    for fixture in ('palettes.qml', 'profile.qml', 'appearance.qml', 'colours.qml', 'feedback.qml',
                     'polish.qml', 'secondary.qml', 'typography.qml', 'weather.qml',
                     '../phase12b/surfaces.qml', '../phase12d/runtime.qml'):
         py('runtime-visual/run.py', fixture)

@@ -40,7 +40,10 @@ class Bootstrap(unittest.TestCase):
         self.assertFalse(self.store.journal.exists())
         for target in sorted(bootstrap.TARGETS):self.f.enable(target)
         self.assertEqual(before,self.sources())
-        for theme in (f.FOREST,f.MOCHA):
+        from theme_orchestrator.palette import REGISTRY
+        import json
+        additions=[t['id'] for t in json.loads(REGISTRY.read_text())['themes'][18:]]
+        for theme in [f.FOREST,*additions,f.MOCHA]:
             self.f.theme=theme;rows=self.f.request('apply')['targets']
             self.assertFalse([r for r in rows if r['error']]);self.assertEqual(before,self.sources())
         for target in sorted(bootstrap.TARGETS):

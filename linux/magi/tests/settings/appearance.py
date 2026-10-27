@@ -4,8 +4,8 @@ import json, os, re, shutil, subprocess, tempfile
 root=Path(__file__).resolve().parents[2]
 source=root/'.config/quickshell/magi'
 registry=json.loads((source/'theme/palettes/registry.json').read_text())
-assert len(registry['themes'])==18
-assert len(set(t['id'] for t in registry['themes']))==18
+assert len(registry['themes'])==26
+assert len(set(t['id'] for t in registry['themes']))==len(registry['themes'])
 roles=set(registry['themes'][0]['roles'])
 def light(c):
     x=[int(c[i:i+2],16)/255 for i in (1,3,5)]
@@ -18,7 +18,7 @@ for t in registry['themes']:
     assert contrast(t['roles']['text'],t['roles']['background'])>=4.5
     for color in ['accent','blue','lavender','green','yellow','peach','red','teal']:
         assert contrast(t['roles'][color],t['roles']['on'+color.title()])>=4.5
-print('Palette data: 18 complete definitions; primary text and colored-control ink contrast PASS')
+print('Palette data: 26 complete definitions; primary text and colored-control ink contrast PASS')
 with tempfile.TemporaryDirectory(prefix='magi-theme-') as tmp:
     stage=Path(tmp);config=stage/'config';shutil.copytree(source,config)
     (config/'settings.json').write_text('{"schemaVersion":1}')

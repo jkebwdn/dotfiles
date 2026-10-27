@@ -71,10 +71,18 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
     runtime=stage/'runtime';runtime.mkdir(mode=0o700)
     env=dict(os.environ,QT_QPA_PLATFORM='offscreen',QT_QUICK_BACKEND='software',XDG_RUNTIME_DIR=str(runtime),XDG_STATE_HOME=str(stage/'state'), HOME=str(stage), XDG_CONFIG_HOME=str(stage/'xdg-config'), XDG_DATA_HOME=str(stage/'data'), XDG_CACHE_HOME=str(stage/'cache'))
     env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None)
-    result=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=180 if len(sys.argv) > 1 and sys.argv[1] in ("appearance.qml", "typography.qml") else 60)
+    result=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=180 if len(sys.argv) > 1 and sys.argv[1] in ("appearance.qml", "typography.qml", "palettes.qml") else 60)
     output=result.stdout+result.stderr
     checked='\n'.join(line for line in output.splitlines() if 'Failed to start IPC server' not in line
                       and 'This plugin does not support setting window masks' not in line
                       and 'WARN: Unable to find hyprland socket. Cannot connect to hyprland.' not in line)
     print(checked)
-    assert result.returncode==0 and 'PASS' in output and ({'profile.qml':'Profile responsive pinned navigation PASS','../phase12d/runtime.qml':'Phase12D runtime composition PASS','../phase12b/surfaces.qml':'Phase12B surfaces PASS','typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
+    assert result.returncode==0 and 'PASS' in output and ({'palettes.qml':'Palette expansion preview PASS','profile.qml':'Profile responsive pinned navigation PASS','../phase12d/runtime.qml':'Phase12D runtime composition PASS','../phase12b/surfaces.qml':'Phase12B surfaces PASS','typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
+
+    if len(sys.argv) > 1 and sys.argv[1] == 'palettes.qml' and env.get('MAGI_PALETTE_PREVIEWS'):
+        captures = Path(env['MAGI_PALETTE_PREVIEWS'])
+        themes = json.loads((config/'theme/palettes/registry.json').read_text())['themes'][18:]
+        for theme in themes:
+            payload = (captures/(theme['id']+'.png')).read_bytes()
+            assert payload.startswith(b'\x89PNG\r\n\x1a\n') and len(payload) > 1000, theme['id']
+        print('Verified eight production-component PNG captures:', captures)

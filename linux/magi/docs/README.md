@@ -8,6 +8,7 @@ Bluetooth pairing support, the native lock/designer, and the evolved Bar/Hub/Set
 ## Current canonical documents
 
 - [Current architecture and service ownership](architecture/current-system.md)
+- [Canonical theme library and mapping](themes.md)
 - [Keybindings and IPC](keybindings.md)
 - [Testing](testing.md) and [current environment limits](known-warnings.md)
 - [Generated state and retention](generated-state.md)

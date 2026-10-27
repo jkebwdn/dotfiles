@@ -37,6 +37,7 @@ with tempfile.TemporaryDirectory(prefix='magi-orchestrator-qml-') as tmp:
     copier = bin_dir/'wl-copy'
     copier.write_text("#!/usr/bin/python3\nimport json,os,sys\nassert sys.argv[1:] == ['--type','text/plain;charset=utf-8']\nwith open(os.environ['MAGI_COPY_CAPTURE'], 'a') as out: out.write(json.dumps(sys.stdin.read())+'\\n')\n")
     copier.chmod(0o700)
+    theme_count = len(json.loads((config/'theme/palettes/registry.json').read_text())['themes'])
     for harness in ('integration.qml', '../settings/window.qml', 'pointer.qml'):
 
         source = Path(__file__).parent/harness
@@ -47,7 +48,10 @@ with tempfile.TemporaryDirectory(prefix='magi-orchestrator-qml-') as tmp:
                    XDG_RUNTIME_DIR=str(runtime), QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software')
         env.pop('WAYLAND_DISPLAY', None); env.pop('DISPLAY', None)
         result = subprocess.run(['quickshell', '-p', str(config/'test.qml'), '--no-color'],
-                                text=True, capture_output=True, env=env, timeout=25)
+                                text=True, capture_output=True, env=env,
+                                # Pointer coverage publishes/copies every palette through the
+                                # real 450ms debounce and process bridge; budget per entry.
+                                timeout=12 + 2 * theme_count if harness == 'pointer.qml' else 25)
         output = result.stdout + result.stderr
         print(output)
         checked = '\n'.join(line for line in output.splitlines() if 'ERROR quickshell.ipc: Failed to start IPC server' not in line

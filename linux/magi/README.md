@@ -110,7 +110,9 @@ silent IP or system geolocation.
 
 ### Theme Orchestrator
 
-MAGI is the canonical semantic palette source. Application themes can opt in to
+The [theme library](docs/themes.md) includes Catppuccin, Everforest, Rosé Pine, Nord,
+Tokyo Night, Gruvbox Dark/Light, Kanagawa Wave/Dragon, Dracula, One Dark/Light and
+Ayu Mirage. MAGI is the canonical semantic palette source. Application themes can opt in to
 follow it: Hyprland, Ghostty, GTK/Thunar, Zen Browser, Yazi/yatline, Neovim, Starship,
 Fastfetch through terminal ANSI, and btop. Generated output lives separately from
 human/Stow-owned dotfiles. Tracked static bootstrap hooks consume optional generated
