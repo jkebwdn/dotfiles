@@ -10,14 +10,14 @@ personal preferences to review before reusing them.
 ### Arch Linux — ThinkPad T15g
 
 The [Linux setup](linux/README.md) uses **Arch Linux + Hyprland + MAGI**.
-[MAGI](linux/magi/README.md) is my Quickshell shell layer: a bar/status surface,
-Control Centre, five-mode utility Hub, Settings, Calendar and Wallpaper management. Its README covers
-features, dependencies, deployment and future work.
+[MAGI](linux/magi/README.md) is my Quickshell shell: Bar, Control Centre, utility
+Hub, Settings, Audio routing and per-application volume, Bluetooth pairing, System
+Tray, Wallpaper Manager and a native secure lock. Its shared multi-monitor
+architecture routes surfaces to the appropriate output.
 
-Hypridle and Hyprlock handle idle management and locking; Hyprpaper supplies the
-wallpaper. MAGI Apps is the application launcher; Hyprmon manages monitor
-profiles. The terminal workflow uses Ghostty, Neovim, Yazi, Thunar and btop; Theme Orchestrator coordinates supported application palettes.
-Rofi and MFTrunk were retired during MAGI Phase 2E.1.
+Hypridle handles idle policy; Hyprpaper supplies wallpapers and Hyprmon manages
+monitor profiles. The terminal workflow uses Ghostty, Neovim, Yazi, Thunar and btop;
+Theme Orchestrator coordinates supported application palettes and appearance.
 
 ### macOS — Mac mini
 
@@ -79,9 +79,24 @@ for dependencies and session integration. Use the same Stow workflow from
 unlink a package before retiring it.
 
 On Arch, start from a working Hyprland session and provision the backends listed
-in MAGI's README. Hyprland starts MAGI at login. Hypridle and Hyprlock configuration
-is currently machine-local and must be restored separately; those files are not
-tracked here. Keep separate backups of local preferences and application data.
+in MAGI's README. Hyprland starts MAGI at login. Native lock deployment and the managed Hypridle
+service require their own setup; Stow alone does not install them. Keep separate
+backups of local preferences and application data.
 
 Detailed MAGI architecture and migration evidence live in its
 [documentation index](linux/magi/docs/README.md).
+
+## Source and runtime ownership
+
+`~/dotfiles` is the persistent source of truth. Tracked files contain static
+configuration and stable bootstrap hooks; generated themes, activation journals
+and runtime state live outside Git in XDG stores. Normal theme switching leaves
+tracked configuration unchanged. Live MAGI `settings.json` is operator-local,
+untracked and exact-ignored; schema **22** defaults come from the Settings code.
+See [generated-state ownership](linux/magi/docs/generated-state.md).
+
+Development worktrees are ephemeral: after accepted work is merged/pushed and
+synchronized, verify they contain no unique work, remove them and prune stale
+registrations. Do not retain permanent `magi-phase*` checkouts. Stage exact paths
+or hunks in MAGI workflows—never `git add .` or `git add -A`. See the
+[closeout checklist](linux/magi/docs/phase-closeout.md).

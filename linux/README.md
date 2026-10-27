@@ -3,12 +3,15 @@
 The active desktop is **Arch Linux + Hyprland + Quickshell/MAGI**.
 [MAGI](magi/README.md) supplies the Bar, Control Centre, Wi-Fi/Bluetooth surfaces,
 first-party Notifications and Clipboard, the five-mode Hub, Calendar and Settings.
-MAGI Apps is the launcher; Wallpaper management is embedded in Settings.
+MAGI Apps is the launcher; Wallpaper management is embedded in Settings. Audio
+provides output/input routing and grouped application volumes; Bluetooth supports
+pairing, and System Tray hosts application icons and native menus.
 
 Ghostty, Neovim, Yazi, Thunar, Starship, Fastfetch and btop form the surrounding
 application stack. Theme Orchestrator lets supported applications opt in to MAGI's
-semantic palette. Hyprpaper supplies wallpapers; Hypridle and Hyprlock handle idle
-and locking, with Hyprmon for monitor profiles and hyprpolkitagent for authentication.
+semantic palette and application appearance. Hyprpaper supplies wallpapers; managed
+Hypridle handles idle policy and the native MAGI lock owns locking, with Hyprmon for
+monitor profiles and hyprpolkitagent for authentication prompts.
 
 ## Layout and Stow
 
@@ -33,17 +36,21 @@ MAGI's ignore rules exclude development files from Stow. Its
 [installation guide](magi/README.md#installation-and-development) lists runtime
 backends. Hyprland starts MAGI at login; do not run a second notification daemon.
 
-Keep local MAGI preferences/backups, managed assets, Theme Orchestrator enrollment
-and generated output separately backed up. Application integration hooks and the
-operator's Hypridle/Hyprlock configuration may be local rather than committed.
-Do not overwrite those files when restoring this checkout.
+Tracked application configuration contains stable bootstrap hooks; generated theme
+payloads and journals live outside Git. Theme switching must not rewrite tracked
+source. Live MAGI settings.json is untracked/exact-ignored, with schema 22 defaults
+in code. Keep local preferences, backups, managed assets and generated state
+separately backed up. Native lock and managed Hypridle need separate provisioning;
+Stow alone does not install those services. See [ownership](magi/docs/generated-state.md).
 
 ## Shortcuts and status
 
-The [MAGI shortcut table](magi/README.md#shortcuts) records all eight current routes,
-including Super+Space for Apps and Super+S for Settings. Hub stays open across normal
+The [MAGI shortcut table](magi/README.md#shortcuts) records the ten current routes,
+including Super+A for Audio, Super+T for the non-persisting inline Bar Tray toggle,
+Super+Space for Apps and Super+S for Settings. Hub stays open across normal
 application clicks and closes explicitly with Escape after child interactions.
 
-Phase 2E is natively accepted. Rofi and MFTrunk are retired, not required fallbacks.
 Older shell references in research/checkpoints are historical; the current shell
-is MAGI. See [accepted documentation](magi/docs/README.md) for ownership and limitations.
+is MAGI. See [current documentation](magi/docs/README.md) for ownership and limitations
+and the [closeout policy](magi/docs/phase-closeout.md) for ephemeral worktrees and
+exact-path staging. `~/dotfiles` remains the persistent source checkout.
