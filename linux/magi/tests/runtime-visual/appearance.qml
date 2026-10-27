@@ -23,6 +23,18 @@ ShellRoot {
             page.contentY = Math.max(0, Math.min(page.contentHeight - page.height, item.mapToItem(page.contentItem, 0, 0).y - 40))
             wait(30)
         }
+        function setting(page, key) {
+            const families = {primaryIconSize:"controls", primaryContainerSize:"controls", secondaryIconSize:"actions", avatarSize:"profile", mediaArtworkSize:"media", profileGreetingSize:"profile", profileWeatherSize:"profile", profileThirdLineSize:"profile", profileControlsGap:"profile", controlsSlidersGap:"controls", slidersActionsGap:"sliders", actionsMediaGap:"actions"}
+            page.mode = "Appearance"
+            page.selection.select(families[key])
+            wait(0)
+            const slider = findChild(page, "visualSetting-" + key)
+            verify(slider !== null, "Current inspector owns " + key)
+            for (let item = slider.parent; item && item !== page; item = item.parent)
+                if (item.expanded !== undefined) item.expanded = true
+            wait(0)
+            return slider
+        }
         function tiles() { return collect(bar.contentItem, i => i.accentRole !== undefined && i.primaryTriggered !== undefined) }
         function icon(tile) { return collect(tile, i => i.resolved !== undefined && i.size !== undefined)[0] }
         function body() {
@@ -65,7 +77,7 @@ ShellRoot {
             // Real Settings interactions write the canonical preferences and update
             // the actual retained runtime objects, not a duplicate preview widget.
             for (const key of ["primaryIconSize", "primaryContainerSize", "secondaryIconSize", "avatarSize", "mediaArtworkSize"]) {
-                const slider = findChild(page, "visualSetting-" + key)
+                const slider = setting(page, key)
                 reveal(page, slider)
                 const before = Services.Settings.data.appearance.visual[key]
                 settings.contentItem.Window.window.requestActivate()
@@ -82,7 +94,7 @@ ShellRoot {
             const fontDefaults = [16,12,11]
             const gapKeys = ["profileControlsGap","controlsSlidersGap","slidersActionsGap","actionsMediaGap"]
             for (const key of fontKeys.concat(gapKeys)) {
-                const slider = findChild(page,"visualSetting-"+key)
+                const slider = setting(page, key)
                 reveal(page,slider); mouseClick(slider); slider.forceActiveFocus(); keyClick(Qt.Key_Right)
                 wait(40); verify(bar.previewPinned)
                 const value = Services.Settings.data.appearance.visual[key]
@@ -212,9 +224,7 @@ ShellRoot {
             Services.SettingsWindowState.toggleControlCentrePreview(); tryCompare(cc,"phase",3)
             const closePreview = findChild(settings.contentItem,"settingsCloseControlCentrePreview")
             for (const name of ["Appearance","Profile","Bar","Date & time","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Security","Control Centre"]) {
-                const sub = ({Bar:"bar", "Control Centre":"controlcentre"})[name]
-                    if (sub) { Services.SettingsWindowState.page = "Appearance"; wait(30) }
-                    const nav = findChild(settings.contentItem,sub ? "appearanceNav-" + sub : "settingsNav-"+name)
+                const nav = findChild(settings.contentItem,"settingsNav-"+name)
                 nav.forceActiveFocus(); wait(30); mouseClick(nav); wait(80)
                 compare(Services.SettingsWindowState.page,name)
                 compare(cc.phase,3); verify(bar.previewPinned && closePreview.visible)
@@ -241,7 +251,7 @@ ShellRoot {
             }
             Services.SettingsWindowState.open(); wait(30)
             verify(bar.previewPinned,"reopening Settings keeps session preview")
-            Services.Settings.setValue("controlCentre","sections",{profile:true,quickControls:true,sliders:true,actions:true,media:false})
+            verify(Services.Settings.setControlSection("media",false))
             wait(500); verify(!findChild(body(),"runtimeAlbumArt").visible)
             Services.Settings.setControlSection("media",true); wait(500)
             verify(findChild(body(),"runtimeAlbumArt").visible)

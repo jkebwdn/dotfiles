@@ -28,7 +28,9 @@ GridLayout {
         restoreMode: Binding.RestoreBindingOrValue
     }
     Layout.fillWidth: true
-    columns: width < 420 ? 1 : 2
+    // The parent owns available width. Our provisional implicit width changes
+    // when the trailing field constraints switch, so it cannot choose columns.
+    columns: (!parent || parent.width < 420) ? 1 : 2
     columnSpacing: SettingsMetrics.sectionGap
     rowSpacing: SettingsMetrics.compactGap
 }

@@ -1,4 +1,5 @@
 import QtQuick
+import QtTest
 import Quickshell
 import "../../.config/quickshell/magi/services" as Services
 import "../../.config/quickshell/magi/modules" as Modules
@@ -12,55 +13,62 @@ ShellRoot {
     property string selected: modes[Math.min(modeIndex, modes.length - 1)]
     function check(ok, label) { if (!ok) throw new Error(selected + " step " + step + ": " + label) }
     Modules.ModuleRegistry { id: registry; barWindow: null; sharedSurface: surface }
-    Bar.SharedStatusSurface {
+    FloatingWindow {
+      id: host; visible: true; implicitWidth: 1000; implicitHeight: 800
+      Bar.SharedStatusSurface {
         id: surface
         combined: true
         modules: Object.values(registry.modules)
         requestedModule: registry.modules[Services.MenuController.activeMenu] || null
         statusContent: Component { Item { implicitWidth: 120; implicitHeight: 28 } }
     }
+    }
     UI.HubWindow { id: window; readyToOpen: surface.phase === 0 }
     Timer { id: finish; interval: 200; onTriggered: Qt.quit() }
-    Timer {
-        id: sequence
-        interval: 550; running: true; repeat: true
-        onTriggered: {
-            if (!Services.Settings.ready || !Services.Emoji.entries.length) return
-            switch (test.step++) {
-            case 0:
+    TestCase {
+        name: "HubCatalogue"
+        when: Services.Settings.ready && Services.Emoji.entries.length > 0 && host.visible
+        function test_routes() {
+            try {
+                Services.SurfaceOrigin.mainScreen = host.screen
+                Services.SurfaceOrigin.enabledScreens = [host.screen]
                 Services.Settings.resetSection("controlCentre")
                 for (const mode of test.modes) Services.Settings.addEntry("actions", mode)
                 Services.Settings.setValue("controlCentre", "columns", 3)
                 Services.Settings.setValue("controlCentre", "actionColumns", 2)
-                Services.MenuController.open("controlcentre")
-                break
-            case 1:
-                test.check(surface.phase === 3, "CC fully open")
-                test.check(registry.modules.controlcentre.actions.length === 11, "optional entries render")
-                test.check(registry.modules.controlcentre.columns === 3 && registry.modules.controlcentre.actionColumns === 2, "independent columns")
-                Modules.ControlCatalog.primary(test.selected)
-                test.check(Services.Hub.opened && Services.Hub.mode === test.selected, "catalogue selects Hub mode")
-                test.check(!Services.MenuController.activeMenu && !window.visible, "destination waits for actual collapse")
-                break
-            case 2:
-                test.check(surface.phase === 0 && window.visible, "handoff completed")
-                test.check((test.selected === "notifications" || test.selected === "settings") ? window.content.currentContent.activeFocus
-                    : window.content.currentContent.searchField.activeFocus, "destination focus")
-                test.check(!Services.Notifications.serverActivated && !Services.Clipboard.activated, "no backend ownership change")
-                Services.Hub.close()
-                Services.MenuController.open("controlcentre")
-                break
-            case 3:
-                test.check(surface.phase === 3 && !window.visible, "CC reopens after Hub")
-                if (++test.modeIndex < test.modes.length) { test.step = 1; break }
+                for (const mode of test.modes) {
+                    Services.MenuController.open("controlcentre")
+                    tryCompare(surface, "phase", 3)
+                    compare(registry.modules.controlcentre.actions.length, 11)
+                    compare(registry.modules.controlcentre.columns, 3)
+                    compare(registry.modules.controlcentre.actionColumns, 2)
+                    Modules.ControlCatalog.primary(mode)
+                    verify(Services.Hub.opened)
+                    compare(Services.Hub.mode, mode)
+                    verify(!Services.MenuController.activeMenu && !window.visible,
+                           "Destination waits for actual collapse")
+                    tryCompare(surface, "phase", 0)
+                    tryCompare(window, "visible", true)
+                    tryVerify(function() {
+                        const content = window.content.currentContent
+                        return content && ((mode === "notifications" || mode === "settings")
+                            ? content.activeFocus : content.searchField.activeFocus)
+                    })
+                    verify(!Services.Notifications.serverActivated && !Services.Clipboard.activated)
+                    Services.Hub.close()
+                    Services.MenuController.open("controlcentre")
+                    tryCompare(surface, "phase", 3)
+                    tryCompare(window, "visible", false)
+                }
                 Services.Hub.suppressed = true
                 Modules.ControlCatalog.primary("notifications")
-                test.check(!Services.Hub.opened && Services.MenuController.activeMenu === "controlcentre", "unavailable destination does not dismiss CC")
+                verify(!Services.Hub.opened && Services.MenuController.activeMenu === "controlcentre")
                 Services.Hub.suppressed = false
                 Services.MenuController.close()
                 console.log("RESULT: 0 failures; Hub catalogue: optional entries, five routes, real collapse gate, focus, reopen, unavailable handling")
-                sequence.stop(); finish.start()
-            }
+            } catch (error) {
+                console.error("FAIL", error, error.stack)
+            } finally { finish.start() }
         }
     }
 }

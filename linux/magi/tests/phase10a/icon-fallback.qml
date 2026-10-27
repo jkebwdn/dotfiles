@@ -102,7 +102,9 @@ ShellRoot {
                 bar.contentItem.Window.window.height=48;wait(80)
                 snap(bar.contentItem,'bar-battery-high')
                 bar.contentItem.Window.window.height=800;wait(80)
-                Services.MenuController.open('controlcentre')
+                Services.SurfaceOrigin.mainScreen = bar.outputScreen
+                Services.SurfaceOrigin.enabledScreens = [bar.outputScreen]
+                Services.MenuController.open('controlcentre', bar.outputScreen)
                 tryCompare(bar.expandablePillRegistry.controlcentre,'phase',3)
                 wait(150)
                 const ccIcons=collect(bar.contentItem).filter(i=>i.visible)

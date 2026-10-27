@@ -9,7 +9,7 @@ for(const key of Object.keys(old.controlCentre.sections)){const d=structuredClon
 for(const group of ['controls','actions','sliders']){const d=structuredClone(old);d.controlCentre[group]=[];fixtures.push(d)}
 const custom=structuredClone(old);custom.controlCentre.controls.reverse();custom.controlCentre.controls[0].enabled=false;custom.controlCentre.controls[1].accent='red';custom.controlCentre.actions.reverse();custom.media.enabled=false;custom.appearance.roundness.roles.action=.65;fixtures.push(custom);
 if(process.argv[2])fixtures.push(JSON.parse(fs.readFileSync(process.argv[2])));
-for(const input of fixtures){const migrated=plain(c.migrate(input));assert.deepEqual(migrated,require('../settings/expected18.cjs')(input));assert.deepEqual(plain(c.migrate(migrated)),migrated);assert.deepEqual(plain(c.analyze(migrated).errors),[]);
+for(const input of fixtures){const migrated=plain(c.migrate(input));assert.deepEqual(migrated,require('../settings/expected-current.cjs')(input));assert.deepEqual(plain(c.migrate(migrated)),migrated);assert.deepEqual(plain(c.analyze(migrated).errors),[]);
  const effective=plain(c.analyze(migrated).effective);for(const group of ['controls','actions','sliders'])assert.deepEqual(effective.controlCentre[group],plain(c.analyze(input).effective.controlCentre[group]));
  assert(!('sections' in migrated.controlCentre));assert(!('enabled' in (migrated.media||{})));
  for(const section of Object.keys(input).filter(k=>!['schemaVersion','controlCentre','appearance','media'].includes(k)))assert.deepEqual(migrated[section],input[section]);

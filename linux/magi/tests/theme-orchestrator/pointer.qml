@@ -54,7 +54,7 @@ ShellRoot {
             verify(checkbox.enabled, "available target is interactive")
             mouseClick(checkbox)
         }
-        function idle() { tryCompare(Services.ThemeOrchestrator, "busy", false); wait(50) }
+        function idle() { tryVerify(() => !Services.ThemeOrchestrator.busy && !Services.ThemeOrchestrator.applyPending) }
         function confirm(id) {
             tryVerify(() => Services.ThemeOrchestrator.plan !== null)
             const button = control("confirm", id)
@@ -67,6 +67,7 @@ ShellRoot {
             idle()
         }
         function test_enrollment() {
+            try {
             const summary = findChild(page,"applicationThemesSummary")
             verify(!summary.expanded, "application targets start collapsed")
             const supported = Services.ThemeOrchestrator.targets.filter(t => t.id !== "magi" && t.available)
@@ -105,14 +106,14 @@ ShellRoot {
             verify(!control("follow", "ghostty").checked, "enrollment failure rolls checkbox back")
             verify(row("ghostty").error.indexOf("preview changed") >= 0, "useful enrollment error")
             verify(findChild(page, "themeStatus-ghostty").visible, "errors are never collapsed")
-            compare(findChild(page, "themeSummary-ghostty").text, "Error")
+            compare(findChild(page, "themeSummary-ghostty").text, "Apply failed")
 
             clickFollow("ghostty"); confirm("ghostty")
             verify(row("ghostty").enabled && row("ghostty").installed)
             verify(control("follow", "ghostty").checked)
-            verify(findChild(page, "themeStatus-ghostty").text.indexOf("Reload required") >= 0)
+            compare(row("ghostty").statusLabel, "Applies next launch")
             verify(!findChild(page, "themeStatus-ghostty").visible, "healthy verbose detail is collapsed")
-            compare(findChild(page, "themeSummary-ghostty").text, "Reload")
+            compare(findChild(page, "themeSummary-ghostty").text, "Applies next launch")
             const details = findChild(page, "themeDetails-ghostty")
             reveal(details); mouseClick(details)
             verify(findChild(page, "themeStatus-ghostty").visible, "full reload instructions remain available")
@@ -152,7 +153,7 @@ ShellRoot {
                         for (const target of Services.ThemeOrchestrator.targets) {
                             const summary = findChild(page, "themeSummary-" + target.id)
                             compare(summary.lineCount, 1, "collapsed status remains one line")
-                            verify(summary.text.length <= 13, "collapsed status uses concise labels")
+                            verify(["Live", "Applied", "Reload requested", "Reload required", "Reloaded", "Applies next launch", "Restart required", "Unsupported", "Apply failed", "Pending", "Generation failed", "Publication failed", "Deferred", "Unavailable", "Setup", "Review", "Paused", "Not following", "Working…", "Manual step", "Next launch", "New shell", "Reload", "Relaunch", "Restart", "Details"].includes(summary.text), "collapsed status uses the accepted finite status vocabulary")
                             const follow = control("follow", target.id)
                             const details = findChild(page, "themeDetails-" + target.id)
                             const point = details.mapToItem(page, details.width, 0)
@@ -175,6 +176,7 @@ ShellRoot {
             verify(!control("follow", "ghostty").checked, "conflict still stops future writes")
             verify(row("ghostty").error.length > 0, "changed hook is protected and reported")
             console.log("Theme pointer PASS: opt-in, visible confirmation, cancel, disable, unavailable, failure, Zen and changed-hook protection")
+            } catch (error) { console.error("FAIL:", error, error.stack) }
         }
         function cleanupTestCase() { finish.start() }
     }

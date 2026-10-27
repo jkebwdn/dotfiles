@@ -33,7 +33,7 @@ for(const key of ['externalDisplays','position','horizontalInset','edgeOffset'])
  assert.equal(after.effective.bar[key],before.bar[key]===undefined?defaults.bar[key]:before.bar[key]);
 before.appearance = before.appearance || {};
 before.appearance.hubSelectionRole ??= before.appearance.hubToggleRole ?? "accent";
-for(const key of Object.keys(before)) if(key!=='schemaVersion') assert.equal(JSON.stringify(after.document[key]),JSON.stringify(require("../settings/expected18.cjs")(before)[key]),key);
+for(const key of Object.keys(before)) if(key!=='schemaVersion') assert.equal(JSON.stringify(after.document[key]),JSON.stringify(require("../settings/expected-current.cjs")(before)[key]),key);
 for(const [key,value] of [['position','left'],['horizontalInset',65],['edgeOffset',33],['externalDisplays','yes']]) {
  const input=ctx.defaults();input.bar[key]=value;assert(ctx.analyze(input).errors.length>0,key);
 }

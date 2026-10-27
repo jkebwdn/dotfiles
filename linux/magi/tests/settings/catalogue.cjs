@@ -10,7 +10,7 @@ assert.deepEqual(definitions.map(d => d.id), ['wifi','bluetooth','power-saver','
 for (const mode of ['apps','notifications','emoji','clipboard']) {
     const d = definitions.find(d => d.id === mode);
     assert.equal(d.route, 'hub'); assert.equal(d.mode, mode);
-    assert.deepEqual(d.presentations, ['action']);
+    assert.deepEqual(d.presentations, ['action', 'tile']);
 }
 const original = plain(ctx.defaults());
 assert.deepEqual(original.controlCentre.actions.map(d => d.module), ['vpn','dnd','caffeine','lock','hibernate','shutdown']);

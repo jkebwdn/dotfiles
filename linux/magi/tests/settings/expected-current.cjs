@@ -1,5 +1,12 @@
-module.exports = function expected18(input) {
- const doc=structuredClone(input);doc.schemaVersion=22;doc.lockScreen={layoutVersion:1,preset:"centered",elements:{},effects:{credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false}};
+// Independent expected migration shape; only the current version comes from defaults.
+module.exports = function expectedCurrent(input) {
+ const fs=require('fs'),vm=require('vm'),path=require('path');
+ const schema=vm.createContext({});
+ vm.runInContext(fs.readFileSync(path.resolve(__dirname,'../../.config/quickshell/magi/settings/SettingsSchema.js'),'utf8'),schema);
+ const doc=structuredClone(input);doc.schemaVersion=schema.defaults().schemaVersion;
+ doc.lockScreen ??= {layoutVersion:1,preset:"centered",elements:{}};
+ doc.lockScreen.effects ??= {credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false};
+ if(doc.bar)delete doc.bar.trayVisibility;
  doc.controlCentre ??= {}; const cc=doc.controlCentre, flags=cc.sections || {};
  const ids=["profile","controls","sliders","actions","media"], map={controls:"quickControls"};
  cc.layout ??= ids.filter(id=>flags[map[id]||id]!==false && !(id==="media" && doc.media?.enabled===false));

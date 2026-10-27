@@ -15,7 +15,7 @@ ShellRoot {
         interval: 150; repeat: true; running: true
         onTriggered: {
             if (++test.ticks > 100) { console.error("FAIL: timed out " + test.step); Qt.quit(); return }
-            if (!Services.Settings.ready || Services.ThemeOrchestrator.busy) return
+            if (!Services.Settings.ready || Services.ThemeOrchestrator.busy || Services.ThemeOrchestrator.applyPending) return
             test.check(!Services.ThemeOrchestrator.error, Services.ThemeOrchestrator.error)
             switch (test.step++) {
             case 0: Services.ThemeOrchestrator.activate(); break
@@ -40,7 +40,7 @@ ShellRoot {
             case 4:
                 test.check(Palette.Theme.background.toString() === "#272e33", "MAGI live Everforest")
                 test.check(test.ghost().publishedPalette === "everforest-dark-hard", "selector drives generation")
-                test.check(test.ghost().result.indexOf("Reload required") === 0, "honest reload status")
+                test.check(test.ghost().statusLabel === "Applies next launch", "honest reload status")
                 Services.Settings.setTheme("catppuccin-mocha")
                 break
             case 5:

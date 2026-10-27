@@ -17,6 +17,9 @@ with tempfile.TemporaryDirectory(prefix='magi-orchestrator-qml-') as tmp:
     text = path.read_text().replace('PanelWindow {', 'FloatingWindow {\n    implicitWidth: 1280; implicitHeight: 900')
     path.write_text('\n'.join(line for line in text.splitlines() if not any(token in line for token in
         ['anchors { top: true;', 'exclusionMode:', 'WlrLayershell.'])))
+    # No running host application may receive a fixture activation request.
+    executor = config/'services/theme_activation/executor.py'
+    executor.write_text(executor.read_text().replace('        found=[]', '        return []  # isolated fixture: no running applications\n        found=[]', 1))
     app = stage/'config/ghostty/config.ghostty'
     app.parent.mkdir(parents=True)
     app.write_text('font-size = 11\n')

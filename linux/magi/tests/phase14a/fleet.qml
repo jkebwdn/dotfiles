@@ -26,8 +26,11 @@ ShellRoot {
     verify(fleet.mainBar.trayPresenter.barVisible)
    }
    fleet.focusedMonitor={name:external.name}
-   verify(fleet.openFromShortcut('tray'));verify(fleet.mainBar.trayKeyboardMode)
-   fleet.mainBar.close();verify(!fleet.mainBar.trayOpened)
+   const savedLayout=JSON.stringify(Services.Settings.data.bar)
+   fleet.toggleFromShortcut('tray');verify(!fleet.mainBar.trayShown);verify(!fleet.mainBar.trayOpened)
+   fleet.toggleFromShortcut('tray');verify(fleet.mainBar.trayShown);verify(!fleet.mainBar.trayOpened)
+   compare(JSON.stringify(Services.Settings.data.bar),savedLayout)
+   Services.TrayService.presentationOverride=null
    const previous=Services.TrayService.items
    fleet.mainBar.trayPresenter.overflowRequested();wait(50);verify(fleet.mainBar.trayOpened)
    verify(fleet.mainBar.catcherEnabled);verify(fleet.mainBar.combinedKeyboardEnabled)

@@ -6,7 +6,7 @@ const plain=x=>JSON.parse(JSON.stringify(x));
 const base=plain(ctx.defaults());assert.equal(base.schemaVersion,22);assert.deepEqual(plain(ctx.analyze(base).errors),[]);
 const fixture=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2])):{schemaVersion:16,bar:{left:['wifi'],center:[],right:['bluetooth']},appearance:{roundness:{master:1.3,roles:{barPill:.8}},surfaceBorders:{wifi:true,bluetooth:false,role:'red',width:3}},extra:{preserved:true}};
 const migrated=plain(ctx.migrate(fixture)),expected=structuredClone(fixture);expected.schemaVersion=base.schemaVersion;
-assert.deepEqual(migrated,require("../settings/expected18.cjs")(expected));assert.deepEqual(plain(ctx.migrate(migrated)),migrated);
+assert.deepEqual(migrated,require("../settings/expected-current.cjs")(expected));assert.deepEqual(plain(ctx.migrate(migrated)),migrated);
 const effective=plain(ctx.analyze(migrated).effective);
 assert.equal(effective.bar.visual.host.enabled,false);assert.equal(effective.bar.visual.statusPills.role,'surface');assert.equal(effective.bar.visual.statusPills.opacity,1);assert.equal(effective.bar.visual.workspacePills.roundness,null);
 for(const id of ['wifi','bluetooth'])assert.equal(effective.bar.modules[id].accentRole,'accent');

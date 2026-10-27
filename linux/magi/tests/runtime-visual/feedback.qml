@@ -20,6 +20,11 @@ ShellRoot {
     TestCase {
         name: "FinalNativeFeedback"
         when: Services.Settings.ready
+        function collect(item,predicate) {
+            let result=predicate(item)?[item]:[]
+            for(const child of item.children || []) result=result.concat(collect(child,predicate))
+            return result
+        }
         function centered(a,b,container) {
             const ay=a.mapToItem(container,0,0).y+a.height/2
             const by=b.mapToItem(container,0,0).y+b.height/2
@@ -35,8 +40,9 @@ ShellRoot {
                     compare(number.background.color,Theme.Theme.elevated)
                     verify(selector.background.border.width>0 && number.background.border.width>0)
                     const value=findChild(selector,"settingsSelectorValue")
-                    const centre=value.parent.mapToItem(selector,0,0).x+value.parent.width/2
-                    verify(Math.abs(centre-(selector.leftPadding+(selector.width-selector.leftPadding-selector.rightPadding)/2))<1)
+                    const left=value.parent.mapToItem(selector,0,0).x
+                    compare(left, selector.leftPadding)
+                    verify(value.parent.width <= selector.availableWidth)
                     const chevronX=selector.indicator.x
                     selector.currentIndex=2;wait(20);compare(selector.indicator.x,chevronX);compare(swatch.color,Theme.Theme.elevated)
                     selector.currentIndex=1
@@ -69,8 +75,8 @@ ShellRoot {
                 Services.SettingsWindowState.open();wait(150)
                 const content=hub.content.currentContent
                 compare(hub.mask.regions[1].width,0,"ordinary desktop input passes through")
-                Services.SettingsWindowState.page="Appearance";wait(50)
-                const themeChoice=findChild(content,"settingsSelector-Theme")
+                Services.SettingsWindowState.page="Date & time";wait(50)
+                const themeChoice=findChild(content,"settingsSelector-First day of week")
                 themeChoice.popup.open();wait(30)
                 compare(hub.mask.regions[1].width,hub.width,"child popup owns its extended input")
                 themeChoice.popup.close();wait(150)
@@ -100,17 +106,25 @@ ShellRoot {
                         verify(findChild(nav,"settingsSelectionDot")===null)
                     }
                     Services.SettingsWindowState.page="Control Centre";wait(50)
-                    const nav=findChild(content,"appearanceNav-controlcentre");verify(nav.checked&&nav.subsection)
-                    compare(nav.background.color,Theme.Theme.elevated)
+                    const nav=findChild(content,"settingsNav-Control Centre");verify(nav.checked)
                     const page=findChild(content,"settingsPage-Control Centre")
-                    const runtime=JSON.stringify(Services.Settings.data.controlCentre.sections)
-                    for(const title of ["Profile Header","Controls","Media Player","Layout","Visible sections","Primary controls","Sliders","Secondary actions"]) {
-                        const button=findChild(page,"settingsButton-"+title+"  ▾")
-                        verify(button!==null,title+" disclosure")
-                        page.contentY=Math.max(0,button.mapToItem(page.contentItem,0,0).y-30);wait(20)
-                        button.forceActiveFocus();keyClick(Qt.Key_Space);wait(20);compare(button.text,title+"  ▸")
-                        compare(JSON.stringify(Services.Settings.data.controlCentre.sections),runtime)
-                        keyClick(Qt.Key_Space);wait(20)
+                    const runtime=JSON.stringify(Services.Settings.data)
+                    page.mode="Appearance"
+                    for(const family of ["profile","controls","sliders","actions","media"]) {
+                        page.selection.select(family);wait(0)
+                        const sections=collect(page, item => item.visible && item.collapsible === true && item.expanded !== undefined)
+                        verify(sections.length > 0, family+" disclosures")
+                        for (const section of sections) {
+                            const button=collect(section, item => item.text !== undefined && item.clicked !== undefined && item.text.startsWith(section.title+"  "))[0]
+                            verify(button !== undefined, "Keyboard disclosure exists")
+                            const editor=findChild(page,"controlCentreEditor")
+                            editor.contentY=Math.max(0,button.mapToItem(editor.contentItem,0,0).y-30)
+                            const expanded=section.expanded
+                            button.forceActiveFocus();keyClick(Qt.Key_Space);wait(0)
+                            compare(section.expanded,!expanded)
+                            compare(JSON.stringify(Services.Settings.data),runtime)
+                            keyClick(Qt.Key_Space);compare(section.expanded,expanded)
+                        }
                     }
                 }
                 // Another application window may take focus without closing any mode.

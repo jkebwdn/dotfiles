@@ -12,9 +12,11 @@ with tempfile.TemporaryDirectory(prefix='magi-fallback-') as tmp:
     for name,body in stubs.items():
         if name=='Battery':body+='\nproperty string statusText: "Battery fixture"'
         (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { id:root\n'+body+'\n}')
+    (config/'services/TrayService.qml').write_text('pragma Singleton\nimport QtQuick\nTrayModel {}\n')
     workspace=config/'plugins/bar/workspaces/Workspaces.qml'
     text=workspace.read_text().replace('import Quickshell.Hyprland','').replace('Component.onCompleted: Hyprland.refreshWorkspaces()','')
     text=text.replace('Hyprland.workspaces.values','[{id:1,name:"1"}]').replace('Hyprland.focusedWorkspace !== null','true').replace('Hyprland.focusedWorkspace.id','1')
+    text=text.replace('outputScreen ? Hyprland.monitorFor(outputScreen) : null', 'null')
     workspace.write_text(text)
     p=config/'components/bar/Bar.qml';text=p.read_text().replace('PanelWindow {','FloatingWindow {',1)
     a=text.index('    exclusiveZone:');b=text.index('    implicitHeight:',a)
