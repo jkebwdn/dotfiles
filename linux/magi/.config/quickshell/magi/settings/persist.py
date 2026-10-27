@@ -17,8 +17,6 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from power_idle import Manager, atomic, policy, PolicyError
 
-CURRENT_VERSION = 20
-
 
 def perform(request):
     path = Path(request['path']).expanduser().resolve()
@@ -38,12 +36,20 @@ def perform(request):
         if before != request['expected']:
             return {'ok': False, 'conflict': True, 'error': 'Settings changed on disk; reload before saving'}
         text = request['text']
-        json.loads(text)
+        following = json.loads(text)
+        # SettingsStore supplies the Schema-analyzed document, including its current
+        # version. Compare the actual migration, not a second Python version constant.
+        target_version = following.get('schemaVersion', 0)
+        recovery = False
         try:
             prior_version = json.loads(before).get('schemaVersion', 0) if before else 0
         except (ValueError, AttributeError):
             prior_version = 0
-        if before is not None and prior_version != CURRENT_VERSION:
+            recovery = True
+        if type(prior_version) is not int:
+            recovery = True
+            prior_version = 0
+        if before is not None and (recovery or prior_version < target_version):
             state = Path(os.environ.get('XDG_STATE_HOME', str(Path.home() / '.local/state')))
             backups = state / 'magi/settings-backups'
             backups.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -88,7 +94,6 @@ def perform(request):
                 prior = json.loads(before) if before else {}
             except ValueError:
                 prior = {}
-            following = json.loads(text)
             apply_idle = request.get('applyIdle') is True
             if (apply_idle or policy(prior) != policy(following)) and request.get('idleInhibited'):
                 raise PolicyError("Power policy can't be changed while idle inhibition is active.")

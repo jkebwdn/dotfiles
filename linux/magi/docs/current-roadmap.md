@@ -12,9 +12,9 @@ Historical Greeter proposals are retained as history, not pending commitments.
 
 ## Highest-value next decisions
 
-1. **Reliability:** correct the Settings backup helper's stale schema 20 trigger in a
-   separately tested change; it currently creates extra backups on schema 22 saves.
-   Also run native lock/private-bus transport proofs on a host without sandbox denial.
+1. **Reliability:** run native lock/private-bus transport proofs on a host without
+   sandbox denial. The Settings migration-backup trigger debt is resolved; normal
+   current-schema saves no longer create migration backups.
 2. **Hardware acceptance:** prioritize authenticated Bluetooth hardware and the
    existing Displays 10C.2B / Fingerprint 11B gates when suitable devices are available.
    Do not expand deployment based solely on synthetic evidence.

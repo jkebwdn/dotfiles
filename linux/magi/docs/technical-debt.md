@@ -8,7 +8,7 @@ No critical vulnerability has been established by this bounded review.
 | Severity | Issue / evidence | Impact and proposed direction | Safe to defer? |
 | --- | --- | --- | --- |
 | High | Native lock transport tests cannot complete in this sandbox; SOCK_SEQPACKET send returns EPERM | Host offline transport verification remains required; do not weaken auth assertions or claim a security pass | Yes for documentation-only cleanup; no for auth changes |
-| Medium | `settings/persist.py` uses CURRENT_VERSION=20 as its migration-backup trigger, while canonical schema is 22 | Extra content-addressed backups on normal saves; saved data remains correct. Align the backup policy in a separately tested change; do not delete backups opportunistically | Yes; no data loss, monitor retention |
+| Medium | Settings migration-backup trigger drift | Resolved: persistence compares the on-disk version with the outgoing Schema-analyzed document; current-schema saves create no migration backup. Original migration/recovery contents and failed-write retry protection remain covered | Resolved; existing backups retained |
 | Low | Profile Settings provisional-width/column cycle | Fixed in shared SettingsRow using parent available width; strict long-text/pinned-preview regression and native smoke pass | Resolved; see Profile layout review |
 | Medium | `QuickActions.qml` refreshes three status requests every 5s; Brightness polls every 2s | Repeated Python/subprocess work; investigate event-driven adapters before changing behavior | Yes |
 | Medium | Audio application grouping falls back to application.name after ID/binary | Same-name applications can share one volume row; document metadata limits, revisit only with real collisions | Yes; accepted current behavior |

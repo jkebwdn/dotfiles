@@ -19,6 +19,61 @@ spec.loader.exec_module(module)
 with tempfile.TemporaryDirectory(prefix='magi-settings-') as temp:
     stage = Path(temp)
     os.environ['XDG_STATE_HOME'] = str(stage / 'state')
+    # Exercise production persistence with the canonical JS defaults, not live settings.
+    defaults = json.loads(subprocess.check_output([
+        'node', '-e', "const fs=require('fs'),vm=require('vm');const c=vm.createContext({});"
+        "vm.runInContext(fs.readFileSync(process.argv[1],'utf8'),c);"
+        "console.log(JSON.stringify(vm.runInContext('defaults()',c)));",
+        str(source/'settings/SettingsSchema.js')], text=True))
+    current = defaults['schemaVersion']
+    for label, original, expected_count in [
+        ('current', json.dumps(defaults), 0),
+        ('previous', json.dumps(dict(defaults, schemaVersion=current-1)), 1),
+        ('historical', '{"schemaVersion":3,"custom":12}', 1),
+        ('legacy', '{"palette":"everforest","custom":12}', 1),
+        ('malformed', '{broken json', 1),
+    ]:
+        case = stage/('backup-'+label)
+        case.mkdir()
+        os.environ['XDG_STATE_HOME'] = str(case/'state')
+        path = case/'settings.json'
+        path.write_text(original)
+        for edit in range(3):
+            before = path.read_text()
+            updated = json.dumps(dict(defaults, custom=edit))
+            assert module.perform({'op':'write','path':str(path),
+                                   'expected':before,'text':updated})['ok']
+            backups = list((case/'state/magi/settings-backups').glob('*.json'))
+            assert len(backups) == expected_count, (label, edit, backups)
+            if backups:
+                assert backups[0].read_bytes() == original.encode(), label
+        # Unchanged current-schema save also must not add a backup.
+        before = path.read_text()
+        assert module.perform({'op':'write','path':str(path),
+                               'expected':before,'text':before})['ok']
+        assert len(list((case/'state/magi/settings-backups').glob('*.json'))) == expected_count
+    # A failed replacement leaves original settings and their migration backup intact;
+    # retrying the same migration reuses the content-addressed backup.
+    from unittest.mock import patch
+    case = stage/'failed'; case.mkdir()
+    os.environ['XDG_STATE_HOME'] = str(case/'state')
+    path = case/'settings.json'
+    original = json.dumps(dict(defaults, schemaVersion=current-1))
+    path.write_text(original)
+    request = {'op':'write','path':str(path),'expected':original,'text':json.dumps(defaults)}
+    with patch.object(module.os, 'replace', side_effect=OSError('synthetic replacement failure')):
+        try:
+            module.perform(request)
+            raise AssertionError('Expected replacement failure')
+        except OSError:
+            pass
+    assert path.read_text() == original
+    assert module.perform(request)['ok']
+    backups = list((case/'state/magi/settings-backups').glob('*.json'))
+    assert len(backups) == 1 and backups[0].read_text() == original
+    assert not list(case.glob('.settings.json-*'))
+    print('Migration backup: current/no-op, previous, historical, legacy, recovery, repeated saves and failed-write retry PASS')
+    os.environ['XDG_STATE_HOME'] = str(stage/'state')
     p = stage / 'io/settings.json'
     assert module.perform({'op':'read','path':str(p)})['text'] is None
     old = '{"palette":"everforest","custom":12}'
@@ -40,7 +95,7 @@ with tempfile.TemporaryDirectory(prefix='magi-settings-') as temp:
     subprocess.run(['git','init','-q',str(p.parent)],check=True)
     (p.parent/'.gitignore').write_text('/settings.json\n')
     before_status=subprocess.check_output(['git','status','--short'],cwd=p.parent)
-    old=p.read_text();new='{"schemaVersion":22,"custom":42}'
+    old=p.read_text();new=json.dumps(dict(defaults, custom=42))
     assert module.perform({'op':'write','path':str(p),'expected':old,'text':new})['ok']
     assert p.read_text()==new
     assert subprocess.check_output(['git','status','--short'],cwd=p.parent)==before_status
