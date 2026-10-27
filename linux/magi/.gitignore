@@ -1,0 +1,3 @@
+# Python execution artifacts, not source or managed runtime data.
+__pycache__/
+*.py[cod]

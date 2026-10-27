@@ -1,3 +1,36 @@
+# MAGI documentation
+
+Current source of truth: `~/dotfiles/linux/magi`. Settings schema **22**.
+Phase 15 consolidates development state and regression tooling; it adds no feature.
+Current capabilities include Audio routing, inline Tray toggling, authenticated
+Bluetooth pairing support, the native lock/designer, and the evolved Bar/Hub/Settings.
+
+## Current canonical documents
+
+- [Current architecture and service ownership](architecture/current-system.md)
+- [Keybindings and IPC](keybindings.md)
+- [Testing](testing.md) and [current environment limits](known-warnings.md)
+- [Generated state and retention](generated-state.md)
+- [Security boundaries](security.md)
+- [Technical debt](technical-debt.md) and [current roadmap](current-roadmap.md)
+- [Development/phase closeout policy](phase-closeout.md)
+- [Phase 15 worktree reconciliation](review/phase15-worktree-reconciliation.md)
+- [Regression reconciliation](review/phase15-regression-reconciliation.md)
+- [Profile layout cause and minimal correction](review/phase15-profile-layout.md)
+- [Phase 15 consolidation review](review/phase15-closeout.md)
+
+`architecture.md` and `decisions.md` are chronological journals. `design/phase12*`,
+`phase13*`, `phase14*` and their acceptance galleries are historical phase evidence;
+old schema numbers, candidate paths and pending instructions describe their dates,
+not current deployment directions. Research documents preserve investigations and
+rejected alternatives. Do not execute old helpers or restore old architecture from
+those records. Current canonical documents above take precedence.
+
+## Historical completion and research index
+
+The dated entries below are retained as evidence. TTY login is accepted; Greeter is
+not active roadmap work.
+
 ## Phase 14B — Audio routing and inline Tray toggle (2026-10-27)
 
 Audio provides output/input selection, grouped application volumes, shared sliders,

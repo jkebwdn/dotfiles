@@ -54,11 +54,38 @@ Store render specifications and annotations in docs/design/.
 
 ## Current priorities
 
-1. Audit MAGI's current source and reconcile the documentation.
-2. Research Quickshell's window, popup, animation and focus APIs.
-3. Study K4, Noctalia v4, Lucid, Caelestia and Serpantinum.
-4. Establish a clean modular menu architecture.
-5. Implement the user's annotated design renders incrementally.
+1. Preserve the accepted production baseline and protected operator state.
+2. Resolve evidenced reliability debt with affected/full regression coverage.
+3. Complete hardware acceptance only when the relevant device and authorization exist.
+4. Follow docs/current-roadmap.md; do not begin a new feature phase automatically.
 
-Do not migrate Wi-Fi or replace the existing expansion system until the
-relevant architecture and tests have been reviewed with the user.
+## Permanent production and closeout policy
+
+- `~/dotfiles` is the persistent source of truth. Read the current docs index,
+  architecture, testing, generated-state and closeout guidance; phase documents are
+  historical evidence, not instructions to restore old source or rerun live helpers.
+- Prefer unique `/tmp/magi-<task>-<id>` worktrees when isolation is useful. Do not
+  accumulate home-directory phase checkouts or use them as archives.
+- After accepted work is committed, pushed, synchronized and protected-state verified,
+  remove the completed worktree unless explicitly retained. Prove its HEAD merged,
+  reconcile every dirty/untracked file, check active services/references, use Git
+  worktree removal, and prune genuinely stale registrations. Never delete by name/age.
+- Snapshot all operator-local dirty/untracked state, Settings, icon artwork and
+  configuration symlinks before integration. Preserve local Hyprland, Ghostty, GTK,
+  Yazi, lock, generated-theme and other customizations. Never stage settings.json or
+  unrelated local edits. Stage exact paths/hunks only; never `git add .` / `git add -A`.
+- Use the canonical `tests/run-all.py`; use `--only` for affected checks. Internal
+  assertions/Qt warnings must not be hidden by later PASS markers. Environment limits
+  require specific evidence; unknown failures stop finalization.
+- Preserve native lock/PAM authority, application-scoped Agent1 caller checks,
+  detached launcher streams, shared Tray state/native menus, and external PipeWire /
+  WirePlumber authority. Application icons are not MAGI semantic icons.
+- Keep runtime/generated state in its intended XDG store, not Git. Theme Orchestrator
+  remains the generated-theme writer; preserve current/previous/pending/conflicted
+  generations. Do not introduce competing writers during cleanup.
+- Update canonical docs and technical debt when architecture or acceptance changes.
+  No feature work or speculative restoration during consolidation.
+- Avoid helper-script spam. Prefer direct tools; if host Git transport is necessary,
+  use one guarded helper for the final fetch/divergence/normal-push sequence. Never
+  force push. Remove safe temporary builds/helpers after jobs complete; retain only
+  evidence needed for unresolved review. See docs/phase-closeout.md.

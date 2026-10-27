@@ -1,3 +1,5 @@
+> Historical chronological journal. For current ownership, schema and roadmap, start at [the documentation index](README.md). Old deployment commands are not current authorization.
+
 ## Phase 14B — Audio routing and inline Tray toggle (2026-10-27)
 
 Audio provides output/input selection, grouped application volumes, shared sliders,

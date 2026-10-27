@@ -1,3 +1,5 @@
+> Historical chronological journal. For current ownership, schema and roadmap, start at [the documentation index](README.md). Old deployment commands are not current authorization.
+
 ## Phase 14B — Audio routing and inline Tray toggle (2026-10-27)
 
 Audio provides output/input selection, grouped application volumes, shared sliders,
@@ -1081,3 +1083,22 @@ operator accepted native integration and deliberately placed Tray in the right s
 require root UseQApplication at process startup. Physical multi-output acceptance
 is deferred; there is no per-app persistence or application-specific workaround.
 [Review record](design/phase14a-system-tray.md).
+
+## Phase15 — consolidation and responsive Settings measurement
+
+Persistent source/docs/tests live in dotfiles; completed phase worktrees are removed
+after acceptance, commit/push, synchronization and content reconciliation. Runtime
+stores remain XDG state/data/cache. Historical migration support remains supported
+from absent/version0 input through schema22; old migrations are not dead code.
+
+The strict regression runner preserves failures even after misleading success
+markers. Historical tests now protect current enduring invariants rather than
+obsolete UI ownership. Environment limits require specific independent evidence.
+
+Profile's long-text first-frame warning was a production measurement cycle:
+SettingsRow selected columns from its own provisional width, while those columns
+changed its field-size hints. The row now reads parent available width. Final field
+sizes and accepted layout are unchanged; no warning suppression or delay was added.
+
+TTY login remains accepted. Greeter is excluded from the current active roadmap.
+No new feature is part of this consolidation.
