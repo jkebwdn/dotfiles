@@ -50,9 +50,11 @@ PanelWindow {
     readonly property bool fullSurface: trayOpened || combinedMode || (ownsMenu && MagiServices.Calendar.opened) || calendarSurface.absorbed
     property var trayPresenter: null
     property bool trayOpened: false
-    property bool trayKeyboardMode: false
+    readonly property bool trayConfigured: placement.left.includes("tray") || placement.center.includes("tray") || placement.right.includes("tray")
+    readonly property bool trayShown: trayOnOutput && (MagiServices.TrayService.presentationOverride === null
+        ? trayConfigured : MagiServices.TrayService.presentationOverride)
     readonly property bool trayOnOutput: outputScreen === MagiServices.SurfaceOrigin.mainScreen
-    function closeTray() { trayOpened = false; trayKeyboardMode = false }
+    function closeTray() { trayOpened = false }
     onTrayOnOutputChanged: closeTray()
     onOutputScreenChanged: closeTray()
     property Item clockAnchor: null
@@ -148,7 +150,7 @@ PanelWindow {
     }
     readonly property var leftPlugins: placement.left
     readonly property var centerPlugins: placement.center
-    readonly property var rightPlugins: placement.right
+    readonly property var rightPlugins: !trayConfigured && trayShown ? placement.right.concat(["tray"]) : placement.right
     function syncPlacement() {
         if (MagiServices.MenuController.activeMenu !== "" || statusSurface.phase !== 0 || calendarSurface.phase !== 0
                 || registry.interactionBusy || registry.presentationBusy) return
@@ -203,14 +205,14 @@ PanelWindow {
         id: trayComponent
         TrayUI.TrayGroup {
             id: tray
-            readonly property bool barVisible: bar.trayOnOutput && items.length > 0
+            readonly property bool barVisible: bar.trayShown && items.length > 0
+            showEmpty: false
             items: MagiServices.TrayService.items
             maximumWidth: Math.max(cellWidth + 8, Math.min(240, (bar.width - 2 * MagiServices.Settings.data.bar.horizontalInset) * .18))
             bottomUp: bar.bottomBar
             visible: barVisible
             onOverflowRequested: {
                 MagiServices.MenuController.close()
-                bar.trayKeyboardMode = false
                 bar.trayOpened = !bar.trayOpened
             }
             onBarVisibleChanged: if (!barVisible) bar.closeTray()
@@ -221,14 +223,15 @@ PanelWindow {
     }
     TrayUI.TrayOverflow {
         id: trayOverflow
+        objectName: "trayOverflowSurface"
         z: 30
-        items: bar.trayPresenter ? (bar.trayKeyboardMode ? bar.trayPresenter.items : bar.trayPresenter.overflowItems) : []
+        items: bar.trayPresenter ? bar.trayPresenter.overflowItems : []
         opened: bar.trayOpened
         bottomUp: bar.bottomBar
         height: Math.min(implicitHeight, Math.max(0, bar.height - 48 - bar.geometry.edgeOffset - 8))
         x: {
             const opened = bar.trayOpened
-            if (!bar.trayPresenter) return 0
+            if (!bar.trayPresenter || !bar.trayPresenter.visible) return Math.max(0, bar.width - width - bar.geometry.inset - 8)
             const p = bar.trayPresenter.mapToItem(bar.contentItem, 0, 0)
             return Math.max(0, Math.min(bar.width - width, p.x))
         }
@@ -323,11 +326,10 @@ PanelWindow {
             modulePhases: phases})
     }
     function open(view: string): bool {
+        if (view === "audio") view = "volume"
         if (view === "tray") {
-            if (!trayOnOutput || !trayPresenter || !trayPresenter.items.length) return false
-            MagiServices.MenuController.close()
-            trayKeyboardMode = true
-            trayOpened = true
+            if (!trayOnOutput) return false
+            MagiServices.TrayService.presentationOverride = true
             return true
         }
         if (view === "calendar") {
@@ -342,7 +344,14 @@ PanelWindow {
         return true
     }
     function toggle(view: string): void {
-        if (view === "tray" && trayOpened) { closeTray(); return }
+        if (view === "audio") view = "volume"
+        if (view === "tray") {
+            if (trayOnOutput) {
+                closeTray()
+                MagiServices.TrayService.presentationOverride = !trayShown
+            }
+            return
+        }
         if (ownsMenu && MagiServices.MenuController.activeMenu === view) MagiServices.MenuController.close()
         else open(view)
     }

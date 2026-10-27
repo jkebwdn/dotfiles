@@ -42,3 +42,5 @@ singleton LockAuxiliary 1.0 LockAuxiliary.qml
 
 TrayModel 1.0 TrayModel.qml
 singleton TrayService 1.0 TrayService.qml
+
+AudioModel 1.0 AudioModel.qml

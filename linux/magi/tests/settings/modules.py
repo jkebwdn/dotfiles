@@ -22,6 +22,10 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
         function answer(a,v) {} function cancel() {}
         function setEnabled(v) {root.enabled=v} function setDiscovering(v) {} function toggleConnection(d) {}''',
       'Audio': '''property bool available: false; property bool muted: false; property real volume: 0; property int volumePercent: 0
+        property var applications: []; property var outputs: []; property var inputs: []; property var streams: []; property var sink: null; property var source: null
+        property var pendingOutput: null; property var pendingInput: null; property string error: ""
+        function usable(n){return false} function name(n){return "Audio"} function detail(n,p){return ""} function icon(n){return "volume"} function appIcon(n){return ""}
+        function selectOutput(n){} function selectInput(n){} function setNodeVolume(n,v){} function toggleNodeMute(n){}
         function setVolume(v) {} function toggleMute() {} function adjustVolume(v) {}''',
       'Battery': '''property bool charging: false; property bool available: false; property string icon: "battery"; property int percentage: 0
         property string stateText: ""; property string timeText: ""''',

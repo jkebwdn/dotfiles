@@ -15,6 +15,7 @@ ShellRoot {
     HubUI.HubWindow { id: hub; readyToOpen: !fleet.hubBar || fleet.hubBar.settingsReady; previewSurface: fleet.hubBar ? fleet.hubBar.activeCombinedRegion : null }
     FloatingWindow { id: settings; visible: false; implicitWidth: 1000; implicitHeight: 850; UI.SettingsContent { id: settingsContent; anchors.fill: parent } }
     Timer { id: finish; interval: 100; onTriggered: Qt.quit() }
+    QtObject { id: trayFixture; property string id: "synthetic"; property string title: "Synthetic background app"; property string icon: ""; property int status: 1; property bool hasMenu: false; property int calls: 0; function activate() { calls++ } }
     TestCase {
         name: "Phase10B"
         when: Services.Settings.ready && fleet.mainBar !== null
@@ -58,7 +59,7 @@ ShellRoot {
                 const b=bar(screen)
                 b.clockAnchor.triggered();pause();compare(Services.SurfaceOrigin.menuTarget(),screen);compare(surface(b).phase,3)
                 b.clockAnchor.triggered();pause();compare(surface(b).phase,0)
-                for(const view of ["controlcentre","wifi","bluetooth"]) {
+                for(const view of ["controlcentre","wifi","bluetooth","volume"]) {
                     mouseClick(b.expandablePillRegistry[view].pill)
                     pause()
                     compare(Services.SurfaceOrigin.menuTarget(),screen);compare(b.statusPresentation.phase,3)
@@ -69,7 +70,7 @@ ShellRoot {
             }
             console.log("10B origin families complete")
             // Exercise the same entry points used by keyboard IPC handlers.
-            for (const view of ["controlcentre", "wifi", "bluetooth", "calendar"]) {
+            for (const view of ["controlcentre", "wifi", "bluetooth", "calendar", "audio"]) {
                 fleet.focusedMonitor={name:external.name};pause()
                 verify(fleet.openFromShortcut(view));pause()
                 compare(Services.SurfaceOrigin.menuTarget(),external)
@@ -77,10 +78,33 @@ ShellRoot {
                 compare(Services.SurfaceOrigin.menuTarget(),external) // Focus alone does not move it.
                 compare(fleet.mainScreen,internal)
                 fleet.toggleFromShortcut(view);pause()
-                compare(Services.MenuController.activeMenu,view)
+                compare(Services.MenuController.activeMenu,view === "audio" ? "volume" : view)
                 compare(Services.SurfaceOrigin.menuTarget(),internal)
                 fleet.toggleFromShortcut(view);pause();compare(Services.MenuController.activeMenu,"")
             }
+            // Shortcut changes runtime presentation, never layout or a popup.
+            Services.TrayService.sourceItems=[trayFixture]
+            const savedLayout=JSON.stringify(Services.Settings.data.bar)
+            fleet.focusedMonitor={name:external.name};pause()
+            verify(!bar(internal).trayConfigured)
+            fleet.toggleFromShortcut("tray");pause()
+            verify(bar(internal).trayShown);verify(!bar(external).trayShown)
+            verify(!bar(internal).trayOpened)
+            verify(bar(internal).rightPlugins.includes("tray"))
+            mouseClick(bar(internal).trayPresenter.delegates.itemAt(0),15,14)
+            compare(trayFixture.calls,1)
+            fleet.toggleFromShortcut("tray");pause()
+            verify(!bar(internal).trayShown);verify(!bar(internal).rightPlugins.includes("tray"))
+            compare(JSON.stringify(Services.Settings.data.bar),savedLayout)
+            const previousRight=Services.Settings.data.bar.right.slice()
+            Services.TrayService.presentationOverride=null
+            Services.Settings.setValue("bar","right",previousRight.concat(["tray"]));pause()
+            verify(bar(internal).trayShown)
+            fleet.toggleFromShortcut("tray");pause();verify(!bar(internal).trayShown)
+            fleet.toggleFromShortcut("tray");pause();verify(bar(internal).trayShown)
+            compare(Services.Settings.data.bar.right.filter(x=>x==="tray").length,1)
+            Services.Settings.setValue("bar","right",previousRight)
+            Services.TrayService.presentationOverride=null
             for (const mode of ["settings", "apps", "clipboard", "emoji", "notifications"]) {
                 fleet.focusedMonitor={name:external.name};pause()
                 Services.Hub.openFromShortcut(mode);pause()

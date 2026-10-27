@@ -80,7 +80,7 @@ SettingsUI.SettingsPage {
             }
         }
     }
-    SettingsUI.SettingsHelp { text: "System Tray appears on the main-output Bar. All background applications remain available through overflow." }
+    SettingsUI.SettingsHelp { text: "Place System Tray through Bar Layout. Super+T temporarily shows or hides its icons on the main-output Bar without changing your layout. Audio is available through Super+A." }
     Label { font.bold: true; text: "Multi-monitor" }
     SettingsUI.SettingsToggle {
         objectName: "externalBars"

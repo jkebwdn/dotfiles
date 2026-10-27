@@ -151,5 +151,9 @@ function migrate(input) {
             doc.lockScreen.effects = {credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false}
         doc.schemaVersion = 21
     }
+    if (doc.schemaVersion === 21) doc.schemaVersion = 22
+    // Retire the native-preview visibility preference; placement owns defaults.
+    if (doc.schemaVersion === 22 && doc.bar && typeof doc.bar === "object")
+        delete doc.bar.trayVisibility
     return doc
 }

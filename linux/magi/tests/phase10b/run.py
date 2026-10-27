@@ -11,6 +11,7 @@ stubs=next(ast.literal_eval(n.value) for n in ast.walk(tree) if isinstance(n,ast
 with tempfile.TemporaryDirectory(prefix='magi-10b-') as temporary:
  stage=Path(temporary);config=stage/'shell';shutil.copytree(source,config)
  (config/'settings.json').write_text('{"schemaVersion":13}')
+ (config/'services/TrayService.qml').write_text('pragma Singleton\nimport QtQuick\nTrayModel {}\n')
  stubs['Battery']+='\nproperty string statusText: "Unavailable"'
  # Use the production scanning lease logic with harmless mock networks.
  network=source/'services/Network.qml';text=network.read_text();a=text.index('    property var scanOwners:');b=text.index('    // Connection controls',a)

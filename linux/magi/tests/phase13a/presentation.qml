@@ -20,7 +20,7 @@ ShellRoot {
   function canvas(){return findChild(page,"lockLayoutCanvas")}
   function shot(name){wait(80);grabImage(win.contentItem).save(Quickshell.env("MAGI_PHASE13A_PREVIEWS")+"/"+name+".png")}
   function test_designer(){
-   compare(Services.Settings.data.schemaVersion,21);page.aspectIndex=1;wait(300)
+   compare(Services.Settings.data.schemaVersion,22);page.aspectIndex=1;wait(300)
    const fallback=rawLock.createObject(win.contentItem,{visual:{lockScreen:{layoutVersion:1,space:"screen",elements:{time:{anchor:"bad"}}}},inputActive:true})
    compare(fallback.layout.preset,"centered");verify(fallback.elementBoxes.authentication.visible)
    fallback.authStatus="Keyboard state unavailable: press and release Shift";wait(30)

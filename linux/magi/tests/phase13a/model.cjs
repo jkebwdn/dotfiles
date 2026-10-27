@@ -26,7 +26,7 @@ const schema=vm.createContext({});
 for(const name of ['SettingsSchema.js','SettingsMigrations.js']) vm.runInContext(fs.readFileSync(path.join(root,'.config/quickshell/magi/settings',name),'utf8'),schema);
 const input=process.argv[3] ? JSON.parse(fs.readFileSync(process.argv[3])) : {schemaVersion:19,appearance:{theme:'nord',globalBlur:{managed:true,size:12}},custom:{preserved:42}};
 assert.equal(input.schemaVersion,19);
-const migrated=plain(schema.migrate(input)), expected=plain(input);expected.schemaVersion=21;expected.lockScreen=plain(schema.defaults().lockScreen);
+const migrated=plain(schema.migrate(input)), expected=plain(input);expected.schemaVersion=22;expected.lockScreen=plain(schema.defaults().lockScreen);
 assert.deepStrictEqual(migrated,expected);assert.deepStrictEqual(plain(schema.migrate(migrated)),migrated);
 assert.deepStrictEqual(plain(model.normalize(migrated.lockScreen)),fallback);
 assert.equal(schema.analyze(migrated).errors.length,0);

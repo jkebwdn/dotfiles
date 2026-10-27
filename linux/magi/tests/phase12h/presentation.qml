@@ -26,7 +26,7 @@ ShellRoot {
   }
   function test_status_and_coalescing(){
    Services.SettingsWindowState.page="Appearance";wait(300);tryCompare(Services.ThemeOrchestrator,"busy",false,3000)
-   compare(Services.Settings.data.schemaVersion,21)
+   compare(Services.Settings.data.schemaVersion,22)
    Services.ThemeOrchestrator.targets=rows(false,false)
    const p=item("settingsPage-Appearance"), section=item("applicationThemesSummary")
    capture("01-appearance-normal")

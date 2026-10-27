@@ -146,9 +146,9 @@ ColumnLayout {
     }
     SurfaceStyleSettings {
         objectName: "barMenuInspector"
-        visible: ["wifi", "bluetooth"].includes(root.instance)
+        visible: ["wifi", "bluetooth", "volume"].includes(root.instance)
         collapsible: true
-        title: root.instance === "wifi" ? "Wi-Fi menu" : "Bluetooth menu"
+        title: root.instance === "volume" ? "Audio menu" : root.instance === "wifi" ? "Wi-Fi menu" : "Bluetooth menu"
         description: "Colour, width and roundness are shared with other menus."
         group: "surfaceBorders"
         SettingsRow {
@@ -168,7 +168,7 @@ ColumnLayout {
         }
         targets: [
             {
-                id: ["wifi", "bluetooth"].includes(root.instance) ? root.instance : "wifi",
+                id: ["wifi", "bluetooth", "volume"].includes(root.instance) ? root.instance : "wifi",
                 label: "Menu border enabled"
             }
         ]

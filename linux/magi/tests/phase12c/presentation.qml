@@ -5,8 +5,10 @@ import Quickshell
 import "../../.config/quickshell/magi/theme" as Theme
 import "../../.config/quickshell/magi/components/settings" as UI
 import "../../.config/quickshell/magi/services" as Services
+import "../../.config/quickshell/magi/components/controls" as Controls
 ShellRoot {
  FloatingWindow { id:win;visible:true;implicitWidth:1450;implicitHeight:950;color:Theme.Theme.background;UI.SettingsContent { anchors.fill:parent } }
+ Controls.SurfaceBorder { id: audioBorder; surfaceId: "volume" }
  Timer { id:finish;interval:100;onTriggered:Qt.quit() }
  TestCase {
   name:"Phase12C";when:Services.Settings.ready
@@ -64,6 +66,16 @@ ShellRoot {
     verify(Math.abs(item("barPreview-wifi").presenter.color.a-.55)<.01)
     capture("wifi")
     page.selection.select("bluetooth");compare(page.selection.family,"statusPills");capture("bluetooth")
+    page.selection.select("volume")
+    const audioMenu=item("barMenuInspector")
+    verify(audioMenu.visible);compare(audioMenu.title,"Audio menu");compare(audioMenu.targets[0].id,"volume")
+    const previousBorders=JSON.parse(JSON.stringify(Services.Settings.data.appearance.surfaceBorders))
+    audioMenu.set("volume",true);audioMenu.set("role","red");audioMenu.set("width",3)
+    compare(audioBorder.border.width,3);compare(audioBorder.border.color,Theme.Theme.roles.red)
+    Services.Settings.setRoundness("surface",1.25);compare(Services.Settings.data.appearance.roundness.roles.surface,1.25)
+    audioMenu.set("volume",false);compare(audioBorder.border.width,0)
+    Services.Settings.setValue("appearance","surfaceBorders",previousBorders)
+    capture("audio-menu")
     page.selection.select("workspaces");compare(page.selection.family,"workspacePills");capture("workspace")
     let workspaceStyle=JSON.parse(JSON.stringify(Services.Settings.data.bar.visual));workspaceStyle.workspacePills.roundness=.5
     Services.Settings.setValue("bar","visual",workspaceStyle)

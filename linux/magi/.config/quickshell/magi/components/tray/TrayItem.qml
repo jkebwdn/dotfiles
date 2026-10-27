@@ -13,6 +13,8 @@ FocusScope {
     readonly property string tooltipText: Actions.tooltip(trayItem)
     readonly property bool attention: trayItem !== null && trayItem.status === 2
     readonly property bool menuVisible: menuAnchor.visible
+    property bool keyboardInteraction: false
+    readonly property string interactionState: menuVisible ? "menu" : pointer.pressed ? "pressed" : pointer.containsMouse ? "hover" : "normal"
     signal menuRequested()
     implicitWidth: Math.max(30, Theme.Theme.statusIconSize + 8)
     implicitHeight: Theme.Theme.barPillHeight
@@ -34,18 +36,22 @@ FocusScope {
     Component.onDestruction: closeMenu()
     readonly property bool usableMenu: !!trayItem && !!trayItem.hasMenu && !!trayItem.menu
     onUsableMenuChanged: if (!usableMenu) closeMenu()
-    Keys.onReturnPressed: event => { primary(); event.accepted = true }
-    Keys.onEnterPressed: event => { primary(); event.accepted = true }
-    Keys.onSpacePressed: event => { primary(); event.accepted = true }
-    Keys.onMenuPressed: event => { context(); event.accepted = true }
+    onActiveFocusChanged: if (activeFocus) keyboardInteraction = true
+    Keys.onReturnPressed: event => { keyboardInteraction = true; primary(); event.accepted = true }
+    Keys.onEnterPressed: event => { keyboardInteraction = true; primary(); event.accepted = true }
+    Keys.onSpacePressed: event => { keyboardInteraction = true; primary(); event.accepted = true }
+    Keys.onMenuPressed: event => { keyboardInteraction = true; context(); event.accepted = true }
     Keys.onPressed: event => {
-        if (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier)) { context(); event.accepted = true }
+        if (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier)) { keyboardInteraction = true; context(); event.accepted = true }
     }
     Rectangle {
         anchors.fill: parent
         radius: Theme.Theme.radius("action", 7, width, height)
-        color: pointer.containsMouse || root.activeFocus ? Theme.Theme.overlay : "transparent"
-        border.width: root.activeFocus ? 1 : 0
+        objectName: "trayInteractionBackground"
+        color: root.interactionState === "menu" ? Qt.alpha(Theme.Theme.accent, .20)
+            : root.interactionState === "pressed" ? Qt.alpha(Theme.Theme.accent, .12)
+            : root.interactionState === "hover" ? Theme.Theme.overlay : "transparent"
+        border.width: root.activeFocus && root.keyboardInteraction ? 1 : 0
         border.color: Theme.Theme.focus
     }
     Image {
@@ -87,8 +93,9 @@ FocusScope {
         enabled: root.interactive
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        onPressed: root.keyboardInteraction = false
         onClicked: event => {
-            root.forceActiveFocus(Qt.MouseFocusReason)
+            root.keyboardInteraction = false
             if (event.button === Qt.RightButton) root.context()
             else if (event.button === Qt.MiddleButton) root.secondary()
             else root.primary()

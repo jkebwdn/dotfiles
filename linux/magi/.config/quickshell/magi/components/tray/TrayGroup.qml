@@ -7,6 +7,7 @@ import "TrayActions.js" as Actions
 Bar.StatusPill {
     id: root
     property var items: []
+    property bool showEmpty: false
     property real maximumWidth: 240
     property bool interactive: true
     property bool bottomUp: false
@@ -16,7 +17,7 @@ Bar.StatusPill {
     readonly property var overflowItems: partition.overflow
     readonly property var delegates: repeater
     signal overflowRequested()
-    implicitWidth: items.length ? 8 + (partition.visible.length + (overflowItems.length ? 1 : 0)) * cellWidth : 0
+    implicitWidth: items.length || showEmpty ? 8 + (partition.visible.length + (overflowItems.length || !items.length ? 1 : 0)) * cellWidth : 0
     Row {
         anchors.centerIn: parent
         Repeater {
@@ -33,10 +34,10 @@ Bar.StatusPill {
         }
         Button {
             objectName: "trayOverflowButton"
-            visible: root.overflowItems.length > 0
+            visible: root.overflowItems.length > 0 || (root.showEmpty && !root.items.length)
             enabled: root.interactive
             width: root.cellWidth; height: root.height
-            Accessible.name: "More background applications (" + root.overflowItems.length + ")"
+            Accessible.name: root.items.length ? "More background applications (" + root.overflowItems.length + ")" : "Open System Tray"
             text: "•••"
             onClicked: root.overflowRequested()
             background: Rectangle { radius: Theme.Theme.barPillRadius; color: parent.hovered || parent.activeFocus ? Theme.Theme.overlay : "transparent" }

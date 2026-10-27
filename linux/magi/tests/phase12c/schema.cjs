@@ -3,7 +3,7 @@ const root=path.resolve(__dirname,'../../.config/quickshell/magi');
 const ctx=vm.createContext({});
 for(const name of ['SettingsSchema.js','SettingsMigrations.js'])vm.runInContext(fs.readFileSync(root+'/settings/'+name,'utf8'),ctx);
 const plain=x=>JSON.parse(JSON.stringify(x));
-const base=plain(ctx.defaults());assert.equal(base.schemaVersion,21);assert.deepEqual(plain(ctx.analyze(base).errors),[]);
+const base=plain(ctx.defaults());assert.equal(base.schemaVersion,22);assert.deepEqual(plain(ctx.analyze(base).errors),[]);
 const fixture=process.argv[2]?JSON.parse(fs.readFileSync(process.argv[2])):{schemaVersion:16,bar:{left:['wifi'],center:[],right:['bluetooth']},appearance:{roundness:{master:1.3,roles:{barPill:.8}},surfaceBorders:{wifi:true,bluetooth:false,role:'red',width:3}},extra:{preserved:true}};
 const migrated=plain(ctx.migrate(fixture)),expected=structuredClone(fixture);expected.schemaVersion=base.schemaVersion;
 assert.deepEqual(migrated,require("../settings/expected18.cjs")(expected));assert.deepEqual(plain(ctx.migrate(migrated)),migrated);

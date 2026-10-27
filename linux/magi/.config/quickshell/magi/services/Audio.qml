@@ -1,53 +1,19 @@
-
 pragma Singleton
-
 import QtQuick
-import Quickshell
 import Quickshell.Services.Pipewire
-
-Singleton {
+AudioModel {
     id: root
-
-    readonly property var sink: Pipewire.defaultAudioSink
-
-    readonly property bool available: sink !== null
-                                      && sink.ready
-                                      && sink.audio !== null
-
-    readonly property real volume: available
-                                   ? sink.audio.volume
-                                   : 0
-
-    readonly property bool muted: available
-                                  ? sink.audio.muted
-                                  : false
-
-    readonly property int volumePercent: Math.round(volume * 100)
-
-    PwObjectTracker {
-        objects: root.sink !== null ? [root.sink] : []
-    }
-
-    function toggleMute() {
-        if (!available)
-            return
-
-        sink.audio.muted = !sink.audio.muted
-    }
-
-    function setVolume(value) {
-        if (!available)
-            return
-
-        const nextVolume = Math.max(0, Math.min(1, value))
-        sink.audio.volume = Math.round(nextVolume * 100) / 100
-    }
-
-    function adjustVolume(steps) {
-        if (!available)
-            return
-
-        const step = 0.05
-        setVolume(volume + steps * step)
+    // Final Phase14B native acceptance reload: routing remains user-initiated.
+    sourceNodes: Pipewire.nodes.values
+    sink: Pipewire.defaultAudioSink
+    source: Pipewire.defaultAudioSource
+    // Routing writes occur only for explicit user selection, never initialization.
+    // Application groups are presentation state; stream writes require user input.
+    onOutputRequested: node => { Pipewire.preferredDefaultAudioSink = node }
+    onInputRequested: node => { Pipewire.preferredDefaultAudioSource = node }
+    // Properties and controls are valid only while bound. This tracks audio
+    // metadata/controls, never samples audio or instantiates a peak monitor.
+    property PwObjectTracker tracker: PwObjectTracker {
+        objects: root.sourceNodes.filter(n => n && n.audio)
     }
 }

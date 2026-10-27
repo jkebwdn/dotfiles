@@ -33,12 +33,12 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     "airplane-mode": "lavender", battery: "red", settings: "lavender", vpn: "blue",
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
-    return {schemaVersion: 21,
+    return {schemaVersion: 22,
         lockScreen: {layoutVersion:1, preset:"centered", elements:{}, effects:{credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false}},
         applicationAppearance: {managed: false, backgroundOpacity: 1.0, blurEnabled: true},
         appearance: {globalBlur: {managed: false, size: 8}, controlCentreBackgroundRole: "surface", mediaProgressRole: "accent", hubToggleRole: "accent", hubSelectionRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null, secondaryControl: null}},
-            surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, hubContent:true, hubSelector:true},
+            surfaceBorders: {role:"border", width:1, controlcentre:false, wifi:false, bluetooth:false, volume:false, hubContent:true, hubSelector:true},
             notificationBorders: {role:"border", width:1, toasts:true, history:true, clipboard:true},
             profileBackground: {enabled:false, role:"elevated"},
             visual: {profileGreetingWeight: 700, profileWeatherWeight: 400, profileThirdLineWeight: 400,
@@ -105,7 +105,7 @@ function analyze(input) {
     if (!object(input) || unsafe(input)) throw new Error("Settings must be a safe JSON object")
     if (!Number.isInteger(input.schemaVersion) || input.schemaVersion < 1)
         throw new Error("Invalid schema version")
-    if (input.schemaVersion > 21) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
+    if (input.schemaVersion > 22) return {future: true, document: clone(input), effective: defaults(), errors: [], warnings: []}
     const errors = [], warnings = []
     // Preserve unknown fields and invalid raw values while building a safe effective copy.
     function fill(value, fallback, path) {

@@ -16,8 +16,8 @@ for(let n=0;n<70;n++)for(const width of [38,80,130,240]){
  assert(8+(p.visible.length+(p.overflow.length?1:0))*30<=width);
 }
 const s=vm.createContext({});for(const f of ['SettingsSchema','SettingsMigrations'])vm.runInContext(fs.readFileSync(base+'settings/'+f+'.js','utf8'),s);
-assert.equal(s.defaults().schemaVersion,21);
-assert(!JSON.stringify(s.defaults().bar).includes('tray'));
+assert.equal(s.defaults().schemaVersion,22);
+assert(['left','center','right'].every(region=>!s.defaults().bar[region].includes('tray')));
 const doc=s.defaults();doc.bar.left=['tray'];doc.bar.center=['tray'];doc.bar.right=['tray'];
 const result=s.analyze(doc);assert.equal(result.effective.bar.left.concat(result.effective.bar.center,result.effective.bar.right).filter(x=>x==='tray').length,1);
 if(process.argv[2]){const operator=JSON.parse(fs.readFileSync(process.argv[2]));const after=s.migrate(operator);assert.deepEqual(JSON.parse(JSON.stringify(after)),operator);for(const lane of ['left','center','right'])assert.deepEqual(after.bar[lane],operator.bar[lane]);}

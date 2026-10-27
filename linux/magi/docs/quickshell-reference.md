@@ -1,3 +1,14 @@
+## Phase 14B — Audio routing and inline Tray toggle (2026-10-27)
+
+Audio provides output/input selection, grouped application volumes, shared sliders,
+content-fit sizing and contextual menu appearance controls. Super+A toggles Audio;
+Super+T temporarily shows/hides Tray icons in the main-output Bar without saving
+layout changes. Visibility modes are retired. Schema22 retains compatibility and
+cleans the old field; WirePlumber remains routing authority and auto-switch is
+deferred. The operator accepted the complete native checklist; native reload
+evidence and all 22 final regression commands pass.
+[Audit, decisions, tests and native evidence](design/phase14b-audio-tray-behaviour.md).
+
 ## Bluetooth 0.3.2 audit (2026-10-27)
 
 Installed metadata confirms pair/cancelPair/connect/disconnect/forget, paired,

@@ -2,7 +2,7 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('p
 const root=path.resolve(__dirname,'../../.config/quickshell/magi');
 const c=vm.createContext({});for(const name of ['SettingsSchema.js','SettingsMigrations.js'])vm.runInContext(fs.readFileSync(root+'/settings/'+name,'utf8'),c);
 const plain=x=>JSON.parse(JSON.stringify(x));
-const base=plain(c.defaults());assert.equal(base.schemaVersion,21);assert.deepEqual(plain(c.analyze(base).errors),[]);
+const base=plain(c.defaults());assert.equal(base.schemaVersion,22);assert.deepEqual(plain(c.analyze(base).errors),[]);
 const old=structuredClone(base);old.schemaVersion=17;delete old.controlCentre.layout;old.controlCentre.sections={profile:true,quickControls:true,sliders:true,actions:true,media:true};old.media.enabled=true;delete old.appearance.roundness.roles.secondaryControl;
 const fixtures=[old];
 for(const key of Object.keys(old.controlCentre.sections)){const d=structuredClone(old);d.controlCentre.sections[key]=false;fixtures.push(d)}

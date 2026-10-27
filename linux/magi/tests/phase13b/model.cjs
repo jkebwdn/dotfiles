@@ -3,7 +3,7 @@ const root=path.resolve(__dirname,'../..'),c=vm.createContext({});
 for(const file of ['native/lock/qml/LockLayout.js','.config/quickshell/magi/settings/SettingsSchema.js','.config/quickshell/magi/settings/SettingsMigrations.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),c);
 const plain=x=>JSON.parse(JSON.stringify(x));
 const input=JSON.parse(fs.readFileSync(process.argv[2]));assert.equal(input.schemaVersion,20);
-const migrated=plain(c.migrate(input)),expected=structuredClone(input);expected.schemaVersion=21;expected.lockScreen.effects=plain(c.effects(null));
+const migrated=plain(c.migrate(input)),expected=structuredClone(input);expected.schemaVersion=22;expected.lockScreen.effects=plain(c.effects(null));
 assert.deepStrictEqual(migrated,expected);assert.deepStrictEqual(plain(c.migrate(migrated)),migrated);
 assert.deepStrictEqual(migrated.lockScreen.elements,input.lockScreen.elements);
 assert.equal(c.analyze(migrated).errors.length,0);

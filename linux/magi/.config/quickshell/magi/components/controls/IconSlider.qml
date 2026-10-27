@@ -10,6 +10,9 @@ Item {
     property real value: 0
     property bool interactive: true
     property color fillColor: MagiTheme.Theme.sliderFill
+    property bool iconActionEnabled: false
+    property string iconActionName: ""
+    signal iconTriggered()
     signal valueMoved(real value)
     implicitHeight: MagiTheme.RenderTokens.sliderHeight
     opacity: interactive ? 1 : 0.45
@@ -68,5 +71,18 @@ Item {
             if (pressed)
                 applyPosition(mouse.x)
         }
+    }
+    Item {
+        width: 40; height: parent.height
+        visible: root.iconActionEnabled
+        enabled: root.interactive
+        activeFocusOnTab: visible && enabled
+        Accessible.role: Accessible.Button
+        Accessible.name: root.iconActionName
+        Accessible.onPressAction: root.iconTriggered()
+        Keys.onReturnPressed: root.iconTriggered()
+        Keys.onSpacePressed: root.iconTriggered()
+        Rectangle { anchors.fill: parent; radius: 8; color: "transparent"; border.width: parent.activeFocus ? 1 : 0; border.color: MagiTheme.Theme.focus }
+        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.iconTriggered() }
     }
 }

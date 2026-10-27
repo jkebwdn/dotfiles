@@ -17,6 +17,14 @@ MagiBar.ExpandableModule {
         MagiServices.Bluetooth.displayName(connectedDevice)
     readonly property int connectedBattery:
         MagiServices.Bluetooth.batteryPercent(connectedDevice)
+    function deviceList(model) {
+        return (Array.isArray(model) ? model : model ? model.values || [] : []).filter(device => !!device)
+    }
+    readonly property var orderedDevices: {
+        const devices = deviceList(MagiServices.Bluetooth.devices)
+        return devices.filter(device => device.paired || device.bonded)
+            .concat(devices.filter(device => !device.paired && !device.bonded))
+    }
     menuId: "bluetooth"
     icon: !MagiServices.Bluetooth.enabled ? "bluetooth-off"
         : connectedDevice ? "bluetooth-connected" : "bluetooth"
@@ -251,7 +259,7 @@ MagiBar.ExpandableModule {
 
                     Repeater {
                         id: deviceRows
-                        model: MagiServices.Bluetooth.devices
+                        model: root.orderedDevices
 
                         delegate: Rectangle {
                             id: deviceRow

@@ -2,6 +2,8 @@ import QtQuick
 QtObject {
     id: root
     // Keep QObject references, not property snapshots. Delegates bind to updates.
+    // Session-only shortcut override; never written to Settings.
+    property var presentationOverride: null
     property var sourceItems: []
     property var items: []
     function reconcile() {

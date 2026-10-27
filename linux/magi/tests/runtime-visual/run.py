@@ -20,6 +20,7 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
     (config/'test-artwork.ppm').write_bytes(b'P6\n120 40\n255\n' + bytes([0,255,255]) * 120 * 40)
     for name, w, h in [('square',64,64),('portrait',40,120)]:
         (config/f'{name}.ppm').write_bytes(f'P6\n{w} {h}\n255\n'.encode() + bytes([255,120,20]) * w * h)
+    (config/'services/TrayService.qml').write_text('pragma Singleton\nimport QtQuick\nTrayModel {}\n')
     (config/'settings.json').write_text('{"schemaVersion":10}')
     stubs['Battery'] += '\nproperty string statusText: "Unavailable"'
     # Replace only Hyprland input in the copied workspace presenter.
