@@ -2,7 +2,10 @@
   "name": "Home Office Docked",
   "monitors": [
     {
-      "Name": "eDP-1",
+      "name": "eDP-1",
+      "hardware_id": "California Institute of Technology/0x1500",
+      "make": "California Institute of Technology",
+      "model": "0x1500",
       "PxW": 3840,
       "PxH": 2160,
       "Hz": 60,
@@ -32,7 +35,11 @@
       "DragOffY": 726
     },
     {
-      "Name": "HDMI-A-1",
+      "name": "HDMI-A-1",
+      "hardware_id": "Samsung Electric Company/Odyssey G81SF/HNBY700046",
+      "make": "Samsung Electric Company",
+      "model": "Odyssey G81SF",
+      "serial": "HNBY700046",
       "PxW": 3840,
       "PxH": 2160,
       "Hz": 239.995,
@@ -208,5 +215,5 @@
     }
   ],
   "created_at": "2025-12-10T08:04:49.443566691Z",
-  "updated_at": "2025-12-10T08:04:49.443566968Z"
+  "updated_at": "2026-10-18T10:15:24.570260724+01:00"
 }
