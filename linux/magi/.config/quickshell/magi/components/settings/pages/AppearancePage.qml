@@ -30,6 +30,7 @@ SettingsUI.SettingsPage {
         // Unknown future adapter wording stays available in details, never in the narrow column.
         return "Details"
     }
+    maximumBodyWidth: 1100
     title: "Appearance"
     description: ""
     property int packRequest: 0

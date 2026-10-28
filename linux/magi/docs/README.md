@@ -38,6 +38,13 @@ records the bounded fixes, deferred work and validation limits.
 records the corrected diagnosis, bounded candidates and larger recommendations
 awaiting operator review. The lock-mask and Settings-toggle fixes passed native acceptance.
 
+## Settings product finish
+
+[Visual theme gallery and product proposals](review/settings-product-finish.md)
+records the authorised gallery implementation and the sidebar, Lock editor, Bar
+guidance and feedback proposals awaiting review. The gallery and its authorised collapsible preview refinement passed native
+acceptance and the source-cleanliness check.
+
 ## Repository ownership maintenance
 
 Stable workstation bootstraps are separated from generated theme payloads; live

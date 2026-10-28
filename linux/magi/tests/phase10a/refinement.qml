@@ -80,6 +80,7 @@ ShellRoot {
                 const status=findChild(settings,"settingsSaveStatus")
                 compare(status.horizontalAlignment,Text.AlignHCenter)
                 const pair=findChild(settings,"themeGallery")
+                pair.expanded=true;waitForPolish(window.contentItem.Window.window)
                 const packGallery=findChild(settings,"iconPackGallery")
                 compare(packGallery.currentIndex,Icons.IconRegistry.packs.findIndex(p=>p.id==='magi-default'))
                 const appIconBefore=JSON.stringify(Services.LauncherIcons.resolve({name:"Sample",icon:""}))

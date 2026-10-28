@@ -11,6 +11,7 @@ import "../../.config/quickshell/magi/services" as Services
 ShellRoot {
  FloatingWindow {id:win;visible:true;implicitWidth:1080;implicitHeight:780;color:Theme.Theme.background;UI.SettingsContent {anchors.fill:parent}
  Item {id:nestedLayer;anchors.fill:parent;visible:false;z:100
+  UI.SettingsGallery {id:horizontalGallery;x:280;y:420;width:400;model:10;delegate:UI.SettingsChoiceCard {width:176;height:126;text:"Fixture"}}
   UI.SettingsPage {id:outer;x:280;y:100;width:400;height:300
    UI.SettingsPage {id:inner;Layout.fillWidth:true;Layout.preferredHeight:120;Rectangle {implicitHeight:600;Layout.fillWidth:true;color:Theme.Theme.surface}}
    Rectangle {implicitHeight:650;Layout.fillWidth:true;color:Theme.Theme.elevated}
@@ -131,17 +132,20 @@ ShellRoot {
    }
    let p=page("Appearance"),advanced=item("advancedShellStyling")
    const themes=item("themeGallery"),packs=item("iconPackGallery")
+   themes.expanded=true;waitForPolish(win.contentItem.Window.window)
    compare(themes.count,Theme.ThemeRegistry.themes.length);tryVerify(()=>packs.count>=2)
    for(let i=0;i<themes.count;++i){
     const card=themes.itemAt(i),definition=Theme.ThemeRegistry.themes[i]
     compare(card.text,definition.label);compare(card.modelData.roles,definition.roles)
     themes.reveal(i);wait(20);mouseClick(card);compare(Services.Settings.data.appearance.theme,definition.id);verify(card.selected)
-    verify(card.x>=themes.contentX-.1&&card.x+card.width<=themes.contentX+themes.width+.1)
+    const position=card.mapToItem(themes,0,0)
+    verify(position.x>=-.1&&position.x+card.width<=themes.width+.1)
    }
    themes.focusIndex(0);keyClick(Qt.Key_Right);verify(themes.itemAt(1).activeFocus);keyClick(Qt.Key_Return)
    compare(Services.Settings.data.appearance.theme,Theme.ThemeRegistry.ids[1])
    Services.Settings.setTheme("catppuccin-mocha");wait(40);capture("appearance-theme-gallery")
    const appIcons=JSON.stringify(Services.LauncherIcons.resolve({name:"Sample",icon:""})),originalPack=Services.Settings.data.icons.pack
+   p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,packs.mapToItem(p,0,0).y+p.contentY));waitForPolish(win.contentItem.Window.window)
    for(let i=0;i<packs.count;++i){packs.reveal(i);wait(20);mouseClick(packs.itemAt(i));compare(Services.Settings.data.icons.pack,packs.model[i].id);verify(packs.itemAt(i).selected)}
    packs.focusIndex(0);keyClick(Qt.Key_Right);keyClick(Qt.Key_Return);compare(Services.Settings.data.icons.pack,packs.model[1].id)
    compare(JSON.stringify(Services.LauncherIcons.resolve({name:"Sample",icon:""})),appIcons)
@@ -154,6 +158,7 @@ ShellRoot {
    Icons.IconRegistry.packs=inventory
    Services.Settings.setIconPack(originalPack);wait(20);capture("appearance-icon-gallery")
    const roles=JSON.stringify(Services.Settings.data.appearance.roundness.roles)
+   const roundness=item("roundnessChoice-0");p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,roundness.mapToItem(p,0,0).y+p.contentY));waitForPolish(win.contentItem.Window.window)
    for(let i=0;i<3;++i){mouseClick(item("roundnessChoice-"+i));compare(Services.Settings.data.appearance.roundness.master,i)}
    compare(JSON.stringify(Services.Settings.data.appearance.roundness.roles),roles)
    Services.Settings.setRoundness("master",.85);item("roundnessFineTune").expanded=true;wait(20)
@@ -165,10 +170,15 @@ ShellRoot {
    p.contentY=0;mouseWheel(p,10,200,0,-120);compare(p.contentY,48)
    for(let i=0;i<12;++i)mouseWheel(p,10,200,0,-120)
    verify(p.contentY<=p.contentHeight-p.height+.1)
-   p.contentY=0;themes.contentX=0
-   mouseWheel(themes,80,40,0,-120);compare(themes.contentX,0);compare(p.contentY,48)
-   p.contentY=0;mouseWheel(themes,80,40,0,-120,Qt.NoButton,Qt.ShiftModifier);compare(themes.contentX,48);compare(p.contentY,0)
-   mouseWheel(themes,80,40,-120,0);verify(themes.contentX>48);compare(p.contentY,0)
+   p.contentY=0
+   mouseWheel(themes,80,40,0,-120);compare(p.contentY,48)
+   verify(themes.contentX===undefined,"Theme gallery has no horizontal viewport")
+   // Shared horizontal galleries (icon packs etc.) retain Shift-wheel and
+   // trackpad behaviour; the theme grid intentionally uses page scrolling.
+   nestedLayer.visible=true;wait(40);horizontalGallery.contentX=0
+   mouseWheel(horizontalGallery,80,40,0,-120,Qt.NoButton,Qt.ShiftModifier);compare(horizontalGallery.contentX,48)
+   mouseWheel(horizontalGallery,80,40,-120,0);verify(horizontalGallery.contentX>48)
+   nestedLayer.visible=false
    const nav=item("settingsNavigation");nav.contentItem.contentY=0;mouseWheel(nav,20,50,0,-120);verify(nav.contentItem.contentY>0&&nav.contentItem.contentY<=48);nav.contentItem.contentY=0
    nestedLayer.visible=true;wait(40);inner.contentY=0;outer.contentY=0
    mouseWheel(inner,30,50,0,-120);compare(inner.contentY,48);compare(outer.contentY,0)

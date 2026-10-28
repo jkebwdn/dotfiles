@@ -29,20 +29,20 @@ ShellRoot {
     }
     FloatingWindow {
         id: win
-        visible: true; implicitWidth: 1280; implicitHeight: 1000; color: Theme.Theme.background
+        visible: true; implicitWidth: 1280; implicitHeight: 1100; color: Theme.Theme.background
         Row {
             x:24; y:16; spacing:18
             Repeater { model:["clock","workspaces","wifi","bluetooth","volume","tray","battery"]
                 UI.BarModulePreview { required property string modelData; moduleId:modelData; width:100; height:40 }
             }
         }
-        UI.ThemeGallery { id: gallery; x:24; y:80; width:1220; height:160 }
-        UI.ControlCentrePreview { id: cc; x:24; y:260; width:440; height:700 }
-        AudioUI.AudioSurface { x:500; y:270; width:340; height:250; audioService:audio }
-        CalendarUI.CalendarContent { x:900; y:270; width:350; service:Services.Calendar }
-        UI.LockStylePreview { x:500; y:580; width:340; height:120; kind:"credential"; choice:"dots"; palette:Theme.Theme.roles }
-        Notices.NotificationCard { id:notice; x:500; y:800; width:720; record:record; service:({invoke:function(){},dismiss:function(){}}) }
-        Text { x:500; y:740; text:"Authentication preview · no credentials"; color:Theme.Theme.text }
+        UI.ThemeGallery { id: gallery; x:24; y:80; width:1220 }
+        UI.ControlCentrePreview { id: cc; x:24; y:gallery.y+gallery.implicitHeight+18; width:440; height:700 }
+        AudioUI.AudioSurface { x:500; y:cc.y+10; width:340; height:250; audioService:audio }
+        CalendarUI.CalendarContent { x:900; y:cc.y+10; width:350; service:Services.Calendar }
+        UI.LockStylePreview { x:500; y:cc.y+320; width:340; height:120; kind:"credential"; choice:"dots"; palette:Theme.Theme.roles }
+        Notices.NotificationCard { id:notice; x:500; y:cc.y+540; width:720; record:record; service:({invoke:function(){},dismiss:function(){}}) }
+        Text { x:500; y:cc.y+480; text:"Authentication preview · no credentials"; color:Theme.Theme.text }
     }
     Timer { id:finish; interval:100; onTriggered:Qt.quit() }
     TestCase {
@@ -57,7 +57,7 @@ ShellRoot {
                 compare(Theme.Theme.definition.dark,theme.dark)
                 compare(Theme.Theme.roles.text,theme.roles.text)
                 compare(findChild(notice,"notificationTitle").color,theme.roles.text)
-                compare(gallery.currentIndex,Theme.ThemeRegistry.ids.indexOf(theme.id))
+                compare(gallery.visibleThemes[gallery.currentIndex].id,theme.id)
                 verify(gallery.itemAt(gallery.currentIndex).selected)
                 for (const mode of Services.Hub.modes) {
                     Services.Hub.open(mode);tryCompare(hub,"visible",true)
