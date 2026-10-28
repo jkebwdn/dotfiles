@@ -98,6 +98,9 @@ Column {
                     height: visible ? 52 + (authenticating ? 124 : failed ? 38 : 0) : 0
                     radius: Theme.Theme.radiusSmall
                     color: authenticating ? Theme.Theme.elevated : hover.hovered ? Theme.Theme.overlay : "transparent"
+                    Accessible.role: Accessible.Button
+                    Accessible.name: modelData.name + ", " + strength + "% signal"
+                    Accessible.onPressAction: if (visible && !root.controller.connecting) root.controller.selectNetwork(modelData)
                     activeFocusOnTab: visible && !root.controller.connecting
                     Keys.onReturnPressed: root.controller.selectNetwork(modelData)
                     Keys.onSpacePressed: root.controller.selectNetwork(modelData)

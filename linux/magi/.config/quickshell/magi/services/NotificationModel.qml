@@ -129,7 +129,12 @@ Scope {
     onFullscreenChanged: reconcile()
     onCentreOpenChanged: { if (centreOpen) markRead(); reconcile() }
     Timer {
-        interval: 50; repeat: true; running: true
+        interval: 50; repeat: true
+        // Active expirations include non-toast notifications (DND/centre/overflow).
+        // Exit animations also need ticking, even for persistent notifications.
+        running: toastModel.count > 0 || root.records.some(record =>
+            record.notification && record.remaining > 0 && !record.hovered)
+        onRunningChanged: if (running) root.lastTick = Date.now()
         onTriggered: {
             const now = Date.now(), elapsed = Math.max(0, now - root.lastTick)
             root.lastTick = now

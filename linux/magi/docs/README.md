@@ -27,6 +27,11 @@ not current deployment directions. Research documents preserve investigations an
 rejected alternatives. Do not execute old helpers or restore old architecture from
 those records. Current canonical documents above take precedence.
 
+## Phase 16 quality audit
+
+[UX, accessibility and performance findings](review/phase16-ux-quality-audit.md)
+records the bounded fixes, deferred work and validation limits.
+
 ## Repository ownership maintenance
 
 Stable workstation bootstraps are separated from generated theme payloads; live

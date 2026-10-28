@@ -27,6 +27,7 @@ Rectangle {
     border.color: rimColor
     activeFocusOnTab: available && interactive
     Accessible.role: Accessible.Button
+    Accessible.onPressAction: if (available && interactive) primaryTriggered()
     Keys.onSpacePressed: if (available && interactive) primaryTriggered()
     Keys.onReturnPressed: if (available && interactive) primaryTriggered()
     Keys.onMenuPressed: if (available && interactive) secondaryTriggered()
@@ -35,6 +36,16 @@ Rectangle {
     HoverHandler { id: hover }
     Accessible.name: title + (subtitle.length ? ": " + subtitle : "")
 
+    // Independent focus treatment preserves the configured fill/rim and icon ink.
+    Rectangle {
+        anchors.fill: parent
+        anchors.margins: 2
+        radius: Math.max(0, root.radius - 2)
+        color: "transparent"
+        border.width: 1
+        border.color: MagiTheme.Theme.focus
+        visible: root.activeFocus && root.available && root.interactive
+    }
     Controls.Icon {
         anchors.centerIn: parent
         role: root.icon

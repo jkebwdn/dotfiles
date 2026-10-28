@@ -47,7 +47,7 @@ Item {
             anchors.fill: parent
             radius: parent.radius
             color: "transparent"
-            border.width: MagiTheme.RenderTokens.sliderBorder
+            border.width: root.activeFocus ? Math.max(1, MagiTheme.RenderTokens.sliderBorder) : MagiTheme.RenderTokens.sliderBorder
             border.color: root.activeFocus ? MagiTheme.Theme.focus : MagiTheme.Theme.sliderRim
         }
     }

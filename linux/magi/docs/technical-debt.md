@@ -10,7 +10,7 @@ No critical vulnerability has been established by this bounded review.
 | High | Native lock transport tests cannot complete in this sandbox; SOCK_SEQPACKET send returns EPERM | Host offline transport verification remains required; do not weaken auth assertions or claim a security pass | Yes for documentation-only cleanup; no for auth changes |
 | Medium | Settings migration-backup trigger drift | Resolved: persistence compares the on-disk version with the outgoing Schema-analyzed document; current-schema saves create no migration backup. Original migration/recovery contents and failed-write retry protection remain covered | Resolved; existing backups retained |
 | Low | Profile Settings provisional-width/column cycle | Fixed in shared SettingsRow using parent available width; strict long-text/pinned-preview regression and native smoke pass | Resolved; see Profile layout review |
-| Medium | `QuickActions.qml` refreshes three status requests every 5s; Brightness polls every 2s | Repeated Python/subprocess work; investigate event-driven adapters before changing behavior | Yes |
+| Medium | `QuickActions.qml` refreshes three status requests every 5s; Brightness polls every 2s | Repeated Python/subprocess work; Clipboard additionally multiplexes two queues with a 30ms wait. Investigate event-driven adapters before changing behavior | Yes |
 | Medium | Audio application grouping falls back to application.name after ID/binary | Same-name applications can share one volume row; document metadata limits, revisit only with real collisions | Yes; accepted current behavior |
 | Medium | Native authenticated Bluetooth hardware acceptance remains absent | Synthetic Agent1 tests do not prove every PIN/passkey device; test suitable hardware when available | Yes; keep capability limitations explicit |
 | Medium | Displays and fingerprint have synthetic groundwork but incomplete physical production acceptance | Complete guarded hardware gates before expanding deployment | Yes |
@@ -28,3 +28,17 @@ appears only in the deliberate migration scrub and regression fixtures. Historic
 migration support is not dead code.
 
 Icon fallback compositor setup and old schema/catalogue/Theme assumptions were corrected in tests during regression reconciliation. No production resolver or runtime changes were made.
+
+## Phase 16 quality follow-up
+
+See [ranked audit and evidence](review/phase16-ux-quality-audit.md). Four findings have
+accepted, tested fixes: primary-tile focus, borderless-slider focus, Wi-Fi accessible
+names/actions and idle notification expiry work. Native/final acceptance is recorded
+in that audit rather than inferred from source inspection.
+
+| Severity | Unresolved issue | Direction / deferral |
+| --- | --- | --- |
+| Medium | Bar-wide keyboard traversal and focus handoff when a custom control becomes unavailable are incomplete | Define panel keyboard-grab/focus-return semantics before expanding navigation; current shortcuts remain |
+| Medium | Elided audio/application/SSID labels lack consistent bounded hover disclosure | Follow a shared tooltip policy without expanding rows or leaking sensitive values |
+| Medium | Some canonical palettes have weak muted/coloured text contrast | Keep measured ratios in themes.md; review role/usage tradeoffs with the operator, not silent palette changes |
+| Medium | No reduced-motion contract | Consider a deliberate accessibility preference separately; do not add Settings in this polish phase |

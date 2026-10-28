@@ -25,6 +25,7 @@ Column {
         TextInput {
             id: input
             objectName: "wifiPasswordInput"
+            Accessible.name: "Wi-Fi password for " + root.network.name
             anchors.fill: parent; anchors.margins: 6
             enabled: !root.controller.connecting
             color: Theme.Theme.text
