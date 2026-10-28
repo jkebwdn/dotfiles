@@ -32,6 +32,12 @@ those records. Current canonical documents above take precedence.
 [UX, accessibility and performance findings](review/phase16-ux-quality-audit.md)
 records the bounded fixes, deferred work and validation limits.
 
+## Phase 16B review candidate
+
+[Lock mask feedback, Settings toggle and product-finish review](review/phase16b-settings-product-review.md)
+records the corrected diagnosis, bounded candidates and larger recommendations
+awaiting operator review. The lock-mask and Settings-toggle fixes passed native acceptance.
+
 ## Repository ownership maintenance
 
 Stable workstation bootstraps are separated from generated theme payloads; live

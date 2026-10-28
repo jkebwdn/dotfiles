@@ -1,9 +1,9 @@
 # MAGI keybindings and IPC
 
-> Current source inventory. Phase15 changes no keybindings.
+> Current source inventory. Super+S toggles the existing Settings host.
 
 Canonical source: `linux/t15g/hypr/.config/hypr/hyprland.lua`.
-Reviewed 2026-10-27; source bindings below have distinct key combinations.
+Reviewed 2026-10-28; source bindings below have distinct key combinations.
 Hyprland Lua callbacks may appear as numeric `_lua` dispatch IDs in `hyprctl binds`;
 a numeric callback is not proof of a conflicting command. Live confirmation is
 separate from source inspection.
@@ -19,7 +19,7 @@ separate from source inspection.
 | Super+B | `magi toggle bluetooth` | Bluetooth |
 | Super+A | `magi toggle audio` | Audio |
 | Super+T | `magi toggle tray` | Temporary inline Bar tray toggle, no popup/save |
-| Super+S | `hub open settings` | Settings (open, not toggle) |
+| Super+S | `hub toggle settings` | Settings toggle |
 
 Super+Q closes the active application through Hyprland; Super+V remains its floating
 window toggle. Neither should be reassigned to a MAGI utility.

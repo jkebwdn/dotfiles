@@ -7,28 +7,25 @@ Item {
     property string style: "dots"
     readonly property int visibleCount: Math.min(16, Math.max(0, characterCount))
     implicitHeight: 26
-    // Alternative styles deliberately reveal only empty/nonempty, never count.
-    Row {
-        anchors.centerIn: parent; spacing: 5
-        visible: root.style === "segments" && root.characterCount > 0
-        Repeater { model: 5; Rectangle {width:18;height:6;radius:2;color:tokens.accent} }
-    }
-    Rectangle {
-        anchors.centerIn: parent
-        visible: ["line","ring","minimal"].includes(root.style) && root.characterCount > 0
-        width: root.style === "line" ? 100 : root.style === "ring" ? 22 : 9
-        height: root.style === "line" ? 3 : width
-        radius: height/2
-        color: root.style === "ring" ? "transparent" : tokens.accent
-        border.width: root.style === "ring" ? 3 : 0; border.color: tokens.accent
-    }
+    // Every mask uses the same bounded count feedback; no credential text enters QML.
     Row {
         objectName: "dotRow"
-        visible: root.style === "dots" && root.visibleCount > 0
+        visible: root.visibleCount > 0
         anchors.centerIn: parent; spacing: tokens.dotGap
         Repeater {
             model: root.visibleCount
-            Rectangle { width: tokens.dotSize; height: width; radius: width / 2; color: tokens.accent }
+            Item {
+                width: tokens.dotSize; height: width
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: root.style === "minimal" ? 4 : tokens.dotSize
+                    height: root.style === "line" ? 3 : root.style === "segments" ? 6 : width
+                    radius: root.style === "segments" ? 2 : height / 2
+                    color: root.style === "ring" ? "transparent" : tokens.accent
+                    border.width: root.style === "ring" ? 2 : 0
+                    border.color: tokens.accent
+                }
+            }
         }
         Text {
             visible: root.characterCount > 16

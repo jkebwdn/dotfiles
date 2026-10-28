@@ -67,11 +67,18 @@ int main(int argc,char** argv) {
   assert(magi::Presentation::render(frame,"fixture","Locked","",{},auth,&sample));
  }
  std::cout<<"Five plain frames: "<<plainTime<<" ms; five enriched frames: "<<elapsed.elapsed()<<" ms\n";
- for(const auto& style:{"line","segments","ring","minimal"}) {
+ for(const auto& style:{"dots","line","segments","ring","minimal"}) {
   const QByteArray source=QByteArray("import QtQuick\nimport \"qrc:/magi-lock/qml\" as Lock\nItem {id:root;property int characterCount:0;Lock.LockTokens{id:tokens} Lock.LockCredential{anchors.centerIn:parent;width:300;tokens:tokens;characterCount:root.characterCount;style:\"")+style+"\"}}";
-  magi::AuthPresentation auth;auth.count=1;
-  assert(magi::Presentation::render(frame,"fixture","Locked","",source,auth,&empty));const auto one=frame.copy();auth.count=100;
-  assert(magi::Presentation::render(frame,"fixture","Locked","",source,auth,&empty));assert(frame==one);
+  // Only synthetic counts reach the presenter; never password text. Every style
+  // gives incremental editing feedback with the existing dots cap/overflow policy.
+  magi::AuthPresentation auth;auth.count=0;
+  assert(magi::Presentation::render(frame,"fixture","Locked","",source,auth,&empty));const auto cleared=frame.copy();
+  auth.count=1;assert(magi::Presentation::render(frame,"fixture","Locked","",source,auth,&empty));const auto one=frame.copy();assert(one!=cleared);
+  auth.count=2;assert(magi::Presentation::render(frame,"fixture","Locked","",source,auth,&empty));assert(frame!=one);
+  auth.count=1;assert(magi::Presentation::render(frame,"fixture","Locked","",source,auth,&empty));assert(frame==one);
+  auth.count=17;assert(magi::Presentation::render(frame,"fixture","Locked","",source,auth,&empty));const auto capped=frame.copy();
+  auth.count=100;assert(magi::Presentation::render(frame,"fixture","Locked","",source,auth,&empty));assert(frame==capped);
+  auth.count=0;assert(magi::Presentation::render(frame,"fixture","Locked","",source,auth,&empty));assert(frame==cleared);
  }
  settings["lockScreen"]=QJsonObject{};write(config+"/settings.json",settings);
  assert(!magi::VisualData::load(config,state,data).values.contains("media"));

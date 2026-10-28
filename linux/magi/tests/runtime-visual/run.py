@@ -33,6 +33,34 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
     workspace.write_text(source)
     for name,body in stubs.items():
         (config/f'services/{name}.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject { id: root\n'+body+'\n}')
+    if len(sys.argv) > 1 and sys.argv[1] == 'settings-product.qml':
+        # Review geometry with deterministic library/status data, never compositor
+        # discovery. Real wallpaper apply/failure coverage has its own harness.
+        (config/'services/Wallpaper.qml').write_text('''pragma Singleton
+import QtQuick
+QtObject {
+    readonly property var preferences: Settings.data.wallpaper
+    readonly property bool enabled: preferences.enabled
+    property bool busy: false
+    property bool currentKnown: true
+    property string error: ""
+    property string message: ""
+    property var warnings: []
+    property string scope: ""
+    property string mode: "cover"
+    property string filter: "All"
+    property string currentPath: "fixture"
+    property var monitors: [{name:"TEST-1"}]
+    property var state: ({favourites:[],recents:[]})
+    property var results: [{path:"fixture",name:"Synthetic landscape",url:Qt.resolvedUrl("../test-artwork.ppm")}]
+    function prepare() {}
+    function refresh() {}
+    function random() {}
+    function choose(path) {}
+    function favourite(path) {}
+    function start(request) {}
+}
+''')
     # Offscreen Qt has no layer-shell backend. Adapt only the native wrapper;
     # production bar content, masks and shared animation owners remain intact.
     path=config/'components/bar/Bar.qml'
@@ -77,7 +105,7 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
                       and 'This plugin does not support setting window masks' not in line
                       and 'WARN: Unable to find hyprland socket. Cannot connect to hyprland.' not in line)
     print(checked)
-    assert result.returncode==0 and 'PASS' in output and ({'quality.qml':'Phase16 quality PASS','palettes.qml':'Palette expansion preview PASS','profile.qml':'Profile responsive pinned navigation PASS','../phase12d/runtime.qml':'Phase12D runtime composition PASS','../phase12b/surfaces.qml':'Phase12B surfaces PASS','typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
+    assert result.returncode==0 and 'PASS' in output and ({'settings-product.qml':'Settings product review PASS','quality.qml':'Phase16 quality PASS','palettes.qml':'Palette expansion preview PASS','profile.qml':'Profile responsive pinned navigation PASS','../phase12d/runtime.qml':'Phase12D runtime composition PASS','../phase12b/surfaces.qml':'Phase12B surfaces PASS','typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
 
     if len(sys.argv) > 1 and sys.argv[1] == 'palettes.qml' and env.get('MAGI_PALETTE_PREVIEWS'):
         captures = Path(env['MAGI_PALETTE_PREVIEWS'])

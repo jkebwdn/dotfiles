@@ -7,6 +7,7 @@ by run-all's log, including failures classified as environment-limited.
 """
 from pathlib import Path
 import errno
+import hashlib
 import json
 import os
 import re
@@ -19,6 +20,15 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 NATIVE = ROOT / 'native/lock'
 BASELINE = '4a26d6232c97266f011355b8fb932f8e0436c0e6'
+# Phase 16B: the operator ran this exact presentation-only delta on the host:
+# 21/21 CTest and 18/18 Rust tests pass (2026-10-28). Keep all other native
+# files identical to BASELINE. Hashes prevent future presentation edits from
+# silently inheriting this environment classification. See the Phase 16B review.
+AUDITED_PRESENTATION = {
+    'qml/LockCredential.qml': '667653887b956ad7960ec24ec799b9b8f779e52cf9da7385ab9223ed690b858f',
+    'tests/auxiliary_test.cpp': 'e4f83f1cc14c9e9e1baf6272083531c4abba1a2c68d461adb35bd8230568a291',
+}
+
 CTEST_LIMITS = {
     'auth_production': 'Check failed at line 125',
     'auth_development': 'Check failed at line 125',
@@ -60,6 +70,12 @@ def main():
         print('SOCK_SEQPACKET probe:', repr(error), flush=True)
     unchanged = subprocess.run(['git', 'diff', '--quiet', BASELINE, '--',
         'linux/magi/native/lock'], cwd=ROOT.parents[1]).returncode == 0
+    if not unchanged:
+        exclusions = [':(exclude)linux/magi/native/lock/' + name for name in AUDITED_PRESENTATION]
+        unchanged = all(hashlib.sha256((NATIVE/name).read_bytes()).hexdigest() == digest
+                        for name, digest in AUDITED_PRESENTATION.items()) and subprocess.run(
+            ['git', 'diff', '--quiet', BASELINE, '--', 'linux/magi/native/lock', *exclusions],
+            cwd=ROOT.parents[1]).returncode == 0
     with tempfile.TemporaryDirectory(prefix='magi-native-regression-') as temporary:
         stage = Path(temporary); auth = stage/'auth'; build = stage/'build'
         runtime = stage/'runtime'; runtime.mkdir(mode=0o700)

@@ -8,7 +8,7 @@ config=root/'linux/t15g/hypr/.config/hypr/hyprland.lua'
 source=config.read_text()
 source='\n'.join(line for line in source.splitlines() if not line.lstrip().startswith('--'))
 expected={'SPACE':'hub toggle apps','N':'hub toggle notifications','C':'hub toggle clipboard',
-          'E':'hub toggle emoji','M':'magi toggle controlcentre','W':'magi toggle wifi','B':'magi toggle bluetooth','S':'hub open settings'}
+          'E':'hub toggle emoji','M':'magi toggle controlcentre','W':'magi toggle wifi','B':'magi toggle bluetooth','S':'hub toggle settings'}
 bindings=re.findall(r'hl\.bind\(\s*SUPER\s*\.\.\s*"([^"\n]+)"\s*,\s*hl\.dsp\.exec_cmd\(\s*"([^"\n]+)"',source)
 chords=re.findall(r'hl\.bind\(\s*SUPER\s*\.\.\s*"([^"\n]+)"',source)
 for key,route in expected.items():

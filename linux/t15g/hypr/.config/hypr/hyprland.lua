@@ -242,7 +242,7 @@ hl.bind(SUPER .. " + B", hl.dsp.exec_cmd("quickshell ipc -c magi call magi toggl
 hl.bind(SUPER .. " + A", hl.dsp.exec_cmd("quickshell ipc -c magi call magi toggle audio"))
 hl.bind(SUPER .. " + T", hl.dsp.exec_cmd("quickshell ipc -c magi call magi toggle tray"))
 
-hl.bind(SUPER .. " + S", hl.dsp.exec_cmd("quickshell ipc -c magi call hub open settings"))
+hl.bind(SUPER .. " + S", hl.dsp.exec_cmd("quickshell ipc -c magi call hub toggle settings"))
 
 ----------------------------------------------------------------
 -- FOCUS NAVIGATION

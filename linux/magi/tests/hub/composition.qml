@@ -115,6 +115,25 @@ ShellRoot {
                 compare(window.content.currentContent,settings)
                 compare(findChild(settings,"settingsPage-Bar"),barPage)
                 Services.SettingsWindowState.page = "Launcher"; wait(50)
+                // The exact Super+S target delegates to this existing host route.
+                const launcherPage = findChild(settings,"settingsPage-Application Launcher")
+                const savedData = JSON.stringify(Services.Settings.data)
+                const savedRevision = Services.Settings.revision
+                launcherPage.contentY = Math.min(80, Math.max(0, launcherPage.contentHeight-launcherPage.height))
+                const savedScroll = launcherPage.contentY
+                for (let i=0;i<6;++i) {
+                    Services.Hub.toggleFromShortcut("settings")
+                    compare(Services.Hub.opened,false);compare(Services.SettingsWindowState.shown,false)
+                    Services.Hub.toggleFromShortcut("settings")
+                    compare(Services.Hub.opened,true);compare(Services.SettingsWindowState.shown,true)
+                    compare(window.content.currentContent,settings)
+                    compare(Services.SettingsWindowState.page,"Launcher")
+                    compare(findChild(settings,"settingsPage-Application Launcher"),launcherPage)
+                }
+                wait(350)
+                compare(launcherPage.contentY,savedScroll)
+                compare(JSON.stringify(Services.Settings.data),savedData)
+                compare(Services.Settings.revision,savedRevision)
                 const choice = findChild(settings,"settingsSelector-Layout")
                 verify(choice !== null)
                 choice.forceActiveFocus(); keyClick(Qt.Key_Space); wait(100)
