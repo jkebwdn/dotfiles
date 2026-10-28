@@ -31,6 +31,12 @@ ColumnLayout {
         Services.Settings.setValue("bar", "modules", modules);
     }
     Layout.fillWidth: true
+    SettingsHelp {
+        objectName: "barSelectionContext"
+        text: root.individual ? "Selected item · identity and options"
+            : root.family === "host" ? "Bar background · select an item or group in the preview"
+            : "Shared style · changes affect the whole group"
+    }
     SettingsSection {
         objectName: "barIdentityInspector"
         visible: root.individual
@@ -68,7 +74,7 @@ ColumnLayout {
         collapsible: root.individual
         expanded: !root.individual
         title: root.family === "host" ? "Bar background" : root.family === "workspacePills" ? "Workspace pills" : "Status pills"
-        description: ""
+        description: root.individual ? "Shared with other items in this group." : ""
         SettingsToggle {
             visible: root.family !== "workspacePills"
             text: root.family === "host" ? "Show Bar background" : "Pill background enabled"
@@ -78,7 +84,7 @@ ColumnLayout {
         SettingsRow {
             visible: root.family !== "workspacePills"
             Label {
-                text: "Background role"
+                text: "Background colour"
                 Layout.fillWidth: true
             }
             SettingsSelector {
@@ -141,7 +147,7 @@ ColumnLayout {
         }
         SettingsHelp {
             visible: root.family === "statusPills"
-            text: root.instance === "tray" ? "System Tray shares Status pill styling. Application icons retain their own artwork and colours." : "Connected: module accent. Unavailable: muted. Volume: warning when muted."
+            text: root.instance === "tray" ? "System Tray shares Status pill styling. Application icons retain their own artwork and colours." : "Connected items use their accent. Unavailable items are muted; muted audio uses the warning colour."
         }
     }
     SurfaceStyleSettings {

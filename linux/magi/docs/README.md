@@ -41,9 +41,9 @@ awaiting operator review. The lock-mask and Settings-toggle fixes passed native 
 ## Settings product finish
 
 [Visual theme gallery and product proposals](review/settings-product-finish.md)
-records the authorised gallery implementation and the sidebar, Lock editor, Bar
-guidance and feedback proposals awaiting review. The gallery and its authorised collapsible preview refinement passed native
-acceptance and the source-cleanliness check.
+records the accepted collapsible gallery and the subsequent grouped-navigation,
+Lock composition, Bar guidance and feedback implementation. All passed native
+interaction acceptance and source-cleanliness checks; Settings schema remains 22.
 
 ## Repository ownership maintenance
 

@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import "../../../services" as Services
 import "../../../theme" as Theme
 import ".." as UI
+import "../SettingsFeedback.js" as Feedback
 import "../../../settings/SettingsSchema.js" as Schema
 UI.SettingsPage {
     id: root
@@ -45,7 +46,11 @@ UI.SettingsPage {
             }
             UI.SettingsHelp { text: "For the Bar, MAGI menus and supported applications. Text and content stay opaque." }
             UI.SettingsHelp { text: "Wallpaper and lock-screen styling stay separate." }
-            UI.SettingsHelp { text: Services.ApplicationAppearanceService.active ? ({"released":"Using individual defaults","reload-required":"Reload Ghostty to finish","reload_requested":"Ghostty reload requested","next_launch":"Ready for next launch","reload_required":"Reload independent Ghostty instances","error":"Could not apply appearance"})[Services.ApplicationAppearanceService.status] || "" : "Preview only · native review pending" }
+            UI.SettingsHelp {
+                objectName: "applicationAppearanceFeedback"
+                text: Feedback.appearance(Services.ApplicationAppearanceService.status, Services.ApplicationAppearanceService.active, Services.Settings.saveState)
+                visible: text.length > 0
+            }
         }
     }
     UI.SettingsSection {
@@ -84,9 +89,12 @@ UI.SettingsPage {
         UI.SettingsHelp { text: "Turning this off restores your desktop’s configured amount. Blur passes and which surfaces use blur stay unchanged." }
         UI.SettingsHelp {
             text: Services.GlobalBlurService.status === "error" ? "Could not apply global blur"
-                : Services.GlobalBlurService.status === "applied" ? "Applied" : "Using desktop defaults"
+                : ""
+            visible: text.length > 0
         }
-        UI.SettingsHelp { visible: Services.GlobalBlurService.error.length > 0; text: Services.GlobalBlurService.error }
+        UI.SettingsSection { title: "Error details"; collapsible: true; visible: Services.GlobalBlurService.error.length > 0
+            UI.SettingsHelp { text: Services.GlobalBlurService.error }
+        }
         UI.SettingsButton {
             actionKind: "reset"; text: "Reset global blur"
             onClicked: Services.Settings.setValue("appearance", "globalBlur", Schema.defaults().appearance.globalBlur)

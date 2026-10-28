@@ -28,6 +28,11 @@ UI.SettingsPage {
         next.elements[selected][key]=value
         canvas.cancel();save(next)
     }
+    UI.SettingsSection {
+        objectName: "lockPresets"
+        title: "Layout · " + root.layout.preset.charAt(0).toUpperCase() + root.layout.preset.slice(1)
+        collapsible: true
+        Layout.topMargin: 0
     Flow {
         Layout.fillWidth: true; Layout.preferredHeight: childrenRect.height; spacing: 8
         Repeater {
@@ -42,37 +47,29 @@ UI.SettingsPage {
             }
         }
     }
-    Flow {
-        Layout.fillWidth:true;Layout.preferredHeight:childrenRect.height;spacing:8
-        UI.SettingsSelector {
-            model:["Idle","Typing","Authenticating","Wrong password","Caps Lock","Preview weather","Preview media","Preview both"]
-            currentIndex:root.previewState;Accessible.name:"Synthetic preview state"
-            onActivated:root.previewState=currentIndex
-        }
-        UI.SettingsSelector {
-            model:["Current display","16:9","16:10","Ultrawide"]
-            currentIndex:root.aspectIndex;Accessible.name:"Preview aspect ratio"
-            onActivated:root.aspectIndex=currentIndex
-        }
     }
     GridLayout {
-        Layout.fillWidth:true;columns:width>=790 ? 2 : 1;columnSpacing:20;rowSpacing:16
+        id: editor; objectName:"lockEditorComposition"
+        Layout.fillWidth:true;columns:width>=650 ? 2 : 1;columnSpacing:20;rowSpacing:16
         ColumnLayout {
             Layout.fillWidth:true;Layout.minimumWidth:240;Layout.preferredWidth:700;Layout.alignment:Qt.AlignTop
             UI.LockLayoutCanvas {
                 id:canvas;objectName:"lockLayoutCanvas"
-                Layout.fillWidth:true;Layout.preferredHeight:width/root.aspect
+                Layout.fillWidth:true;Layout.maximumWidth:(editor.columns===1 ? Math.max(140, Math.min(210, root.height*.34)) : 350)*root.aspect
+                Layout.preferredHeight:width/root.aspect;Layout.alignment:Qt.AlignHCenter
                 layout:root.layout;palette:root.colors;aspect:root.aspect;stateIndex:root.previewState;depthPreview:root.depthPreview
                 selected:root.selected
                 onSelectionRequested:id=>root.selected=id
                 onCommitted:value=>root.save(value)
             }
-            UI.SettingsHelp {text:"Drag to arrange · arrows to nudge · Shift for larger steps · Alt to ignore guides · Escape to cancel"}
+            UI.SettingsHelp {text:"Select an element to edit · drag to arrange"}
         }
         ColumnLayout {
-            Layout.fillWidth:true;Layout.preferredWidth:230;Layout.maximumWidth:330;Layout.alignment:Qt.AlignTop;spacing:10
-            Label {color:Theme.Theme.text;text:root.layout.preset==="custom" ? "Custom layout" : "Selected element";font.bold:true}
+            objectName:"lockElementInspector"
+            Layout.fillWidth:true;Layout.preferredWidth:230;Layout.maximumWidth:editor.columns===1 ? Infinity : 330;Layout.alignment:Qt.AlignTop;spacing:10
+            Label {objectName:"lockSelectedHeading";color:Theme.Theme.text;text:"Edit " + ({time:"Time",identity:"Identity",authentication:"Authentication",weather:"Weather",media:"Media"})[root.selected];font.bold:true;Accessible.role:Accessible.Heading}
             UI.SettingsSelector {
+                objectName:"lockElementSelector"
                 model:["Time · clock & date","Identity · avatar & name","Authentication","Weather","Media"]
                 currentIndex:Model.ids().indexOf(root.selected);Accessible.name:"Select lock screen element"
                 onActivated:root.selected=Model.ids()[currentIndex]
@@ -125,11 +122,10 @@ UI.SettingsPage {
             UI.SettingsToggle {visible:root.selected==="media";text:"Show artwork";checked:root.layout.effects.artwork;onClicked:root.effect("artwork",checked)}
             UI.SettingsHelp {visible:root.selected==="media";text:"Opt in to showing track information while locked. Read-only; cached data may be older than the current track."}
             UI.SettingsHelp {visible:root.selected==="weather";text:"Uses Profile weather settings and cached observations. Preview content is synthetic."}
-            UI.SettingsToggle {text:"Depth effect";enabled:false;checked:root.layout.effects.depth}
-            UI.SettingsToggle {text:"Preview depth effect";checked:root.depthPreview;onClicked:root.depthPreview=checked}
-            UI.SettingsHelp {text:"Depth is unavailable until this wallpaper has a prepared subject cutout. Try the synthetic preview to see the effect."}
             UI.SettingsSection {
                 title:"Fine tune";collapsible:true
+                UI.SettingsToggle {text:"Depth effect";enabled:false;checked:root.layout.effects.depth}
+                UI.SettingsHelp {text:"Depth needs a prepared subject cutout. Try Preview options to see a synthetic example."}
                 UI.SettingsSelector {
                     model:Model.anchors();Accessible.name:"Position anchor"
                     currentIndex:Model.anchors().indexOf(root.layout.elements[root.selected].anchor)
@@ -141,6 +137,28 @@ UI.SettingsPage {
                 UI.SettingsNumber {from:-100;to:100;value:Math.round(root.layout.elements[root.selected].offsetY*100);Accessible.name:"Vertical offset";onValueModified:root.edit("offsetY",value/100)}
             }
         }
+    }
+    UI.SettingsSection {
+        objectName: "lockPreviewOptions"
+        title: "Preview options"
+        collapsible: true
+        Layout.topMargin: 0
+    Flow {
+        Layout.fillWidth:true;Layout.preferredHeight:childrenRect.height;spacing:8
+        UI.SettingsSelector {
+            model:["Idle","Typing","Authenticating","Wrong password","Caps Lock","Preview weather","Preview media","Preview both"]
+            currentIndex:root.previewState;Accessible.name:"Synthetic preview state"
+            onActivated:root.previewState=currentIndex
+        }
+        UI.SettingsSelector {
+            model:["Current display","16:9","16:10","Ultrawide"]
+            currentIndex:root.aspectIndex;Accessible.name:"Preview aspect ratio"
+            onActivated:root.aspectIndex=currentIndex
+        }
+    }
+        UI.SettingsToggle {text:"Preview depth effect";checked:root.depthPreview;onClicked:root.depthPreview=checked}
+        UI.SettingsHelp {text:"Arrows to nudge · Shift for larger steps · Alt to ignore guides · Escape to cancel"}
+        UI.SettingsHelp {text:"Preview states are synthetic and do not change your lock screen."}
     }
     UI.SettingsButton {text:"Reset lock screen";flat:true;onClicked:Services.Settings.resetSection("lockScreen")}
 }

@@ -7,9 +7,38 @@ import "../../theme" as Theme
 import "../../services" as Services
 import "../controls" as MagiControls
 import "pages" as Pages
+import "SettingsFeedback.js" as Feedback
 FocusScope {
     id: window
     property real outputWidth: 1920
+    readonly property var navigationGroups: [
+        {title:"Personalisation", pages:["Appearance", "Wallpaper", "Applications", "Profile"]},
+        {title:"Desktop", pages:["Bar", "Control Centre", "Hub", "Date & time"]},
+        {title:"Everyday tools", pages:["Launcher", "Notifications", "Clipboard", "Emoji"]},
+        {title:"Session & hardware", pages:["Lock Screen", "Security", "Power & Idle", "Displays"]}
+    ]
+    readonly property var navigationPages: navigationGroups.reduce((pages, group) => pages.concat(group.pages), [])
+    function revealNavigation(button) {
+        const view = navigationScroll.contentItem
+        const y = button.mapToItem(view.contentItem, 0, 0).y
+        view.contentY = Math.max(0, Math.min(Math.max(0, view.contentHeight - view.height),
+            y < view.contentY ? y : y + button.height > view.contentY + view.height ? y + button.height - view.height : view.contentY))
+    }
+    function focusNavigation(page, delta) {
+        const next = navigationPages[Math.max(0, Math.min(navigationPages.length - 1, navigationPages.indexOf(page) + delta))]
+        const button = navigationButtons.itemAt(navigationPages.indexOf(next)).button
+        button.forceActiveFocus(Qt.TabFocusReason)
+    }
+    function revealSelectedNavigation() {
+        // During keyboard traversal the focused destination can differ from the
+        // selected page. Never scroll that focus away when the viewport resizes.
+        for (let i = 0; i < navigationButtons.count; ++i) {
+            const button = navigationButtons.itemAt(i).button
+            if (button.activeFocus) { revealNavigation(button); return }
+        }
+        const entry = navigationButtons.itemAt(navigationPages.indexOf(Services.SettingsWindowState.page))
+        if (entry) revealNavigation(entry.button)
+    }
     function focusContent() { forceActiveFocus() }
     Pane {
         objectName: "settingsApplicationPane"
@@ -56,6 +85,7 @@ FocusScope {
                     }
                     ScrollView {
                         id: navigationScroll
+                        onHeightChanged: Qt.callLater(window.revealSelectedNavigation)
                         ScrollInput { view: navigationScroll.contentItem }
                         objectName: "settingsNavigation"
                         Layout.fillWidth: true
@@ -67,21 +97,42 @@ FocusScope {
                             width: parent.width
                             spacing: 0
                             Repeater {
-                                model: ["Appearance", "Applications", "Bar", "Control Centre", "Hub", "Profile", "Date & time", "Notifications", "Clipboard", "Launcher", "Emoji", "Wallpaper", "Power & Idle", "Displays", "Lock Screen", "Security"]
-                                SettingsNavigationItem {
-                                    id: navigationButton
+                                id: navigationButtons
+                                model: window.navigationPages
+                                ColumnLayout {
+                                    id: navigationEntry
                                     required property string modelData
-                                    objectName: "settingsNav-" + modelData
+                                    readonly property string groupTitle: window.navigationGroups.find(group => group.pages[0] === modelData)?.title || ""
+                                    property alias button: navigationButton
                                     Layout.fillWidth: true
-                                    iconRole: ({"Applications":"apps","Hub":"hub","Control Centre":"settings","Bar":"menu","Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image","Power & Idle":"power","Displays":"settings","Lock Screen":"lock","Security":"lock"})[modelData]
-                                    text: modelData === "Applications" ? "Transparency" : modelData
-                                    checked: modelData === "Appearance" ? Services.SettingsWindowState.inAppearance : Services.SettingsWindowState.page === modelData
-                                    onClicked: Services.SettingsWindowState.page = modelData
-                                    onActiveFocusChanged: if (activeFocus) {
-                                        const view = navigationScroll.contentItem
-                                        if (y < view.contentY) view.contentY = y
-                                        else if (y + height > view.contentY + view.height)
-                                            view.contentY = y + height - view.height
+                                    spacing: 0
+                                    Label {
+                                        objectName: "settingsGroup-" + navigationEntry.groupTitle
+                                        visible: navigationEntry.groupTitle.length > 0
+                                        text: navigationEntry.groupTitle
+                                        Layout.fillWidth: true
+                                        Layout.topMargin: navigationEntry.modelData === window.navigationPages[0] ? 0 : 10
+                                        Layout.bottomMargin: 4
+                                        font.pixelSize: 11
+                                        color: Theme.Theme.subtext
+                                        Accessible.role: Accessible.Heading
+                                    }
+                                    SettingsNavigationItem {
+                                        id: navigationButton
+                                        readonly property string pageId: navigationEntry.modelData
+                                        objectName: "settingsNav-" + pageId
+                                        Layout.fillWidth: true
+                                        iconRole: ({"Applications":"apps","Hub":"hub","Control Centre":"settings","Bar":"menu","Appearance":"settings","Profile":"profile","Date & time":"calendar","Notifications":"notifications","Clipboard":"clipboard","Launcher":"apps","Emoji":"emoji","Wallpaper":"image","Power & Idle":"power","Displays":"settings","Lock Screen":"lock","Security":"lock"})[pageId]
+                                        text: pageId === "Applications" ? "Transparency" : pageId
+                                        Accessible.name: text
+                                        checked: pageId === "Appearance" ? Services.SettingsWindowState.inAppearance : Services.SettingsWindowState.page === pageId
+                                        onClicked: Services.SettingsWindowState.page = pageId
+                                        onActiveFocusChanged: if (activeFocus) window.revealNavigation(this)
+                                        onCheckedChanged: if (checked) Qt.callLater(window.revealSelectedNavigation)
+                                        Keys.onReturnPressed: clicked()
+                                        Keys.onEnterPressed: clicked()
+                                        Keys.onDownPressed: window.focusNavigation(pageId, 1)
+                                        Keys.onUpPressed: window.focusNavigation(pageId, -1)
                                     }
                                 }
                             }
@@ -103,11 +154,11 @@ FocusScope {
                                 Layout.fillWidth: true
                                 textFormat: Text.PlainText; wrapMode: Text.Wrap
                                 maximumLineCount: 3; elide: Text.ElideRight
-                                text: Services.Settings.error || Services.Settings.diagnostics.join(" · ") || (Services.Settings.saveState === "saved" ? "All changes saved" : Services.Settings.saveState === "pending" ? "Saving…" : Services.Settings.saveState)
+                                text: Feedback.save(Services.Settings.saveState)
                                 color: Services.Settings.error ? Theme.Theme.red : Theme.Theme.subtext
                                 font.pixelSize: 11
                                 ToolTip.visible: statusHover.hovered
-                                ToolTip.text: text
+                                ToolTip.text: Services.Settings.error || Services.Settings.diagnostics.join(" · ") || text
                                 HoverHandler { id: statusHover }
                             }
                             SettingsButton {

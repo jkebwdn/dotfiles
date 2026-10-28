@@ -1,9 +1,12 @@
-# Settings product finish — gallery and review proposals
+# Settings product finish — gallery, navigation and editors
 
 2026-10-28. Baseline: `176732a2cbd0ecafed0b867928647a29afa8f2c1`, the accepted,
 pushed Phase 16B mask-feedback and Settings-toggle fixes. Settings schema stays 22.
-This pass implements the authorised visual theme gallery. Sidebar, Lock editor,
-Bar/Control Centre interaction and navigation restructuring remain proposals.
+The gallery is accepted. The subsequent authorised navigation/editor/feedback candidate is described in the implementation review below. The earlier proposals are retained as decision context.
+
+The first pass implemented the authorised visual theme gallery. Sidebar, Lock editor,
+Bar guidance and feedback were proposals at that gate; their newly authorised
+implementation is recorded below. Control Centre interaction remains unchanged.
 
 ## Implemented theme gallery
 
@@ -84,7 +87,7 @@ The operator confirmed the refinement works, and its final state check passed.
 | P2 | Preference-save status and application activation status answer different questions without a consistent presentation pattern. | Preserve distinct authorities; present a coherent quiet status model. Proposal only. |
 | Resolved | The full gallery pushed other Appearance controls down the page. | Operator-authorised disclosure now keeps a current-family preview row visible; native review and source-cleanliness verification passed. |
 
-## Sidebar — PROPOSED / NOT IMPLEMENTED
+## Sidebar — original proposal
 
 Current visual order: Appearance, Transparency, Bar, Control Centre, Hub, Profile,
 Date & time, Notifications, Clipboard, Launcher, Emoji, Wallpaper, Power & Idle,
@@ -117,7 +120,7 @@ collapsible groups are not assumed. Lock Screen's visual editor remains a destin
 here even though it appears beside security, rather than duplicating it under
 Personalisation.
 
-## Lock Settings — PROPOSED / NOT IMPLEMENTED
+## Lock Settings — original proposal
 
 Preserve the native lock and existing canvas/inspector model. Make the selected
 preset a compact visual summary with an explicit visual preset chooser, instead
@@ -133,7 +136,7 @@ preview remains useful, selected controls stay discoverable, and authentication
 cannot become hidden or lose prominence. It must not touch native authority, PAM,
 credential storage or the accepted per-character mask behaviour.
 
-## Bar guidance — PROPOSED / NOT IMPLEMENTED
+## Bar guidance — original proposal
 
 Keep the full-width preview above controls and the current selection model. Suggested
 context headings are “Bar background”, “Status pills” and “Workspace pills”, with a
@@ -142,7 +145,7 @@ identity/options only. Precision role selectors could display “Surface”, “
 surface” or “Accent” while preserving stored role IDs and actual palette previews.
 Do not add tutorial panels or turn shared family controls into per-item styling.
 
-## Feedback model — PROPOSED / NOT IMPLEMENTED
+## Feedback model — original proposal
 
 | Question | Quiet healthy state | Actionable exception |
 | --- | --- | --- |
@@ -247,3 +250,172 @@ Accepted production hashes matched both checkouts. Final canonical focused check
 passed: Theme gallery, Settings presentation and Phase 12F presentation (**3 PASS,
 0 FAIL**). The already reconciled 90-command matrix was not repeated; production
 bytes remained unchanged after native acceptance. Schema remains **22**.
+
+
+## Navigation, editor and feedback implementation review — 2026-10-28
+
+Baseline: `abb032855bc300e5212c337c241ec02127f81f2e`. Candidate is isolated in a
+temporary worktree. The operator approved the grouped sidebar and editor
+composition for native review, then confirmed native interaction acceptance.
+This work was explicitly authorised after the gallery closeout. Earlier “not
+implemented” and review gates above describe that earlier point in time.
+
+### Source audit and final sidebar order
+
+The actual destinations come from `SettingsContent.qml`, with retained loaders and
+`SettingsWindowState` owning selection. The displayed Transparency destination keeps
+its **Applications** internal ID. No routes, page ownership or persisted data change.
+Group headings are non-focusable; Tab retains ordinary button traversal, arrows
+move between destinations, Enter/Space select. Focus and direct-route selection
+reveal the destination within the existing scrolling sidebar. Resizing reveals
+keyboard focus first, or the selected page when focus is outside navigation; it
+does not steal focus or change the page.
+
+| Group / displayed destination | Icon role | Component | Intent / existing owner |
+| --- | --- | --- | --- |
+| Personalisation / Appearance | settings | AppearancePage | Theme, icons, shell styling; Settings + Theme Orchestrator |
+| Personalisation / Wallpaper | image | WallpaperPage | Choose backgrounds; Wallpaper service |
+| Personalisation / Transparency | apps | ApplicationsPage | Shared background alpha/blur; appearance and blur services |
+| Personalisation / Profile | profile | ProfilePage | Identity/weather preferences; Settings, AssetManager, Weather |
+| Desktop / Bar | menu | BarPage | Layout and shared styling; Settings Bar model |
+| Desktop / Control Centre | settings | ControlCentrePage | Visual contents/style; existing CC editor |
+| Desktop / Hub | hub | HubPage | Utility surface styling; Settings/Hub |
+| Desktop / Date & time | calendar | CalendarPage | Clock/calendar presentation; Settings/Calendar |
+| Everyday tools / Launcher | apps | LauncherPage | Application catalogue preferences; Launcher |
+| Everyday tools / Notifications | notifications | NotificationsPage | Notification policy; Notifications |
+| Everyday tools / Clipboard | clipboard | ClipboardPage | History/privacy; Clipboard |
+| Everyday tools / Emoji | emoji | EmojiPage | Picker preferences; Emoji |
+| Session & hardware / Lock Screen | lock | LockScreenPage | Visual lock layout; existing saved lock model |
+| Session & hardware / Security | lock | SecurityPage | Existing security preferences; native lock authority unchanged |
+| Session & hardware / Power & Idle | power | PowerIdlePage | Idle/session policy; existing Settings/native policy |
+| Session & hardware / Displays | settings | DisplaysPage | Output configuration; existing display policy |
+
+Four restrained headings preserve shallow navigation and the elevated sidebar.
+The native review must confirm that the extra scrolling at short heights feels
+comfortable; no accordion or page merger was introduced.
+
+### Lock composition
+
+The current preset stays visible as a compact “Layout · …” disclosure; opening it
+reveals the same five **visual** preset cards. Synthetic state/aspect/depth options
+move below the editor into Preview options. All disclosure state is view-local.
+At content widths of at least 650 logical pixels, the canvas and inspector share a
+row. Narrower content uses a bounded, aspect-correct canvas immediately followed by
+“Edit Time/Identity/Authentication/Weather/Media” and the element selector/size.
+The short nearby hint is “Select an element to edit · drag to arrange”; full keyboard
+instructions remain in Preview options. Fine tune retains anchors/offsets and the
+unavailable depth explanation. No canvas transform, lock model, native lock or
+credential code changed. Drag, nudge, snapping, z-order and authentication safety
+remain owned by the existing canvas/model.
+
+Rejected: clipping a full-width canvas to a shorter rectangle, shrinking controls,
+text-only preset selection, a second scrolling inspector, and native lock changes.
+The canvas keeps its aspect ratio by bounding width as well as height. Long style
+inspectors still require page scrolling; a sticky inspector is deliberately deferred.
+
+### Bar guidance
+
+A quiet context line distinguishes “Selected item · identity and options” from
+“Shared style · changes affect the whole group”. Background selection names the
+Bar background and invites selection in the preview. Individual selections retain
+the collapsed shared-style section, now explicitly described as shared with other
+items. “Background role” becomes “Background colour”; exact palette role values
+remain unchanged for precision. The full-width preview, hit regions, drag/reorder,
+Left/Centre/Right/Available model and family/item ownership are untouched.
+
+### Feedback presentation
+
+`SettingsFeedback.js` is a presentation-only mapper over existing state. It does
+not write Settings, invoke activation, retry automatically or infer activation from
+persistence. The global indicator remains subtle “All changes saved” / “Saving…”.
+Conflict, invalid, future-version and save-error states use plain language; original
+diagnostics remain in the status tooltip and existing reload action is retained.
+
+Appearance shows pending application work, restart/reload/manual steps or failures
+next to theme selection, with a Review application themes action that opens and
+reveals existing details. It says “Your choice is saved” **only** when persistence
+reports saved. Healthy live activation adds no banner; next-launch counts remain
+in the application section, with zero counts omitted. Per-target failure text is
+plain and actionable; raw diagnostics remain available in expanded details. Global
+failure diagnostics remain in the error tooltip. Adapter status labels, capability
+boundaries and retry operations remain unchanged.
+
+Transparency uses the same presentation vocabulary, removes the stale “native
+review pending” message and quiets successful global blur feedback. Global blur
+errors retain expandable diagnostics. Wallpaper explicit directory saves, lock
+layout edits and Profile drafts keep their distinct semantics; there is no generic
+“Applied” claim for a merely persisted choice.
+
+### First-viewport and remaining concerns
+
+Appearance retains the accepted gallery. Bar and Control Centre retain their
+visual editors. Wallpaper stays image-first and Profile keeps its compact identity
+composition. No additional density changes were justified on those pages. The Lock
+page now exposes the selected element and size in the compact first viewport.
+In the matched 1000×720 synthetic captures, initial Lock content height falls from
+1596 to 651 logical pixels (both tested themes); this measures layout/disclosure,
+not rendering performance. Controls remain reachable by opening disclosures.
+
+Existing Phase 16 palette contrast/reduced-motion/tooltip debt is not reclassified
+as a new discovery. Preview captures use the software renderer and synthetic data;
+some semantic icons are absent there. Native review remains required for real icon
+rendering, sidebar scrolling, lock editing, activation feedback, gallery behaviour
+and Super+S. No schema bump: **22**.
+
+
+### Additional bounded navigation correction
+
+A focused negative control reproduced the selected destination falling below the
+viewport when Settings was shortened. The resize reveal now preserves keyboard
+focus preferentially (focus and selected page can differ). The first attempt
+revealed only selection and failed the established focus-visibility assertion;
+that attempt was corrected, not waived. The existing presentation suite and the
+new compact resize regression both pass. Section headings are accessible headings,
+not Tab stops; destinations now explicitly expose their displayed accessible name.
+
+### Validation plan and review boundary
+
+Focused Settings presentation, Phase 12F, application-theme QML integration and
+new product-finish checks pass. The final full matrix runs against a frozen source
+and test hash manifest after the resize correction. The operator approved native review after inspecting the candidate, then confirmed
+all requested native interactions passed. Only the six reviewed presentation files
+were integrated; no preferences or workstation configuration were changed.
+
+
+### Candidate visual evidence
+
+| Task | Before | Candidate |
+| --- | --- | --- |
+| Compact Lock | [Before](settings-product-finish/refinement/lock-compact-before.png) | [After](settings-product-finish/refinement/lock-compact-after.png) |
+| Normal Lock | [Before](settings-product-finish/refinement/lock-normal-before.png) | [After](settings-product-finish/refinement/lock-normal-after.png) |
+| Light compact Lock, 16:9 preview | — | [Selected controls](settings-product-finish/refinement/lock-compact-light.png) |
+| Bar shared group | — | [Group context](settings-product-finish/refinement/bar-group.png) |
+| Bar individual item | — | [Item context](settings-product-finish/refinement/bar-item.png) |
+| Sidebar / saved versus restart | — | [Light gallery and restart](settings-product-finish/refinement/feedback-restart.png) |
+| Application failure | — | [Saved preference and actionable error](settings-product-finish/refinement/feedback-error.png) |
+
+Before/after Lock pairs use the same offscreen display aspect and synthetic state.
+The additional light compact capture explicitly selects 16:9; no host display or
+operator preference is changed by captures. Healthy save feedback appears subtly
+at the bottom of the sidebar in each image.
+
+
+### Final offline result
+
+Final frozen-candidate run: **91 commands, 87 PASS, 0 FAIL, 4 ENVIRONMENT,
+0 SKIPPED, 0 UNKNOWN**. The four limits remain private D-Bus creation for
+Bluetooth/Notifications, the independently identified Clipboard PNG/D-Bus issue,
+and unchanged native-lock SOCK_SEQPACKET restrictions. The clean native build
+succeeded. The earlier exploratory full run also completed with 87/0/4; final
+acceptance uses the second complete run after the sidebar resize correction.
+
+Production/test hashes were rechecked after the final run and native acceptance.
+Focused checks, review links and `git diff --check` pass. The guarded integration
+applied only the six reviewed presentation files. Its final check verified an empty
+index, protected local files, original effective Settings, byte-identical live
+Settings, no new theme errors and empty Hyprland configuration errors. The operator
+separately confirmed sidebar navigation, Lock editing, Bar guidance, feedback,
+the theme gallery and Super+S interactions passed.
+
+Native acceptance is complete. No native lock/security code, theme authority,
+stable page IDs or schema changed. Further product work is outside this closeout.

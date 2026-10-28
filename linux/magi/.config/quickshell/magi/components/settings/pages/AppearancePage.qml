@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import ".." as SettingsUI
+import "../SettingsFeedback.js" as Feedback
 import QtQuick.Dialogs
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
@@ -37,6 +38,22 @@ SettingsUI.SettingsPage {
     property string packError: ""
     Label { text: "Theme"; font.pixelSize: SettingsUI.SettingsMetrics.sectionSize; font.bold: true }
     SettingsUI.ThemeGallery {}
+    SettingsUI.SettingsHelp {
+        objectName: "applicationThemeAttention"
+        text: Feedback.attention(Services.ThemeOrchestrator.targets, Services.ThemeOrchestrator.error,
+            Services.ThemeOrchestrator.busy, Services.Settings.saveState)
+        visible: text.length > 0
+        color: Services.ThemeOrchestrator.error ? Theme.Theme.danger : Theme.Theme.subtext
+    }
+    SettingsUI.SettingsButton {
+        objectName: "applicationThemeReview"
+        text: "Review application themes"
+        visible: Feedback.attention(Services.ThemeOrchestrator.targets, Services.ThemeOrchestrator.error, false, Services.Settings.saveState).length > 0
+        onClicked: {
+            applicationThemes.expanded = true
+            Qt.callLater(() => root.contentY = Math.max(0, Math.min(root.contentHeight-root.height, applicationThemes.y+root.body.y)))
+        }
+    }
     RowLayout {
         Layout.fillWidth: true
         Label { text: "Icon Pack"; font.pixelSize: SettingsUI.SettingsMetrics.sectionSize; font.bold: true; Layout.fillWidth: true }
@@ -49,13 +66,6 @@ SettingsUI.SettingsPage {
     }
     SettingsUI.RoundnessPicker {}
     SettingsUI.SettingsHelp { visible: Theme.Theme.diagnostic.length > 0; text: Theme.Theme.diagnostic; color: Theme.Theme.warning }
-    SettingsUI.SettingsHelp {
-        objectName: "applicationThemeAttention"
-        text: Services.ThemeOrchestrator.error || (Services.ThemeOrchestrator.targets.some(t => !!t.error || (t.enabled && /manual/i.test(t.result || "")))
-            ? "Application themes need attention · expand below for errors or manual steps." : "")
-        visible: text.length > 0
-        color: Theme.Theme.warning
-    }
     SettingsUI.SettingsSection {
         id: applicationThemes
         objectName: "applicationThemesSummary"
@@ -63,16 +73,22 @@ SettingsUI.SettingsPage {
         readonly property var supportedApplications: Services.ThemeOrchestrator.targets.filter(t => t.id !== "magi" && t.available)
         title: "Application themes · " + supportedApplications.filter(t => t.enabled).length
             + " of " + supportedApplications.length + " following MAGI"
-        description: supportedApplications.filter(t => t.enabled && t.statusLabel === "Applies next launch").length
-            + " next launch · " + supportedApplications.filter(t => t.enabled && t.statusLabel === "Restart required").length + " restart required"
+        description: {
+            const next = supportedApplications.filter(t => t.enabled && t.statusLabel === "Applies next launch").length
+            const restart = supportedApplications.filter(t => t.enabled && t.statusLabel === "Restart required").length
+            return [next ? next + " apply next launch" : "", restart ? restart + " need restart" : ""].filter(Boolean).join(" · ")
+        }
         SettingsUI.SettingsHelp {
             visible: Services.ThemeOrchestrator.busy
-            text: Services.ThemeOrchestrator.summary
+            text: "Updating application themes…"
         }
         Label {
             visible: Services.ThemeOrchestrator.error.length > 0
-            text: Services.ThemeOrchestrator.error; color: Theme.Theme.danger
+            text: Feedback.savedContext(Services.Settings.saveState) + "Could not update application themes. Review the details below and retry."; color: Theme.Theme.danger
             wrapMode: Text.Wrap; Layout.fillWidth: true
+            ToolTip.visible: themeErrorHover.hovered
+            ToolTip.text: Services.ThemeOrchestrator.error
+            HoverHandler { id: themeErrorHover }
         }
         Repeater {
             model: Services.ThemeOrchestrator.targets
@@ -138,7 +154,7 @@ SettingsUI.SettingsPage {
                 Label {
                     objectName: "themeStatus-" + targetRow.modelData.id
                     visible: targetRow.expanded || targetRow.needsAttention
-                    text: targetRow.pending ? "Working…" : targetRow.modelData.error ||
+                    text: targetRow.pending ? "Working…" : (targetRow.modelData.error ? Feedback.savedContext(Services.Settings.saveState) + "Could not update " + targetRow.modelData.label + ". Retry below; open details for the diagnostic." : "") ||
                         (!targetRow.modelData.available ? "Unavailable — " + targetRow.modelData.reason :
                          !targetRow.modelData.configured ? "Setup required — " + targetRow.modelData.reason :
                          targetRow.reviewing ? "Confirm integration below to start following MAGI." :
@@ -151,6 +167,10 @@ SettingsUI.SettingsPage {
                     textFormat: Text.PlainText
                     wrapMode: Text.Wrap; Layout.fillWidth: true
                 }
+                SettingsUI.SettingsHelp {
+                    visible: targetRow.expanded && !!targetRow.modelData.error
+                    text: targetRow.modelData.error || ""
+                }
                 RowLayout {
                     visible: targetRow.expanded || !!targetRow.modelData.error
                     SettingsUI.SettingsButton {
@@ -162,7 +182,7 @@ SettingsUI.SettingsPage {
                     SettingsUI.SettingsButton {
                         visible: !targetRow.modelData.enabled && targetRow.modelData.phase !== "disabled"
                             && targetRow.modelData.id !== "magi" && !!targetRow.modelData.error
-                        text: "Remove hooks"; enabled: !Services.ThemeOrchestrator.busy
+                        text: "Disable integration"; enabled: !Services.ThemeOrchestrator.busy
                         onClicked: Services.ThemeOrchestrator.disable(targetRow.modelData.id)
                     }
                 }
@@ -231,7 +251,7 @@ SettingsUI.SettingsPage {
             }
         }
         SettingsUI.SettingsButton {
-            text: Services.ThemeOrchestrator.busy ? "Updating targets…" : "Refresh targets"
+            text: Services.ThemeOrchestrator.busy ? "Checking applications…" : "Check application status"
             enabled: !Services.ThemeOrchestrator.busy
             onClicked: Services.ThemeOrchestrator.refresh()
         }
