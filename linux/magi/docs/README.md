@@ -52,12 +52,12 @@ interaction acceptance and source-cleanliness checks; Settings schema remains 22
 Stable workstation bootstraps are separated from generated theme payloads; live
 Settings is untracked. See [bootstrap ownership and validation](review/bootstrap-ownership.md).
 
-## Daily-use polish candidate
+## Daily-use media and status styling
 
 [Media diagnosis, per-item status backgrounds and split Battery](review/daily-use-polish.md)
-records the isolated candidate and native Zen evidence. Schema remains 22; native
-acceptance and production closeout are pending. Zen currently omits duration before
-pause/resume; the separate immediate-position-refresh change cannot invent that data.
+records integrated per-item colours, palette-relative shade refinement, centered
+Battery regions and immediate media refresh. Schema remains 22. The review records
+native acceptance separately from the unresolved Zen missing-duration limitation.
 
 ## Historical completion and research index
 

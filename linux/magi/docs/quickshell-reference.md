@@ -777,9 +777,9 @@ isolated old/new-mode regression, then verified by operator native menu testing
 after restarting MAGI. Keep the root pragma in any full production startup.
 
 
-## Daily-use polish candidate — 2026-10-29
+## Daily-use media and status styling — 2026-10-29
 
-See [the bounded candidate record](review/daily-use-polish.md) for Quickshell 0.3.2
+See [the bounded review record](review/daily-use-polish.md) for Quickshell 0.3.2
 position-refresh evidence, operator-provided Zen MPRIS snapshots, sparse item colour
-ownership, Battery regions and schema-22 compatibility. Native acceptance is pending;
-no production-completion claim is made.
+and shade ownership, centered Battery regions and schema-22 compatibility. Native
+review and the remaining browser reporting limitation are recorded explicitly.

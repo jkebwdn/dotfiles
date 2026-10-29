@@ -25,3 +25,10 @@ Historical Greeter proposals are retained as history, not pending commitments.
 Physical multi-monitor Tray acceptance, GTK/Thunar transparency and Zen activation
 limitations remain documented deferrals. None is automatically scheduled by Phase 15.
 No next feature phase begins as part of this consolidation.
+
+
+The daily-use pass now implements independent Bar item backgrounds and shade
+refinement, centered connected Battery regions, and immediate valid-position refresh.
+See [the review and native evidence](review/daily-use-polish.md). Zen omitting initial
+MPRIS duration remains a specific browser reporting limitation, not a reason to add
+a polling loop or start another feature phase.

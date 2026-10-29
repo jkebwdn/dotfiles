@@ -1,9 +1,10 @@
-# Daily-use media and status styling candidate — 2026-10-29
+# Daily-use media and status styling — 2026-10-29
 
 Baseline: `b0ccfb8c707aa9360aeea3bf7078c5f6456ee022`; main and origin/main were
-0/0 with a clean tree and empty index. Candidate remains isolated pending native
-review. This document does not claim production acceptance or resolution of Zen's
-missing MPRIS metadata.
+0/0 with a clean tree and empty index. The operator accepted the visual previews,
+requested centered icon/percentage content, and authorized production integration.
+Native review of the subsequent colour-refinement extension is recorded below.
+Zen's missing MPRIS metadata remains a separate unresolved browser limitation.
 
 ## Media: two distinct findings
 
@@ -73,9 +74,10 @@ menu animation or service-lifetime redesign is included.
 BatteryPillContent owns one outer shape. Following the operator’s preview feedback,
 the icon region rounds its inside corners too. The percentage fill continues behind
 those curves so the outer pill stays connected. A small background-only layer
-composes opaque fills before applying shared alpha once; icons/text remain opaque. The icon is centered horizontally and vertically within its region, including when
-the percentage is hidden. The default overall width is retained; percentage text is likewise centered within
-its own region. Both regions share
+composes opaque fills before applying shared alpha once; icons/text remain opaque.
+The icon is centered horizontally and vertically within its region, including when
+the percentage is hidden. The default overall width is retained; percentage text is
+likewise centered within its own region. Both regions share
 height, roundness, hover and expansion state; the outer Rectangle remains the sole
 outer border owner. No default divider is added. Icon selection still uses the
 unchanged IconRegistry.batteryRole. Hidden percentage removes its width entirely
@@ -129,16 +131,16 @@ render MultiEffect semantic SVG tinting. An OpenGL attempt failed to create its
 context. Production default SVG appearance and native interaction still require
 native review; these screenshots are synthetic evidence, not native acceptance.
 
-The final full canonical regression run completed: **92 PASS, 0 FAIL, 4 ENVIRONMENT,
+The initial full canonical regression run completed: **92 PASS, 0 FAIL, 4 ENVIRONMENT,
 0 UNKNOWN** (96 suites). Results: `/tmp/magi-daily-polish-final-regression/results.json`.
 The four established limits are private Bluetooth D-Bus, clipboard image transport,
 notification D-Bus and native-lock SOCK_SEQPACKET transport. The runner exits 2 for
 these classified limits. The rounded-inner Battery follow-up also passed the focused
-Phase12C, Tray and production runtime checks. Native acceptance is pending. Live
-Settings, icon artwork, configuration symlinks and production source remain untouched.
-The candidate is committed on its isolated branch for review. Production push/integration
-and worktree removal await successful native closeout. Do not start
-another feature automatically.
+Phase12C, Tray and production runtime checks. Production source has since been
+fast-forwarded and auto-reloaded. Settings, icon artwork and configuration symlinks
+were unchanged by integration; operator edits during native testing are retained.
+Remote synchronization and worktree removal follow the guarded closeout procedure.
+No further feature phase is authorized.
 
 
 Preview follow-up: the operator accepted the rounded inner icon corners and requested
@@ -173,5 +175,15 @@ after colour shading, once for the composed Battery backgrounds.
 All shade fields are sparse, validated to [-1,1], nullable for neutral/inheritance,
 and require no schema migration. UI tests operate the visible role selectors and
 refinement slider, runtime tests exercise connected/disconnected/muted states, and
-all five requested themes have shaded presenter checks. Native acceptance and final
-remote synchronization remain pending for this extension.
+all five requested themes have shaded presenter checks. The operator confirmed
+“The refinement works correctly” after the live reload, accepting the independently
+visible Battery controls and shade adjustments. The reload logged Configuration
+Loaded without new QML errors. All 52 protected records were checked: only
+operator-edited live Settings changed; other files and symlinks remain unchanged.
+The final stable-source canonical run completed with **92 PASS, 0 FAIL,
+4 ENVIRONMENT, 0 UNKNOWN** across 96 suites. Results are retained at
+`/tmp/magi-daily-polish-shades-final-regression/results.json`; the four limitations
+are the same D-Bus/image/lock transport restrictions listed above. Responsive editor,
+five-theme presentation, media transitions, status state shades, Battery geometry
+and sparse serialization checks pass. Remote synchronization uses the guarded
+normal-push procedure; the temporary worktree is removed only after verified 0/0.

@@ -123,9 +123,10 @@ Approved interactive Ghostty startup uses `--until-key` before ble.sh attaches; 
 See [usage and terminal safety](../terminal-fetch.md).
 
 
-## Isolated daily-use polish candidate
+## Daily-use media and status styling
 
-The [candidate record](../review/daily-use-polish.md) describes optional sparse Bar
-item roles, one shared Battery region presenter and immediate media timer refresh.
-Family ownership and per-output consumption remain unchanged. Native acceptance and
-integration are pending; Zen's missing initial MPRIS duration remains external debt.
+The [review record](../review/daily-use-polish.md) describes optional sparse Bar
+item roles and palette-relative shade refinement, one shared Battery region presenter
+with centered content, and immediate media timer refresh. Family ownership and
+per-output consumption remain unchanged. Zen's missing initial MPRIS duration remains
+external debt; no fabricated duration or playback manipulation is introduced.
