@@ -220,5 +220,12 @@ sample, sparse persistence/invalid-field fallback, all four live header icons,
 Battery icon/text, open-time role changes, five representative themes, menu switching
 and close restoration. The synthetic Settings capture is retained at
 `/tmp/magi-status-context-previews/cc-host.png`; it uses the bundled legacy glyph pack
-for offscreen rendering and is not native acceptance. Full regression and native
-acceptance for this follow-up are pending.
+for offscreen rendering. After the production auto-reload logged Configuration
+Loaded without new QML errors, the operator confirmed “Works correctly”: header
+icons and Battery percentage update together and return to original Bar colours
+on close. All 52 protected records were unchanged by integration. The final
+canonical full regression completed with **92 PASS, 0 FAIL, 4 ENVIRONMENT,
+0 UNKNOWN** (96 suites), recorded at `/tmp/magi-status-context-full/results.json`.
+The same established Bluetooth/notification D-Bus, clipboard image and native-lock
+transport restrictions remain. Normal guarded Git synchronization and merged
+worktree removal complete closeout; no additional feature work is included.
