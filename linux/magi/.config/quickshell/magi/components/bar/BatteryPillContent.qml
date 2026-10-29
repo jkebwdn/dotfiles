@@ -56,7 +56,7 @@ StatusPill {
         anchors.verticalCenter: parent.verticalCenter
         role: Icons.IconRegistry.batteryRole(root.available, root.charging, root.percentage)
         moduleId: "battery"; size: MagiTheme.Theme.statusIconSize
-        color: MagiTheme.Theme.barItemForeground("battery", MagiTheme.Theme.text)
+        color: MagiTheme.Theme.statusRowForeground(MagiTheme.Theme.barItemForeground("battery", MagiTheme.Theme.text), root.sharedExpansion)
     }
     Text {
         id: label
@@ -65,7 +65,7 @@ StatusPill {
         x: root.iconRegionWidth + (root.width - root.iconRegionWidth - width) / 2
         anchors.verticalCenter: parent.verticalCenter
         text: root.available ? root.percentage + "%" : ""
-        color: MagiTheme.Theme.barPercentageForeground()
+        color: MagiTheme.Theme.statusRowForeground(MagiTheme.Theme.barPercentageForeground(), root.sharedExpansion)
         font.family: MagiTheme.Theme.fontFamily
         font.pixelSize: 11
     }

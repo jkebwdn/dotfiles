@@ -121,6 +121,19 @@ QtObject {
         ? surfaceBackground(Qt.alpha(elevated, barVisual.statusPills.opacity)) : "transparent"
     readonly property real workspacePillRadius: barVisual.workspacePills.roundness === null
         ? barPillRadius : Math.min(14, 8 * barVisual.workspacePills.roundness)
+    readonly property color expandedStatusForeground: shadeAccent(
+        roles[MagiServices.Settings.data.appearance.statusRowRole] || text,
+        MagiServices.Settings.data.appearance.statusRowShade ?? 0)
+    // Follow the same expansion as the disappearing pill backgrounds. The shared
+    // header persists when switching from Control Centre to another status menu.
+    function statusRowForeground(compact, expansion) {
+        const t = Math.max(0, Math.min(1, expansion))
+        const expanded = expandedStatusForeground
+        return Qt.rgba(compact.r + (expanded.r - compact.r) * t,
+            compact.g + (expanded.g - compact.g) * t,
+            compact.b + (expanded.b - compact.b) * t,
+            compact.a + (expanded.a - compact.a) * t)
+    }
     function barItemStyle(id) { return MagiServices.Settings.data.bar.modules[id] || ({}) }
     function barItemForeground(id, fallback, active = true) {
         const style = barItemStyle(id)

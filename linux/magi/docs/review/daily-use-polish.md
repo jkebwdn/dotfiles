@@ -187,3 +187,38 @@ are the same D-Bus/image/lock transport restrictions listed above. Responsive ed
 five-theme presentation, media transitions, status state shades, Battery geometry
 and sparse serialization checks pass. Remote synchronization uses the guarded
 normal-push procedure; the temporary worktree is removed only after verified 0/0.
+
+
+## Expanded status header follow-up — 2026-10-29
+
+Baseline `fdca9cf` was clean and synchronized 0/0. The operator's native screenshots
+showed dark custom Bar foregrounds remaining dark when their pill backgrounds faded
+into the expanded Control Centre surface. Source inspection confirmed the same live
+MorphingPillContent delegates retained iconColor; Battery likewise retained both
+Bar foregrounds throughout sharedExpansion. This was a missing presentation-context
+colour, not an icon pack or opacity defect.
+
+The operator selected one shared colour control. Control Centre → Appearance →
+Surface now exposes Status row colour using the existing semantic swatch selector,
+a live icon/percentage sample, and optional Status row shade under Fine tune.
+The sparse appearance.statusRowRole and statusRowShade fields resolve to text and
+zero when absent/null. Schema remains 22; no migration or operator Settings rewrite.
+The default expanded row now deliberately uses readable theme text independently
+of custom Bar foregrounds. Collapsed Bar colours are unchanged.
+
+ExpandablePlugin exposes the existing shared expansion to its loaded content.
+Theme.statusRowForeground blends compact ink toward the shared expanded ink using
+that progress, in step with the disappearing pill backgrounds. Battery uses the
+same resolver for icon and percentage. The header retains its colour when switching
+to Wi-Fi/Bluetooth/Audio menus within the same shared surface and restores Bar ink
+on closing. Anchored presentations without a shared surface retain existing ink.
+Application-owned Tray artwork and primary Control Centre tile colours are untouched.
+No menu ownership, geometry, timer or service changes are introduced.
+
+Focused validation passes: production Settings selector/shade interaction and live
+sample, sparse persistence/invalid-field fallback, all four live header icons,
+Battery icon/text, open-time role changes, five representative themes, menu switching
+and close restoration. The synthetic Settings capture is retained at
+`/tmp/magi-status-context-previews/cc-host.png`; it uses the bundled legacy glyph pack
+for offscreen rendering and is not native acceptance. Full regression and native
+acceptance for this follow-up are pending.

@@ -783,3 +783,8 @@ See [the bounded review record](review/daily-use-polish.md) for Quickshell 0.3.2
 position-refresh evidence, operator-provided Zen MPRIS snapshots, sparse item colour
 and shade ownership, centered Battery regions and schema-22 compatibility. Native
 review and the remaining browser reporting limitation are recorded explicitly.
+
+
+Expanded status-header follow-up: one shared semantic foreground and optional shade
+now separate the expanded menu header from custom Bar ink, including Battery text.
+See [diagnosis and validation](review/daily-use-polish.md#expanded-status-header-follow-up--2026-10-29).

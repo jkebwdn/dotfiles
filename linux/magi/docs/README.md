@@ -879,3 +879,8 @@ Accepted visuals and native security boundaries remain intact. The bounded
 early-key compatibility fix and 37-path final allowlist are documented in the
 Phase 9 visual and resume-input checkpoints. Host offline validation is complete;
 final post-suspend host health verification passed; repository finalization is authorized.
+
+
+Expanded status-header follow-up: one shared semantic foreground and optional shade
+now separate the expanded menu header from custom Bar ink, including Battery text.
+See [diagnosis and validation](review/daily-use-polish.md#expanded-status-header-follow-up--2026-10-29).

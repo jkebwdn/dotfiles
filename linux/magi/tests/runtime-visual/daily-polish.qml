@@ -15,9 +15,20 @@ ShellRoot {
             for (const child of item.children || []) { const found=content(child); if(found) return found }
             return null
         }
+        function visual(item,name) {
+            if(item.objectName===name) return item
+            for(const child of item.children || []) {const found=visual(child,name);if(found)return found}
+            return null
+        }
         function ink(actual, expected) { for(const channel of ["r","g","b","a"]) verify(Math.abs(actual[channel]-expected[channel])<=1/255) }
         function test_runtime() {
             try {
+                ink(Theme.Theme.expandedStatusForeground,Theme.Theme.text)
+                const dark=Theme.Theme.background
+                ink(Theme.Theme.statusRowForeground(dark,0),dark)
+                ink(Theme.Theme.statusRowForeground(dark,1),Theme.Theme.text)
+                Services.Settings.setValue("appearance","statusRowRole","teal")
+                Services.Settings.setValue("appearance","statusRowShade",-.2)
                 Services.Bluetooth.connectedCount=1
                 wait(300)
                 for(const id of ["wifi","bluetooth","volume","controlcentre"]) {
@@ -46,9 +57,31 @@ ShellRoot {
                     }
                     module.pill.forceActiveFocus(); wait(30)
                     verify(module.pill.activeFocus)
-                    keyClick(Qt.Key_Return);wait(400);compare(Services.MenuController.activeMenu,id)
+                    keyClick(Qt.Key_Return);wait(500);compare(Services.MenuController.activeMenu,id)
+                    for (const other of ["wifi","bluetooth","volume","controlcentre"]) {
+                        ink(visual(content(bar.expandablePillRegistry[other].pill),"statusRowIcon").color,Theme.Theme.expandedStatusForeground)
+                    }
+                    const batteryIcon=visual(bar.contentItem,"batteryStatusIcon"), batteryText=visual(bar.contentItem,"batteryPercentageText")
+                    verify(batteryIcon!==null);verify(batteryText!==null)
+                    ink(batteryIcon.color,Theme.Theme.expandedStatusForeground)
+                    ink(batteryText.color,Theme.Theme.expandedStatusForeground)
+                    Services.Settings.setValue("appearance","statusRowRole","yellow")
+                    ink(label.renderedIconColor,Theme.Theme.expandedStatusForeground)
+                    ink(batteryText.color,Theme.Theme.expandedStatusForeground)
+                    if(id==="controlcentre") {
+                        for(const theme of ["catppuccin-mocha","everforest-dark-hard","kanagawa-wave","one-light","gruvbox-light"]) {
+                            Services.Settings.setTheme(theme);wait(30)
+                            ink(visual(label,"statusRowIcon").color,Theme.Theme.expandedStatusForeground)
+                            ink(batteryText.color,Theme.Theme.expandedStatusForeground)
+                        }
+                        Services.MenuController.toggle("volume");wait(400)
+                        ink(visual(label,"statusRowIcon").color,Theme.Theme.expandedStatusForeground)
+                    }
                     Services.MenuController.close();wait(500)
                     compare(module.pill.color,Theme.Theme.barItemBackground(id))
+                    ink(label.renderedIconColor,label.iconColor)
+                    ink(batteryIcon.color,Theme.Theme.barItemForeground("battery",Theme.Theme.text))
+                    ink(batteryText.color,Theme.Theme.barPercentageForeground())
                 }
                 console.log("Daily polish runtime PASS")
             } catch(error) { console.error("Daily polish runtime FAIL: "+error+" at "+error.stack); throw error } finally { finish.start() }

@@ -29,3 +29,15 @@ for(const id of ['wifi','bluetooth','volume','battery','tray']) {
  }
 }
 console.log('Bar colour refinement schema PASS: neutral sparse defaults and signed shade bounds');
+
+for(const value of ['teal','text',null]) {
+ const doc=plain(ctx.defaults());doc.appearance.statusRowRole=value;doc.appearance.statusRowShade=-.4;
+ const result=ctx.analyze(JSON.parse(JSON.stringify(doc)));assert.equal(result.errors.length,0);
+ assert.equal(result.effective.appearance.statusRowRole,value);assert.equal(result.effective.appearance.statusRowShade,-.4);
+ assert.deepEqual(plain(ctx.migrate(doc)),doc);
+}
+for(const [key,value] of [['statusRowRole','#fff'],['statusRowRole',{}],['statusRowShade',1.1],['statusRowShade','0']]) {
+ const doc=plain(ctx.defaults());doc.appearance[key]=value;const result=ctx.analyze(doc);
+ assert(result.errors.length);assert.equal(result.effective.appearance[key],undefined);
+}
+console.log('Expanded status row schema PASS: optional role/shade, serialization, invalid fallback, no migration');

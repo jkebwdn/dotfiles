@@ -221,6 +221,16 @@ function analyze(input) {
             errors.push("bar.modules.battery.showPercentage: expected boolean"); delete style.showPercentage
         }
     }
+    // Optional expanded-header presentation; schema-22 documents remain sparse.
+    if (a.statusRowRole !== undefined && a.statusRowRole !== null && !semanticRoles.includes(a.statusRowRole)) {
+        errors.push("appearance.statusRowRole: invalid role")
+        delete a.statusRowRole
+    }
+    if (a.statusRowShade !== undefined && a.statusRowShade !== null
+        && !(typeof a.statusRowShade === "number" && isFinite(a.statusRowShade) && a.statusRowShade >= -1 && a.statusRowShade <= 1)) {
+        errors.push("appearance.statusRowShade: invalid shade")
+        delete a.statusRowShade
+    }
     if (!semanticRoles.includes(a.controlCentreBackgroundRole)) {
         errors.push("appearance.controlCentreBackgroundRole: invalid role")
         a.controlCentreBackgroundRole = "surface"

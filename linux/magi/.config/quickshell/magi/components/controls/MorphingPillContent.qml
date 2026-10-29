@@ -12,6 +12,8 @@ Item {
     property string expandedTitle: ""
     property string expandedStatus: ""
     property color iconColor: MagiTheme.Theme.text
+    readonly property color renderedIconColor: MagiTheme.Theme.statusRowForeground(iconColor,
+        pill && pill["sharedExpansion"] !== undefined ? pill.sharedExpansion : 0)
     property color textColor: MagiTheme.Theme.text
     property color statusColor: MagiTheme.Theme.muted
 
@@ -33,13 +35,14 @@ Item {
 
     Icon {
         id: iconText
+        objectName: "statusRowIcon"
 
         x: root.compactStartX
             + (10 - root.compactStartX) * root.expansionProgress
         anchors.verticalCenter: parent.verticalCenter
         role: root.icon
         moduleId: root.moduleId
-        color: root.iconColor
+        color: root.renderedIconColor
         size: MagiTheme.Theme.statusIconSize
     }
 

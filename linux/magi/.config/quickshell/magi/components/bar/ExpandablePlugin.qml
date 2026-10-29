@@ -363,6 +363,7 @@ StatusPill {
         // icon from the compact group into the expanded header.
         anchors.fill: parent
 
+        readonly property real sharedExpansion: root.sharedSurface ? root.sharedSurface.expansion : 0
         readonly property real availableWidth: parent.width
         readonly property real availableHeight: parent.height
         readonly property int phase: root.phase

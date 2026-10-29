@@ -42,6 +42,16 @@ ShellRoot {
   }
   function checkScopes(){
    let p=page("Control Centre");p.mode="Appearance";p.contentY=0;wait(60)
+   p.selection.select("");wait(50)
+   const statusPicker=item("ccStatusRowColour");verify(statusPicker.visible)
+   statusPicker.roleSelected("teal");compare(Services.Settings.data.appearance.statusRowRole,"teal")
+   for(const channel of ["r","g","b","a"]) verify(Math.abs(item("ccStatusRowSample").color[channel]-Theme.Theme.expandedStatusForeground[channel])<1/255)
+   item("ccStatusRowFineTune").expanded=true;wait(30)
+   const statusShade=item("ccStatusRowShade");statusShade.value=.3;statusShade.moved()
+   compare(Services.Settings.data.appearance.statusRowShade,.3)
+   for(const channel of ["r","g","b","a"]) verify(Math.abs(item("ccStatusRowSample").color[channel]-Theme.Theme.expandedStatusForeground[channel])<1/255)
+   Services.Settings.setValue("appearance","statusRowRole",null);Services.Settings.setValue("appearance","statusRowShade",null)
+   item("ccStatusRowFineTune").expanded=false
    const family=item("ccFamilyInspector"), revision=Services.Settings.revision, before=JSON.stringify(Services.Settings.data)
    for(const [group,module,captureName] of [["controls","wifi","primary"],["actions","dnd","secondary"],["sliders","volume","sliders"]]){
     const region=item("ccAppearanceRegion-"+group)

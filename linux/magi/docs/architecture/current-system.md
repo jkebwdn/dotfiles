@@ -130,3 +130,7 @@ item roles and palette-relative shade refinement, one shared Battery region pres
 with centered content, and immediate media timer refresh. Family ownership and
 per-output consumption remain unchanged. Zen's missing initial MPRIS duration remains
 external debt; no fabricated duration or playback manipulation is introduced.
+
+Expanded status headers resolve a shared appearance role/shade independently of
+collapsed Bar foregrounds. Existing shared expansion drives the colour transition;
+Battery icon and percentage use the same resolver. No ownership or geometry change.
