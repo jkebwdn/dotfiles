@@ -132,6 +132,13 @@ ShellRoot {
                 compare(icon.x + icon.width / 2, left.width / 2, "icon centered within split region")
                 battery.charging=true; verify(icon.role !== normalRole); battery.charging=false
                 battery.percentage=3; verify(icon.role !== normalRole); battery.percentage=72
+                const percentageText=item("batteryPercentageText")
+                for (const percentage of [3, 72, 100]) {
+                    battery.percentage=percentage
+                    compare(percentageText.x + percentageText.width / 2, (battery.iconRegionWidth + battery.width) / 2, "percentage centered for " + percentage)
+                    verify(Math.abs(percentageText.y + percentageText.height / 2 - battery.height / 2) <= .5, "percentage vertically centered within pixel alignment")
+                }
+                battery.percentage=72
                 const wide=battery.width
                 set("battery","showPercentage",false); verify(!right.visible); verify(!item("batteryPercentageText").visible); verify(battery.width<wide); compare(left.topRightRadius,battery.radius)
                 compare(icon.x + icon.width / 2, battery.width / 2, "icon centered when percentage hidden")

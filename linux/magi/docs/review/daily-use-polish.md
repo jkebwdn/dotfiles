@@ -74,7 +74,8 @@ BatteryPillContent owns one outer shape. Following the operator’s preview feed
 the icon region rounds its inside corners too. The percentage fill continues behind
 those curves so the outer pill stays connected. A small background-only layer
 composes opaque fills before applying shared alpha once; icons/text remain opaque. The icon is centered horizontally and vertically within its region, including when
-the percentage is hidden. The default overall width and percentage placement are retained. Both regions share
+the percentage is hidden. The default overall width is retained; percentage text is likewise centered within
+its own region. Both regions share
 height, roundness, hover and expansion state; the outer Rectangle remains the sole
 outer border owner. No default divider is added. Icon selection still uses the
 unchanged IconRegistry.batteryRole. Hidden percentage removes its width entirely
@@ -142,3 +143,7 @@ another feature automatically.
 Preview follow-up: the operator accepted the rounded inner icon corners and requested
 centering within that region. The fixed 9 px icon offset is replaced by region-based
 centering; split and percentage-hidden center alignment are covered by the presenter test.
+
+The subsequent accepted preview follow-up centers percentage text in its own region
+as well. Presenter checks cover one-, two- and three-digit percentages and vertical
+alignment; the existing hidden-percentage behavior remains intact.

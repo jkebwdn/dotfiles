@@ -62,7 +62,8 @@ StatusPill {
         id: label
         objectName: "batteryPercentageText"
         visible: root.percentageVisible
-        x: root.iconRegionWidth + 2; anchors.verticalCenter: parent.verticalCenter
+        x: root.iconRegionWidth + (root.width - root.iconRegionWidth - width) / 2
+        anchors.verticalCenter: parent.verticalCenter
         text: root.available ? root.percentage + "%" : ""
         color: MagiTheme.Theme.roles[MagiTheme.Theme.barItemStyle("battery").percentageForegroundRole] || MagiTheme.Theme.text
         font.family: MagiTheme.Theme.fontFamily
