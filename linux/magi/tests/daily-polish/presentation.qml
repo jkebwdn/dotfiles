@@ -129,10 +129,12 @@ ShellRoot {
                 battery.border.width=0
                 capture("battery-split")
                 const icon=item("batteryStatusIcon"), normalRole=icon.role
+                compare(icon.x + icon.width / 2, left.width / 2, "icon centered within split region")
                 battery.charging=true; verify(icon.role !== normalRole); battery.charging=false
                 battery.percentage=3; verify(icon.role !== normalRole); battery.percentage=72
                 const wide=battery.width
                 set("battery","showPercentage",false); verify(!right.visible); verify(!item("batteryPercentageText").visible); verify(battery.width<wide); compare(left.topRightRadius,battery.radius)
+                compare(icon.x + icon.width / 2, battery.width / 2, "icon centered when percentage hidden")
                 capture("battery-hidden-percentage")
                 set("battery","showPercentage",true)
                 battery.hovered=true; verify(left.color !== Theme.Theme.barItemBackground("battery")); battery.hovered=false

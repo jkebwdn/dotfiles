@@ -52,7 +52,8 @@ StatusPill {
     }
     Controls.Icon {
         objectName: "batteryStatusIcon"
-        x: 9; anchors.verticalCenter: parent.verticalCenter
+        x: (root.iconRegionWidth - width) / 2
+        anchors.verticalCenter: parent.verticalCenter
         role: Icons.IconRegistry.batteryRole(root.available, root.charging, root.percentage)
         moduleId: "battery"; size: MagiTheme.Theme.statusIconSize
         color: MagiTheme.Theme.barItemForeground("battery", MagiTheme.Theme.text)
