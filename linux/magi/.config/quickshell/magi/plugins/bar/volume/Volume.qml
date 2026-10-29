@@ -43,8 +43,8 @@ MagiBar.ExpandableModule {
             expandedTitle: ""
             expandedStatus: ""
             iconColor: root.muted
-                ? MagiTheme.Theme.warning
-                : MagiTheme.Theme.barItemForeground("volume", MagiTheme.Theme.text)
+                ? MagiTheme.Theme.barItemForeground("volume", MagiTheme.Theme.warning, false)
+                : MagiTheme.Theme.barItemForeground("volume", MagiTheme.Theme.text, root.available)
             statusColor: root.muted
                 ? MagiTheme.Theme.warning
                 : MagiTheme.Theme.muted

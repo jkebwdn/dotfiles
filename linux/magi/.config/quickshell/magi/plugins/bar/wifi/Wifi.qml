@@ -117,7 +117,7 @@ MagiBar.ExpandableModule {
                 : MagiServices.Network.wifiEnabled ? "Scanning" : "Off"
             iconColor: MagiServices.Network.connected
                 ? MagiTheme.Theme.barAccent("wifi")
-                : MagiTheme.Theme.muted
+                : MagiTheme.Theme.barItemForeground("wifi", MagiTheme.Theme.muted, false)
         }
     }
 

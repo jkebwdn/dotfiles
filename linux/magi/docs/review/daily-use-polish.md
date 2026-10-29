@@ -89,7 +89,8 @@ always-visible-when-available behavior; no prior percentage preference existed.
 
 Bar → Appearance → selected item exposes Icon colour (Text colour for Time/Date)
 and Background colour. Battery labels its background Icon background, offers Show
-percentage, and places percentage background/foreground under collapsed Fine tune.
+percentage, and displays both background and foreground role controls directly in
+the item editor. Fine tune holds the optional shade refinements.
 Use shared background / Follow icon background reset inheritance. Existing semantic
 role swatch selectors are reused. Family geometry/opacity/roundness remain in the
 existing family section, collapsed for individual selections.
@@ -147,3 +148,30 @@ centering; split and percentage-hidden center alignment are covered by the prese
 The subsequent accepted preview follow-up centers percentage text in its own region
 as well. Presenter checks cover one-, two- and three-digit percentages and vertical
 alignment; the existing hidden-percentage behavior remains intact.
+
+
+## Native-review refinement — 2026-10-29
+
+The initial approved source was fast-forwarded to local main and auto-reloaded with
+Configuration Loaded. All 52 protected file/symlink records matched immediately
+after integration. Subsequent operator testing changed only Bar item preferences.
+The operator found the percentage-background control too hidden under Fine tune,
+and requested CC-style light/dark refinement. Both Battery background controls and
+percentage foreground are now directly visible in the main item editor.
+
+Fine tune reuses Theme.shadeAccent: -1 lightens fully toward the palette's light
+anchor, 0 preserves the role, +1 darkens toward its dark anchor. Optional item fields
+backgroundShade, foregroundShade and foregroundOffShade default to zero. Wi-Fi and
+Bluetooth retain connected accent versus disconnected state ink; Volume retains its
+mute warning. The on/off shades refine those existing state colours. Tray background
+can be refined but application artwork stays untouched. Battery adds independent
+percentageBackgroundShade and percentageForegroundShade. An inherited percentage
+background follows the icon shade unless overridden; selecting an explicit role
+starts at neutral shade unless its own shade was configured. Shared alpha is applied
+after colour shading, once for the composed Battery backgrounds.
+
+All shade fields are sparse, validated to [-1,1], nullable for neutral/inheritance,
+and require no schema migration. UI tests operate the visible role selectors and
+refinement slider, runtime tests exercise connected/disconnected/muted states, and
+all five requested themes have shaded presenter checks. Native acceptance and final
+remote synchronization remain pending for this extension.

@@ -65,7 +65,7 @@ StatusPill {
         x: root.iconRegionWidth + (root.width - root.iconRegionWidth - width) / 2
         anchors.verticalCenter: parent.verticalCenter
         text: root.available ? root.percentage + "%" : ""
-        color: MagiTheme.Theme.roles[MagiTheme.Theme.barItemStyle("battery").percentageForegroundRole] || MagiTheme.Theme.text
+        color: MagiTheme.Theme.barPercentageForeground()
         font.family: MagiTheme.Theme.fontFamily
         font.pixelSize: 11
     }

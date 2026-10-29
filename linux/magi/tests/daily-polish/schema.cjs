@@ -20,3 +20,12 @@ assert.equal(ctx.analyze(battery).errors.length,0);
 assert.deepEqual(plain(ctx.analyze(battery).effective.bar.modules.battery),battery.bar.modules.battery);
 battery.bar.modules.battery.showPercentage='false'; assert(ctx.analyze(battery).errors.length);
 console.log('Daily polish schema PASS: sparse inheritance, independent roles, serialization, invalid overrides, schema 22 unchanged');
+
+for(const id of ['wifi','bluetooth','volume','battery','tray']) {
+ const keys=['foregroundShade','foregroundOffShade','backgroundShade'].concat(id==='battery'?['percentageForegroundShade','percentageBackgroundShade']:[]);
+ for(const key of keys) {
+  for(const value of [-1,-.4,0,.6,1,null]) { const doc=plain(ctx.defaults()); doc.bar.modules[id]={...doc.bar.modules[id],[key]:value}; assert.equal(ctx.analyze(doc).errors.length,0); assert.equal(ctx.analyze(doc).effective.bar.modules[id][key],value); }
+  for(const value of [-1.01,1.01,'0',{},true]) { const doc=plain(ctx.defaults()); doc.bar.modules[id]={...doc.bar.modules[id],[key]:value}; const result=ctx.analyze(doc); assert(result.errors.length); assert.equal(result.effective.bar.modules[id][key],undefined); }
+ }
+}
+console.log('Bar colour refinement schema PASS: neutral sparse defaults and signed shade bounds');

@@ -54,9 +54,8 @@ MagiBar.ExpandableModule {
                     : MagiServices.Bluetooth.enabled ? "On" : "Off"
             iconColor: root.connectedDevice
                 ? MagiTheme.Theme.barAccent("bluetooth")
-                : MagiServices.Bluetooth.enabled
-                    ? MagiTheme.Theme.text
-                    : MagiTheme.Theme.muted
+                : MagiTheme.Theme.barItemForeground("bluetooth", MagiServices.Bluetooth.enabled
+                    ? MagiTheme.Theme.text : MagiTheme.Theme.muted, false)
         }
     }
 

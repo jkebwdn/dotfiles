@@ -28,11 +28,28 @@ ColumnLayout {
         visual[family][key] = value;
         Services.Settings.setValue("bar", "visual", visual);
     }
-    function setItem(key, value) {
+    function setItems(values) {
         const modules = JSON.parse(JSON.stringify(Services.Settings.data.bar.modules));
-        if (!modules[instance]) modules[instance] = {};
-        modules[instance][key] = value;
+        modules[instance] = Object.assign({}, modules[instance] || {}, values);
         Services.Settings.setValue("bar", "modules", modules);
+    }
+    function setItem(key, value) { const values = {}; values[key] = value; setItems(values) }
+    readonly property var refinements: {
+        if (!individual || family !== "statusPills") return []
+        const stateful = ["wifi", "bluetooth", "volume"].includes(instance)
+        const entries = [{key:"backgroundShade", label:instance === "battery" ? "Icon background shade" : "Background shade"}]
+        if (instance !== "tray") entries.push({key:"foregroundShade", label:stateful ? "On icon shade" : ["clock", "date"].includes(instance) ? "Text shade" : "Icon shade"})
+        if (stateful) entries.push({key:"foregroundOffShade", label:"Off icon shade"})
+        if (instance === "battery") entries.push({key:"percentageBackgroundShade", label:"Percentage background shade"}, {key:"percentageForegroundShade", label:"Percentage text shade"})
+        return entries
+    }
+    function refinementValue(key) {
+        return key === "percentageBackgroundShade" ? Theme.Theme.barPercentageShade() : itemStyle[key] ?? 0
+    }
+    function resetRefinements() {
+        const values = {}
+        for (const entry of refinements) values[entry.key] = entry.key === "percentageBackgroundShade" ? null : 0
+        setItems(values)
     }
     function setAccent(role) { setItem("accentRole", role) }
     Layout.fillWidth: true
@@ -82,8 +99,30 @@ ColumnLayout {
         }
         SettingsButton {
             visible: root.family === "statusPills"
-            text: "Use shared background"
-            onClicked: root.setItem("backgroundRole", null)
+            text: root.instance === "battery" ? "Use shared icon background" : "Use shared background"
+            onClicked: root.setItems({backgroundRole:null, backgroundShade:0})
+        }
+        SettingsRow {
+            visible: root.instance === "battery"
+            Label { text: "Percentage background"; Layout.fillWidth: true }
+            SettingsSelector {
+                objectName: "batteryPercentageBackground"
+                Accessible.name: "Battery percentage background"
+                model: root.roles
+                currentIndex: model.indexOf(Services.Settings.data.bar.modules.battery?.percentageBackgroundRole || Services.Settings.data.bar.modules.battery?.backgroundRole || Services.Settings.data.bar.visual.statusPills.role)
+                onActivated: root.setItem("percentageBackgroundRole", currentText)
+            }
+        }
+        SettingsButton { visible: root.instance === "battery"; text: "Follow icon background"; onClicked: root.setItems({percentageBackgroundRole:null, percentageBackgroundShade:null}) }
+        SettingsRow {
+            visible: root.instance === "battery"
+            Label { text: "Percentage colour"; Layout.fillWidth: true }
+            SettingsSelector {
+                Accessible.name: "Battery percentage colour"
+                model: root.roles
+                currentIndex: model.indexOf(Services.Settings.data.bar.modules.battery?.percentageForegroundRole || "text")
+                onActivated: root.setItem("percentageForegroundRole", currentText)
+            }
         }
         SettingsToggle {
             visible: root.instance === "battery"
@@ -97,30 +136,41 @@ ColumnLayout {
         }
     }
     SettingsSection {
-        visible: root.individual && root.instance === "battery"
+        objectName: "barColourRefinement"
+        visible: root.individual && root.family === "statusPills"
         title: "Fine tune"
+        description: "Lighten or darken individual colours."
         collapsible: true
         expanded: false
-        SettingsRow {
-            Label { text: "Percentage background"; Layout.fillWidth: true }
-            SettingsSelector {
-                objectName: "batteryPercentageBackground"
-                Accessible.name: "Battery percentage background"
-                model: root.roles
-                currentIndex: model.indexOf(Services.Settings.data.bar.modules.battery?.percentageBackgroundRole || Services.Settings.data.bar.modules.battery?.backgroundRole || Services.Settings.data.bar.visual.statusPills.role)
-                onActivated: root.setItem("percentageBackgroundRole", currentText)
+        SettingsHelp { text: "Negative lightens · 0 keeps the palette colour · positive darkens." + (["wifi", "bluetooth", "volume"].includes(root.instance) ? " Off shade applies to disconnected or muted icons." : "") }
+        Repeater {
+            model: root.refinements
+            SettingsRow {
+                id: shadeRow
+                required property var modelData
+                Layout.fillWidth: true
+                columns: 2
+                rowSpacing: 2
+                Label { text: shadeRow.modelData.label; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                Label {
+                    readonly property real setting: root.refinementValue(shadeRow.modelData.key)
+                    text: (setting > 0 ? "+" : "") + Math.round(setting * 100) + "%"
+                    horizontalAlignment: Text.AlignRight
+                    color: Theme.Theme.subtext
+                    Layout.preferredWidth: 56
+                }
+                SettingsSlider {
+                    objectName: "barItemShade-" + shadeRow.modelData.key
+                    Accessible.name: shadeRow.modelData.label
+                    Layout.row: 1; Layout.columnSpan: 2
+                    Layout.fillWidth: true
+                    from: -1; to: 1; stepSize: .05
+                    value: root.refinementValue(shadeRow.modelData.key)
+                    onMoved: root.setItem(shadeRow.modelData.key, value)
+                }
             }
         }
-        SettingsButton { text: "Follow icon background"; onClicked: root.setItem("percentageBackgroundRole", null) }
-        SettingsRow {
-            Label { text: "Percentage colour"; Layout.fillWidth: true }
-            SettingsSelector {
-                Accessible.name: "Battery percentage colour"
-                model: root.roles
-                currentIndex: model.indexOf(Services.Settings.data.bar.modules.battery?.percentageForegroundRole || "text")
-                onActivated: root.setItem("percentageForegroundRole", currentText)
-            }
-        }
+        SettingsButton { text: "Reset colour refinement"; onClicked: root.resetRefinements() }
     }
 
     SettingsSection {

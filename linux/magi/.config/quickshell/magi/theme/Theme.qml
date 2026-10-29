@@ -122,18 +122,32 @@ QtObject {
     readonly property real workspacePillRadius: barVisual.workspacePills.roundness === null
         ? barPillRadius : Math.min(14, 8 * barVisual.workspacePills.roundness)
     function barItemStyle(id) { return MagiServices.Settings.data.bar.modules[id] || ({}) }
-    function barItemForeground(id, fallback) { return roles[barItemStyle(id).foregroundRole] || fallback }
+    function barItemForeground(id, fallback, active = true) {
+        const style = barItemStyle(id)
+        return shadeAccent(active ? roles[style.foregroundRole] || fallback : fallback,
+            (active ? style.foregroundShade : style.foregroundOffShade) ?? 0)
+    }
+    function barPercentageShade() {
+        const style = barItemStyle("battery")
+        return style.percentageBackgroundShade ?? (style.percentageBackgroundRole ? 0 : style.backgroundShade ?? 0)
+    }
+    function barPercentageForeground() {
+        const style = barItemStyle("battery")
+        return shadeAccent(roles[style.percentageForegroundRole] || text, style.percentageForegroundShade ?? 0)
+    }
     function barItemBackground(id, region) {
         const style = barItemStyle(id)
         const role = (region === "percentage" ? style.percentageBackgroundRole : null) || style.backgroundRole || barVisual.statusPills.role
-        return barVisual.statusPills.enabled ? surfaceBackground(Qt.alpha(roles[role], barVisual.statusPills.opacity)) : Qt.rgba(0, 0, 0, 0)
+        const shade = region === "percentage" ? barPercentageShade() : style.backgroundShade ?? 0
+        return barVisual.statusPills.enabled ? surfaceBackground(Qt.alpha(shadeAccent(roles[role], shade), barVisual.statusPills.opacity)) : Qt.rgba(0, 0, 0, 0)
     }
     function barItemHoverBackground(id, region) {
         const base = barItemBackground(id, region)
-        if (!barItemStyle(id).backgroundRole && !(region === "percentage" && barItemStyle(id).percentageBackgroundRole)) return statusPillHoverBackground
+        if (!barItemStyle(id).backgroundRole && !barItemStyle(id).backgroundShade
+            && !(region === "percentage" && (barItemStyle(id).percentageBackgroundRole || barPercentageShade()))) return statusPillHoverBackground
         return Qt.rgba(base.r * .88 + text.r * .12, base.g * .88 + text.g * .12, base.b * .88 + text.b * .12, base.a)
     }
-    function barAccent(id) { return roles[MagiServices.Settings.data.bar.modules[id].accentRole] }
+    function barAccent(id) { return shadeAccent(roles[barItemStyle(id).accentRole], barItemStyle(id).foregroundShade ?? 0) }
     readonly property real barPillRadius: radius("barPill", 8, 28, 28)
     readonly property int barSectionSpacing: 6
     readonly property int barEdgeMargin: 14

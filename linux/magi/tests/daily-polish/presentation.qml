@@ -64,6 +64,7 @@ ShellRoot {
         name: "DailyPolish"; when: Services.Settings.ready
         function item(name) { const result = findChild(win.contentItem,name); verify(result !== null, name); return result }
         function set(id,key,value) { const modules = JSON.parse(JSON.stringify(Services.Settings.data.bar.modules)); if (!modules[id]) modules[id]={}; modules[id][key]=value; verify(Services.Settings.setValue("bar","modules",modules)) }
+        function compareInk(actual, expected) { for (const channel of ["r","g","b","a"]) verify(Math.abs(actual[channel]-expected[channel]) <= 1/255, "rendered shade " + channel) }
         function capture(name) { wait(80); const dir=Quickshell.env("MAGI_DAILY_PREVIEWS"); if(dir) grabImage(win.contentItem).save(dir+"/"+name+".png") }
         function test_all() {
             try {
@@ -146,6 +147,20 @@ ShellRoot {
                 set("battery","showPercentage",true)
                 battery.hovered=true; verify(left.color !== Theme.Theme.barItemBackground("battery")); battery.hovered=false
                 for(const theme of ["catppuccin-mocha","everforest-dark-hard","kanagawa-wave","one-light","gruvbox-light"]) { Services.Settings.setTheme(theme); capture(theme); verify(left.color!==right.color); compare(wifi.color,Theme.Theme.barItemBackground("wifi")) }
+                for(const theme of ["catppuccin-mocha","everforest-dark-hard","kanagawa-wave","one-light","gruvbox-light"]) {
+                    Services.Settings.setTheme(theme)
+                    set("battery","backgroundShade",.4); set("battery","percentageBackgroundShade",-.25)
+                    set("battery","foregroundShade",.2); set("battery","percentageForegroundShade",-.3)
+                    compareInk(left.color,Theme.Theme.shadeAccent(Theme.Theme.roles.blue,.4))
+                    compareInk(right.color,Theme.Theme.shadeAccent(Theme.Theme.roles.green,-.25))
+                    compareInk(icon.color,Theme.Theme.shadeAccent(Theme.Theme.background,.2))
+                    compareInk(percentageText.color,Theme.Theme.shadeAccent(Theme.Theme.background,-.3))
+                    capture(theme+"-refined")
+                }
+                set("wifi","foregroundShade",.5); compareInk(Theme.Theme.barAccent("wifi"),Theme.Theme.shadeAccent(Theme.Theme.background,.5))
+                set("wifi","foregroundOffShade",-.4); compareInk(Theme.Theme.barItemForeground("wifi",Theme.Theme.muted,false),Theme.Theme.shadeAccent(Theme.Theme.muted,-.4))
+                set("battery","percentageBackgroundRole",null); set("battery","percentageBackgroundShade",null)
+                compare(left.color,right.color,"percentage inherits icon role and shade")
                 let visual=JSON.parse(JSON.stringify(Services.Settings.data.bar.visual)); visual.statusPills.opacity=.4; Services.Settings.setValue("bar","visual",visual); verify(Math.abs(item("batteryBackgrounds").opacity-.4)<.01); compare(left.color.a,1); compare(right.color.a,1)
                 visual.statusPills.enabled=false; Services.Settings.setValue("bar","visual",visual); compare(item("batteryBackgrounds").opacity,0)
                 tryCompare(Services.Settings,"saveState","saved"); wait(100)

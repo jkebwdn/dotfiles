@@ -210,6 +210,13 @@ function analyze(input) {
             errors.push("bar.modules." + id + "." + key + ": invalid role")
             delete style[key]
         }
+        const shadeKeys = ["foregroundShade", "foregroundOffShade", "backgroundShade"]
+            .concat(id === "battery" ? ["percentageBackgroundShade", "percentageForegroundShade"] : [])
+        for (const key of shadeKeys) if (style[key] !== undefined && style[key] !== null
+            && !(typeof style[key] === "number" && isFinite(style[key]) && style[key] >= -1 && style[key] <= 1)) {
+            errors.push("bar.modules." + id + "." + key + ": invalid shade")
+            delete style[key]
+        }
         if (id === "battery" && style.showPercentage !== undefined && typeof style.showPercentage !== "boolean") {
             errors.push("bar.modules.battery.showPercentage: expected boolean"); delete style.showPercentage
         }
