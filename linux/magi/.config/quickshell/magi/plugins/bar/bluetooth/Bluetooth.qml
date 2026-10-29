@@ -10,6 +10,7 @@ import "../../../theme" as MagiTheme
 
 MagiBar.ExpandableModule {
     id: root
+    styleId: "bluetooth"
 
     readonly property var connectedDevice:
         MagiServices.Bluetooth.primaryDevice
@@ -33,8 +34,8 @@ MagiBar.ExpandableModule {
     expandedWidth: 326
     menuHeight: 350
     color: sharedSurface
-        ? Qt.alpha(MagiTheme.Theme.statusPillBackground, MagiTheme.Theme.statusPillBackground.a * (1 - sharedSurface.expansion))
-        : MagiTheme.Theme.statusPillBackground
+        ? Qt.alpha(root.itemBackground, root.itemBackground.a * (1 - sharedSurface.expansion))
+        : root.itemBackground
     barVisible: MagiServices.Bluetooth.connectedCount > 0
 
     pillContent: Component {

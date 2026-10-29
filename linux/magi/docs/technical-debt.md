@@ -42,3 +42,12 @@ in that audit rather than inferred from source inspection.
 | Medium | Elided audio/application/SSID labels lack consistent bounded hover disclosure | Follow a shared tooltip policy without expanding rows or leaking sensitive values |
 | Medium | Some canonical palettes have weak muted/coloured text contrast | Keep measured ratios in themes.md; review role/usage tradeoffs with the operator, not silent palette changes |
 | Medium | No reduced-motion contract | Consider a deliberate accessibility preference separately; do not add Settings in this polish phase |
+
+
+## Zen MPRIS startup reporting — 2026-10-29
+
+Operator snapshots show Playing with explicit Position=0 and missing mpris:length,
+then valid position/duration after pause/resume. See [evidence](review/daily-use-polish.md).
+A valid-data MAGI timer-start improvement is separate; no fabricated duration or
+automatic playback manipulation is acceptable. Browser reporting/native recheck
+remains unresolved.

@@ -9,6 +9,7 @@ import "../../../modules" as Modules
 import "../../../icons" as Icons
 MagiBar.ExpandableModule {
     id: root
+    styleId: "controlcentre"
     onSecondaryTriggered: Services.SettingsWindowState.open(barWindow ? barWindow.outputScreen : null)
     menuId: "controlcentre"
     icon: "settings"
@@ -63,7 +64,7 @@ MagiBar.ExpandableModule {
     viewBottomPadding: Theme.RenderTokens.padding
     viewRadius: Theme.RenderTokens.outerRadius
     viewSurfaceColor: Theme.Theme.roles[Services.Settings.data.appearance.controlCentreBackgroundRole]
-    color: sharedSurface ? Qt.alpha(Theme.Theme.statusPillBackground, Theme.Theme.statusPillBackground.a * (1 - sharedSurface.expansion)) : Theme.Theme.statusPillBackground
+    color: sharedSurface ? Qt.alpha(root.itemBackground, root.itemBackground.a * (1 - sharedSurface.expansion)) : root.itemBackground
     Connections {
         target: Services.MenuController
         function onActiveMenuChanged() {
@@ -73,6 +74,7 @@ MagiBar.ExpandableModule {
     }
     pillContent: Component {
         Controls.MorphingPillContent {
+            iconColor: Theme.Theme.barItemForeground("controlcentre", Theme.Theme.text)
             pill: parent; icon: root.icon; moduleId: "controlcentre"
             expandedTitle: "Control Centre"
         }

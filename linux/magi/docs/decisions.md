@@ -1120,3 +1120,11 @@ wrapper resolves cursor-based key padding before composing it beside the artwork
 Read the existing MAGI palette; do not add a theme target or generated-state writer.
 Default animation is bounded, with static/narrow/no-colour fallbacks and PTY cleanup
 coverage. The operator accepted the wider wordmark, centred information and first-key preservation, and authorized guarded Ghostty startup.
+
+
+## Daily-use polish candidate — 2026-10-29
+
+See [the bounded candidate record](review/daily-use-polish.md) for Quickshell 0.3.2
+position-refresh evidence, operator-provided Zen MPRIS snapshots, sparse item colour
+ownership, Battery regions and schema-22 compatibility. Native acceptance is pending;
+no production-completion claim is made.

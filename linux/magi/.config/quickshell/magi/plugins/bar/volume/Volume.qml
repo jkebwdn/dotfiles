@@ -11,6 +11,7 @@ import "../../../theme" as MagiTheme
 
 MagiBar.ExpandableModule {
     id: root
+    styleId: "volume"
 
     readonly property int volume: MagiServices.Audio.volumePercent
     readonly property bool muted: MagiServices.Audio.muted
@@ -30,8 +31,8 @@ MagiBar.ExpandableModule {
     onSecondaryTriggered: MagiServices.Audio.toggleMute()
     onWheelTriggered: steps => MagiServices.Audio.adjustVolume(steps)
     color: sharedSurface
-        ? Qt.alpha(MagiTheme.Theme.statusPillBackground, MagiTheme.Theme.statusPillBackground.a * (1 - sharedSurface.expansion))
-        : MagiTheme.Theme.statusPillBackground
+        ? Qt.alpha(root.itemBackground, root.itemBackground.a * (1 - sharedSurface.expansion))
+        : root.itemBackground
 
     pillContent: Component {
         MagiControls.MorphingPillContent {
@@ -43,7 +44,7 @@ MagiBar.ExpandableModule {
             expandedStatus: ""
             iconColor: root.muted
                 ? MagiTheme.Theme.warning
-                : MagiTheme.Theme.text
+                : MagiTheme.Theme.barItemForeground("volume", MagiTheme.Theme.text)
             statusColor: root.muted
                 ? MagiTheme.Theme.warning
                 : MagiTheme.Theme.muted

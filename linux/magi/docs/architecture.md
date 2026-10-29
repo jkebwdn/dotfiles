@@ -918,3 +918,11 @@ uses UseQApplication because native platform menus require QApplication startup.
 Schema 21 and default placement arrays remain unchanged; System Tray starts
 Available.
 [Native results and accepted limits](design/phase14a-system-tray.md).
+
+
+## Daily-use polish candidate — 2026-10-29
+
+See [the bounded candidate record](review/daily-use-polish.md) for Quickshell 0.3.2
+position-refresh evidence, operator-provided Zen MPRIS snapshots, sparse item colour
+ownership, Battery regions and schema-22 compatibility. Native acceptance is pending;
+no production-completion claim is made.

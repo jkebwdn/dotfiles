@@ -121,3 +121,11 @@ It is an isolated terminal renderer, not a Quickshell service or theme publisher
 It reserves a bounded logo area, keeps system text fixed and restores terminal state.
 Approved interactive Ghostty startup uses `--until-key` before ble.sh attaches; SSH, multiplexer and nested shells are skipped.
 See [usage and terminal safety](../terminal-fetch.md).
+
+
+## Isolated daily-use polish candidate
+
+The [candidate record](../review/daily-use-polish.md) describes optional sparse Bar
+item roles, one shared Battery region presenter and immediate media timer refresh.
+Family ownership and per-output consumption remain unchanged. Native acceptance and
+integration are pending; Zen's missing initial MPRIS duration remains external debt.

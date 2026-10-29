@@ -5,27 +5,12 @@ import Quickshell
 import "../../../theme" as MagiTheme
 import "../../../services" as MagiServices
 
-Bar.StatusPill {
+Bar.BatteryPillContent {
     id: root
-
-    property real sharedExpansion: 0
-
-    implicitWidth: batteryLabel.implicitWidth + 18
-    implicitHeight: MagiTheme.Theme.barPillHeight
-
-    radius: MagiTheme.Theme.barPillRadius
-
-    color: batteryMouse.containsMouse
-        ? MagiTheme.Theme.statusPillHoverBackground
-        : Qt.alpha(MagiTheme.Theme.statusPillBackground, MagiTheme.Theme.statusPillBackground.a * (1 - sharedExpansion))
-
-    Bar.BatteryPillContent {
-        id: batteryLabel
-        anchors.centerIn: parent
-        available: MagiServices.Battery.available
-        charging: MagiServices.Battery.charging
-        percentage: MagiServices.Battery.percentage
-    }
+    available: MagiServices.Battery.available
+    charging: MagiServices.Battery.charging
+    percentage: MagiServices.Battery.percentage
+    hovered: batteryMouse.containsMouse
 
     MouseArea {
         id: batteryMouse

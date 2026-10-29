@@ -64,10 +64,12 @@ def suites():
                  'notifications/policy', 'wallpaper/schema'):
         js(path + '.cjs')
     py('runtime-visual/run.py')
-    for fixture in ('settings-finish.qml', 'theme-gallery.qml', 'settings-product.qml', 'quality.qml', 'palettes.qml', 'profile.qml', 'appearance.qml', 'colours.qml', 'feedback.qml',
+    for fixture in ('daily-polish.qml', 'settings-finish.qml', 'theme-gallery.qml', 'settings-product.qml', 'quality.qml', 'palettes.qml', 'profile.qml', 'appearance.qml', 'colours.qml', 'feedback.qml',
                     'polish.qml', 'secondary.qml', 'typography.qml', 'weather.qml',
                     '../phase12b/surfaces.qml', '../phase12d/runtime.qml'):
         py('runtime-visual/run.py', fixture)
+    py('daily-polish/run.py')
+    js('daily-polish/schema.cjs')
     py('fetch/run.py')
     py('native_lock.py')
     return result

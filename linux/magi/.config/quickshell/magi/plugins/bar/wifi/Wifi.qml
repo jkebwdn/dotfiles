@@ -11,6 +11,7 @@ import "../../../theme" as MagiTheme
 
 MagiBar.ExpandableModule {
     id: root
+    styleId: "wifi"
 
     property var selectedNetwork: null
     property var pendingNetwork: null
@@ -34,7 +35,7 @@ MagiBar.ExpandableModule {
     expandedWidth: 344
     menuHeight: Math.min(barWindow && hostMode === "combined" ? barWindow.height - 100 : 640,
         baseHeight + (authenticating ? 124 : connectionError ? 38 : 0))
-    color: sharedSurface ? Qt.alpha(MagiTheme.Theme.statusPillBackground, MagiTheme.Theme.statusPillBackground.a * (1 - sharedSurface.expansion)) : MagiTheme.Theme.statusPillBackground
+    color: sharedSurface ? Qt.alpha(root.itemBackground, root.itemBackground.a * (1 - sharedSurface.expansion)) : root.itemBackground
 
     function signalIcon(strength) { return Icons.IconRegistry.signalRole(strength) }
     function updateScanning() { MagiServices.Network.setScanning(requestedOpen || connecting, root) }

@@ -6,6 +6,7 @@ import "../../theme" as Theme
 import "TrayActions.js" as Actions
 Bar.StatusPill {
     id: root
+    styleId: "tray"
     property var items: []
     property bool showEmpty: false
     property real maximumWidth: 240

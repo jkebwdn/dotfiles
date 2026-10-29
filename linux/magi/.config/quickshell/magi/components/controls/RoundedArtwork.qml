@@ -66,6 +66,7 @@ Item {
     Rectangle { anchors.fill: parent; radius: root.outerRadius; color: "transparent"; border.color: root.borderColor; border.width: root.frameWidth }
     Canvas {
         id: progressBorder
+        objectName: "artworkProgressBorder"
         anchors.fill: parent
         visible: root.progress >= 0 && root.borderWidth > 0
         onWidthChanged: requestPaint()

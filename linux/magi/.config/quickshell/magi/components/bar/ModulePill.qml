@@ -4,6 +4,7 @@ import QtQuick
 ExpandablePlugin {
     id: root
     required property var module
+    styleId: module.styleId
     expandsOnClick: module.expandsOnClick
     onPrimaryTriggered: module.primaryTriggered()
     onWheelTriggered: steps => module.wheelTriggered(steps)

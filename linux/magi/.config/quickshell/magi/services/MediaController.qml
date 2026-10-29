@@ -26,8 +26,10 @@ Scope {
     readonly property real progress: VisualState.progress(progressSupported ? activePlayer.position : 0,
         progressSupported ? activePlayer.length : 0, progressSupported)
     Timer {
-        interval: 1000; repeat: true
-        running: root.progressSupported && root.playing && MenuController.activeMenu === "controlcentre"
+        // Quickshell's position getter advances without notifying bindings.
+        // Refresh on opening/resuming as well as each subsequent second.
+        interval: 1000; repeat: true; triggeredOnStart: true
+        running: root.progress >= 0 && root.playing && MenuController.activeMenu === "controlcentre"
         onTriggered: root.activePlayer.positionChanged()
     }
     function refresh() {

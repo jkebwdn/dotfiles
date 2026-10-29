@@ -18,6 +18,9 @@ ColumnLayout {
     }
     readonly property string family: selection.family
     readonly property string instance: selection.instance
+    readonly property string foregroundKey: ["wifi", "bluetooth"].includes(instance) ? "accentRole" : "foregroundRole"
+    readonly property string defaultForeground: foregroundKey === "accentRole" ? "accent" : "text"
+    readonly property var itemStyle: Services.Settings.data.bar.modules[instance] || ({})
     readonly property var style: Services.Settings.data.bar.visual[family]
     readonly property var roles: ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "accent", "blue", "lavender", "green", "yellow", "peach", "red", "teal", "border"]
     function setStyle(key, value) {
@@ -25,11 +28,13 @@ ColumnLayout {
         visual[family][key] = value;
         Services.Settings.setValue("bar", "visual", visual);
     }
-    function setAccent(role) {
+    function setItem(key, value) {
         const modules = JSON.parse(JSON.stringify(Services.Settings.data.bar.modules));
-        modules[instance].accentRole = role;
+        if (!modules[instance]) modules[instance] = {};
+        modules[instance][key] = value;
         Services.Settings.setValue("bar", "modules", modules);
     }
+    function setAccent(role) { setItem("accentRole", role) }
     Layout.fillWidth: true
     SettingsHelp {
         objectName: "barSelectionContext"
@@ -54,20 +59,70 @@ ColumnLayout {
                 tray: "System Tray"
             })[root.instance] || ""
         SettingsRow {
-            visible: ["wifi", "bluetooth"].includes(root.instance)
-            Label {
-                text: "Accent"
-                Layout.fillWidth: true
-            }
+            visible: root.instance !== "tray" && root.instance !== "workspaces"
+            Label { text: ["clock", "date"].includes(root.instance) ? "Text colour" : "Icon colour"; Layout.fillWidth: true }
             SettingsSelector {
                 objectName: "barInstanceAccent"
-                Accessible.name: root.instance + " accent"
+                Accessible.name: root.instance + " foreground colour"
                 model: root.roles
-                currentIndex: model.indexOf(Services.Settings.data.bar.modules[root.instance]?.accentRole || "accent")
-                onActivated: root.setAccent(currentText)
+                currentIndex: model.indexOf(root.itemStyle[root.foregroundKey] || root.defaultForeground)
+                onActivated: root.setItem(root.foregroundKey, currentText)
+            }
+        }
+        SettingsRow {
+            visible: root.family === "statusPills"
+            Label { text: root.instance === "battery" ? "Icon background" : "Background colour"; Layout.fillWidth: true }
+            SettingsSelector {
+                objectName: "barItemBackground"
+                Accessible.name: root.instance + " background colour"
+                model: root.roles
+                currentIndex: model.indexOf(Services.Settings.data.bar.modules[root.instance]?.backgroundRole || Services.Settings.data.bar.visual.statusPills.role)
+                onActivated: root.setItem("backgroundRole", currentText)
+            }
+        }
+        SettingsButton {
+            visible: root.family === "statusPills"
+            text: "Use shared background"
+            onClicked: root.setItem("backgroundRole", null)
+        }
+        SettingsToggle {
+            visible: root.instance === "battery"
+            text: "Show percentage"
+            checked: Services.Settings.data.bar.modules.battery?.showPercentage !== false
+            onClicked: root.setItem("showPercentage", checked)
+        }
+        SettingsHelp {
+            visible: root.instance === "tray"
+            text: "Application icons keep their own colours. Background colour styles the shared Tray pill."
+        }
+    }
+    SettingsSection {
+        visible: root.individual && root.instance === "battery"
+        title: "Fine tune"
+        collapsible: true
+        expanded: false
+        SettingsRow {
+            Label { text: "Percentage background"; Layout.fillWidth: true }
+            SettingsSelector {
+                objectName: "batteryPercentageBackground"
+                Accessible.name: "Battery percentage background"
+                model: root.roles
+                currentIndex: model.indexOf(Services.Settings.data.bar.modules.battery?.percentageBackgroundRole || Services.Settings.data.bar.modules.battery?.backgroundRole || Services.Settings.data.bar.visual.statusPills.role)
+                onActivated: root.setItem("percentageBackgroundRole", currentText)
+            }
+        }
+        SettingsButton { text: "Follow icon background"; onClicked: root.setItem("percentageBackgroundRole", null) }
+        SettingsRow {
+            Label { text: "Percentage colour"; Layout.fillWidth: true }
+            SettingsSelector {
+                Accessible.name: "Battery percentage colour"
+                model: root.roles
+                currentIndex: model.indexOf(Services.Settings.data.bar.modules.battery?.percentageForegroundRole || "text")
+                onActivated: root.setItem("percentageForegroundRole", currentText)
             }
         }
     }
+
     SettingsSection {
         id: familySection
         objectName: "barFamilyInspector"

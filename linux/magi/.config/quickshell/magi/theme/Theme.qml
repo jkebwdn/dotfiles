@@ -121,6 +121,18 @@ QtObject {
         ? surfaceBackground(Qt.alpha(elevated, barVisual.statusPills.opacity)) : "transparent"
     readonly property real workspacePillRadius: barVisual.workspacePills.roundness === null
         ? barPillRadius : Math.min(14, 8 * barVisual.workspacePills.roundness)
+    function barItemStyle(id) { return MagiServices.Settings.data.bar.modules[id] || ({}) }
+    function barItemForeground(id, fallback) { return roles[barItemStyle(id).foregroundRole] || fallback }
+    function barItemBackground(id, region) {
+        const style = barItemStyle(id)
+        const role = (region === "percentage" ? style.percentageBackgroundRole : null) || style.backgroundRole || barVisual.statusPills.role
+        return barVisual.statusPills.enabled ? surfaceBackground(Qt.alpha(roles[role], barVisual.statusPills.opacity)) : Qt.rgba(0, 0, 0, 0)
+    }
+    function barItemHoverBackground(id, region) {
+        const base = barItemBackground(id, region)
+        if (!barItemStyle(id).backgroundRole && !(region === "percentage" && barItemStyle(id).percentageBackgroundRole)) return statusPillHoverBackground
+        return Qt.rgba(base.r * .88 + text.r * .12, base.g * .88 + text.g * .12, base.b * .88 + text.b * .12, base.a)
+    }
     function barAccent(id) { return roles[MagiServices.Settings.data.bar.modules[id].accentRole] }
     readonly property real barPillRadius: radius("barPill", 8, 28, 28)
     readonly property int barSectionSpacing: 6

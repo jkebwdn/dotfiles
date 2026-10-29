@@ -16,11 +16,18 @@ AbstractButton {
     onClicked: if (interactive) Services.Hub.toggle(mode, outputScreen)
     background: Rectangle {
         radius: Theme.Theme.barPillRadius
-        color: root.hovered ? Theme.Theme.statusPillHoverBackground : Theme.Theme.statusPillBackground
-        border.width: root.visualFocus ? 1 : 0
-        border.color: Theme.Theme.focus
+        color: root.hovered ? Theme.Theme.barItemHoverBackground(root.mode) : Theme.Theme.barItemBackground(root.mode)
+        border.width: root.visualFocus ? 3 : 0
+        border.color: Theme.Theme.background
+        Rectangle {
+            anchors.fill: parent; anchors.margins: 1
+            radius: Math.max(0, parent.radius - 1)
+            color: "transparent"
+            border.width: root.visualFocus ? 1 : 0
+            border.color: Theme.Theme.text
+        }
     }
-    contentItem: Item { Controls.Icon { anchors.centerIn: parent; role: root.mode; moduleId: root.mode; size: Theme.Theme.statusIconSize; color: Theme.Theme.text } }
+    contentItem: Item { Controls.Icon { anchors.centerIn: parent; role: root.mode; moduleId: root.mode; size: Theme.Theme.statusIconSize; color: Theme.Theme.barItemForeground(root.mode, Theme.Theme.text) } }
     ToolTip.visible: hovered
     ToolTip.text: label
 }

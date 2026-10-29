@@ -8,6 +8,8 @@ import "../../theme" as MagiTheme
 // Non-visual session/body owner. Bar placement never creates or destroys it.
 Scope {
     id: root
+    property string styleId: ""
+    readonly property color itemBackground: MagiTheme.Theme.barItemBackground(styleId)
     property var barWindow: null
     property var sharedSurface: null
     property string hostMode: "anchored"

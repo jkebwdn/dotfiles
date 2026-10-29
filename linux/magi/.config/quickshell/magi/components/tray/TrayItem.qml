@@ -51,8 +51,15 @@ FocusScope {
         color: root.interactionState === "menu" ? Qt.alpha(Theme.Theme.accent, .20)
             : root.interactionState === "pressed" ? Qt.alpha(Theme.Theme.accent, .12)
             : root.interactionState === "hover" ? Theme.Theme.overlay : "transparent"
-        border.width: root.activeFocus && root.keyboardInteraction ? 1 : 0
-        border.color: Theme.Theme.focus
+        border.width: root.activeFocus && root.keyboardInteraction ? 3 : 0
+        border.color: Theme.Theme.background
+        Rectangle {
+            anchors.fill: parent; anchors.margins: 1
+            radius: Math.max(0, parent.radius - 1)
+            color: "transparent"
+            border.width: root.activeFocus && root.keyboardInteraction ? 1 : 0
+            border.color: Theme.Theme.text
+        }
     }
     Image {
         id: artwork

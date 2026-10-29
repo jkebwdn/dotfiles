@@ -199,6 +199,21 @@ function analyze(input) {
             effective.bar.modules[id].accentRole = "accent"
         }
     }
+    // Optional item overrides: absent/null keeps the accepted family/foreground.
+    // Keep the sparse module map; old documents and appearance resolve unchanged.
+    for (const id of barIds.filter(id => id !== "workspaces")) {
+        const style = effective.bar.modules[id]
+        if (style === undefined) continue
+        if (!object(style)) { errors.push("bar.modules." + id + ": expected object"); delete effective.bar.modules[id]; continue }
+        const keys = id === "battery" ? ["foregroundRole", "backgroundRole", "percentageBackgroundRole", "percentageForegroundRole"] : ["foregroundRole", "backgroundRole"]
+        for (const key of keys) if (style[key] !== undefined && style[key] !== null && !semanticRoles.includes(style[key])) {
+            errors.push("bar.modules." + id + "." + key + ": invalid role")
+            delete style[key]
+        }
+        if (id === "battery" && style.showPercentage !== undefined && typeof style.showPercentage !== "boolean") {
+            errors.push("bar.modules.battery.showPercentage: expected boolean"); delete style.showPercentage
+        }
+    }
     if (!semanticRoles.includes(a.controlCentreBackgroundRole)) {
         errors.push("appearance.controlCentreBackgroundRole: invalid role")
         a.controlCentreBackgroundRole = "surface"

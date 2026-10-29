@@ -377,7 +377,33 @@ StatusPill {
             : fallbackPillContent
     }
 
+    activeFocusOnTab: true
+    Accessible.role: Accessible.Button
+    Accessible.name: title
+    function activatePill() {
+        if (expandsOnClick) MagiServices.MenuController.toggle(menuId, barWindow ? barWindow.outputScreen : null)
+        else primaryTriggered()
+    }
+    Keys.onReturnPressed: activatePill()
+    Keys.onEnterPressed: activatePill()
+    Keys.onSpacePressed: activatePill()
+    Rectangle {
+        anchors.fill: parent
+        radius: root.radius
+        color: pointer.pressed ? Qt.alpha(MagiTheme.Theme.text, .12) : pointer.containsMouse ? Qt.alpha(MagiTheme.Theme.text, .06) : "transparent"
+        border.width: root.activeFocus ? 2 : 0
+        border.color: MagiTheme.Theme.background
+        Rectangle {
+            anchors.fill: parent; anchors.margins: 2
+            radius: Math.max(0, root.radius - 2)
+            color: "transparent"
+            border.width: root.activeFocus ? 1 : 0
+            border.color: MagiTheme.Theme.text
+        }
+    }
     MouseArea {
+        id: pointer
+        hoverEnabled: true
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
 
