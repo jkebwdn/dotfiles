@@ -68,6 +68,7 @@ def suites():
                     'polish.qml', 'secondary.qml', 'typography.qml', 'weather.qml',
                     '../phase12b/surfaces.qml', '../phase12d/runtime.qml'):
         py('runtime-visual/run.py', fixture)
+    py('fetch/run.py')
     py('native_lock.py')
     return result
 

@@ -44,6 +44,11 @@ eval "$(starship init bash)"
 # Keep this at the end
 # ---------------------------------------------------------
 
+# Animate only while startup owns the terminal; first key is retained for the prompt.
+if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/magi/services/terminal_fetch.sh" ]]; then
+    source "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/magi/services/terminal_fetch.sh"
+fi
+
 [[ ${BLE_VERSION-} ]] && ble-attach
 
 # Optional MAGI terminal colours; launch hooks fall back when no generated theme exists.

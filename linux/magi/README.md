@@ -192,3 +192,10 @@ Historical design/acceptance records remain in the documentation index. Displays
 production completion, fingerprint, physical multi-monitor Tray acceptance and
 optional Bluetooth audio auto-switch remain deferred; they are not implied by the
 current shell capabilities.
+
+## Terminal fetch
+
+`magi-fetch` pairs a short rotating wireframe globe and fixed NERV wordmark with your
+existing Fastfetch information. Use `--static` or `--loop`; narrow terminals fall back
+to a compact static layout. It reads MAGI colours without changing configuration.
+Approved Ghostty startup animates until the first key; plain `fastfetch` uses the composition, while arguments retain the original CLI. [Usage and safety](docs/terminal-fetch.md).

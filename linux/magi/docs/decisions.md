@@ -1111,3 +1111,12 @@ reference or adding polling/signals. ascii-splash 0.6.1 only accepts fixed built
 map semantic accent hue and saturation honestly rather than inventing custom support.
 Both consume Theme Orchestrator generations and preserve user behavior configuration.
 [Audit, rejected alternatives and validation](review/terminal-visuals.md).
+
+## Terminal fetch — ANSI geometry with stationary system information
+
+Use a small standard-library Python consumer for a rotating wireframe and fixed
+NERV wordmark. Fastfetch owns its configured system data and runs only once; the
+wrapper resolves cursor-based key padding before composing it beside the artwork.
+Read the existing MAGI palette; do not add a theme target or generated-state writer.
+Default animation is bounded, with static/narrow/no-colour fallbacks and PTY cleanup
+coverage. The operator accepted the wider wordmark, centred information and first-key preservation, and authorized guarded Ghostty startup.

@@ -113,3 +113,11 @@ Theme integrations now recognize exact canonical static bootstrap blocks as read
 source. Their journals own generated state, runtime links and selection rollback, not
 removal of tracked hooks. The explicit legacy-journal conversion and per-application
 fallbacks are described in [generated state](../generated-state.md).
+
+## Terminal presentation
+
+`magi-fetch` consumes the existing semantic palette and captures Fastfetch once.
+It is an isolated terminal renderer, not a Quickshell service or theme publisher.
+It reserves a bounded logo area, keeps system text fixed and restores terminal state.
+Approved interactive Ghostty startup uses `--until-key` before ble.sh attaches; SSH, multiplexer and nested shells are skipped.
+See [usage and terminal safety](../terminal-fetch.md).

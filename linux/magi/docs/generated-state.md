@@ -86,3 +86,7 @@ writes into a checkout (including Stow-resolved paths) are rejected. See
 Terminal visual generations follow the same current/previous retention rules above.
 Use target disable before cleanup; re-enable/apply recreates generated colours.
 See [terminal visuals audit](review/terminal-visuals.md) for fallback and next-launch limits.
+
+`magi-fetch` is a read-only consumer of the saved theme, existing palette resolver
+and matching published snapshot. It creates no persistent generated state, cache or
+activation receipt. Its frames and captured Fastfetch text live only in process memory.
