@@ -23,10 +23,14 @@ ShellRoot {
                 // c7c9426 retired the Hyprlock target. Assert identities as well as
                 // count so a missing/replaced adapter cannot make this test pass.
                 const expected = ["magi", "hyprland", "ghostty", "gtk", "zen", "yazi",
-                    "neovim", "starship", "fastfetch", "btop", "qt", "hyprtoolkit"]
+                    "neovim", "starship", "fastfetch", "btop", "cava", "ascii-splash", "qt", "hyprtoolkit"]
                 const actual = Services.ThemeOrchestrator.targets.map(target => target.id)
                 test.check(JSON.stringify(actual.slice().sort()) === JSON.stringify(expected.slice().sort()),
                     "exact supported/deferred registry reaches Settings; Hyprlock remains retired")
+                for (const id of ["cava", "ascii-splash"]) {
+                    const row = Services.ThemeOrchestrator.targets.find(t => t.id === id)
+                    test.check(row && row.activationKind === "next_launch" && !row.automaticSafe, id + " honest optional activation contract reaches Settings")
+                }
                 Services.ThemeOrchestrator.preview("ghostty", "")
                 break
             case 2:

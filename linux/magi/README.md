@@ -114,7 +114,10 @@ The [theme library](docs/themes.md) includes Catppuccin, Everforest, Rosé Pine,
 Tokyo Night, Gruvbox Dark/Light, Kanagawa Wave/Dragon, Dracula, One Dark/Light and
 Ayu Mirage. MAGI is the canonical semantic palette source. Application themes can opt in to
 follow it: Hyprland, Ghostty, GTK/Thunar, Zen Browser, Yazi/yatline, Neovim, Starship,
-Fastfetch through terminal ANSI, and btop. Generated output lives separately from
+Fastfetch through terminal ANSI, btop, and optional CAVA/ascii-splash launch colours.
+CAVA uses a generated gradient; ascii-splash uses approximate built-in theme mapping.
+Both apply on next launch; see the [terminal visuals audit](docs/review/terminal-visuals.md).
+Generated output lives separately from
 human/Stow-owned dotfiles. Tracked static bootstrap hooks consume optional generated
 payloads; normal enable/apply/switch/disable operations leave source bytes unchanged.
 Generated generations, activation state and journals belong in XDG stores, not Git.

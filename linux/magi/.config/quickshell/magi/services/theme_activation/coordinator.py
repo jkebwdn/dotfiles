@@ -87,6 +87,10 @@ class ThemeActivationCoordinator:
             # Nothing below this barrier publishes or activates.
             for target,adapter in adapters.items():
                 record=state['targets'][target]
+                if getattr(adapter, 'optional', False) and not self.orchestrator.probe(adapter)['available']:
+                    record.update(error='', appliedPalette=None, result='Application unavailable',
+                                  activation={'label':'Not installed', 'detail':'Install the application to use this optional target.'})
+                    continue
                 probe=self.orchestrator.ready(adapter)
                 if target=='zen' and probe.get('profile')!=record.get('options',{}).get('confirmedProfile'):
                     raise Conflict('Zen profile selection changed; re-enroll')

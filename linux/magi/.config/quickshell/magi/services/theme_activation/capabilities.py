@@ -9,6 +9,8 @@ class Capability:
     readback: str = 'published-files'
 
 CAPABILITIES = {
+    'cava': Capability('next_launch', detail='Start CAVA through the MAGI shell hook. Running visualizers keep their launch colours; no automatic restart.'),
+    'ascii-splash': Capability('next_launch', detail='Nearest built-in theme on the next splash launch. Explicit --theme and shared presets take precedence; running animations are unchanged.'),
     'magi': Capability('live', detail='Reactive MAGI palette; no shell reload.'),
     'hyprland': Capability('safe_reload', True, 'Border colours only.', 'command-accepted'),
     'ghostty': Capability('safe_reload', True, 'Existing GApplication reload-config action; independent instances may need manual reload.', 'action-accepted'),

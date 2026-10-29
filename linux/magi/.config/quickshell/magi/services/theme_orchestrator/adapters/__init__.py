@@ -3,9 +3,10 @@ from .desktop import Magi, Hyprland, Ghostty, Gtk
 from .zen import Zen
 from .terminal import Yazi, Starship, Btop, Fastfetch
 from .neovim import Neovim
+from .visuals import Cava, Splash
 
 ADAPTERS = {a.id: a for a in (Magi(), Hyprland(), Ghostty(), Gtk(), Zen(), Yazi(),
-                             Neovim(), Starship(), Fastfetch(), Btop())}
+                             Neovim(), Starship(), Fastfetch(), Btop(), Cava(), Splash())}
 DEFERRED = [dict(id='qt', label='Qt', reason='Active platform plugin not verified'),
             dict(id='hyprtoolkit', label='hyprtoolkit', reason='Authentication/helper dialogs need native validation')]
 

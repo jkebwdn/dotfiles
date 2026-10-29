@@ -53,7 +53,7 @@ when needed to meet the established 4.5:1 control-label gate. No semantic roles 
 ## Generated applications and ANSI
 
 All adapters consume the same snapshot: MAGI, Hyprland borders, Ghostty, GTK/Thunar,
-Zen hybrid CSS, Yazi/yatline, Neovim, Starship, Fastfetch ANSI and btop. Hyprland
+Zen hybrid CSS, Yazi/yatline, Neovim, Starship, Fastfetch ANSI, btop, and optional CAVA/ascii-splash launch integrations. Hyprland
 still owns only border integration; transparency remains separate background alpha.
 
 The existing ANSI derivation is unchanged: elevated/red/green/yellow/blue/magenta/
@@ -101,3 +101,11 @@ and tracked source remained unchanged throughout the round-trip. Existing activa
 contracts remain in effect (including Zen restart and next-launch application targets).
 The full regression run plus corrected harness reruns resolved to 83 PASS, 0 FAIL,
 4 documented sandbox environment limitations and 0 SKIPPED. Schema remains 22.
+
+## Optional terminal visuals
+
+CAVA receives a transparent-background semantic gradient on its next guarded shell
+launch. ascii-splash receives the nearest of its five built-in themes, not custom RGB
+colours. Both preserve user behavior settings; running animations are not restarted.
+Enable them through the existing application theme targets. Open a new Bash shell
+after installing the static hook. [Support, mapping and ownership](review/terminal-visuals.md).

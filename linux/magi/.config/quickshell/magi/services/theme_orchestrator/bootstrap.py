@@ -15,6 +15,8 @@ def wrap(body, language='#'):
 
 def blocks(store, target):
     c = store.config
+    if target in ('cava', 'ascii-splash'):
+        return {c/'quickshell/magi/services/terminal_visuals.sh': wrap('cava() { python3 "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/magi/services/terminal_visuals.py" cava "$@"; }\nsplash() { python3 "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/magi/services/terminal_visuals.py" ascii-splash "$@"; }')}
     if target == 'starship':
         return {store.home/'.bashrc': wrap('magi_starship="${XDG_DATA_HOME:-$HOME/.local/share}/magi/theme-orchestrator/starship/current/starship.toml"\nif [[ -r "$magi_starship" ]]; then\n    export STARSHIP_CONFIG="$magi_starship"\nelif [[ "${STARSHIP_CONFIG:-}" == "$magi_starship" ]]; then\n    unset STARSHIP_CONFIG\nfi\nunset magi_starship')}
     if target == 'ghostty':

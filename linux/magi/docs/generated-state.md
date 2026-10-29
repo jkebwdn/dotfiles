@@ -63,6 +63,8 @@ age alone never proves a generation disposable.
 | Hyprland | hyprland.lua guarded border hook | Theme Orchestrator current/colors.lua | Read-only hook; absent file preserves baseline borders |
 | Neovim | init.lua guarded runtimepath/colourscheme | Theme Orchestrator current/colors/magi.lua | Read-only hook; absent file leaves plugin/default colourscheme |
 | Yazi | init.lua semantic fallback, theme.toml selector, magi-template.toml source colours | Generated current/flavor and yatline.lua; exact-ignored magi.yazi link | Journal owns runtime link only; absent flavour uses Yazi defaults and Lua fallback |
+| CAVA | `.bashrc` guarded source + canonical `services/terminal_visuals.sh` | Theme Orchestrator `cava/current/colors.ini`; launch-only anonymous memfd config | Read-only bootstrap record; disable detaches current, absent/invalid payload uses original config; no user config writes |
+| ascii-splash | Same guarded shell bootstrap | Theme Orchestrator `ascii-splash/current/theme.json` | Read-only bootstrap record; optional next-launch built-in override; absent/disabled uses application config |
 | HyprMon | conditional Hyprland loader; saved profile JSON | Local exact-ignored hyprmon.lua, owned by HyprMon | No MAGI journal ownership; absent file does not break compositor startup |
 
 Normal enable/switch/disable never rewrites these canonical source hooks. Disable
@@ -80,3 +82,7 @@ path changes stop migration. Startup/apply refuse a pending migration, never gue
 Legacy non-bootstrap adapters can still enroll non-Git external configurations, but
 writes into a checkout (including Stow-resolved paths) are rejected. See
 [ownership audit and acceptance](review/bootstrap-ownership.md).
+
+Terminal visual generations follow the same current/previous retention rules above.
+Use target disable before cleanup; re-enable/apply recreates generated colours.
+See [terminal visuals audit](review/terminal-visuals.md) for fallback and next-launch limits.

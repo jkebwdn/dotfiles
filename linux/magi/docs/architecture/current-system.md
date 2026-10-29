@@ -58,6 +58,12 @@ per output. External service state is not serialized into Settings.
 | `LockAuxiliary`, `lock_auxiliary.py` | Display-only weather/media snapshots | Private auxiliary state and bounded artwork cache | Shell publisher; native lock consumes snapshots |
 | `native/lock` | Session lock ownership, native input, credential lifetime, PAM outcome | Deployed package and runtime lock state | Native owner alone authorizes unlock; QML cannot |
 
+Optional terminal visuals use the same publisher and activation coordinator.
+CAVA receives generated semantic colours via an anonymous launch configuration;
+ascii-splash receives a nearest built-in theme argument. Guarded static Bash hooks
+leave behavioral config untouched, with next-launch semantics and missing-state
+fallback. Neither app is a dependency. See [support details](../review/terminal-visuals.md).
+
 ## Current interaction contracts
 
 - Volume: left-click Audio, right-click mute, wheel bounded volume; output/input

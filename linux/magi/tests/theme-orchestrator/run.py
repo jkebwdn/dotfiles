@@ -64,6 +64,9 @@ class Lifecycle(unittest.TestCase):
         (profile/'prefs.js').write_text('user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);\n')
         (zen/'profiles.ini').write_text('[Profile0]\nPath=other\nDefault=1\n[Profile1]\nPath=release\nIsRelative=1\n[Install15B76BAA26BA15E7]\nDefault=release\n')
         (zen/'installs.ini').write_text('[15B76BAA26BA15E7]\nDefault=release\n')
+        hook = self.store.config/'quickshell/magi/services/terminal_visuals.sh'
+        hook.parent.mkdir(parents=True)
+        hook.write_text((SOURCE/'services/terminal_visuals.sh').read_text())
         self.gsettings = {'gtk-theme': "'catppuccin'", 'color-scheme': "'prefer-dark'"}
         def command(argv):
             if argv[0] == 'gsettings':

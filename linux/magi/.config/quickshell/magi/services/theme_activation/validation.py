@@ -6,6 +6,10 @@ def validate(target, files):
     if target=='ghostty':
         from application_appearance.coordinator import validate_ghostty
         validate_ghostty(files)
+    if target in ('cava', 'ascii-splash'):
+        from terminal_visuals import validate_payload
+        name = 'colors.ini' if target == 'cava' else 'theme.json'
+        validate_payload(target, files[name])
     for name,text in files.items():
         if not isinstance(text,str) or '\0' in text: raise ValueError('Invalid text artifact: '+name)
         if name.endswith('.json'): json.loads(text)

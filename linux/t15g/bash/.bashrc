@@ -45,3 +45,8 @@ eval "$(starship init bash)"
 # ---------------------------------------------------------
 
 [[ ${BLE_VERSION-} ]] && ble-attach
+
+# Optional MAGI terminal colours; launch hooks fall back when no generated theme exists.
+if [[ -r "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/magi/services/terminal_visuals.sh" ]]; then
+    source "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/magi/services/terminal_visuals.sh"
+fi

@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 91-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 92-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -74,3 +74,7 @@ full workstation/plugin behavior still require the operator smoke gate.
 
 `runtime-visual/run:quality.qml` covers Phase 16 keyboard/focus rendering, Wi-Fi
 accessible labels and notification idle/expiry lifecycle without a live notification bus.
+
+`theme-orchestrator/visuals` covers optional CAVA/ascii-splash discovery, all 26
+palette payloads, native parser/theme validation when installed, guarded launch
+fallbacks and behavior/source preservation across enrollment round-trips.

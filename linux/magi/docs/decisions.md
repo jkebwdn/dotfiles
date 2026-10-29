@@ -1102,3 +1102,12 @@ sizes and accepted layout are unchanged; no warning suppression or delay was add
 
 TTY login remains accepted. Greeter is excluded from the current active roadmap.
 No new feature is part of this consolidation.
+
+## Terminal visuals — guarded next-launch colour integration
+
+CAVA's named-theme reference is not optional, and its live-config watcher does not
+watch that theme file. Use a guarded launch snapshot instead of committing a fragile
+reference or adding polling/signals. ascii-splash 0.6.1 only accepts fixed built-ins;
+map semantic accent hue and saturation honestly rather than inventing custom support.
+Both consume Theme Orchestrator generations and preserve user behavior configuration.
+[Audit, rejected alternatives and validation](review/terminal-visuals.md).
