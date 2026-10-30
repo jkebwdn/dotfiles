@@ -6,8 +6,12 @@ namespace magi {
 struct VisualData {
     QVariantMap values;
     QImage wallpaper, avatar, media, mediaIcon, depth;
+    bool refreshMedia(const QString& state);
+    static bool refreshCurrentMedia();
     void prepareWallpaper(const QImage& source);
     static VisualData load(const QString& config, const QString& state, const QString& data);
     static const VisualData& current();
+private:
+    QByteArray mediaRevision_;
 };
 }

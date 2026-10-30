@@ -8,3 +8,6 @@ LockStatus 1.0 LockStatus.qml
 LockFingerprint 1.0 LockFingerprint.qml
 LockElementHost 1.0 LockElementHost.qml
 LockAuxiliary 1.0 LockAuxiliary.qml
+
+LockCapsIcon 1.0 LockCapsIcon.qml
+LockMediaIcon 1.0 LockMediaIcon.qml

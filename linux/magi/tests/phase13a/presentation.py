@@ -18,6 +18,6 @@ with tempfile.TemporaryDirectory(prefix='magi-phase13a-ui-') as tmp:
  output=result.stdout+result.stderr;print("EXIT",result.returncode);print(output)
  known=['Failed to start IPC server','This plugin does not support setting window masks','Unable to find hyprland socket','Could not connect to DBus','Could not find an available backend', '$HYPRLAND_INSTANCE_SIGNATURE is unset. Cannot connect to hyprland.']
  checked='\n'.join(l for l in output.splitlines() if not any(k in l for k in known))
- assert result.returncode==0 and 'Phase13A presentation PASS' in output and not any(k in checked for k in ['FAIL','WARN','ERROR'])
+ assert result.returncode==0 and 'Phase13A presentation PASS' in output and 'Corners checks PASS' in output and not any(k in checked for k in ['FAIL','WARN','ERROR'])
 
  print('Phase13A production-component previews:',previews)

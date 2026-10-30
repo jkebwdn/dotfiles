@@ -21,6 +21,14 @@ function preset(name) {
         e.time.alignment = "left"
         e.identity = element("center-right",-.06,0,1,true,1)
         e.authentication = element("bottom-right",-.06,-.08,1,true,2)
+    } else if (name === "split-corners") {
+        e.identity = element("top-left",.03,.04,.75,true,1)
+        e.identity.alignment = "left"
+        e.time = element("top-left",.12,.04,1,true,0)
+        e.time.alignment = "left"
+        e.authentication = element("bottom-right",-.03,-.05,1,true,2)
+        e.authentication.alignment = "right"
+        e.media.visible = true
     } else if (name === "corner") {
         e.time = element("top-left",.05,.05,.85,true,0)
         e.time.alignment = "left"
@@ -34,7 +42,7 @@ function preset(name) {
         e.time = element("top-center",0,.16,.85,true,0)
         e.identity.visible = false
     } else return preset("centered")
-    return {layoutVersion:1, preset:name, space:space, elements:e, effects:effects(null)}
+    return {layoutVersion:1, preset:name, space:space, elements:e, effects:effects(name === "split-corners" ? {media:"title",artwork:false} : null)}
 }
 function normalize(input) {
     const fallback = preset("centered")
@@ -48,7 +56,7 @@ function normalize(input) {
     const out = copy(fallback), used = []
     out.effects = effects(input.effects)
     out.space = input.space
-    out.preset = ["centered","editorial","corner","split","minimal","custom"].includes(input.preset) ? input.preset : "custom"
+    out.preset = ["centered","editorial","corner","split","minimal","split-corners","custom"].includes(input.preset) ? input.preset : "custom"
     for (const id of ids()) {
         const e = input.elements[id]
         if (!e || !anchors().includes(e.anchor) || !["left","center","right"].includes(e.alignment)
@@ -94,8 +102,8 @@ function effects(value) {
     return {credential:choice("credential",["dots","line","segments","ring","minimal"],"dots"),
         avatar:choice("avatar",["plain","ring","glow","frame"],"plain"),
         weather:choice("weather",["compact","standard","minimal"],"standard"),
-        media:choice("media",["compact","artwork","minimal"],"compact"),
-        location:v.location === true, artwork:v.artwork !== false, depth:v.depth === true}
+        media:choice("media",["compact","artwork","minimal","title"],"compact"),
+        blur:v.blur !== false, location:v.location === true, artwork:v.artwork !== false, depth:v.depth === true}
 }
 
 // Hosts share the presentation plane and use a top-left scale origin.

@@ -30,17 +30,17 @@ UI.SettingsPage {
     }
     UI.SettingsSection {
         objectName: "lockPresets"
-        title: "Layout · " + root.layout.preset.charAt(0).toUpperCase() + root.layout.preset.slice(1)
+        title: "Layout · " + (root.layout.preset === "split-corners" ? "Split Corners" : root.layout.preset.charAt(0).toUpperCase() + root.layout.preset.slice(1))
         collapsible: true
         Layout.topMargin: 0
     Flow {
         Layout.fillWidth: true; Layout.preferredHeight: childrenRect.height; spacing: 8
         Repeater {
-            model: ["centered","editorial","corner","split","minimal"]
+            model: ["centered","editorial","corner","split","minimal","split-corners"]
             UI.SettingsChoiceCard {
                 id: presetCard
                 required property string modelData
-                width: 124; height: 100; text: modelData.charAt(0).toUpperCase()+modelData.slice(1)
+                width: 124; height: 100; text: modelData === "split-corners" ? "Split Corners" : modelData.charAt(0).toUpperCase()+modelData.slice(1)
                 selected: root.layout.preset===modelData
                 onClicked: root.save(Model.preset(modelData))
                 UI.LockLayoutCanvas { anchors.fill: parent; layout:Model.preset(presetCard.modelData); palette:root.colors;interactive:false }
@@ -83,8 +83,8 @@ UI.SettingsPage {
                 onActivated:root.edit("size",sizes[currentIndex])
             }
             UI.SettingsSelector {
-                visible:root.selected==="time";model:["Left","Center","Right"]
-                currentIndex:["left","center","right"].indexOf(root.layout.elements.time.alignment)
+                visible:["time","identity","authentication"].includes(root.selected);model:["Left","Center","Right"]
+                currentIndex:["left","center","right"].indexOf(root.layout.elements[root.selected].alignment)
                 Accessible.name:"Time alignment"
                 onActivated:root.edit("alignment",["left","center","right"][currentIndex])
             }
@@ -106,7 +106,7 @@ UI.SettingsPage {
             Flow {
                 Layout.fillWidth:true;Layout.preferredHeight:childrenRect.height;spacing:6
                 Repeater {
-                    model:root.selected==="authentication" ? ["dots","line","segments","ring","minimal"] : root.selected==="identity" ? ["plain","ring","glow","frame"] : root.selected==="weather" ? ["compact","standard","minimal"] : root.selected==="media" ? ["compact","artwork","minimal"] : []
+                    model:root.selected==="authentication" ? ["dots","line","segments","ring","minimal"] : root.selected==="identity" ? ["plain","ring","glow","frame"] : root.selected==="weather" ? ["compact","standard","minimal"] : root.selected==="media" ? ["compact","artwork","minimal","title"] : []
                     UI.SettingsChoiceCard {
                         id:styleCard
                         required property string modelData
@@ -120,7 +120,7 @@ UI.SettingsPage {
             }
             UI.SettingsToggle {visible:root.selected==="weather";text:"Show city label";checked:root.layout.effects.location;onClicked:root.effect("location",checked)}
             UI.SettingsToggle {visible:root.selected==="media";text:"Show artwork";checked:root.layout.effects.artwork;onClicked:root.effect("artwork",checked)}
-            UI.SettingsHelp {visible:root.selected==="media";text:"Opt in to showing track information while locked. Read-only; cached data may be older than the current track."}
+            UI.SettingsHelp {visible:root.selected==="media";text:"Title style places the MAGI media icon and song title beneath the adjacent profile and clock. Opt in to showing track information while locked. Read-only; cached data may be older than the current track."}
             UI.SettingsHelp {visible:root.selected==="weather";text:"Uses Profile weather settings and cached observations. Preview content is synthetic."}
             UI.SettingsSection {
                 title:"Fine tune";collapsible:true
@@ -137,6 +137,11 @@ UI.SettingsPage {
                 UI.SettingsNumber {from:-100;to:100;value:Math.round(root.layout.elements[root.selected].offsetY*100);Accessible.name:"Vertical offset";onValueModified:root.edit("offsetY",value/100)}
             }
         }
+    }
+    UI.SettingsSection {
+        title: "Background"
+        UI.SettingsToggle {objectName: "lockBackgroundBlur"; text: "Blur background"; checked: root.layout.effects.blur; onClicked: root.effect("blur", checked)}
+        UI.SettingsHelp {text: "Turn off blur to keep the wallpaper sharp. Contrast shading remains for readability."}
     }
     UI.SettingsSection {
         objectName: "lockPreviewOptions"

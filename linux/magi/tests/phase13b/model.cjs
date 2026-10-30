@@ -40,3 +40,13 @@ assert(!c.overlaps(box(0,0),box(108,0),8));
 assert(c.overlaps(box(0,0,100,20,2),box(190,30),8));
 assert(!c.overlaps(box(0,0,100,0),box(0,0),8));
 console.log('Phase13B scaled media/auth intersection PASS');
+
+// Optional blur defaults preserve older schema22 compositions and opt-out survives normalization.
+const older=plain(c.preset('editorial'));delete older.effects.blur;
+const olderDoc=plain(c.defaults());olderDoc.lockScreen=older;
+const checked=c.analyze(olderDoc);assert.equal(checked.errors.length,0);
+assert.equal(c.normalize(older).effects.blur,true);
+older.effects.blur=false;older.effects.media='title';
+assert.equal(c.normalize(older).effects.blur,false);
+assert.equal(c.normalize(older).effects.media,'title');
+assert.deepStrictEqual(plain(c.normalize(older).elements),older.elements);

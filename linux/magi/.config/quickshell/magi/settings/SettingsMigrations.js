@@ -148,7 +148,7 @@ function migrate(input) {
     }
     if (doc.schemaVersion === 20) {
         if (doc.lockScreen && typeof doc.lockScreen === "object" && !doc.lockScreen.effects)
-            doc.lockScreen.effects = {credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false}
+            doc.lockScreen.effects = {credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false,blur:true}
         doc.schemaVersion = 21
     }
     if (doc.schemaVersion === 21) doc.schemaVersion = 22

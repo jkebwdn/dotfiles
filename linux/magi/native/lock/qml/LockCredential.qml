@@ -3,6 +3,7 @@ Item {
     id: root
     objectName: "credentialDots"
     required property var tokens
+    property string alignment: "center"
     property int characterCount: 0
     property string style: "dots"
     readonly property int visibleCount: Math.min(16, Math.max(0, characterCount))
@@ -11,7 +12,8 @@ Item {
     Row {
         objectName: "dotRow"
         visible: root.visibleCount > 0
-        anchors.centerIn: parent; spacing: tokens.dotGap
+        x: root.alignment === "right" ? root.width-width : root.alignment === "left" ? 0 : (root.width-width)/2
+        anchors.verticalCenter: parent.verticalCenter; spacing: tokens.dotGap
         Repeater {
             model: root.visibleCount
             Item {

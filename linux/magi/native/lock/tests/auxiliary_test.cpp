@@ -32,6 +32,14 @@ int main(int argc,char** argv) {
  auto good=magi::VisualData::load(config,state,data);
  assert(good.values["weather"].toMap()["temperature"]=="12°C");assert(!good.values["weather"].toMap().contains("location"));
  assert(good.values["media"].toMap()["title"]=="Sample track"&&!good.media.isNull());
+ // Refresh changed metadata without reloading the immutable wallpaper/avatar snapshot.
+ const auto wallpaperKey=good.wallpaper.cacheKey();
+ media["title"]="Next track";write(state+"/magi/lock-auxiliary/media.json",media);
+ assert(good.refreshMedia(state));assert(good.values["media"].toMap()["title"]=="Next track");
+ assert(!good.refreshMedia(state));assert(good.wallpaper.cacheKey()==wallpaperKey);
+ QFile::remove(state+"/magi/lock-auxiliary/media.json");assert(good.refreshMedia(state));assert(!good.values.contains("media"));
+ media["title"]="Sample track";write(state+"/magi/lock-auxiliary/media.json",media);
+ assert(good.refreshMedia(state));
  media["artwork"]="https://invalid/art.png";write(state+"/magi/lock-auxiliary/media.json",media);
  auto remote=magi::VisualData::load(config,state,data);assert(remote.media.isNull()&&remote.values.contains("media"));
  weather["observed"]=now-10801;media["observed"]=now-10801;

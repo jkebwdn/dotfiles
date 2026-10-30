@@ -2,7 +2,7 @@
 namespace magi {
 enum class AuthState { Idle, Editing, Authenticating, Failed, WorkerError, Unsupported, Cancelled, Succeeded };
 // Only this value object crosses the presentation boundary, never the controller.
-struct AuthPresentation { unsigned count = 0; bool active = false; bool caps = false; AuthState state = AuthState::Idle; bool capsKnown = true; bool keyboardUnavailable = false; const char* fingerprintStatus = ""; };
+struct AuthPresentation { unsigned count = 0; bool active = false; bool caps = false; AuthState state = AuthState::Idle; bool capsKnown = true; bool keyboardUnavailable = false; const char* fingerprintStatus = ""; int powerConfirmation = 0; const char* powerStatus = ""; };
 inline const char* authStateName(AuthState s) {
     switch (s) {
     case AuthState::Idle: return "Locked";

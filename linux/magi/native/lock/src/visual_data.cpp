@@ -87,7 +87,7 @@ VisualData VisualData::load(const QString& config, const QString& state, const Q
     // an exact monitor description; do not guess identity from a connector name.
     const auto wallpaper=read(state+"/magi/wallpaper/state.json");
     if (wallpaper["version"].toInt()==1)
-        result.prepareWallpaper(picture(wallpaper["shared"].toObject()["path"].toString(),{1920,1080}));
+        result.prepareWallpaper(picture(wallpaper["shared"].toObject()["path"].toString(),settings["lockScreen"].toObject()["effects"].toObject()["blur"].toBool(true) ? QSize(1920,1080) : QSize(3840,2160)));
     // Optional display-only snapshots: never network, MPRIS, or an auth object.
     const auto layout=settings["lockScreen"].toObject();
     const auto elements=layout["elements"].toObject();
@@ -115,19 +115,7 @@ VisualData VisualData::load(const QString& config, const QString& state, const Q
             result.values["weather"]=display;
         }
     }
-    if (elements["media"].toObject()["visible"].toBool()) {
-        const auto media=read(state+"/magi/lock-auxiliary/media.json");
-        const auto observed=media["observed"].toDouble(-1);
-        const auto title=text(media["title"]);
-        if(observed<=now+60 && observed>=now-10800 && !title.isEmpty()) {
-            QVariantMap display{{"available",true},{"title",title},{"artist",text(media["artist"])},{"playing",media["playing"].toBool()}};
-            const QFileInfo file(media["artwork"].toString());
-            if(effects["artwork"].toBool(true) && file.canonicalPath()==QFileInfo(state+"/magi/lock-auxiliary/artwork").canonicalFilePath() && !file.canonicalPath().isEmpty())
-                result.media=preparedPicture(file.canonicalFilePath(),{256,256});
-            result.mediaIcon=preparedPicture(state+"/magi/lock-auxiliary/media-icon.png",{96,96});
-            display["artwork"]=!result.media.isNull();display["icon"]=!result.mediaIcon.isNull();result.values["media"]=display;
-        }
-    }
+    result.refreshMedia(state);
     // Prepared cutout import is deferred. Only a bounded, wallpaper-matched
     // local prepared asset can opt into compositing; absent/invalid is quiet.
     if(effects["depth"].toBool()) {
@@ -150,8 +138,37 @@ VisualData VisualData::load(const QString& config, const QString& state, const Q
     result.values["depthAvailable"]=!result.depth.isNull();
     return result;
 }
+bool VisualData::refreshMedia(const QString& state) {
+    const auto layout=QJsonObject::fromVariantMap(values.value("lockScreen").toMap());
+    const auto elements=layout["elements"].toObject();const auto effects=layout["effects"].toObject();
+    const auto now=QDateTime::currentSecsSinceEpoch();
+    const auto snapshot=read(state+"/magi/lock-auxiliary/media.json");
+    const auto observed=snapshot["observed"].toDouble(-1);
+    const bool fresh=observed<=now+60 && observed>=now-10800;
+    const auto revision=fresh ? QJsonDocument(snapshot).toJson(QJsonDocument::Compact) : QByteArray();
+    if(revision==mediaRevision_) return false;
+    mediaRevision_=revision;
+    const auto before=values.value("media");
+    values.remove("media");media={};mediaIcon={};
+    auto& result=*this;
+    auto text=[](QJsonValue v) { auto t=v.toString().simplified().left(160);t.remove(QRegularExpression("[\\x{0000}-\\x{001f}\\x{007f}]"));return t; };
+    if (elements["media"].toObject()["visible"].toBool()) {
+        const auto media=snapshot;
+        const auto observed=media["observed"].toDouble(-1);
+        const auto title=text(media["title"]);
+        if(observed<=now+60 && observed>=now-10800 && !title.isEmpty()) {
+            QVariantMap display{{"available",true},{"title",title},{"artist",text(media["artist"])},{"playing",media["playing"].toBool()}};
+            const QFileInfo file(media["artwork"].toString());
+            if(effects["artwork"].toBool(true) && file.canonicalPath()==QFileInfo(state+"/magi/lock-auxiliary/artwork").canonicalFilePath() && !file.canonicalPath().isEmpty())
+                result.media=preparedPicture(file.canonicalFilePath(),{256,256});
+            result.mediaIcon=preparedPicture(state+"/magi/lock-auxiliary/media-icon.png",{96,96});
+            display["artwork"]=!result.media.isNull();display["icon"]=!result.mediaIcon.isNull();result.values["media"]=display;
+        }
+    }
+    return before!=values.value("media");
+}
 void VisualData::prepareWallpaper(const QImage& source) {
-    wallpaper=blurWallpaper(source);
+    wallpaper=values.value("lockScreen").toMap().value("effects").toMap().value("blur",true).toBool() ? blurWallpaper(source) : source;
     values["wallpaperTint"]=wallpaperTint;
     if (wallpaper.isNull()) return;
     const QColor background(values.value("background").toString());
@@ -171,10 +188,14 @@ void VisualData::prepareWallpaper(const QImage& source) {
     const double amount=std::clamp((brightness-wallpaperDimStart)/(wallpaperDimFull-wallpaperDimStart),0.0,1.0);
     values["wallpaperTint"]=wallpaperTint+(wallpaperMaximumTint-wallpaperTint)*amount;
 }
-const VisualData& VisualData::current() {
-    static const auto snapshot=load(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)+"/quickshell/magi",
+static VisualData& currentSnapshot() {
+    static auto snapshot=VisualData::load(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)+"/quickshell/magi",
         qEnvironmentVariable("XDG_STATE_HOME",QDir::homePath()+"/.local/state"),
         QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
     return snapshot;
+}
+const VisualData& VisualData::current() { return currentSnapshot(); }
+bool VisualData::refreshCurrentMedia() {
+    return currentSnapshot().refreshMedia(qEnvironmentVariable("XDG_STATE_HOME",QDir::homePath()+"/.local/state"));
 }
 }

@@ -54,6 +54,9 @@ int main(int argc,char** argv) {
     QImage detail(640,360,QImage::Format_RGB32);
     for(int y=0;y<detail.height();++y) for(int x=0;x<detail.width();++x)
         detail.setPixel(x,y,((x/2+y/2)%2)?qRgb(255,255,255):qRgb(0,0,0));
+    auto sharp=data;
+    sharp.values["lockScreen"]=QVariantMap{{"effects",QVariantMap{{"blur",false}}}};
+    sharp.prepareWallpaper(detail); CHECK(sharp.wallpaper==detail);
     const auto blurred=magi::blurWallpaper(detail);
     int minimum=255, maximum=0;
     for(int y=60;y<300;++y) for(int x=60;x<580;++x) {
@@ -75,6 +78,61 @@ int main(int argc,char** argv) {
         }
     }
     CHECK(data.wallpaper.cacheKey()==cacheKey && data.values["wallpaperTint"]==cachedTint);
+    // Verify native software masking with a high-contrast real avatar input.
+    auto portrait=data;portrait.avatar=QImage(192,192,QImage::Format_RGB32);portrait.avatar.fill(Qt::white);
+    portrait.values["avatarRadius"]=12.0;
+    QImage avatarProbe(192,192,QImage::Format_RGB32);
+    CHECK(magi::Presentation::render(avatarProbe,"","","",R"(import QtQuick
+Rectangle { color: "black"; Image { anchors.fill: parent; source: "image://visual/avatar" } })",{},&portrait));
+    CHECK(qRed(avatarProbe.pixel(0,0))==0 && qRed(avatarProbe.pixel(96,96))==255);
+    unsigned edgePixels=0;
+    for(int y=0;y<24;++y)for(int x=0;x<24;++x){const int v=qRed(avatarProbe.pixel(x,y));if(v>0 && v<255)++edgePixels;}
+    CHECK(edgePixels>4); // Smooth alpha transition rather than a hard raster clip.
+    QImage framedProbe(124,124,QImage::Format_RGB32);
+    CHECK(magi::Presentation::render(framedProbe,"","","",R"(import QtQuick
+Rectangle { color: "black"; Image { anchors.fill: parent; smooth:true; source: "image://visual/avatar-frame" } })",{},&portrait));
+    CHECK(qRed(framedProbe.pixel(0,0))<5);
+    const auto border=QColor(portrait.values["accent"].toString());
+    CHECK(std::abs(qRed(framedProbe.pixel(62,2))-border.red())<5);
+    CHECK(qRed(framedProbe.pixel(62,8))==255);
+    QImage iconProbe(24,24,QImage::Format_RGB32);
+    CHECK(magi::Presentation::render(iconProbe,"","","",R"(import QtQuick
+import "qrc:/magi-lock/qml" as Lock
+Rectangle { color: "black"; Lock.LockFingerprint { anchors.centerIn: parent; width:22; height:24; nativeArtwork:true; status:"Touch fingerprint sensor"; tokens:QtObject {property color accent:"white";property color danger:"white";property color warning:"white"} } })",{},&portrait));
+    unsigned iconInk=0,iconEdges=0;
+    for(int y=0;y<24;++y)for(int x=0;x<24;++x){const int v=qRed(iconProbe.pixel(x,y));if(v>0)++iconInk;if(v>0 && v<255)++iconEdges;}
+    CHECK(iconInk>20 && iconEdges>20); // Vector icon is visible and antialiased before native render returns.
+    for(const char* state:{"waiting","retry","failed","timeout","unavailable","matched"}) {
+        const QByteArray probe=QByteArray("import QtQuick\nRectangle { color: \"black\"; Image { anchors.centerIn: parent; width:22; height:22; smooth:true; source: \"image://visual/fingerprint/")+state+"\" } }";
+        CHECK(magi::Presentation::render(iconProbe,"","","",probe,{},&portrait));
+        unsigned ink=0;for(int y=0;y<24;++y)for(int x=0;x<24;++x)if(qRed(iconProbe.pixel(x,y))>0)++ink;
+        CHECK(ink>15);
+    }
+    // Physical pixels increase with DPR while geometry and power hit targets stay logical.
+    QImage densityProbe(100,100,QImage::Format_RGB32);densityProbe.setDevicePixelRatio(2);
+    CHECK(magi::Presentation::render(densityProbe,"","","",R"(import QtQuick
+Rectangle {color:"black";Rectangle{x:10;y:10;width:10;height:10;color:"white"}})",{},&portrait));
+    CHECK(qRed(densityProbe.pixel(25,25))==255 && qRed(densityProbe.pixel(5,5))==0 && qRed(densityProbe.pixel(45,45))==0);
+    std::array<QRectF,3> lowTargets,highTargets;
+    QImage low(1920,1080,QImage::Format_RGB32),high(3840,2160,QImage::Format_RGB32);high.setDevicePixelRatio(2);
+    CHECK(magi::Presentation::render(low,"","","",{},{},&portrait,&lowTargets));
+    CHECK(magi::Presentation::render(high,"","","",{},{},&portrait,&highTargets));
+    CHECK(lowTargets==highTargets && !highTargets[0].isEmpty());
+    // First-frame glyphs must be separated, including the operator's .75 module scale.
+    for(int density:{1,2}) for(double moduleScale:{.75,1.0}) {
+        QImage clockProbe(600*density,124*density,QImage::Format_RGB32);clockProbe.setDevicePixelRatio(density);
+        const auto probe=QByteArray("import QtQuick\nimport \"qrc:/magi-lock/qml\" as Lock\nRectangle { color: \"black\"; Lock.LockClock { width:600; fitHeight:124; scale:")+QByteArray::number(moduleScale)+R"(; transformOrigin:Item.TopLeft;alignment:"left";timeLabel:"12:09";dateLabel:"Friday, 30 October";tokens:QtObject {property string family:"JetBrainsMono Nerd Font";property color ink:"white";property color secondary:"red";property int clockSize:112;property int dateSize:17} } })";
+        CHECK(magi::Presentation::render(clockProbe,"","","",probe,{},&portrait));
+        int timeTop=clockProbe.height(),timeBottom=-1,dateTop=clockProbe.height(),dateBottom=-1;
+        for(int y=0;y<clockProbe.height();++y)for(int x=0;x<clockProbe.width();++x){
+            const auto c=clockProbe.pixelColor(x,y);
+            if(c.red()>100 && c.green()>100 && c.blue()>100){timeTop=std::min(timeTop,y);timeBottom=std::max(timeBottom,y);}
+            if(c.red()>100 && c.green()<40 && c.blue()<40){dateTop=std::min(dateTop,y);dateBottom=std::max(dateBottom,y);}
+        }
+        CHECK(timeTop<=2*density && timeBottom>timeTop && dateBottom>dateTop);
+        CHECK(dateTop-timeBottom>=4*moduleScale*density);
+        CHECK(std::abs(dateBottom-124*moduleScale*density)<=3*density);
+    }
     QQmlEngine engine;
     QQmlComponent component(&engine,QUrl("qrc:/magi-lock/qml/LockScreen.qml"));
     CHECK(component.isReady());

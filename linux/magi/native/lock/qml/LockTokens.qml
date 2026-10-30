@@ -15,7 +15,7 @@ QtObject {
     readonly property int dateSize: 17
     readonly property int nameSize: 25
     readonly property int statusSize: 16
-    readonly property int avatarSize: 112
+    readonly property int avatarSize: 124
     readonly property int gap: 16
     readonly property int dotSize: 9
     readonly property int dotGap: 10

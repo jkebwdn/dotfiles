@@ -2,7 +2,7 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('p
 const root=process.argv[2], context=vm.createContext({});
 vm.runInContext(fs.readFileSync(path.join(root,'native/lock/qml/LockLayout.js'),'utf8'),context);
 const plain=v=>JSON.parse(JSON.stringify(v)), model=context;
-for(const preset of ['centered','editorial','corner','split','minimal']) {
+for(const preset of ['centered','editorial','corner','split','minimal','split-corners']) {
  const layout=plain(model.preset(preset));assert.deepStrictEqual(plain(model.normalize(layout)),layout);
  for(const [w,h] of [[1920,1080],[1920,1200],[3440,1440],[360,640]])
   for(const id of model.ids()) {
@@ -30,7 +30,7 @@ const migrated=plain(schema.migrate(input)), expected=plain(input);expected.sche
 assert.deepStrictEqual(migrated,expected);assert.deepStrictEqual(plain(schema.migrate(migrated)),migrated);
 assert.deepStrictEqual(plain(model.normalize(migrated.lockScreen)),fallback);
 assert.equal(schema.analyze(migrated).errors.length,0);
-for(const name of ['centered','editorial','corner','split','minimal']) {const s=plain(schema.defaults());s.lockScreen=plain(model.preset(name));assert.equal(schema.analyze(s).errors.length,0)}
+for(const name of ['centered','editorial','corner','split','minimal','split-corners']) {const s=plain(schema.defaults());s.lockScreen=plain(model.preset(name));assert.equal(schema.analyze(s).errors.length,0)}
 const bad=plain(schema.defaults());bad.lockScreen=plain(model.preset('split'));bad.lockScreen.elements.authentication.visible=false;
 assert(schema.analyze(bad).errors.length);assert.deepStrictEqual(plain(schema.analyze(bad).effective.lockScreen),plain(schema.defaults().lockScreen));
 console.log('Phase13A model/migration PASS: presets, bounds, anchors, snapping, malformed fallback, auth floor, exact preservation and idempotence');
