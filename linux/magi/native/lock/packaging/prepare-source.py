@@ -15,7 +15,7 @@ if output == source or source in output.parents:
     raise SystemExit('Use an output directory outside the source tree')
 output.mkdir(parents=True, exist_ok=True)
 files = [source / 'CMakeLists.txt', source / 'auth/Cargo.toml', source / 'auth/Cargo.lock']
-for directory in ['src', 'qml', 'integration', 'tests', 'auth/src', 'auth/tests', 'auth/examples']:
+for directory in ['src', 'qml', 'fingerprint', 'integration', 'tests', 'auth/src', 'auth/tests', 'auth/examples']:
     files += [p for p in (source / directory).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc']
 archive = output / 'magi-lock-0.1.0.tar.gz'
 with archive.open('xb') as raw, gzip.GzipFile(fileobj=raw, mode='wb', filename='', mtime=0) as zipped:

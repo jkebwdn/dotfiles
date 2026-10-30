@@ -68,6 +68,10 @@ else()
     endif()
 endif()
 
-if(symbols MATCHES "magi::fingerprint::|SyntheticBackend")
+if(symbols MATCHES "SyntheticBackend|BrokerTestAccess")
     message(FATAL_ERROR "Production owner contains synthetic fingerprint authority")
+endif()
+
+if(NOT symbols MATCHES "magi::fingerprint::Broker::consume" OR NOT symbols MATCHES "magi::Controller::fingerprintUnlock")
+    message(FATAL_ERROR "Production fingerprint validation/controller gate missing")
 endif()

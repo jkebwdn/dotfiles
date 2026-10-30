@@ -23,3 +23,13 @@ transport, not intentional credential logging. Keep private pairing/credential
 payloads out of diagnostics. Test logs use synthetic data. No security assertions
 were removed to accommodate the sandbox. [Environment limits](known-warnings.md)
 are not passes for the blocked transport cases.
+
+## Fingerprint production boundary
+
+The [accepted internal-device integration](review/lock-fingerprint-production.md)
+uses unique-owner/path-pinned fprintd verification and Controller consumption of a
+current, one-shot binding. Password fallback and session-lock ownership remain
+independent and authoritative. Settings enroll/remove/test uses a system-authorized
+helper with no unlock channel. Host tests and normal/resumed fingerprint/password
+acceptance passed. Service-loss/removal/reload have synthetic coverage; physical
+external-monitor testing is deferred. No biometric templates/images enter MAGI.

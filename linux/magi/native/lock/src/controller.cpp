@@ -1,4 +1,5 @@
 #include "controller.hpp"
+#include "broker.hpp"
 #include "auth_controller.hpp"
 namespace magi {
 std::string_view stateName(State state) {
@@ -130,6 +131,12 @@ void Controller::bufferAvailable(std::uint32_t id, std::optional<std::uint64_t> 
     if (state_ != State::Acquiring && state_ != State::Locked) return;
     auto it = outputs_.find(id);
     if (it != outputs_.end() && (!lifetime || *lifetime == it->second.lifetime)) draw(id, it->second);
+}
+bool Controller::fingerprintUnlock(fingerprint::Broker& broker, fingerprint::Binding binding) {
+    if (sleepBlocked_ || !secureLockReady() || !broker.consume(binding, true)) return false;
+    state_ = State::Unlocking;
+    backend_.authenticatedUnlockAndSync();
+    return true;
 }
 bool Controller::authenticatedUnlock(AuthController& auth, std::uint64_t generation) {
     if (sleepBlocked_ || !secureLockReady() || !auth.consumeSuccess(generation)) return false;

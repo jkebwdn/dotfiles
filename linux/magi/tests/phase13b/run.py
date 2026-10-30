@@ -29,8 +29,9 @@ with tempfile.TemporaryDirectory() as tmp:
         assert 'artwork' not in aux.prepare({'available':True,'artwork':url},cache)
     assert len(aux.prepare({'available':True,'title':'a'*1000},cache)['title'])==160
 subprocess.run(['cmake','-DSOURCE='+str(root/'native/lock'),'-P',str(root/'native/lock/tests/presentation_boundary.cmake')],check=True)
-# Security implementation is byte-identical to the accepted baseline.
-paths=['src/credential.hpp','src/auth_controller.cpp','src/auth_controller.hpp','src/wayland_owner.cpp','src/wayland_owner.hpp','src/controller.cpp','src/controller.hpp','integration/magi-lock-request','auth']
+# Credential/PAM and request integration remain byte-identical. Native owner and
+# controller now have explicit fingerprint/power integration, covered by native_lock.
+paths=['src/credential.hpp','src/auth_controller.cpp','src/auth_controller.hpp','integration/magi-lock-request','auth']
 for path in paths:
     subprocess.run(['git','diff','--exit-code','9843edd9e99759d824c5d20dd10af5a8f176ba22','--','linux/magi/native/lock/'+path],cwd=root.parents[1],check=True,stdout=subprocess.DEVNULL)
-print('Phase13B cache/privacy and unchanged security boundary PASS')
+print('Phase13B cache/privacy and unchanged credential/PAM boundary PASS')

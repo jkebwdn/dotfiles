@@ -181,14 +181,14 @@ def main():
                     classification = 'ENVIRONMENT LIMIT'
                     reason = 'Independent valid PNG decode reports D-Bus Operation not permitted; only the two image tests failed'
         if status == 'FAIL' and name == 'native_lock' and code == 77:
-            marker = 'MAGI_NATIVE_ENVIRONMENT: audited unchanged transport tests blocked by independently proven SOCK_SEQPACKET EPERM'
+            marker = 'MAGI_NATIVE_ENVIRONMENT: host-audited native source blocked by independently proven SOCK_SEQPACKET EPERM and private D-Bus bind denial'
             if marker in evidence:
                 native = next((json.loads(line.removeprefix('NATIVE_RESULTS ')) for line in evidence.splitlines()
                                if line.startswith('NATIVE_RESULTS ')), {})
                 if native.get('seqpacket_denied') and native.get('native_source_matches_audited_baseline') and native.get('build') == 'PASS':
                     status = 'ENVIRONMENT'
                     classification = 'ENVIRONMENT LIMIT'
-                    reason = 'Clean native build passed; unchanged audited transport failures plus independent SOCK_SEQPACKET EPERM (internal case counts in log)'
+                    reason = 'Clean native build and exact host audit passed; sandbox SOCK_SEQPACKET/private-bus denial (internal case counts in log)'
         row = dict(suite=name, command=command, status=status, exit=code,
                    classification=classification, reason=reason,
                    seconds=round(time.monotonic()-start, 1), log=path.name)

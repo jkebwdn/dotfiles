@@ -6,6 +6,7 @@
 
 namespace magi {
 class AuthController;
+namespace fingerprint { class Broker; struct Binding; }
 enum class State { Idle, Acquiring, Locked, Unlocking, Failed };
 std::string_view stateName(State state);
 struct Configure {
@@ -66,6 +67,7 @@ public:
     void bufferAvailable(std::uint32_t id, std::optional<std::uint64_t> lifetime = {});
     void refresh();
     bool authenticatedUnlock(AuthController& auth, std::uint64_t generation);
+    bool fingerprintUnlock(fingerprint::Broker& broker, fingerprint::Binding binding);
     bool unlockSynced();
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     bool developmentUnlock(bool explicitlyEnabled);

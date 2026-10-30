@@ -134,3 +134,12 @@ external debt; no fabricated duration or playback manipulation is introduced.
 Expanded status headers resolve a shared appearance role/shade independently of
 collapsed Bar foregrounds. Existing shared expansion drives the colour transition;
 Battery icon and percentage use the same resolver. No ownership or geometry change.
+
+## Accepted lock and fingerprint integration
+
+The [current implementation](../review/lock-fingerprint-production.md) runs a bounded,
+owner-pinned fprintd broker beside the independent PAM worker. Controller validates
+a one-shot current binding before the existing unlock/sync path. Presentation remains
+read-only, with stable corner geometry, confirmed native power intent, density-aware
+buffers and bounded media refresh. Installed 0.1.0-10 passed internal visual, normal
+fingerprint/password and suspend/resume acceptance. External hardware is deferred.

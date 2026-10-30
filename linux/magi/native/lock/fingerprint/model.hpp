@@ -5,7 +5,7 @@
 #include <span>
 #include <string_view>
 
-// Phase 11A: linked only into tests. No QObject, D-Bus, PAM or Wayland authority.
+// Shared deterministic state/packet validation. No QObject, D-Bus, PAM or Wayland authority.
 namespace magi::fingerprint {
 enum class Capability { Unavailable, ReaderPresent, NoEnrollment, Enrolled, Busy, DaemonError };
 enum class Attempt { Idle, Waiting, Scanning, Retry, Matched, Failed, Cancelled, DeviceLost, DaemonLost };

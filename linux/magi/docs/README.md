@@ -884,3 +884,11 @@ final post-suspend host health verification passed; repository finalization is a
 Expanded status-header follow-up: one shared semantic foreground and optional shade
 now separate the expanded menu header from custom Bar ink, including Battery text.
 See [diagnosis and validation](review/daily-use-polish.md#expanded-status-header-follow-up--2026-10-29).
+
+## Lock layout and fingerprint — internal acceptance complete
+
+[Final implementation and acceptance](review/lock-fingerprint-production.md) records
+installed 0.1.0-10, Split Corners, stable Caps/biometric feedback, sharp 2× rendering,
+live song title, and native fingerprint/password success including suspend/resume.
+Schema remains 22. Physical external-monitor acceptance is deferred. Repository
+closeout is approved as two reviewed commits; no next feature is started.

@@ -1,7 +1,7 @@
 # Local package recipe. Render with prepare-source.py; no install script/hooks.
 pkgname=magi-lock
 pkgver=0.1.0
-pkgrel=3
+pkgrel=10
 pkgdesc='MAGI native Wayland session locker and isolated PAM worker'
 arch=('x86_64')
 # Private local artifact; repository distribution licensing is not yet declared.
@@ -10,6 +10,7 @@ depends=('glibc' 'gcc-libs' 'wayland' 'qt6-base' 'qt6-declarative'
          'libxkbcommon' 'pam' 'pambase' 'util-linux' 'systemd' 'systemd-libs'
          'hyprland' 'hypridle' 'sh' 'grep')
 makedepends=('cmake' 'ninja' 'gcc' 'binutils' 'pkgconf' 'wayland-protocols' 'rust' 'python')
+optdepends=('fprintd: fingerprint authentication; password always available')
 backup=('etc/pam.d/magi-lock')
 source=("magi-lock-$pkgver.tar.gz")
 sha256sums=('@SOURCE_SHA256@')

@@ -10,6 +10,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <time.h>
+#include <wayland-cursor.h>
 
 namespace magi {
 namespace {
@@ -71,9 +72,90 @@ void WaylandOwner::rememberFocus(wl_surface* surface) {
         focusedSurface_ = surface; focusedOutput_ = id; focusedLifetime_ = output->lifetime; return;
     }
 }
+void WaylandOwner::cancelPower() {
+    pressedPower_ = -1;
+    if (powerIntent_.pending() != PowerIntent::None) {
+        powerIntent_.cancel(); powerExpiry_.stop();
+        if (auth_.changed) auth_.changed();
+    }
+}
+void WaylandOwner::pointerButton(std::uint32_t button, std::uint32_t state) {
+    if (button != 0x110 || stopping_ || sleeping_ || !controller_.secureLockReady()) return;
+    int hit = -1;
+    for (const auto& [id, output] : nativeOutputs_) {
+        (void)id;
+        if (output->surface != pointerSurface_ || !pointerSurface_) continue;
+        for (int i=0; i<3; ++i) if (output->powerRegions[i].contains(pointerPosition_)) hit = i;
+    }
+    if (state == WL_POINTER_BUTTON_STATE_PRESSED) { pressedPower_ = hit; return; }
+    const bool same = hit >= 0 && hit == pressedPower_;
+    pressedPower_ = -1;
+    if (!same || powerProcess_.state() != QProcess::NotRunning) return;
+    if (hit == 2) { cancelPower(); return; }
+    const auto action = hit == 0 ? PowerIntent::Reboot : PowerIntent::Suspend;
+    if (powerIntent_.click(action, powerClock_.elapsed())) {
+        powerExpiry_.stop();
+        // Same systemctl/logind authority as shell actions. Never force, ignore
+        // inhibitors, invoke a shell, or authorize an interactive escalation.
+        powerMessage_ = "Requesting power action…";
+        powerProcess_.start("/usr/bin/systemctl", {"--no-ask-password", "--check-inhibitors=yes", hit == 0 ? "reboot" : "suspend"});
+        powerDeadline_.start(5000);
+    } else powerExpiry_.start(10000);
+    if (auth_.changed) auth_.changed();
+}
+void WaylandOwner::setArrow(std::uint32_t serial) {
+    if(!pointer_ || !shm_ || !compositor_) return;
+    if(!cursorTheme_) cursorTheme_=wl_cursor_theme_load(nullptr,48,shm_);
+    if(!cursorTheme_) return;
+    auto* cursor=wl_cursor_theme_get_cursor(cursorTheme_,"left_ptr");
+    if(!cursor) cursor=wl_cursor_theme_get_cursor(cursorTheme_,"default");
+    if(!cursor || !cursor->image_count) return;
+    if(!cursorSurface_) cursorSurface_=wl_compositor_create_surface(compositor_);
+    if(!cursorSurface_) return;
+    auto* image=cursor->images[0];auto* buffer=wl_cursor_image_get_buffer(image);if(!buffer)return;
+    const int density=(image->width%2==0 && image->height%2==0) ? 2 : 1;
+    wl_surface_set_buffer_scale(cursorSurface_,density);
+    wl_pointer_set_cursor(pointer_,serial,cursorSurface_,image->hotspot_x/density,image->hotspot_y/density);
+    wl_surface_attach(cursorSurface_,buffer,0,0);wl_surface_damage_buffer(cursorSurface_,0,0,image->width,image->height);wl_surface_commit(cursorSurface_);
+}
+const wl_pointer_listener WaylandOwner::pointerListener{
+    [](void* data, wl_pointer* pointer, uint32_t serial, wl_surface* surface, wl_fixed_t x, wl_fixed_t y) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        if (pointer != self.pointer_) return;
+        self.cancelPower(); self.pointerSurface_ = self.ownsSurface(surface) ? surface : nullptr;
+        self.pointerPosition_ = {wl_fixed_to_double(x), wl_fixed_to_double(y)};
+        if(self.pointerSurface_) self.setArrow(serial);
+    },
+    [](void* data, wl_pointer* pointer, uint32_t, wl_surface*) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        if (pointer == self.pointer_) { self.pointerSurface_ = nullptr; self.cancelPower(); }
+    },
+    [](void* data, wl_pointer* pointer, uint32_t, wl_fixed_t x, wl_fixed_t y) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        if (pointer == self.pointer_) self.pointerPosition_ = {wl_fixed_to_double(x), wl_fixed_to_double(y)};
+    },
+    [](void* data, wl_pointer* pointer, uint32_t, uint32_t, uint32_t button, uint32_t state) {
+        auto& self = *static_cast<WaylandOwner*>(data);
+        if (pointer == self.pointer_) self.pointerButton(button, state);
+    },
+    [](void*, wl_pointer*, uint32_t, uint32_t, wl_fixed_t) {},
+    [](void*, wl_pointer*) {},
+    [](void*, wl_pointer*, uint32_t) {},
+    [](void*, wl_pointer*, uint32_t, uint32_t) {},
+    [](void*, wl_pointer*, uint32_t, int32_t) {},
+    [](void*, wl_pointer*, uint32_t, int32_t) {},
+    [](void*, wl_pointer*, uint32_t, uint32_t) {},
+    nullptr // warp requires a newer pointer version than the bound seat v7.
+};
 const wl_seat_listener WaylandOwner::seatListener{
     [](void* data, wl_seat* seat, std::uint32_t capabilities) {
         auto& self = *static_cast<WaylandOwner*>(data);
+        if ((capabilities & WL_SEAT_CAPABILITY_POINTER) && !self.pointer_) {
+            self.pointer_ = wl_seat_get_pointer(seat);
+            if (self.pointer_) wl_pointer_add_listener(self.pointer_, &pointerListener, &self);
+        } else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && self.pointer_) {
+            wl_pointer_release(self.pointer_); self.pointer_ = nullptr; self.pointerSurface_ = nullptr; self.cancelPower();
+        }
         self.keyboardCapable_ = capabilities & WL_SEAT_CAPABILITY_KEYBOARD;
         self.traceInput("seat-capabilities");
         if (self.keyboardCapable_) {
@@ -132,6 +214,7 @@ const wl_keyboard_listener WaylandOwner::keyboardListener{
     [](void* data, wl_keyboard* eventKeyboard, std::uint32_t, std::uint32_t, std::uint32_t key, std::uint32_t state) {
         auto& self = *static_cast<WaylandOwner*>(data);
         if (!eventKeyboard || eventKeyboard != self.keyboard_) return;
+        if (state == WL_KEYBOARD_KEY_STATE_PRESSED) self.cancelPower();
         // Never log keycode/text: physical codes can reconstruct passwords.
         self.traceInput(state == WL_KEYBOARD_KEY_STATE_PRESSED ? "key-pressed" : "key-released", eventKeyboard);
         if (!self.stopping_ && self.controller_.state() == State::Locked && self.currentFocus())
@@ -164,7 +247,8 @@ const wl_output_listener WaylandOwner::outputListener{
         static_cast<NativeOutput*>(data)->transform = transform;
     },
     [](void*, wl_output*, uint32_t, int32_t, int32_t, int32_t) {},
-    [](void*, wl_output*) {},
+    [](void* data, wl_output*) {auto& output=*static_cast<NativeOutput*>(data);
+        if(output.owner && !output.owner->stopping_ && output.lockSurface) {output.owner->controller_.refresh();output.owner->flush();}},
     [](void* data, wl_output*, int32_t scale) { static_cast<NativeOutput*>(data)->scale = scale; },
     [](void* data, wl_output*, const char* name) { static_cast<NativeOutput*>(data)->connector = name ? name : ""; },
     [](void*, wl_output*, const char*) {}
@@ -185,6 +269,26 @@ WaylandOwner::WaylandOwner(unsigned seconds, bool authenticate, std::string work
             if (!stopping_) { controller_.refresh(); flush(); }
         });
     };
+    powerClock_.start();
+    powerExpiry_.setSingleShot(true); powerDeadline_.setSingleShot(true);
+    connect(&powerExpiry_, &QTimer::timeout, this, [this] { cancelPower(); });
+    connect(&powerDeadline_, &QTimer::timeout, this, [this] { powerProcess_.kill(); });
+    powerProcess_.setStandardOutputFile(QProcess::nullDevice());
+    powerProcess_.setStandardErrorFile(QProcess::nullDevice());
+    connect(&powerProcess_, &QProcess::finished, this, [this](int code, QProcess::ExitStatus status) {
+        powerDeadline_.stop();
+        powerMessage_ = code == 0 && status == QProcess::NormalExit ? "" : "Power action unavailable or inhibited";
+        if (auth_.changed) auth_.changed();
+    });
+    connect(&powerProcess_, &QProcess::errorOccurred, this, [this](QProcess::ProcessError) {
+        powerMessage_ = "Power action unavailable";
+        if (auth_.changed) auth_.changed();
+    });
+    fingerprint_.changed = [this] { if (auth_.changed) auth_.changed(); };
+    fingerprint_.succeeded = [this](fingerprint::Binding binding) {
+        if (!stopping_ && authenticate_ && (!unlockAllowed || unlockAllowed())
+            && controller_.fingerprintUnlock(fingerprint_, binding)) flush();
+    };
     auth_.succeeded = [this](std::uint64_t generation) {
         if (!stopping_ && authenticate_ && (!unlockAllowed || unlockAllowed()) && controller_.authenticatedUnlock(auth_, generation)) flush();
     };
@@ -193,7 +297,7 @@ WaylandOwner::WaylandOwner(unsigned seconds, bool authenticate, std::string work
     clockRefresh_.setInterval(1000);
     connect(&clockRefresh_, &QTimer::timeout, this, [this, lastMinute = qint64(-1)]() mutable {
         const auto minute = QDateTime::currentSecsSinceEpoch() / 60;
-        if (!stopping_ && minute != lastMinute) { lastMinute = minute; controller_.refresh(); flush(); }
+        if (!stopping_ && (VisualData::refreshCurrentMedia() || minute != lastMinute)) { lastMinute = minute; controller_.refresh(); flush(); }
     });
     clockRefresh_.start();
     deadline_.setSingleShot(true);
@@ -210,6 +314,8 @@ WaylandOwner::WaylandOwner(unsigned seconds, bool authenticate, std::string work
 }
 WaylandOwner::~WaylandOwner() { controller_.cleanup(); }
 void WaylandOwner::prepareSleep() {
+    sleeping_ = true; cancelPower();
+    fingerprint_.cancel();
     controller_.blockForSleep(true);
     input_.blockForSleep(true);
     haveModifiers_ = false;
@@ -235,7 +341,9 @@ void WaylandOwner::resumeSleep() {
         traceInput("keyboard-created-resume");
         if (keyboard_) wl_keyboard_add_listener(keyboard_, &keyboardListener, this);
     }
+    sleeping_ = false;
     controller_.blockForSleep(false);
+    if (authenticate_ && controller_.secureLockReady()) fingerprint_.start();
     controller_.refresh(); flush();
     traceInput("resume-reconstructed");
     qInfo("RESUME: still locked; fresh keyboard state required");
@@ -399,6 +507,7 @@ bool WaylandOwner::createSurface(std::uint32_t id) {
     return true;
 }
 void WaylandOwner::removeSurface(std::uint32_t id) {
+    pointerSurface_ = nullptr; cancelPower();
     auto it = nativeOutputs_.find(id);
     if (it == nativeOutputs_.end()) return;
     auto& output = *it->second;
@@ -417,6 +526,7 @@ void WaylandOwner::surfaceConfigure(void* data, ext_session_lock_surface_v1*,
     auto& output = *static_cast<NativeOutput*>(data);
     auto& self = *output.owner;
     if (self.stopping_) return;
+    self.cancelPower(); output.powerRegions = {};
     if (output.configureLogs++ < 8)
         qInfo() << "Configure output" << output.id << "serial" << serial << "logical size" << width << height;
     else if (output.configureLogs == 9) qInfo() << "Further configure logs suppressed for output" << output.id;
@@ -430,10 +540,15 @@ FrameResult WaylandOwner::present(std::uint32_t id, Configure c, bool acknowledg
     std::erase_if(buffers_, [](const auto& b) { return !b->busy; });
     const auto count = std::count_if(buffers_.begin(), buffers_.end(), [id](const auto& b) { return b->outputId == id; });
     if (count >= 2) return FrameResult::Deferred;
-    const std::size_t bytes = std::size_t(c.width) * c.height * 4;
     std::size_t allocated = 0;
     for (const auto& b : buffers_) allocated += b->size;
-    if (bytes > totalBufferLimit - allocated) return FrameResult::Failed;
+    int density=std::clamp(it->second->scale,1,4);
+    auto fits=[&](int factor){return validGeometry({c.serial,c.width*unsigned(factor),c.height*unsigned(factor)})
+        && std::size_t(c.width)*c.height*4*factor*factor<=totalBufferLimit-allocated;};
+    while(density>1 && !fits(density)) --density;
+    if(!fits(density)) return FrameResult::Failed;
+    const int pixelWidth=int(c.width)*density,pixelHeight=int(c.height)*density;
+    const std::size_t bytes=std::size_t(pixelWidth)*pixelHeight*4;
     auto buffer = std::make_unique<Buffer>();
     buffer->owner = this;
     buffer->outputId = id;
@@ -447,38 +562,43 @@ FrameResult WaylandOwner::present(std::uint32_t id, Configure c, bool acknowledg
     auto* pool = wl_shm_create_pool(shm_, fd, int(bytes));
     close(fd);
     if (!pool) return FrameResult::Failed;
-    buffer->proxy = wl_shm_pool_create_buffer(pool, 0, int(c.width), int(c.height), int(c.width * 4), WL_SHM_FORMAT_XRGB8888);
+    buffer->proxy = wl_shm_pool_create_buffer(pool, 0, pixelWidth, pixelHeight, pixelWidth * 4, WL_SHM_FORMAT_XRGB8888);
     wl_shm_pool_destroy(pool);
     if (!buffer->proxy) return FrameResult::Failed;
     wl_buffer_add_listener(buffer->proxy, &bufferListener, buffer.get());
-    QImage image(static_cast<uchar*>(buffer->mapping), int(c.width), int(c.height), int(c.width * 4), QImage::Format_RGB32);
+    QImage image(static_cast<uchar*>(buffer->mapping), pixelWidth, pixelHeight, pixelWidth * 4, QImage::Format_RGB32);
+    image.setDevicePixelRatio(density);
     const auto state = stateName(controller_.state());
     const QString notice = developmentSeconds_
         ? QString("UNSAFE DEVELOPMENT: automatic unlock %1 seconds after confirmation").arg(developmentSeconds_)
         : (authenticate_ ? QString()
                          : QStringLiteral("NO AUTHENTICATION / NO UNLOCK — NOT FOR PRODUCTION USE"));
+    auto presentation = auth_.presentation();
+    presentation.powerConfirmation = powerIntent_.pending();
+    presentation.fingerprintStatus = fingerprint_.status();
+    presentation.powerStatus = powerMessage_;
     const bool rendered = Presentation::render(image, QString("Output registry id %1").arg(id),
-                                               QString::fromUtf8(state.data(), qsizetype(state.size())), notice, {}, auth_.presentation());
+                                               QString::fromUtf8(state.data(), qsizetype(state.size())), notice, {}, presentation, nullptr, &it->second->powerRegions);
     auto& output = *it->second;
     if (!rendered) {
         Presentation::fallback(image, auth_.presentation());
         if (!output.fallbackLogged) qWarning() << "Native solid fallback activated for output" << id;
         output.fallbackLogged = true;
     }
-    // Surface-local dimensions are authoritative. Scale 1 and NORMAL buffer
-    // transform are legal on HiDPI/rotated outputs; compositor maps the surface.
-    // Native-resolution/fractional quality is deferred, coverage is not.
+    // Geometry and hit regions stay surface-local; only the pixel buffer scales.
+    // Integer output density also supplies oversampling on fractional outputs.
+    // Retain NORMAL transform and the existing bounded buffer ownership rules.
     if (acknowledge) ext_session_lock_surface_v1_ack_configure(output.lockSurface, c.serial);
-    wl_surface_set_buffer_scale(output.surface, 1);
+    wl_surface_set_buffer_scale(output.surface, density);
     wl_surface_set_buffer_transform(output.surface, WL_OUTPUT_TRANSFORM_NORMAL);
     wl_surface_attach(output.surface, buffer->proxy, 0, 0);
-    wl_surface_damage_buffer(output.surface, 0, 0, int(c.width), int(c.height));
+    wl_surface_damage_buffer(output.surface, 0, 0, pixelWidth, pixelHeight);
     wl_surface_commit(output.surface);
     buffer->busy = true;
     buffers_.push_back(std::move(buffer));
     if (output.presentationLogs++ < 8)
         qInfo() << "Output committed" << id << "lifetime" << output.lifetime
-                << "serial" << c.serial << "acknowledged" << acknowledge
+                << "serial" << c.serial << "acknowledged" << acknowledge << "buffer density" << density
                 << "native fallback" << !rendered << "global state" << int(controller_.state())
                 << "auth generation" << auth_.generation();
     return rendered ? FrameResult::Presented : FrameResult::Fallback;
@@ -516,6 +636,7 @@ void WaylandOwner::lockConfirmed(void* data, ext_session_lock_v1*) {
     }
     self.controller_.refresh();
     if (self.secureReady) self.secureReady();
+    if (self.authenticate_ && !self.sleeping_) self.fingerprint_.start();
 }
 void WaylandOwner::lockFinished(void* data, ext_session_lock_v1*) {
     auto& self = *static_cast<WaylandOwner*>(data);
@@ -534,10 +655,12 @@ void WaylandOwner::authenticatedUnlockAndSync() {
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     developmentTimer_.stop();
 #endif
-    qInfo("AUTHENTICATED UNLOCK: current PAM Success");
+    qInfo("AUTHENTICATED UNLOCK: current validated authentication success");
     unlockAndSync();
 }
 void WaylandOwner::unlockAndSync() {
+    fingerprint_.cancel();
+    auth_.cancel();
     focusedSurface_ = nullptr; input_.focus(false, {}, true);
     ext_session_lock_v1_unlock_and_destroy(lock_);
     lock_ = nullptr;
@@ -562,9 +685,13 @@ void WaylandOwner::disconnect() {
 #if MAGI_LOCK_DEVELOPMENT_UNLOCK
     developmentTimer_.stop();
 #endif
+    fingerprint_.changed = {}; fingerprint_.succeeded = {}; fingerprint_.cancel();
     auth_.changed = {}; auth_.succeeded = {}; auth_.cancel();
     focusedSurface_ = nullptr; input_.focus(false);
-    dispose(keyboard_); dispose(seat_);
+    pointerSurface_ = nullptr; cancelPower();
+    dispose(cursorSurface_);
+    if(cursorTheme_) {wl_cursor_theme_destroy(cursorTheme_);cursorTheme_=nullptr;}
+    dispose(pointer_); dispose(keyboard_); dispose(seat_);
     reader_.reset(); writer_.reset();
     // Dispose every proxy locally before disconnect; never marshal cleanup
     // unlock/destroy requests on the lock object, even when confirmed.

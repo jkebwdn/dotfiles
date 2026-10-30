@@ -1,7 +1,13 @@
 #pragma once
+#include <wayland-cursor.h>
 #include "controller.hpp"
 #include "auth_controller.hpp"
 #include "native_input.hpp"
+#include "broker.hpp"
+#include "power_intent.hpp"
+#include <QRectF>
+#include <QProcess>
+#include <QElapsedTimer>
 #include <QObject>
 #include <QSocketNotifier>
 #include <QTimer>
@@ -18,7 +24,7 @@ public:
     std::function<void()> secureReady;
     std::function<bool()> unlockAllowed;
     bool secureLockReady() const { return controller_.secureLockReady(); }
-    bool authQuiescent() const { return auth_.quiescent(); }
+    bool authQuiescent() const { return auth_.quiescent() && fingerprint_.quiescent(); }
     void prepareSleep();
     void resumeSleep();
     bool start(); // The ONLY entry point which can connect/request a real lock.
@@ -46,6 +52,7 @@ private:
         unsigned configureLogs = 0;
         unsigned presentationLogs = 0;
         bool fallbackLogged = false;
+        std::array<QRectF, 3> powerRegions{};
     };
     struct Buffer {
         WaylandOwner* owner = nullptr;
@@ -70,6 +77,21 @@ private:
     bool currentFocus() const;
     void rememberFocus(wl_surface* surface);
     friend struct InputOwnerTestAccess;
+    static const wl_pointer_listener pointerListener;
+    void pointerButton(std::uint32_t button, std::uint32_t state);
+    void cancelPower();
+    void setArrow(std::uint32_t serial);
+    struct wl_cursor_theme* cursorTheme_ = nullptr;
+    wl_surface* cursorSurface_ = nullptr;
+    wl_pointer* pointer_ = nullptr;
+    wl_surface* pointerSurface_ = nullptr;
+    QPointF pointerPosition_;
+    int pressedPower_ = -1;
+    PowerIntent powerIntent_;
+    QElapsedTimer powerClock_;
+    QTimer powerExpiry_, powerDeadline_;
+    QProcess powerProcess_;
+    const char* powerMessage_ = "";
     static const wl_seat_listener seatListener;
     static const wl_keyboard_listener keyboardListener;
     void dispatch();
@@ -103,6 +125,7 @@ private:
     bool authenticate_;
     AuthController auth_;
     NativeInput input_;
+    fingerprint::Broker fingerprint_;
     wl_display* display_ = nullptr;
     wl_registry* registry_ = nullptr;
     wl_compositor* compositor_ = nullptr;
@@ -120,6 +143,7 @@ private:
     QTimer developmentTimer_;
 #endif
     unsigned developmentSeconds_;
+    bool sleeping_ = false;
     bool stopping_ = false;
     bool started_ = false;
     Controller controller_; // Must be cleaned while Backend still exists.

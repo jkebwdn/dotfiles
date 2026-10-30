@@ -51,3 +51,10 @@ then valid position/duration after pause/resume. See [evidence](review/daily-use
 A valid-data MAGI timer-start improvement is separate; no fabricated duration or
 automatic playback manipulation is acceptable. Browser reporting/native recheck
 remains unresolved.
+
+## Lock external-monitor acceptance — 2026-10-30
+
+The [installed integration](review/lock-fingerprint-production.md) passes internal
+visual, fingerprint/password and suspend/resume acceptance. Physical external-monitor
+acceptance is deferred because no monitor is available. Synthetic topology tests
+pass; service-loss/removal/reload evidence is synthetic, not hardware injection.

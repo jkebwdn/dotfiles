@@ -2,18 +2,49 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import Quickshell.Io
 import ".." as UI
 UI.SettingsPage {
     id: root
     title: "Security"
-    description: "Fingerprint groundwork · MAGI Lock remains password-only."
+    description: "Manage fingerprints. Your password always remains available."
     property int fixture: 0
     property string enrollmentState: "idle"
     property int stages: 0
     property var fingers: []
-    readonly property bool productionEnabled: false
+    readonly property bool productionEnabled: true
+    property string hostMessage: "Checking fingerprint reader…"
+    property bool available: false
+    property string selectedFinger: "left-index-finger"
+    property bool confirmRemove: false
+    readonly property var fingerNames: ["left-thumb","left-index-finger","left-middle-finger","left-ring-finger","left-little-finger","right-thumb","right-index-finger","right-middle-finger","right-ring-finger","right-little-finger"]
+    function run(action) {
+        if (worker.running || synthetic) return
+        confirmRemove=false
+        worker.command=["python3",Qt.resolvedUrl("../../../services/fingerprint.py").toString().replace("file://", ""),action]
+            .concat(action === "enroll" || action === "remove" ? ["--finger",selectedFinger] : [])
+        worker.running=true
+    }
+    Component.onCompleted: run("status")
+    Process {
+        id: worker
+        stdout: SplitParser {
+            onRead: line => {
+                if (root.synthetic) return
+                try {
+                    const result=JSON.parse(line)
+                    root.hostMessage=result.message || "Checking…"
+                    if (result.fingers !== undefined) root.fingers=result.fingers
+                    if (result.state === "available") root.available=true
+                    if (result.state === "unavailable") root.available=false
+                    root.stages=result.progress || 0
+                    root.enrollmentState=result.state
+                } catch (_) { root.hostMessage="Fingerprint response unavailable" }
+            }
+        }
+    }
     readonly property bool synthetic: fixture !== 0
-    readonly property string reader: fixture === 0 ? "Not queried in this session" : fixture === 3 ? "Unavailable (synthetic)" : "Available (synthetic)"
+    readonly property string reader: fixture === 0 ? (available ? "Available" : "Unavailable") : fixture === 3 ? "Unavailable (synthetic)" : "Available (synthetic)"
     function selectFixture(index) {
         fixture=index; enrollmentState="idle"; stages=0
         fingers=index===1 ? ["right-index-finger"] : []
@@ -27,20 +58,37 @@ UI.SettingsPage {
     }
     UI.SettingsSection {
         title: "Fingerprint"
-        UI.SettingsRow {
-            Label {text:"Fingerprint unlock";Layout.fillWidth:true}
-            Switch {objectName:"fingerprintEnable";checked:false;enabled:false;Accessible.name:"Fingerprint unlock unavailable until hardware acceptance"}
-        }
-        UI.SettingsHelp {text:"Framework available · production enablement deferred to Phase 11B. Enrollment does not enable unlock."}
+        UI.SettingsHelp {text:"Touch the sensor when locked to use an enrolled fingerprint, or type your password immediately."}
         UI.SettingsRow {Label {text:"Reader";Layout.fillWidth:true} Label {text:root.reader}}
         UI.SettingsHelp {
             objectName:"fingerprintEnrollmentStatus"
-            text:!root.synthetic ? "Existing enrollment: unknown. Read-only host audit could not access D-Bus. Existing fingerprints are protected." : root.fixture===3 ? "Enrollment unavailable · use password" : root.fingers.length + " enrolled fingerprint(s) · synthetic metadata only"
+            text:!root.synthetic ? root.hostMessage : root.fixture===3 ? "Enrollment unavailable · use password" : root.fingers.length + " enrolled fingerprint(s) · synthetic metadata only"
         }
+    }
+    UI.SettingsSection {
+        title: "Manage fingerprints"
+        visible: !root.synthetic
+        Repeater {model:root.fingers;Label {required property string modelData;text:modelData.replace(/-/g," ") + " · Enrolled"}}
+        UI.SettingsSelector {
+            model:root.fingerNames.map(f=>f.replace(/-/g," "))
+            currentIndex:root.fingerNames.indexOf(root.selectedFinger)
+            Accessible.name:"Finger to enroll or remove"
+            onActivated:{root.selectedFinger=root.fingerNames[currentIndex];root.confirmRemove=false}
+        }
+        Flow {
+            Layout.fillWidth:true;Layout.preferredHeight:childrenRect.height;spacing:8
+            UI.SettingsButton {objectName:"fingerprintRefresh";text:"Refresh";enabled:!worker.running;onClicked:root.run("status")}
+            UI.SettingsButton {objectName:"fingerprintEnroll";text:"Enroll";enabled:root.available && !worker.running && !root.fingers.includes(root.selectedFinger);onClicked:root.run("enroll")}
+            UI.SettingsButton {objectName:"fingerprintTest";text:"Test fingerprint";enabled:root.available && !worker.running && root.fingers.length>0;onClicked:root.run("verify")}
+            UI.SettingsButton {objectName:"fingerprintRemove";text:root.confirmRemove ? "Confirm removal" : "Remove selected print";enabled:root.available && !worker.running && root.fingers.includes(root.selectedFinger);onClicked:{if(root.confirmRemove)root.run("remove");else root.confirmRemove=true}}
+            UI.SettingsButton {text:"Cancel";visible:worker.running || root.confirmRemove;onClicked:{root.confirmRemove=false;if(worker.running)worker.signal(15)}}
+        }
+        UI.SettingsHelp {text:root.confirmRemove ? "Remove only the selected finger? Your password and other prints remain available." : "System authorization may be requested. Fingerprints stay with the system fingerprint service."}
     }
     UI.SettingsSection {
         title:"Manage fingerprints · synthetic preview"
         objectName: "fingerprintDemo"
+        visible: root.synthetic
         collapsible: true
         UI.SettingsHelp {text:"These disposable examples never contact a sensor or change existing fingerprints. Password entry remains immediately available."}
         UI.SettingsSelector {

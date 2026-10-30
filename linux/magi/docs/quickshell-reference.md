@@ -788,3 +788,15 @@ review and the remaining browser reporting limitation are recorded explicitly.
 Expanded status-header follow-up: one shared semantic foreground and optional shade
 now separate the expanded menu header from custom Bar ink, including Battery text.
 See [diagnosis and validation](review/daily-use-polish.md#expanded-status-header-follow-up--2026-10-29).
+
+## 2026-10-30 — fingerprint Settings process
+
+SecurityPage uses Quickshell 0.3.1 Process argv, SplitParser and signal(15), with managed lifetime (no detached enrollment helper). [Versioned API](https://quickshell.org/docs/v0.3.1/types/Quickshell.Io/Process/) inspected 2026-10-30; [candidate evidence](review/lock-fingerprint-production.md). No fingerprint unlock authority enters Quickshell.
+
+
+Lock follow-up acceptance (2026-10-30): installed 0.1.0-10 passed the final
+composition, 2× sharpness, stable status geometry, arrow cursor, changing song title,
+fingerprint/password and suspend/resume review. Visible glyph metrics avoid the
+native first-frame baseline issue. Fprintd/PAM/controller authority is preserved;
+QML remains presentation-only. Physical external-monitor acceptance is deferred.
+See [final source and validation record](review/lock-fingerprint-production.md).

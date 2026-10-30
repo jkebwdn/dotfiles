@@ -32,3 +32,8 @@ refinement, centered connected Battery regions, and immediate valid-position ref
 See [the review and native evidence](review/daily-use-polish.md). Zen omitting initial
 MPRIS duration remains a specific browser reporting limitation, not a reason to add
 a polling loop or start another feature phase.
+
+The requested [lock refinement and T15G fingerprint integration](review/lock-fingerprint-production.md)
+has passed internal visual, fingerprint/password and suspend/resume acceptance.
+The operator approved repository closeout as two reviewed commits. Physical external-monitor acceptance is
+deferred for lack of hardware. No subsequent feature is authorized.

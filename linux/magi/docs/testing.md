@@ -88,3 +88,19 @@ snapshots and isolated PTY cleanup/input/resize behavior. It never enables start
 status role persistence/preview, connected Battery regions and production module
 activation. Native limitations and optional preview generation are recorded in
 [the candidate review](review/daily-use-polish.md).
+
+## Lock/fingerprint candidate — 2026-10-30
+
+The host offline candidate passes 23 CTest and 18 Rust checks, including an isolated
+mock fprintd broker and power-intent confirmation. No actual sensor is used by these
+checks. Native source hashes in native_lock.py bind sandbox exemptions to that exact
+host audit; changed source cannot inherit it. Split Corners/Caps/error/biometric
+geometry and production Settings controls are exercised in phase13a/presentation
+and fingerprint/run. [Evidence and physical gates](review/lock-fingerprint-production.md).
+
+Final lock validation: full 96-suite matrix plus focused final visual and audited
+native reruns yields 92 PASS / 4 evidenced ENVIRONMENT / 0 unresolved FAIL or UNKNOWN.
+The final installed source passes 23 host CTest and 18 Rust tests without skips.
+Native pixel checks include actual 2× rendering and first-frame clock/date ink gap;
+internal visual, fingerprint/password and suspend/resume acceptance are confirmed.
+See [exact coverage and limits](review/lock-fingerprint-production.md).
