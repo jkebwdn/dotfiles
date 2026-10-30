@@ -202,7 +202,7 @@ FocusScope {
                                 : modelData === "Hub" ? hubAppearance
                                 : modelData === "Profile" ? profile
                                 : modelData === "Bar" ? bar
-                                : modelData === "Lock Screen" ? lockScreen
+                                : modelData === "Lock Screen" ? (Quickshell.env("MAGI_LOCK_DESIGNER") === "1" ? lockDesigner : lockScreen)
                                 : modelData === "Security" ? security
                                 : modelData === "Displays" ? displays
                                 : modelData === "Power & Idle" ? powerIdle
@@ -225,6 +225,7 @@ FocusScope {
     Component { id: appearance; Pages.AppearancePage {} }
     Component { id: profile; Pages.ProfilePage {} }
     Component { id: lockScreen; Pages.LockScreenPage {} }
+    Component { id: lockDesigner; Pages.LockDesignerPage {} }
     Component { id: security; Pages.SecurityPage {} }
     Component { id: displays; Pages.DisplaysPage {} }
     Component { id: powerIdle; Pages.PowerIdlePage {} }

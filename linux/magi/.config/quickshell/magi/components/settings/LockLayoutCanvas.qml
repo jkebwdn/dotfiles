@@ -11,6 +11,8 @@ Item {
     property bool depthPreview: false
     property real aspect: 16/9
     property bool interactive: true
+    property url wallpaperSource
+    property real avatarRadius: 12
     property var draft: null
     property real guideX: -1
     property real guideY: -1
@@ -30,14 +32,14 @@ Item {
     Accessible.name: "Lock screen layout canvas"
     function begin() {
         const next=Model.copy(effective), s=scene.unit
-        if (next.space === "composition") {
+        if (next.space === "composition" || next.effects.curated) {
             for (const id of Model.ids()) {
                 const box=scene.elementBoxes[id]
                 next.elements[id]=Model.place(next.elements[id],box.x,box.y,scene.width/s,scene.height/s,box.width*box.scale,box.height*box.scale)
             }
             next.space="screen"
         }
-        next.preset="custom"; draft=next
+        next.effects.curated=false; next.preset="custom"; draft=next
     }
     function move(id,x,y,bypass) {
         const next=Model.copy(draft), box=scene.elementBoxes[id], s=scene.unit
@@ -64,7 +66,8 @@ Item {
         const dy=event.key===Qt.Key_Up ? -delta : event.key===Qt.Key_Down ? delta : 0
         if (dx || dy) { begin();const b=scene.elementBoxes[selected];move(selected,b.x+dx,b.y+dy,true);finish();event.accepted=true }
     }
-    Rectangle { anchors.fill: parent; color: "transparent"; border.width: root.interactive ? 1 : 0; border.color: root.palette.subtext || "#bac2de"; z: 40; opacity: .3 }
+    LockPreviewBackground {id:previewBackground;anchors.fill:parent;source:root.wallpaperSource;blurred:root.effective.effects.blur;shade:root.palette.background || "#1e1e2e"}
+    Rectangle { anchors.fill: parent; color: "transparent"; border.width: 1; border.color: root.palette.subtext || "#bac2de"; z: 40; opacity: .3 }
     Item {
         id: plane
         width: 1600; height: width/root.aspect
@@ -74,7 +77,7 @@ Item {
             objectName: "syntheticScene"
             anchors.fill: parent
             readonly property real unit: Math.max(.8,Math.min(1.15,Math.pow(Math.min(width/1920,height/1080),.45)))
-            visual: Object.assign({},root.palette,{displayName:"Alex Morgan",lockScreen:root.depthPreview ? Object.assign({},root.presented,{effects:Object.assign({},root.presented.effects,{depth:true})}) : root.presented,depthAvailable:root.depthPreview,weather:{available:true,temperature:"12°",condition:"Partly cloudy",location:"Sample city"},media:{available:true,title:"Morning light",artist:"Sample artist",playing:true,artwork:true}})
+            visual: Object.assign({},root.palette,{displayName:"Alex Morgan",avatarRadius:root.avatarRadius,background:previewBackground.ready ? "#00000000" : (root.palette.background || "#1e1e2e"),lockScreen:root.depthPreview ? Object.assign({},root.presented,{effects:Object.assign({},root.presented.effects,{depth:true})}) : root.presented,depthAvailable:root.depthPreview,weather:{available:true,temperature:"12°",condition:"Partly cloudy",location:"Sample city"},media:{available:true,title:"Morning light",artist:"Sample artist",playing:true,artwork:true}})
             preparedMediaSource: Qt.resolvedUrl("lock-depth-fixture.svg")
             preparedDepthSource: Qt.resolvedUrl("lock-depth-fixture.svg")
             timeLabel: "09:41"; dateLabel: "Saturday, 24 October"

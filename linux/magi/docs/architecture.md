@@ -943,3 +943,11 @@ fingerprint/password and suspend/resume review. Visible glyph metrics avoid the
 native first-frame baseline issue. Fprintd/PAM/controller authority is preserved;
 QML remains presentation-only. Physical external-monitor acceptance is deferred.
 See [final source and validation record](review/lock-fingerprint-production.md).
+
+## Curated lock screen theme layer (2026-10-30 accepted)
+
+[Theme model, Settings workflow and compatibility](review/lock-screen-themes.md) describe six curated compositions over the existing
+layout engine. The designer is developer-gated; normal Settings is a gallery and a
+small relevant editor. Schema 22 and authentication/service ownership are retained.
+Internal native acceptance passed; physical external-monitor acceptance remains
+deferred. Evidence and compatibility details are in the review record.

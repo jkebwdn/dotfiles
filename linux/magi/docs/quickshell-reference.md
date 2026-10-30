@@ -800,3 +800,10 @@ fingerprint/password and suspend/resume review. Visible glyph metrics avoid the
 native first-frame baseline issue. Fprintd/PAM/controller authority is preserved;
 QML remains presentation-only. Physical external-monitor acceptance is deferred.
 See [final source and validation record](review/lock-fingerprint-production.md).
+
+## Lock theme gallery (2026-10-30 accepted)
+
+The gallery reuses installed/previously verified QtQuick GridLayout, AbstractButton,
+keyboard navigation and the shared LockScreen QML renderer. It adds no Quickshell API.
+`Quickshell.env("MAGI_LOCK_DESIGNER")` selects the internal page only when set to `1`.
+`tests/runtime-visual/lock-themes.qml` exercises production components offscreen.

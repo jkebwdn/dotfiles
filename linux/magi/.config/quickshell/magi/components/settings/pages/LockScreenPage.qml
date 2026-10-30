@@ -6,164 +6,82 @@ import "../../../services" as Services
 import "../../../theme" as Theme
 import ".." as UI
 import "../../lockPresentation/LockLayout.js" as Model
+import "../../lockPresentation/LockThemes.js" as Themes
+
 UI.SettingsPage {
     id: root
     title: "Lock Screen"
-    description: "Arrange your lock screen. This preview never locks your session."
+    description: "Choose a composition and make it yours."
     maximumBodyWidth: 1100
-    readonly property var layout: Model.normalize(Services.Settings.data.lockScreen)
-    property string selected: "time"
-    property int previewState: 0
-    property int aspectIndex: 0
-    property bool depthPreview: false
-    readonly property real aspect: aspectIndex===0 ? Math.max(.5,Screen.width/Math.max(1,Screen.height)) : [16/9,16/9,16/10,21/9][aspectIndex]
+    readonly property var saved: Services.Settings.data.lockScreen
+    readonly property var selection: Themes.selection(saved)
+    readonly property var theme: Themes.definition(selection.id)
+    readonly property var layout: Model.normalize(saved)
     readonly property var colors: ({background:Theme.Theme.background.toString(),surface:Theme.Theme.surface.toString(),text:Theme.Theme.text.toString(),subtext:Theme.Theme.subtext.toString(),accent:Theme.Theme.accent.toString(),danger:Theme.Theme.red.toString(),warning:Theme.Theme.yellow.toString()})
-    function save(value) { Services.Settings.setLockLayout(value) }
-    function effect(key,value) {
-        const next=Model.copy(root.layout);next.effects[key]=value;root.save(next)
+    readonly property url wallpaperSource: {
+        const shared=Services.Wallpaper.state.shared
+        return shared && shared.path ? "file://"+shared.path.split("/").map(encodeURIComponent).join("/") : ""
     }
-    function edit(key,value) {
-        canvas.begin()
-        const next=Model.copy(canvas.draft)
-        next.elements[selected][key]=value
-        canvas.cancel();save(next)
+    readonly property real avatarRadius: {
+        const rounding=Services.Settings.data.appearance.roundness
+        const override=rounding.roles.avatar
+        return Math.max(0,Math.min(48,12*(override===null ? rounding.master : override)))
     }
-    UI.SettingsSection {
-        objectName: "lockPresets"
-        title: "Layout · " + (root.layout.preset === "split-corners" ? "Split Corners" : root.layout.preset.charAt(0).toUpperCase() + root.layout.preset.slice(1))
-        collapsible: true
-        Layout.topMargin: 0
-    Flow {
-        Layout.fillWidth: true; Layout.preferredHeight: childrenRect.height; spacing: 8
-        Repeater {
-            model: ["centered","editorial","corner","split","minimal","split-corners"]
-            UI.SettingsChoiceCard {
-                id: presetCard
-                required property string modelData
-                width: 124; height: 100; text: modelData === "split-corners" ? "Split Corners" : modelData.charAt(0).toUpperCase()+modelData.slice(1)
-                selected: root.layout.preset===modelData
-                onClicked: root.save(Model.preset(modelData))
-                UI.LockLayoutCanvas { anchors.fill: parent; layout:Model.preset(presetCard.modelData); palette:root.colors;interactive:false }
-            }
-        }
-    }
-    }
+    function choose(id) { Services.Settings.setLockLayout(Themes.create(id, saved)) }
+    function edit(key,value) { Services.Settings.setLockLayout(Themes.customize(saved,key,value)) }
+    function supports(key) { return !selection.legacy && !selection.unavailable && Themes.supports(selection.id,key) }
+
     GridLayout {
-        id: editor; objectName:"lockEditorComposition"
-        Layout.fillWidth:true;columns:width>=650 ? 2 : 1;columnSpacing:20;rowSpacing:16
-        ColumnLayout {
-            Layout.fillWidth:true;Layout.minimumWidth:240;Layout.preferredWidth:700;Layout.alignment:Qt.AlignTop
-            UI.LockLayoutCanvas {
-                id:canvas;objectName:"lockLayoutCanvas"
-                Layout.fillWidth:true;Layout.maximumWidth:(editor.columns===1 ? Math.max(140, Math.min(210, root.height*.34)) : 350)*root.aspect
-                Layout.preferredHeight:width/root.aspect;Layout.alignment:Qt.AlignHCenter
-                layout:root.layout;palette:root.colors;aspect:root.aspect;stateIndex:root.previewState;depthPreview:root.depthPreview
-                selected:root.selected
-                onSelectionRequested:id=>root.selected=id
-                onCommitted:value=>root.save(value)
-            }
-            UI.SettingsHelp {text:"Select an element to edit · drag to arrange"}
-        }
-        ColumnLayout {
-            objectName:"lockElementInspector"
-            Layout.fillWidth:true;Layout.preferredWidth:230;Layout.maximumWidth:editor.columns===1 ? Infinity : 330;Layout.alignment:Qt.AlignTop;spacing:10
-            Label {objectName:"lockSelectedHeading";color:Theme.Theme.text;text:"Edit " + ({time:"Time",identity:"Identity",authentication:"Authentication",weather:"Weather",media:"Media"})[root.selected];font.bold:true;Accessible.role:Accessible.Heading}
-            UI.SettingsSelector {
-                objectName:"lockElementSelector"
-                model:["Time · clock & date","Identity · avatar & name","Authentication","Weather","Media"]
-                currentIndex:Model.ids().indexOf(root.selected);Accessible.name:"Select lock screen element"
-                onActivated:root.selected=Model.ids()[currentIndex]
-            }
-            Label {color:Theme.Theme.text;text:"Size"}
-            UI.SettingsSelector {
-                readonly property var sizes: root.selected==="authentication" ? [1,1.15,1.25] : [.75,1,1.15,1.25]
-                model:root.selected==="authentication" ? ["Standard","Large","Hero"] : ["Compact","Standard","Large","Hero"]
-                currentIndex:sizes.indexOf(root.layout.elements[root.selected].size)
-                Accessible.name:"Selected element size"
-                onActivated:root.edit("size",sizes[currentIndex])
-            }
-            UI.SettingsSelector {
-                visible:["time","identity","authentication"].includes(root.selected);model:["Left","Center","Right"]
-                currentIndex:["left","center","right"].indexOf(root.layout.elements[root.selected].alignment)
-                Accessible.name:"Time alignment"
-                onActivated:root.edit("alignment",["left","center","right"][currentIndex])
-            }
-            UI.SettingsToggle {
-                text:root.selected==="media" ? "Show media information" : root.selected==="weather" ? "Show weather" : "Show element";enabled:root.selected!=="authentication"
-                checked:root.layout.elements[root.selected].visible
-                onClicked:root.edit("visible",checked)
-            }
-            UI.SettingsButton {
-                text:root.layout.elements[root.selected].z===0 ? "Bring forward" : "Send backward"
-                enabled:root.selected!=="authentication"
-                onClicked:{
-                    const next=Model.copy(root.layout), others=Model.ids().filter(id=>id!=="authentication" && id!==root.selected), other=others.find(id=>next.elements[id].z===(next.elements[root.selected].z<1 ? next.elements[root.selected].z+1 : -2))
-                    const z=next.elements[other].z;next.elements[other].z=next.elements[root.selected].z;next.elements[root.selected].z=z
-                    next.preset="custom";root.save(next)
+        id: gallery;objectName:"lockThemeGallery"
+        Layout.fillWidth:true;columns:Math.max(1,Math.min(4,Math.floor(width/270)));columnSpacing:12;rowSpacing:12
+        Repeater {
+            id: cards;model:Themes.catalogue()
+            UI.SettingsChoiceCard {
+                id:card
+                required property var modelData
+                required property int index
+                objectName:"lockThemeCard-"+modelData.id
+                Layout.fillWidth:true;Layout.minimumWidth:180;Layout.preferredHeight:(width-24)*9/16+86
+                text:modelData.name;selected:!root.selection.legacy && !root.selection.unavailable && root.selection.id===modelData.id
+                Accessible.description:modelData.description
+                onClicked:root.choose(modelData.id)
+                onNavigate:delta=>cards.itemAt((index+delta+cards.count)%cards.count).forceActiveFocus()
+                ColumnLayout {
+                    anchors.fill:parent;spacing:6
+                    UI.LockThemePreview {Layout.fillWidth:true;Layout.preferredHeight:width*9/16;Layout.minimumHeight:width*9/16;Layout.maximumHeight:width*9/16;themeId:card.modelData.id;wallpaperSource:root.wallpaperSource;backgroundBlur:root.layout.effects.blur;avatarRadius:root.avatarRadius;selectedLayout:card.selected ? root.layout : null}
+                    Text {Layout.fillWidth:true;text:card.modelData.description;color:Theme.Theme.subtext;font.pixelSize:11;wrapMode:Text.Wrap;maximumLineCount:2;elide:Text.ElideRight}
                 }
-            }
-            UI.SettingsHelp {text:root.selected==="authentication" ? "Dots, status and Caps Lock stay together, visible and in front." : "Hidden elements remain available in the element selector."}
-            Flow {
-                Layout.fillWidth:true;Layout.preferredHeight:childrenRect.height;spacing:6
-                Repeater {
-                    model:root.selected==="authentication" ? ["dots","line","segments","ring","minimal"] : root.selected==="identity" ? ["plain","ring","glow","frame"] : root.selected==="weather" ? ["compact","standard","minimal"] : root.selected==="media" ? ["compact","artwork","minimal","title"] : []
-                    UI.SettingsChoiceCard {
-                        id:styleCard
-                        required property string modelData
-                        readonly property string effectKey:root.selected==="authentication" ? "credential" : root.selected==="identity" ? "avatar" : root.selected
-                        width:100;height:100;text:modelData.charAt(0).toUpperCase()+modelData.slice(1)
-                        selected:root.layout.effects[effectKey]===modelData
-                        onClicked:root.effect(effectKey,modelData)
-                        UI.LockStylePreview {anchors.fill:parent;kind:styleCard.effectKey;choice:styleCard.modelData;palette:root.colors}
-                    }
-                }
-            }
-            UI.SettingsToggle {visible:root.selected==="weather";text:"Show city label";checked:root.layout.effects.location;onClicked:root.effect("location",checked)}
-            UI.SettingsToggle {visible:root.selected==="media";text:"Show artwork";checked:root.layout.effects.artwork;onClicked:root.effect("artwork",checked)}
-            UI.SettingsHelp {visible:root.selected==="media";text:"Title style places the MAGI media icon and song title beneath the adjacent profile and clock. Opt in to showing track information while locked. Read-only; cached data may be older than the current track."}
-            UI.SettingsHelp {visible:root.selected==="weather";text:"Uses Profile weather settings and cached observations. Preview content is synthetic."}
-            UI.SettingsSection {
-                title:"Fine tune";collapsible:true
-                UI.SettingsToggle {text:"Depth effect";enabled:false;checked:root.layout.effects.depth}
-                UI.SettingsHelp {text:"Depth needs a prepared subject cutout. Try Preview options to see a synthetic example."}
-                UI.SettingsSelector {
-                    model:Model.anchors();Accessible.name:"Position anchor"
-                    currentIndex:Model.anchors().indexOf(root.layout.elements[root.selected].anchor)
-                    onActivated:root.edit("anchor",model[currentIndex])
-                }
-                Label {color:Theme.Theme.text;text:"Horizontal offset (%)"}
-                UI.SettingsNumber {from:-100;to:100;value:Math.round(root.layout.elements[root.selected].offsetX*100);Accessible.name:"Horizontal offset";onValueModified:root.edit("offsetX",value/100)}
-                Label {color:Theme.Theme.text;text:"Vertical offset (%)"}
-                UI.SettingsNumber {from:-100;to:100;value:Math.round(root.layout.elements[root.selected].offsetY*100);Accessible.name:"Vertical offset";onValueModified:root.edit("offsetY",value/100)}
             }
         }
     }
     UI.SettingsSection {
-        title: "Background"
-        UI.SettingsToggle {objectName: "lockBackgroundBlur"; text: "Blur background"; checked: root.layout.effects.blur; onClicked: root.effect("blur", checked)}
-        UI.SettingsHelp {text: "Turn off blur to keep the wallpaper sharp. Contrast shading remains for readability."}
+        title:root.selection.legacy ? "Custom (legacy)" : root.theme.name
+        UI.SettingsHelp {visible:root.selection.legacy || root.selection.unavailable;text:root.selection.legacy ? "This lock screen uses an older custom layout. It is preserved until you choose a theme." : "This theme is unavailable. A safe default is shown; your saved layout is preserved until you choose a theme."}
+        UI.SettingsHelp {visible:!root.selection.legacy && !root.selection.unavailable;text:root.theme.description}
+        UI.LockLayoutCanvas {
+            objectName:"lockThemeLivePreview"
+            Layout.fillWidth:true;Layout.maximumWidth:Math.min(760,280*aspect);Layout.preferredHeight:width/aspect;Layout.alignment:Qt.AlignHCenter
+            aspect:Math.max(.5,Screen.width/Math.max(1,Screen.height));layout:root.layout;palette:root.colors;interactive:false;wallpaperSource:root.wallpaperSource;avatarRadius:root.avatarRadius
+        }
+        UI.SettingsHelp {text:"Preview only · your session stays unlocked."}
     }
     UI.SettingsSection {
-        objectName: "lockPreviewOptions"
-        title: "Preview options"
-        collapsible: true
-        Layout.topMargin: 0
-    Flow {
-        Layout.fillWidth:true;Layout.preferredHeight:childrenRect.height;spacing:8
-        UI.SettingsSelector {
-            model:["Idle","Typing","Authenticating","Wrong password","Caps Lock","Preview weather","Preview media","Preview both"]
-            currentIndex:root.previewState;Accessible.name:"Synthetic preview state"
-            onActivated:root.previewState=currentIndex
-        }
-        UI.SettingsSelector {
-            model:["Current display","16:9","16:10","Ultrawide"]
-            currentIndex:root.aspectIndex;Accessible.name:"Preview aspect ratio"
-            onActivated:root.aspectIndex=currentIndex
-        }
+        visible:!root.selection.legacy && !root.selection.unavailable
+        title:"Appearance"
+        UI.SettingsToggle {objectName:"lockOption-avatar";visible:root.supports("avatar");text:"Show profile picture";checked:root.layout.elements.identity.visible;onClicked:root.edit("avatar",checked)}
+        UI.SettingsSelector {objectName:"lockOption-avatarStyle";visible:root.supports("avatarStyle") && root.layout.elements.identity.visible;model:["Rounded border","Square frame"];currentIndex:["plain","frame"].indexOf(root.layout.effects.avatar);Accessible.name:"Profile picture treatment";onActivated:root.edit("avatarStyle",["plain","frame"][currentIndex])}
+        UI.SettingsSelector {objectName:"lockOption-clockSize";visible:root.supports("clockSize");model:["split-corners","compact"].includes(root.selection.id) ? ["Small profile & clock","Standard profile & clock","Large profile & clock"] : ["Small clock","Standard clock","Large clock"];currentIndex:root.layout.elements.time.size<.875 ? 0 : root.layout.elements.time.size<1.075 ? 1 : 2;Accessible.name:"Clock size";onActivated:root.edit("clockSize",[.75,1,1.15][currentIndex])}
+        UI.SettingsToggle {objectName:"lockOption-date";visible:root.supports("date");text:"Show date";checked:root.layout.effects.date;onClicked:root.edit("date",checked)}
+        UI.SettingsSelector {objectName:"lockOption-edgeInset";visible:root.supports("edgeInset");model:["Close to edges","Balanced inset","Generous inset"];currentIndex:root.layout.elements.identity.offsetX<.04 ? 0 : root.layout.elements.identity.offsetX<.07 ? 1 : 2;Accessible.name:"Edge inset";onActivated:root.edit("edgeInset",[.03,.05,.08][currentIndex])}
+        UI.SettingsToggle {objectName:"lockOption-media";visible:root.supports("media");text:"Show Now Playing title";checked:root.layout.elements.media.visible;onClicked:root.edit("media",checked)}
+        UI.SettingsToggle {objectName:"lockOption-weather";visible:root.supports("weather");text:"Show cached weather";checked:root.layout.elements.weather.visible;onClicked:root.edit("weather",checked)}
+        UI.SettingsToggle {objectName:"lockOption-artwork";visible:root.supports("artwork");text:"Show album artwork";checked:root.layout.effects.artwork;onClicked:root.edit("artwork",checked)}
     }
-        UI.SettingsToggle {text:"Preview depth effect";checked:root.depthPreview;onClicked:root.depthPreview=checked}
-        UI.SettingsHelp {text:"Arrows to nudge · Shift for larger steps · Alt to ignore guides · Escape to cancel"}
-        UI.SettingsHelp {text:"Preview states are synthetic and do not change your lock screen."}
+    UI.SettingsSection {
+        visible:!root.selection.legacy && !root.selection.unavailable
+        title:"Background & password appearance"
+        UI.SettingsToggle {objectName:"lockBackgroundBlur";text:"Blur background";checked:root.layout.effects.blur;onClicked:root.edit("blur",checked)}
+        UI.SettingsSelector {objectName:"lockCredentialStyle";model:["Password dots","Password line","Password segments","Password ring","Minimal password marks"];currentIndex:["dots","line","segments","ring","minimal"].indexOf(root.layout.effects.credential);Accessible.name:"Password marks";onActivated:root.edit("credential",["dots","line","segments","ring","minimal"][currentIndex])}
     }
-    UI.SettingsButton {text:"Reset lock screen";flat:true;onClicked:Services.Settings.resetSection("lockScreen")}
+    UI.SettingsButton {text:"Reset lock screen";flat:true;onClicked:Services.Settings.setLockLayout(Themes.create(Themes.defaultId(),null))}
 }

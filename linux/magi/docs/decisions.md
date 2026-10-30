@@ -1145,3 +1145,10 @@ fingerprint/password and suspend/resume review. Visible glyph metrics avoid the
 native first-frame baseline issue. Fprintd/PAM/controller authority is preserved;
 QML remains presentation-only. Physical external-monitor acceptance is deferred.
 See [final source and validation record](review/lock-fingerprint-production.md).
+
+## 2026-10-30 — Curated lock themes, retained internal designer
+
+Use the existing preset/effects structures for six declarative compositions. Keep
+schema 22, metadata-only corner recognition and legacy/unknown data preservation.
+Retain the freeform designer behind `MAGI_LOCK_DESIGNER=1`; normal Settings exposes
+a lightweight gallery and one read-only renderer. See [candidate review](review/lock-screen-themes.md).

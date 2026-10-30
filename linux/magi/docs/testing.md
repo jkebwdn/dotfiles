@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 96-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 98-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -104,3 +104,8 @@ The final installed source passes 23 host CTest and 18 Rust tests without skips.
 Native pixel checks include actual 2× rendering and first-frame clock/date ink gap;
 internal visual, fingerprint/password and suspend/resume acceptance are confirmed.
 See [exact coverage and limits](review/lock-fingerprint-production.md).
+
+`lock-themes/model` and `runtime-visual/run:lock-themes.qml` cover curated theme
+metadata/migration, the normal gallery and responsive production presentation.
+The Phase 13 designer fixtures continue exercising the preserved internal designer.
+Native theme acceptance is separate; see [acceptance record](review/lock-screen-themes.md).

@@ -143,3 +143,11 @@ a one-shot current binding before the existing unlock/sync path. Presentation re
 read-only, with stable corner geometry, confirmed native power intent, density-aware
 buffers and bounded media refresh. Installed 0.1.0-10 passed internal visual, normal
 fingerprint/password and suspend/resume acceptance. External hardware is deferred.
+
+## Curated lock screen theme layer (2026-10-30 accepted)
+
+[Theme model, Settings workflow and compatibility](../review/lock-screen-themes.md) describe six curated compositions over the existing
+layout engine. The designer is developer-gated; normal Settings is a gallery and a
+small relevant editor. Schema 22 and authentication/service ownership are retained.
+Internal native acceptance passed; physical external-monitor acceptance remains
+deferred. Evidence and compatibility details are in the review record.

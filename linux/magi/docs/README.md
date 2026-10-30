@@ -9,6 +9,7 @@ Bluetooth pairing support, the native lock/designer, and the evolved Bar/Hub/Set
 
 - [Current architecture and service ownership](architecture/current-system.md)
 - [Canonical theme library and mapping](themes.md)
+- [Curated lock screen themes](review/lock-screen-themes.md)
 - [CAVA/ascii-splash support and ownership](review/terminal-visuals.md)
 - [Animated terminal fetch](terminal-fetch.md)
 - [Keybindings and IPC](keybindings.md)

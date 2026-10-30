@@ -53,21 +53,13 @@ ShellRoot {
      verify(item("settingsNav-Wallpaper").activeFocus);keyClick(Qt.Key_Return)
      compare(Services.SettingsWindowState.page,"Wallpaper")
      keyClick(Qt.Key_Up);verify(first.activeFocus)
-     const lock=page("Lock Screen");lock.contentY=0;lock.aspectIndex=1;waitForPolish(win.contentItem.Window.window)
-     const canvas=item("lockLayoutCanvas"),inspector=item("lockElementInspector"),selector=item("lockElementSelector")
-     verify(!item("lockPresets").expanded);verify(!item("lockPreviewOptions").expanded)
-     verify(Math.abs(canvas.width/canvas.height-lock.aspect)<.01,"Preview retains aspect ratio")
-     verify(selector.mapToItem(lock,0,0).y+selector.height<=lock.height,"Selected element controls in first viewport")
-     for(const selected of Model.ids()) {
-      lock.selected=selected;waitForPolish(win.contentItem.Window.window)
-      verify(item("lockSelectedHeading").text.toLowerCase().includes(selected))
-      compare(selector.currentIndex,Model.ids().indexOf(selected))
-      verify(inspector.width>0&&inspector.width<=lock.width)
-     }
-     lock.selected="time"
+     const lock=page("Lock Screen");lock.contentY=0;waitForPolish(win.contentItem.Window.window)
+     const canvas=item("lockThemeLivePreview"),gallery=item("lockThemeGallery")
+     verify(!canvas.interactive,"Normal preview is read-only")
+     verify(Math.abs(canvas.width/canvas.height-canvas.aspect)<.01,"Preview retains aspect ratio")
+     verify(gallery.columns>=1&&gallery.columns<=4)
+     verify(findChild(lock,"lockElementInspector")===null,"No freeform controls in normal Settings")
      capture(theme+"-"+size.width+"-lock")
-     item("lockPresets").expanded=true;waitForPolish(win.contentItem.Window.window)
-     item("lockPresets").expanded=false
      const bar=page("Bar");bar.mode="Appearance";bar.contentY=0
      bar.selection.select("statusPills");waitForPolish(win.contentItem.Window.window)
      verify(item("barSelectionContext").text.includes("Shared style"));verify(!item("barIdentityInspector").visible)

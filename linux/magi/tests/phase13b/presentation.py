@@ -13,6 +13,7 @@ with tempfile.TemporaryDirectory(prefix='magi-phase13b-ui-') as tmp:
  previews=Path(os.environ.get('MAGI_PHASE13B_PREVIEWS',str(stage/'previews')));previews.mkdir(parents=True,exist_ok=True)
  env=dict(os.environ,HOME=str(stage),XDG_CONFIG_HOME=str(stage/'config'),XDG_STATE_HOME=str(stage/'state'),XDG_DATA_HOME=str(stage/'data'),XDG_CACHE_HOME=str(stage/'cache'),XDG_RUNTIME_DIR=str(runtime),QT_QPA_PLATFORM=os.environ.get('MAGI_TEST_QPA','offscreen'),QT_QUICK_BACKEND=os.environ.get('MAGI_TEST_RENDERER','software'),MAGI_PHASE13B_PREVIEWS=str(previews))
  env['MAGI_PHASE13B_REQUESTS']=str(stage/'requests.jsonl')
+ env["MAGI_LOCK_DESIGNER"]="1"
  env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None);env.pop('HYPRLAND_INSTANCE_SIGNATURE',None)
  result=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,text=True,capture_output=True,timeout=90)
  output=result.stdout+result.stderr;print("EXIT",result.returncode);print(output)

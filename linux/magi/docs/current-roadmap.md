@@ -37,3 +37,9 @@ The requested [lock refinement and T15G fingerprint integration](review/lock-fin
 has passed internal visual, fingerprint/password and suspend/resume acceptance.
 The operator approved repository closeout as two reviewed commits. Physical external-monitor acceptance is
 deferred for lack of hardware. No subsequent feature is authorized.
+
+## Curated lock themes — accepted
+
+The [theme simplification implementation](review/lock-screen-themes.md) adds six curated
+compositions and a gallery over the retained internal designer. Internal native acceptance is complete; Git closeout is approved. Physical
+external-monitor acceptance remains deferred. No subsequent feature phase is implied.

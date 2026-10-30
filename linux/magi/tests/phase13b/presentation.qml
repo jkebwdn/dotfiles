@@ -10,7 +10,7 @@ import "../../.config/quickshell/magi/services" as Services
 import "../../.config/quickshell/magi/theme" as Theme
 ShellRoot {
  FloatingWindow {id:win;visible:true;implicitWidth:1140;implicitHeight:880;color:Theme.Theme.background
-  Pages.LockScreenPage {id:page;anchors.fill:parent}
+  Pages.LockDesignerPage {id:page;anchors.fill:parent}
  }
  Component {id:rawLock;Lock.LockScreen {width:360;height:640;visible:true}}
  Component {id:fullSettings;UI.SettingsContent {anchors.fill:parent}}
