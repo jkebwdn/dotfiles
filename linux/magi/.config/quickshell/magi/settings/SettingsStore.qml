@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import "SettingsSchema.js" as Schema
 import "SettingsMigrations.js" as Migrations
+import "../components/lockPresentation/LockThemes.js" as LockThemes
 
 // Reusable only for isolated tests; production owns exactly one via Settings.qml.
 Scope {
@@ -54,6 +55,8 @@ Scope {
         if (state.ready && text === state.baseline) return
         try {
             const raw = text === null ? Schema.defaults() : Migrations.migrate(JSON.parse(text))
+            // Recognize the accepted composition without rewriting the file on load.
+            if (raw.schemaVersion === 22 && raw.lockScreen) raw.lockScreen = LockThemes.migrate(raw.lockScreen)
             publish(Schema.analyze(raw))
             state.parseInvalid = false
             state.baseline = text

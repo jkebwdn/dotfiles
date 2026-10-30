@@ -2,6 +2,7 @@ import QtQuick
 Item {
     id: root
     property real fitHeight: 0
+    property bool showDate: true
     required property var tokens
     property string alignment: "center"
     property string timeLabel
@@ -10,8 +11,8 @@ Item {
     // Fit visible glyph bounds, not the font's padded line box, to the avatar.
     FontMetrics { id: timeMeasure; font.family: root.tokens.family; font.pixelSize: 100; font.weight: Font.Light }
     FontMetrics { id: dateMeasure; font.family: root.tokens.family; font.pixelSize: 100 }
-    readonly property real dateInkHeight: fitHeight*.19
-    readonly property real timeInkHeight: Math.max(1,fitHeight-dateInkHeight-6)
+    readonly property real dateInkHeight: showDate ? fitHeight*.19 : 0
+    readonly property real timeInkHeight: Math.max(1,fitHeight-dateInkHeight-(showDate ? 6 : 0))
     Text {
         id: fittedTime; objectName: "fittedClock"
         visible: root.fitHeight > 0
@@ -25,7 +26,7 @@ Item {
     }
     Text {
         id: fittedDate; objectName: "fittedDate"
-        visible: root.fitHeight > 0
+        visible: root.fitHeight > 0 && root.showDate
         text: root.dateLabel; textFormat: Text.PlainText
         font.family: root.tokens.family
         font.pixelSize: Math.max(1,Math.floor(root.dateInkHeight*100/Math.max(1,dateMeasure.tightBoundingRect(text).height)))
@@ -48,6 +49,7 @@ Item {
             width: root.alignment === "center" ? implicitWidth : parent.width
             anchors.horizontalCenter: parent.horizontalCenter
             horizontalAlignment: root.alignment === "right" ? Text.AlignRight : Text.AlignLeft
+            visible: root.showDate
             text: root.dateLabel; textFormat: Text.PlainText; elide: Text.ElideRight
             color: root.tokens.secondary; font.family: root.tokens.family; font.pixelSize: root.tokens.dateSize
         }

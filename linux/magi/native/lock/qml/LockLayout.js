@@ -38,6 +38,10 @@ function preset(name) {
         e.time = element("center-right",-.06,-.12,1,true,0)
         e.identity = element("center-left",.06,0,1,true,1)
         e.authentication = element("bottom-right",-.06,-.15,1,true,2)
+    } else if (name === "media" || name === "compact") {
+        e.identity.visible = name === "compact"
+        e.media.visible = name === "media"
+        e.authentication.alignment = "center"
     } else if (name === "minimal") {
         e.time = element("top-center",0,.16,.85,true,0)
         e.identity.visible = false
@@ -47,6 +51,7 @@ function preset(name) {
 function normalize(input) {
     const fallback = preset("centered")
     if (!input || input.layoutVersion !== 1) return fallback
+    if (!["centered","editorial","corner","split","minimal","split-corners","media","compact","custom"].includes(input.preset)) return fallback
     // The compact migration value denotes the unchanged original composition.
     if (input.preset === "centered" && input.elements && Object.keys(input.elements).length === 0) {fallback.effects=effects(input.effects);return fallback}
     if (!["screen","composition"].includes(input.space) || !input.elements) return fallback
@@ -56,7 +61,7 @@ function normalize(input) {
     const out = copy(fallback), used = []
     out.effects = effects(input.effects)
     out.space = input.space
-    out.preset = ["centered","editorial","corner","split","minimal","split-corners","custom"].includes(input.preset) ? input.preset : "custom"
+    out.preset = ["centered","editorial","corner","split","minimal","split-corners","media","compact","custom"].includes(input.preset) ? input.preset : "custom"
     for (const id of ids()) {
         const e = input.elements[id]
         if (!e || !anchors().includes(e.anchor) || !["left","center","right"].includes(e.alignment)
@@ -103,7 +108,7 @@ function effects(value) {
         avatar:choice("avatar",["plain","ring","glow","frame"],"plain"),
         weather:choice("weather",["compact","standard","minimal"],"standard"),
         media:choice("media",["compact","artwork","minimal","title"],"compact"),
-        blur:v.blur !== false, location:v.location === true, artwork:v.artwork !== false, depth:v.depth === true}
+        date:v.date !== false, curated:v.curated === true, blur:v.blur !== false, location:v.location === true, artwork:v.artwork !== false, depth:v.depth === true}
 }
 
 // Hosts share the presentation plane and use a top-left scale origin.
@@ -114,4 +119,42 @@ function overlaps(a, b, padding) {
         && a.x + a.width * a.scale > b.x - padding
         && a.y < b.y + b.height * b.scale + padding
         && a.y + a.height * a.scale > b.y - padding
+}
+
+// Curated flows use the existing bounded hosts, measured content and logical units.
+// Raw/legacy layouts keep their anchor engine, snapping and designer coordinates.
+function curatedPositions(layout,w,h,boxes) {
+    if(!layout.effects.curated || !["centered","minimal","editorial","media","compact"].includes(layout.preset)) return null
+    const gap=24,margin=24,bottom=h-64, result={}
+    function bw(id){return boxes[id].width*boxes[id].scale}
+    function bh(id){return layout.elements[id].visible ? boxes[id].height*boxes[id].scale : 0}
+    function put(id,x,y){result[id]={x:Math.max(16,Math.min(w-bw(id)-16,x)),y:Math.max(16,Math.min(h-bh(id)-48,y))}}
+    function center(id,y){put(id,(w-bw(id))/2,y)}
+    const time=bh("time"),identity=bh("identity"),media=bh("media"),weather=bh("weather"),auth=bh("authentication")
+    if(layout.preset==="centered") {
+        const active=["time","identity","media","authentication"].filter(id=>bh(id)>0)
+        const total=active.reduce((n,id)=>n+bh(id),0)+gap*(active.length-1)
+        let y=Math.max(margin,(h-48-total)/2)
+        for(const id of active){center(id,y);y+=bh(id)+gap}
+    } else if(layout.preset==="minimal") {
+        center("time",Math.max(margin,h*.22));center("authentication",bottom-auth)
+    } else if(layout.preset==="compact") {
+        const row=Math.max(time,identity),total=row+auth+(media ? media+16 : 0)+24
+        const y=Math.max(margin,bottom-total)
+        const rowWidth=bw("time")+(identity ? bw("identity")+16 : 0)
+        put("identity",(w-rowWidth)/2,y);put("time",(w-rowWidth)/2+(identity ? bw("identity")+16 : 0),y+(row-time)/2)
+        if(media)center("media",y+row+12)
+        center("authentication",bottom-auth)
+    } else if(layout.preset==="media") {
+        center("time",Math.max(margin,h*.07))
+        center("media",Math.max(result.time.y+time+gap,(h-media)/2-24))
+        center("authentication",Math.max(result.media.y+media+gap,bottom-auth))
+    } else {
+        put("time",w*.06,Math.max(margin,h*.08))
+        put("weather",w*.06,result.time.y+time+gap)
+        put("identity",w-bw("identity")-w*.06,w<900 ? result.time.y+time+(weather ? weather+gap : 0)+gap : h*.38)
+        put("authentication",w-bw("authentication")-w*.06,bottom-auth)
+    }
+    for(const id of ids())if(!result[id])put(id,margin,margin)
+    return result
 }

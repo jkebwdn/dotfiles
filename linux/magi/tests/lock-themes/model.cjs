@@ -1,0 +1,16 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
+const root=path.resolve(__dirname,'../..'), plain=v=>JSON.parse(JSON.stringify(v));
+function load(file,globals={}){const c=vm.createContext(globals);vm.runInContext(fs.readFileSync(path.join(root,file),'utf8').replace(/^\.import.*$/mg,''),c);return c}
+const L=load('native/lock/qml/LockLayout.js'),T=load('native/lock/qml/LockThemes.js',{Layout:L}),S=load('.config/quickshell/magi/settings/SettingsSchema.js');
+const cat=T.catalogue();assert.equal(cat.length,6);assert.equal(new Set(cat.map(t=>t.id)).size,6);
+for(const t of cat){assert(t.name&&t.description&&t.composition);assert(t.controls.length+2<=10);for(const c of t.controls)assert(T.supports(t.id,c));const l=plain(T.create(t.id,null));assert.equal(l.preset,t.id);assert(l.elements.authentication.visible);assert.equal(l.elements.authentication.z,2);assert.deepStrictEqual(plain(L.normalize(l)),l);const s=plain(S.defaults());s.lockScreen=l;assert.equal(S.analyze(s).errors.length,0);for(const m of ['identity','weather','media']){assert(['optional','required','unsupported'].includes(t.modules[m]));if(t.modules[m]==='unsupported')assert(!l.elements[m].visible)}}
+const accepted=plain(L.preset('split-corners'));accepted.preset='custom';accepted.elements.time.size=.75;accepted.effects.blur=false;accepted.effects.artwork=true;
+const before=plain(accepted), migrated=plain(T.migrate(accepted)),expected=plain(accepted);expected.preset='split-corners';assert.deepStrictEqual(migrated,expected);assert.deepStrictEqual(accepted,before);assert.deepStrictEqual(plain(T.migrate(migrated)),migrated);assert.equal(T.selection(accepted).id,'split-corners');
+const cornerWeather=plain(accepted);cornerWeather.elements.weather.visible=true;assert(T.selection(cornerWeather).legacy);assert.deepStrictEqual(plain(T.migrate(cornerWeather)),cornerWeather);
+const legacy=plain(L.preset('split'));legacy.preset='custom';assert(T.selection(legacy).legacy);assert.deepStrictEqual(plain(T.migrate(legacy)),legacy);
+for(const old of [plain(S.defaults().lockScreen),plain(L.preset('centered'))]){assert.equal(T.selection(old).id,'centered');assert.deepStrictEqual(plain(T.migrate(old)),old);assert.doesNotThrow(()=>T.customize(old,'avatar',false))}
+const unknown=plain(accepted);unknown.preset='future-theme';assert(T.selection(unknown).unavailable);assert.deepStrictEqual(plain(T.migrate(unknown)),unknown);assert.equal(L.normalize(unknown).preset,'centered');const s=plain(S.defaults());s.lockScreen=unknown;assert.equal(S.analyze(s).document.lockScreen.preset,'future-theme');
+for(const malformed of [null,{}, {layoutVersion:99}, {layoutVersion:1,preset:'centered',elements:{time:{}}}])assert(L.normalize(malformed).elements.authentication.visible);
+for(const t of cat){const l=plain(T.create(t.id,accepted));assert.equal(l.effects.blur,false);assert.equal(l.effects.credential,accepted.effects.credential);delete l.effects.date;delete l.effects.curated;assert.equal(L.normalize(l).effects.date,true)}
+assert(T.customize(accepted,'avatar',false).elements.authentication.visible);assert.equal(T.customize(accepted,'clockSize',99).elements.time.size,.75);
+console.log('Lock theme catalogue, migration and fallback PASS');

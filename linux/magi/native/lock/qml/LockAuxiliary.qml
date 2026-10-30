@@ -4,6 +4,7 @@ Column {
     required property var tokens
     property var snapshot: ({})
     property bool media: false
+    property bool prominent: false
     property string style: "standard"
     property bool showLocation: false
     property bool showArtwork: true
@@ -24,7 +25,7 @@ Column {
     }
     Image {
         visible: root.media && root.style === "artwork" && root.showArtwork && root.snapshot.artwork === true
-        width: 112; height: 112; anchors.horizontalCenter: parent.horizontalCenter
+        width: root.prominent ? 160 : 112; height: width; anchors.horizontalCenter: parent.horizontalCenter
         source: visible ? root.artworkSource : ""; fillMode: Image.PreserveAspectFit
     }
     Image {
@@ -37,7 +38,7 @@ Column {
         width: parent.width; horizontalAlignment: Text.AlignHCenter
         text: root.media ? (root.snapshot.title || "") : ((root.snapshot.temperature || "") + (root.style === "compact" ? " · " + (root.snapshot.condition || "") : ""))
         textFormat: Text.PlainText; elide: Text.ElideRight; maximumLineCount: 1
-        font.family: tokens.family; font.pixelSize: root.media ? 22 : root.style === "compact" ? 22 : 32; color: tokens.ink
+        font.family: tokens.family; font.pixelSize: root.media ? (root.prominent ? 30 : 22) : root.style === "compact" ? 22 : 32; color: tokens.ink
     }
     Text {
         visible: root.media ? root.style !== "minimal" && root.style !== "title" : root.style === "standard"; width: parent.width; horizontalAlignment: Text.AlignHCenter

@@ -23,6 +23,7 @@ Item {
     LockTokens { id: design; palette: root.visual; artworkAvailable: root.wallpaperAvailable; logicalWidth: root.width; logicalHeight: root.height }
     LockBackground { anchors.fill: parent; tokens: design; artworkAvailable: root.wallpaperAvailable }
     readonly property var layout: Layout.normalize(visual.lockScreen)
+    readonly property var curated: Layout.curatedPositions(layout,plane.width,plane.height,{time:timeHost,identity:identityHost,authentication:authHost,weather:weatherHost,media:mediaHost})
     readonly property var elementBoxes: ({time:timeHost, identity:identityHost, authentication:authHost, weather:weatherHost, media:mediaHost})
     Item {
         id: plane
@@ -33,24 +34,27 @@ Item {
         LockElementHost {
             id: timeHost; objectName: "timeHost"; elementId: "time"; configuration: root.layout.elements.time
             canvasWidth: plane.width; canvasHeight: plane.height; baseWidth: plane.frameWidth
-            composition: root.layout.space === "composition"
+            composition: root.layout.space === "composition" && !root.layout.effects.curated
             flowX: (plane.width-plane.frameWidth)/2; flowY: (plane.height-plane.frameHeight)/2
             // Adjacent top-left identity keeps a logical gutter even on compact outputs.
-            readonly property bool adjacentIdentity: !composition && identityHost.visible
+            readonly property bool adjacentIdentity: !composition && !root.layout.effects.curated && identityHost.visible
                 && configuration.anchor === "top-left" && identityHost.configuration.anchor === "top-left"
                 && Math.abs(configuration.offsetY-identityHost.configuration.offsetY) < .02
-            x: adjacentIdentity ? Math.max(16, identityHost.x+identityHost.width*identityHost.scale+12) : composition ? flowX : resolved.x
-            width: adjacentIdentity ? Math.min(plane.frameWidth, (plane.width-x-16)/scale) : Math.min(plane.frameWidth, (plane.width-32)/scale)
+            x: root.curated ? root.curated.time.x : adjacentIdentity ? Math.max(16, identityHost.x+identityHost.width*identityHost.scale+12) : composition ? flowX : resolved.x
+            y: root.curated ? root.curated.time.y : composition ? flowY : resolved.y
+            width: root.layout.effects.curated && root.layout.preset==="compact" ? Math.min(380,(plane.width-(identityHost.visible ? design.avatarSize*identityHost.scale : 0)-64)/scale) : adjacentIdentity ? Math.min(plane.frameWidth, (plane.width-Layout.position(identityHost.configuration,plane.width,plane.height,identityHost.width*identityHost.scale,identityHost.height*identityHost.scale).x-identityHost.width*identityHost.scale-28)/scale) : Math.min(plane.frameWidth, (plane.width-32)/scale)
             contentHeight: timeBlock.height
-            LockClock { id: timeBlock; fitHeight: timeHost.adjacentIdentity ? identityHost.height*identityHost.scale/timeHost.scale : 0; width: parent.width; tokens: design; timeLabel: root.timeLabel; dateLabel: root.dateLabel; alignment: timeHost.configuration.alignment }
+            LockClock { id: timeBlock; showDate: root.layout.effects.date; fitHeight: root.layout.effects.curated && root.layout.preset==="compact" ? design.avatarSize*identityHost.scale/timeHost.scale : timeHost.adjacentIdentity ? identityHost.height*identityHost.scale/timeHost.scale : 0; width: parent.width; tokens: design; timeLabel: root.timeLabel; dateLabel: root.dateLabel; alignment: timeHost.configuration.alignment }
         }
         LockElementHost {
             id: identityHost; objectName: "identityHost"; elementId: "identity"; configuration: root.layout.elements.identity
-            canvasWidth: plane.width; canvasHeight: plane.height; baseWidth: configuration.alignment === "center" ? plane.frameWidth : design.avatarSize
-            composition: root.layout.space === "composition"
+            canvasWidth: plane.width; canvasHeight: plane.height; baseWidth: root.layout.effects.curated ? design.avatarSize : configuration.alignment === "center" ? plane.frameWidth : design.avatarSize
+            composition: root.layout.space === "composition" && !root.layout.effects.curated
             flowX: (plane.width-plane.frameWidth)/2; flowY: (plane.height-plane.frameHeight)/2 + plane.frameHeight*.36
+            x: root.curated ? root.curated.identity.x : composition ? flowX : resolved.x
+            y: root.curated ? root.curated.identity.y : composition ? flowY : resolved.y
             contentHeight: profile.height
-            LockProfile { id: profile; nativeArtwork: root.visual.nativeArtwork === true; compact: timeHost.adjacentIdentity; alignment: identityHost.configuration.alignment; width: parent.width; tokens: design; displayName: root.visual.displayName || ""; treatment:root.layout.effects.avatar; artworkAvailable: root.avatarAvailable }
+            LockProfile { id: profile; nativeArtwork: root.visual.nativeArtwork === true; compact: timeHost.adjacentIdentity || root.layout.effects.curated; alignment: identityHost.configuration.alignment; width: parent.width; tokens: design; displayName: root.visual.displayName || ""; treatment:root.layout.effects.avatar; artworkAvailable: root.avatarAvailable }
         }
         Image {
             anchors.fill: parent; z:1.5
@@ -59,24 +63,28 @@ Item {
             fillMode: Image.PreserveAspectCrop; smooth:true
         }
         LockElementHost {
-            id: weatherHost; elementId:"weather"; configuration:root.layout.elements.weather
+            id: weatherHost; objectName:"weatherHost"; elementId:"weather"; configuration:root.layout.elements.weather
             canvasWidth:plane.width;canvasHeight:plane.height;baseWidth:300;contentHeight:weatherBlock.height
+            x: root.curated ? root.curated.weather.x : resolved.x
+            y: root.curated ? root.curated.weather.y : root.layout.preset==="split-corners" && resolved.x<timeHost.x+timeHost.width*timeHost.scale+16 ? Math.max(timeHost.y+timeHost.height*timeHost.scale,identityHost.visible ? identityHost.y+identityHost.height*identityHost.scale : 0,mediaHost.visible ? mediaHost.y+mediaHost.height*mediaHost.scale : 0)+16 : resolved.y
             LockAuxiliary {id:weatherBlock;width:parent.width;tokens:design;snapshot:root.visual.weather || ({});style:root.layout.effects.weather;showLocation:root.layout.effects.location}
         }
         LockElementHost {
             id: mediaHost; objectName: "mediaHost"; elementId:"media"; configuration:root.layout.elements.media
             canvasWidth:plane.width;canvasHeight:plane.height;baseWidth:340;contentHeight:mediaBlock.height
-            readonly property bool underIdentity: root.layout.effects.media === "title" && timeHost.adjacentIdentity
-            x: underIdentity ? identityHost.x : resolved.x
-            y: underIdentity ? Math.max(identityHost.y+identityHost.height*identityHost.scale, timeHost.y+timeHost.height*timeHost.scale)+12 : resolved.y
-            width: underIdentity ? Math.min(440, (plane.width-identityHost.x-16)/scale) : Math.min(340, (plane.width-32)/scale)
-            LockAuxiliary {id:mediaBlock;artworkSource:root.preparedMediaSource;width:parent.width;tokens:design;media:true;snapshot:root.visual.media || ({});style:root.layout.effects.media;showArtwork:root.layout.effects.artwork}
+            readonly property bool underIdentity: root.layout.effects.media === "title" && (timeHost.adjacentIdentity || root.layout.preset==="split-corners")
+            x: root.curated ? root.curated.media.x : underIdentity ? (identityHost.visible ? identityHost.x : timeHost.x) : resolved.x
+            y: root.curated ? root.curated.media.y : underIdentity ? Math.max(identityHost.visible ? identityHost.y+identityHost.height*identityHost.scale : 0, timeHost.y+timeHost.height*timeHost.scale)+12 : resolved.y
+            width: !root.layout.effects.curated && underIdentity ? Math.min(440, (plane.width-Layout.position(identityHost.configuration,plane.width,plane.height,identityHost.width*identityHost.scale,identityHost.height*identityHost.scale).x-16)/scale) : Math.min(root.layout.effects.curated && root.layout.preset==="media" ? 500 : 340, (plane.width-32)/scale)
+            LockAuxiliary {id:mediaBlock;prominent:root.layout.effects.curated && root.layout.preset==="media";artworkSource:root.preparedMediaSource;width:parent.width;tokens:design;media:true;snapshot:root.visual.media || ({});style:root.layout.effects.media;showArtwork:root.layout.effects.artwork}
         }
         LockElementHost {
             id: authHost; objectName: "authHost"; elementId: "authentication"; configuration: root.layout.elements.authentication
             canvasWidth: plane.width; canvasHeight: plane.height; baseWidth: plane.frameWidth
-            composition: root.layout.space === "composition"
+            composition: root.layout.space === "composition" && !root.layout.effects.curated
             flowX: (plane.width-plane.frameWidth)/2; flowY: identityHost.y + identityHost.height*identityHost.scale + design.gap
+            x: root.curated ? root.curated.authentication.x : composition ? flowX : resolved.x
+            y: root.curated ? root.curated.authentication.y : composition ? flowY : resolved.y
             contentHeight: authBlock.height
             Rectangle {
                 objectName: "authContrastBackdrop"

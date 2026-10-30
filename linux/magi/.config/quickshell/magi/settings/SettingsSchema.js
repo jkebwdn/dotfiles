@@ -34,7 +34,7 @@ const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "
     dnd: "lavender", caffeine: "yellow"}
 function defaults() {
     return {schemaVersion: 22,
-        lockScreen: {layoutVersion:1, preset:"centered", elements:{}, effects:{credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false,blur:true}},
+        lockScreen: {layoutVersion:1, preset:"centered", elements:{}, effects:{credential:"dots",avatar:"plain",weather:"standard",media:"compact",location:false,artwork:true,depth:false,blur:true,date:true,curated:false}},
         applicationAppearance: {managed: false, backgroundOpacity: 1.0, blurEnabled: true},
         appearance: {globalBlur: {managed: false, size: 8}, controlCentreBackgroundRole: "surface", mediaProgressRole: "accent", hubToggleRole: "accent", hubSelectionRole: "accent", navigationAccent: "accent", toggleStyle: "pill", theme: "catppuccin-mocha", roundness: {master: 1,
             roles: {barPill: null, surface: null, controlTile: null, slider: null, action: null, avatar: null, albumArt: null, hubSelector: null, secondaryControl: null}},
@@ -128,7 +128,7 @@ function analyze(input) {
         && object(layout.elements) && Object.keys(layout.elements).length === 0
     let layoutValid = compact
     if (!compact && layout.layoutVersion === 1 && ["screen","composition"].includes(layout.space)
-        && ["centered","editorial","corner","split","minimal","split-corners","custom"].includes(layout.preset)
+        && typeof layout.preset === "string" && layout.preset.length>0 && layout.preset.length<=64
         && object(layout.elements) && Object.keys(layout.elements).every(id => ["time","identity","authentication","weather","media"].includes(id))) {
         const seen = []
         layoutValid = ["time","identity","authentication","weather","media"].every(id => {
@@ -146,10 +146,12 @@ function analyze(input) {
     if (!layoutValid) { errors.push("lockScreen: invalid layout; using Centered"); effective.lockScreen = defaults().lockScreen }
     const fx = effective.lockScreen.effects
     if (fx.blur === undefined) fx.blur = true
+    if (fx.date === undefined) fx.date = true
+    if (fx.curated === undefined) fx.curated = false
     for (const [key,choices] of Object.entries({credential:["dots","line","segments","ring","minimal"],avatar:["plain","ring","glow","frame"],weather:["compact","standard","minimal"],media:["compact","artwork","minimal","title"]})) {
         if (!choices.includes(fx[key])) { errors.push("lockScreen.effects."+key+": invalid value"); fx[key]=defaults().lockScreen.effects[key] }
     }
-    for (const key of ["location","artwork","depth","blur"]) if (typeof fx[key] !== "boolean") {errors.push("lockScreen.effects."+key+": invalid value");fx[key]=defaults().lockScreen.effects[key]}
+    for (const key of ["location","artwork","depth","blur","date","curated"]) if (typeof fx[key] !== "boolean") {errors.push("lockScreen.effects."+key+": invalid value");fx[key]=defaults().lockScreen.effects[key]}
     const applicationPolicy = effective.applicationAppearance
     for (const key of ["managed", "blurEnabled", "backgroundOpacity"]) {
         const value = applicationPolicy[key]

@@ -1,7 +1,7 @@
 # Local package recipe. Render with prepare-source.py; no install script/hooks.
 pkgname=magi-lock
 pkgver=0.1.0
-pkgrel=10
+pkgrel=11
 pkgdesc='MAGI native Wayland session locker and isolated PAM worker'
 arch=('x86_64')
 # Private local artifact; repository distribution licensing is not yet declared.

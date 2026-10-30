@@ -22,25 +22,27 @@ NATIVE = ROOT / 'native/lock'
 BASELINE = '4a26d6232c97266f011355b8fb932f8e0436c0e6'
 # Host audit 2026-10-30: exact candidate source passed 23/23 CTest and
 # 18/18 Rust tests, including the private mock fprintd broker. Package build and
-# installation audit also passed. See docs/review/lock-fingerprint-production.md.
+# installation audit also passed for the curated themes candidate.
+# See docs/review/lock-screen-themes.md; host-final log recorded there.
 # Any subsequent native source change must earn a new host audit.
 AUDITED_NATIVE = {
-    'CMakeLists.txt': '4d881da889e94d9329fc574c98d5b45c6a81e5f18e0a5a11c1dc9f7889f49345',
+    'CMakeLists.txt': '29c9162bc3ec3f119ccf908f43c5796d823bf2c05fc3f95c5ec0b55209ad5898',
     'fingerprint/broker.cpp': 'b4c93a698143a3f44a471534db741ec67461b9a2700262b4987f4ba84e8dc3c8',
     'fingerprint/broker.hpp': '97722860983b092ad7ba6a72c47fce96123a80bcc5de14db04dd0565ad7baee8',
     'fingerprint/model.hpp': 'ed4c2c88dcff01c5133d1f82cdfbb1f23a941187011590902a82ea4152b91399',
-    'packaging/PKGBUILD.in': '8bd48f642cad500f9b700e29f7b1315ba654400c8f86fa0f069a716a52955585',
+    'packaging/PKGBUILD.in': '631caf8985cf2973092011f0e5c24625cc78a07dc4a9646a7c732cc352ddec8f',
     'packaging/prepare-source.py': '307465f3af3cccc8264655a93655fd083063322b1695b5a7d9f06dfa09e41440',
-    'qml/LockAuxiliary.qml': 'e2e68555a3f0a0d28d6a71fb5866d91241d6b33566eaa3c488aca26831a98b8b',
+    'qml/LockAuxiliary.qml': 'fe488e0cc6fe8e6c1256e9091d2ee67919b905a90f2d31b56e8d3b2c12007992',
     'qml/LockCapsIcon.qml': '9ea9e23436b0fbdcee463cc6ed6d4da494b44822290602ff391f8f988fb31fe9',
-    'qml/LockClock.qml': '3a3831bf9172f11fd4772b4823ba442a84da8e5fef5e453b7ecfacafbf357ade',
+    'qml/LockClock.qml': '1f48cb7e2aa3a47a0a8d4255513f0b7696a7adf34295ae61902f7c18363caf7f',
     'qml/LockCredential.qml': 'b06b884a1df082faff37aaa1ca6ba480bd32f9974aac7018eda87d553cc9cd4e',
     'qml/LockFingerprint.qml': '511279dea2e97a6df681f0c9ee2409cee49e9edd8b75b5f8a84967322c62237f',
-    'qml/LockLayout.js': '8812aa1f0bbb49829f29ec59a0f36d14c312536d53666eecbfca2423da759eb8',
+    'qml/LockLayout.js': '60fbe1c03599ec8a4e4e7357d3e84d628b16cf5a2e4fc6a71184f42147db4acc',
     'qml/LockMediaIcon.qml': '7ea05261d9eeb514e5fe8d1a148b6f1af4dbb42c63b686788d0bc0908c9b00b3',
     'qml/LockProfile.qml': '09812c715cf52f8910c2149c3b493d7682cb98ce17a781342fd8601a43559466',
-    'qml/LockScreen.qml': 'e37d0d20ddf7853d4fdd33d09580d6bf5791d7c761c5e3bdaa5a32475d8ffe27',
+    'qml/LockScreen.qml': '6e2d59e3ecf8bfabe2a742a8a0341d6a711c864f87cfcc8d4c4a90c5865096c2',
     'qml/LockStatus.qml': '8b7c1354b11cb4fe8c693bb74745c23a53194bb70292ff028f7df0a464373a65',
+    'qml/LockThemes.js': '21e53498faebdb0064850198badee5cd5337e3f33247e674cb53dd764e3805fb',
     'qml/LockTokens.qml': '499a792ef843aa9f10aa03c365b9485643c14b1e86ebb3bd535b92d4b5603776',
     'qml/qmldir': '5ec0e7a8782d9d65e811b92963e5ef4ec1a81899896b1b91fbfa7360f6488acc',
     'src/auth_presentation.hpp': 'e677e30d107416bc97a9b55def37083648cd58638c43e2519495d1228e5167f4',
