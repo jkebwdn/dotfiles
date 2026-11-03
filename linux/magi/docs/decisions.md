@@ -1152,3 +1152,11 @@ Use the existing preset/effects structures for six declarative compositions. Kee
 schema 22, metadata-only corner recognition and legacy/unknown data preservation.
 Retain the freeform designer behind `MAGI_LOCK_DESIGNER=1`; normal Settings exposes
 a lightweight gallery and one read-only renderer. See [candidate review](review/lock-screen-themes.md).
+
+
+## Hyprland 0.57 compatibility candidate
+
+The [adapter audit and native acceptance gate](review/hyprland-057.md) records the bounded
+0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
+and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
+The operator approved closeout. Settings schema stays 22.

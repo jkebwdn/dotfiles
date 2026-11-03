@@ -24,7 +24,9 @@ MOCHA, FOREST = 'catppuccin-mocha', 'everforest-dark-hard'
 class FakeActivation:
     def activate(self, target, adapter, store):
         from theme_activation.capabilities import result, CAPABILITIES
-        if target == 'hyprland': return result('applied',adapter.activate(store))
+        if target == 'hyprland':
+            from theme_activation.executor import Executor
+            return Executor().activate(target, adapter, store)
         if target == 'ghostty': return result('reload_requested','Fake accepted action')
         kind=CAPABILITIES[target].kind
         return result(kind, CAPABILITIES[target].detail)
@@ -73,6 +75,12 @@ class Lifecycle(unittest.TestCase):
                 if argv[1] == 'get': return self.gsettings[argv[3]]
                 self.gsettings[argv[3]] = argv[4]; return ''
             if argv == ['hyprctl', 'version']: return 'Hyprland 0.56.2'
+            if argv[:3] == ['hyprctl', '-j', 'getoption']:
+                from theme_orchestrator.adapters.hyprland_runtime import expected_borders
+                values = expected_borders((self.store.current('hyprland')/'colors.lua').read_text())
+                colors, angle = values[argv[3]]
+                return json.dumps({'option':argv[3], 'gradient':' '.join(f'{c:x}' for c in colors) + f' {angle}deg'})
+            if argv[:2] == ['hyprctl', 'eval']: return 'ok'
             return ''
         for name in ('theme_orchestrator.adapters.desktop.command', 'theme_orchestrator.coordinator.command'):
             p = patch(name, side_effect=command); p.start(); self.addCleanup(p.stop)
@@ -315,6 +323,21 @@ class Lifecycle(unittest.TestCase):
         self.assertNotIn('before', record['edits'][0])
         self.assertIn('beforeHash', record['edits'][0])
 
+    def test_hyprland_generated_when_activation_unavailable_is_isolated(self):
+        self.enable('hyprland'); self.enable('neovim')
+        self.theme = FOREST
+        with patch('theme_orchestrator.adapters.desktop.command', return_value='Hyprland 0.58.0'):
+            result = self.request('apply')
+        rows = {r['id']:r for r in result['targets']}
+        self.assertEqual(rows['hyprland']['statusLabel'], 'Generated · live unavailable')
+        self.assertFalse(rows['hyprland']['error'])
+        self.assertEqual(rows['neovim']['statusLabel'], 'Applies next launch')
+        record = self.store.load()['targets']['hyprland']
+        self.assertEqual(record['publishedPalette'], FOREST)
+        self.assertEqual(record['activation']['reason'], 'unsupported_version')
+        self.assertEqual((self.store.current('hyprland')/'colors.lua').read_text(),
+                         ADAPTERS['hyprland'].render(resolve(FOREST), self.store)['colors.lua'])
+
     def test_hyprland_only_changes_border_colours(self):
         # Execute actual generated Lua against a config spy. Checking its full
         # write set protects both focused/unfocused shadows and all effects,
@@ -368,6 +391,103 @@ assert(calls == 1)
         ghost = self.home/'ghostty.conf'; ghost.write_text(ADAPTERS['ghostty'].render(p, self.store)['colors.conf'])
         result = subprocess.run(['ghostty', '+validate-config', '--config-file='+str(ghost)], capture_output=True, text=True, timeout=15)
         self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class HyprlandRuntime(unittest.TestCase):
+    def setUp(self):
+        from theme_activation.executor import Executor
+        self.tmp = tempfile.TemporaryDirectory(prefix='magi-hypr-runtime-')
+        self.addCleanup(self.tmp.cleanup)
+        self.store = Store(Path(self.tmp.name))
+        self.path = self.store.current('hyprland')/'colors.lua'
+        self.path.parent.mkdir(parents=True)
+        self.path.write_text(ADAPTERS['hyprland'].render(resolve(FOREST), self.store)['colors.lua'])
+        self.version = 'Hyprland 0.57.0 built from branch v0.57.0 at commit abc clean (VERSION: bump to 0.57.0).'
+        self.response = 'ok'
+        self.errors = ''
+        self.applied = False
+        self.mismatch = False
+        self.executor = Executor()
+        self.mock = patch('theme_orchestrator.adapters.desktop.command', side_effect=self.command).start()
+        self.addCleanup(patch.stopall)
+
+    def command(self, argv):
+        from theme_orchestrator.adapters.hyprland_runtime import expected_borders
+        if argv == ['hyprctl', 'version']: return self.version
+        if argv[:2] == ['hyprctl', 'eval']:
+            self.applied = True
+            return self.response
+        if argv == ['hyprctl', 'configerrors']: return self.errors
+        if argv[:3] == ['hyprctl', '-j', 'getoption']:
+            colors, angle = expected_borders(self.path.read_text())[argv[3]]
+            if not self.applied or self.mismatch: colors = (0xff112233,)
+            return json.dumps({'option':argv[3], 'gradient':' '.join(f'{c:X}' for c in colors) + f' {angle}deg'})
+        raise AssertionError(argv)
+
+    def activate(self):
+        return self.executor.activate('hyprland', ADAPTERS['hyprland'], self.store)
+
+    def test_supported_releases_apply_and_verify(self):
+        for version in ('Hyprland 0.56.0', 'Hyprland 0.56.2 built from branch v0.56.2',
+                        self.version, 'Hyprland v0.57.12', 'v0.57.0', 'v0.57.123'):
+            with self.subTest(version=version):
+                self.version = version; self.applied = False; self.mock.reset_mock()
+                outcome = self.activate()
+                self.assertEqual(outcome['status'], 'live')
+                self.assertTrue(self.applied)
+                self.assertEqual(sum(c.args[0][1:3] == ['-j','getoption'] for c in self.mock.call_args_list), 4)
+                self.assertFalse(any('reload' in c.args[0] for c in self.mock.call_args_list))
+
+    def test_unknown_and_malformed_versions_never_write(self):
+        for version, reason in [('Hyprland 0.58.0', 'unsupported_version'), ('Hyprland 1.56.0', 'unsupported_version'),
+                                ('Hyprland 0.55.2', 'unsupported_version'), ('', 'malformed_version'),
+                                ('failure: dependency 0.56.2', 'malformed_version'),
+                                ('Hyprland 0.57.x', 'malformed_version'), ('Hyprland 0.57.0-rc1', 'malformed_version'),
+                                ('Hyprland 0.57.0.1', 'malformed_version'),
+                                ('Hyprland 0.58.0\nTag: v0.56.2', 'unsupported_version')]:
+            with self.subTest(version=version):
+                self.version = version
+                outcome = self.activate()
+                self.assertEqual(outcome['status'], 'generated')
+                self.assertEqual(outcome['reason'], reason)
+                self.assertFalse(self.applied)
+
+    def test_missing_binary_and_command_failure(self):
+        for error, reason in [(FileNotFoundError('hyprctl'), 'missing_hyprctl'),
+                              (RuntimeError('socket unavailable'), 'runtime_command_failed'),
+                              (TimeoutError('timeout'), 'runtime_command_failed')]:
+            self.mock.side_effect = error
+            outcome = self.activate()
+            self.assertEqual(outcome['reason'], reason)
+            self.assertEqual(outcome['status'], 'generated')
+            self.assertFalse(self.applied)
+
+    def test_rejected_eval_is_not_success(self):
+        for reply in ('error: invalid colour', 'failed', 'eval is only supported with the lua config manager', '', 'warning: changed API'):
+            self.response = reply
+            outcome = self.activate()
+            self.assertEqual(outcome['reason'], 'runtime_rejected')
+            self.assertEqual(outcome['status'], 'generated')
+
+    def test_readback_probe_fails_closed(self):
+        original = self.command
+        self.mock.side_effect = lambda argv: 'no such option' if 'getoption' in argv else original(argv)
+        self.assertEqual(self.activate()['reason'], 'unsupported_readback')
+        self.assertFalse(self.applied)
+
+    def test_verification_failure(self):
+        self.mismatch = True
+        self.assertEqual(self.activate()['label'], 'Verification failed')
+        self.mismatch = False; self.errors = 'config error'
+        self.assertEqual(self.activate()['reason'], 'verification_failed')
+
+    def test_generated_contract_and_canonical_argb(self):
+        from theme_orchestrator.adapters.hyprland_runtime import expected_borders, VerificationFailed
+        p = resolve(FOREST)
+        expected = expected_borders(self.path.read_text())
+        self.assertEqual(expected['general.col.active_border'],
+                         ((int('ee'+p['roles']['blue'][1:],16), int('ee'+p['roles']['focus'][1:],16)),45))
+        with self.assertRaises(VerificationFailed): expected_borders('hl.config({})')
 
 
 if __name__ == '__main__':

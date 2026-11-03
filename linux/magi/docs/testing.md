@@ -109,3 +109,11 @@ See [exact coverage and limits](review/lock-fingerprint-production.md).
 metadata/migration, the normal gallery and responsive production presentation.
 The Phase 13 designer fixtures continue exercising the preserved internal designer.
 Native theme acceptance is separate; see [acceptance record](review/lock-screen-themes.md).
+
+
+## Hyprland 0.57 compatibility candidate
+
+The [adapter audit and native acceptance gate](review/hyprland-057.md) records the bounded
+0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
+and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
+The operator approved closeout. Settings schema stays 22.

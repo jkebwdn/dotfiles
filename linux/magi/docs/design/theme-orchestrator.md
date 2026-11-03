@@ -473,3 +473,11 @@ include no longer overrides it. Theme switching alone does not reset old state.
 Correction allowlist: `.config/quickshell/magi/services/theme_orchestrator/adapters/desktop.py`,
 `tests/theme-orchestrator/run.py`, `docs/design/theme-orchestrator.md`,
 `docs/README.md`. Unrelated working changes are preserved. No commit or push.
+
+
+## Hyprland 0.57 compatibility candidate
+
+The [adapter audit and native acceptance gate](../review/hyprland-057.md) records the bounded
+0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
+and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
+The operator approved closeout. Settings schema stays 22.

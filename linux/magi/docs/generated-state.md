@@ -90,3 +90,11 @@ See [terminal visuals audit](review/terminal-visuals.md) for fallback and next-l
 `magi-fetch` is a read-only consumer of the saved theme, existing palette resolver
 and matching published snapshot. It creates no persistent generated state, cache or
 activation receipt. Its frames and captured Fastfetch text live only in process memory.
+
+
+## Hyprland 0.57 compatibility candidate
+
+The [adapter audit and native acceptance gate](review/hyprland-057.md) records the bounded
+0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
+and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
+The operator approved closeout. Settings schema stays 22.

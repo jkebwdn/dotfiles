@@ -32,17 +32,8 @@ class Hyprland(Adapter):
                 + '"}}})\n'}
 
     def activate(self, store):
-        # Installed 0.56 Lua API only; never reload the whole compositor config.
-        version = command(['hyprctl', 'version'])
-        if not re.search(r'\b0\.56\.', version):
-            raise RuntimeError('Hyprland runtime adapter requires audited 0.56.x; generated include ready')
-        response = command(['hyprctl', 'eval', 'dofile(' + repr(str(store.current(self.id) / 'colors.lua')) + ')'])
-        if re.search(r'error|failed|exception', response, re.IGNORECASE):
-            raise RuntimeError('Hyprland rejected colour update: ' + response[:500])
-        errors = command(['hyprctl', 'configerrors'])
-        if errors:
-            raise RuntimeError('Hyprland configerrors: ' + errors[:500])
-        return 'Runtime update accepted; configerrors clear (visual check required)'
+        from .hyprland_runtime import activate
+        return activate(store, command)
 
 
 class Ghostty(Adapter):

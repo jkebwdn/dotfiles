@@ -151,3 +151,11 @@ layout engine. The designer is developer-gated; normal Settings is a gallery and
 small relevant editor. Schema 22 and authentication/service ownership are retained.
 Internal native acceptance passed; physical external-monitor acceptance remains
 deferred. Evidence and compatibility details are in the review record.
+
+
+## Hyprland 0.57 compatibility candidate
+
+The [adapter audit and native acceptance gate](../review/hyprland-057.md) records the bounded
+0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
+and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
+The operator approved closeout. Settings schema stays 22.

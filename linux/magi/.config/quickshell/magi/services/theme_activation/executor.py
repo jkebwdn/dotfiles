@@ -89,7 +89,14 @@ class Executor:
         from .capabilities import CAPABILITIES, result
         cap=CAPABILITIES[target]
         if target=='ghostty': return self.ghostty()
-        if target=='hyprland': return result('applied', adapter.activate(store))
+        if target=='hyprland':
+            from theme_orchestrator.adapters.hyprland_runtime import ActivationUnavailable, VerificationFailed
+            try:
+                return result('live', adapter.activate(store))
+            except ActivationUnavailable as error:
+                return result('generated', str(error), reason=error.reason)
+            except VerificationFailed as error:
+                return {**result('error', str(error), reason='verification_failed'), 'label':'Verification failed'}
         if cap.kind=='restart_required':
             return result('restart_required' if self.running(target) else 'next_launch', cap.detail)
         return result(cap.kind if cap.kind in ('live','next_launch','unsupported') else 'unsupported',cap.detail)

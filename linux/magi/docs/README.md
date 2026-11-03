@@ -893,3 +893,11 @@ installed 0.1.0-10, Split Corners, stable Caps/biometric feedback, sharp 2× ren
 live song title, and native fingerprint/password success including suspend/resume.
 Schema remains 22. Physical external-monitor acceptance is deferred. Repository
 closeout is approved as two reviewed commits; no next feature is started.
+
+
+## Hyprland 0.57 compatibility candidate
+
+The [adapter audit and native acceptance gate](review/hyprland-057.md) records the bounded
+0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
+and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
+The operator approved closeout. Settings schema stays 22.
