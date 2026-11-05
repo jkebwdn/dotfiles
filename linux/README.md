@@ -55,7 +55,7 @@ is MAGI. See [current documentation](magi/docs/README.md) for ownership and limi
 and the [closeout policy](magi/docs/phase-closeout.md) for ephemeral worktrees and
 exact-path staging. `~/dotfiles` remains the persistent source checkout.
 
-## Ghostty compositor-blur candidate
+## Accepted Ghostty compositor blur
 
 The Ghostty Stow package includes an application launch wrapper and desktop entry.
 In Hyprland it negotiates GTK without the background-effect protocol, leaving
@@ -66,6 +66,6 @@ single-instance owner. Direct `/usr/bin/ghostty` and direct D-Bus activation byp
 the wrapper. No session-wide GPU/environment settings are installed.
 
 Normal MAGI launch, blur responsiveness and theme switch/restore passed native
-acceptance on 2026-11-05. The deployed change awaits commit approval.
+acceptance on 2026-11-05. The accepted change is committed at `e251450`.
 The separate MAGI Lua layer-rule experiment is test-only. See the
 [blur audit](magi/docs/research/intel-blur-architecture.md).

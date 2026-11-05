@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 98-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 100-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -89,7 +89,7 @@ status role persistence/preview, connected Battery regions and production module
 activation. Native limitations and optional preview generation are recorded in
 [the candidate review](review/daily-use-polish.md).
 
-## Lock/fingerprint candidate — 2026-10-30
+## Accepted lock/fingerprint integration — 2026-10-30
 
 The host offline candidate passes 23 CTest and 18 Rust checks, including an isolated
 mock fprintd broker and power-intent confirmation. No actual sensor is used by these
@@ -111,9 +111,28 @@ The Phase 13 designer fixtures continue exercising the preserved internal design
 Native theme acceptance is separate; see [acceptance record](review/lock-screen-themes.md).
 
 
-## Hyprland 0.57 compatibility candidate
+## Accepted Hyprland 0.57 compatibility
 
 The [adapter audit and native acceptance gate](review/hyprland-057.md) records the bounded
 0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
 and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
 The operator approved closeout. Settings schema stays 22.
+
+
+## Post-0.57 consolidation coverage
+
+`ghostty-launch` preserves scoped environment/arguments and desktop-entry semantics.
+`phase12h/run` covers real-binary reload discovery and current publication-failure
+status taking precedence over older successful receipts. `phase12g/run` retains
+0.56/0.57 and unknown-version coverage; its exact historical build hash is fixture
+input only. No legacy migration, lock-layout or fingerprint security tests were removed.
+
+`stow` installs MAGI/Ghostty into disposable homes to verify runtime/package boundaries,
+including development-directory and license exclusions. It never changes operator links.
+Suite IDs remain explicit and unique; Phase-named suites cover distinct accepted
+contracts rather than duplicate invocations. See [audit](review/post-057-consolidation.md)
+for this run's exact results and retained environment limits.
+
+Post-0.57 consolidation full run: **96 PASS / 4 ENVIRONMENT / 0 FAIL / 0 UNKNOWN**,
+100 unique suites with no skips. The unchanged environment limits are documented
+in the [consolidation review](review/post-057-consolidation.md).

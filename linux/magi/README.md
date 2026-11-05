@@ -4,7 +4,7 @@ MAGI is a first-party Quickshell desktop shell layer for Hyprland, developed for
 this repository's Arch Linux setup. It combines the status bar, system controls
 and everyday desktop utilities with shared themes, icons and Settings. It is a
 personal shell, not a packaged desktop distribution. The current integration
-targets Quickshell 0.3.2 and Hyprland 0.56.2; Settings schema is **22**.
+targets Quickshell 0.3.2 and Hyprland 0.57 Lua; Settings schema is **22**.
 
 ## The shell
 

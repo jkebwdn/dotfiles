@@ -1,70 +1,38 @@
 # Technical debt register
 
-> Current Phase 15 source-review findings; no new feature is scheduled by this register.
+Reviewed against production `e251450` on 2026-11-05. This register contains concrete
+remaining limitations; it schedules no new features. Severity follows the
+[post-0.57 audit](review/post-057-consolidation.md). No P0 issue was established by
+this bounded source/runtime review; it is not a security certification.
 
-Phase 15 source review, 2026-10-27. Severity describes impact, not a feature schedule.
-No critical vulnerability has been established by this bounded review.
-
-| Severity | Issue / evidence | Impact and proposed direction | Safe to defer? |
-| --- | --- | --- | --- |
-| High | Native lock transport tests cannot complete in this sandbox; SOCK_SEQPACKET send returns EPERM | Host offline transport verification remains required; do not weaken auth assertions or claim a security pass | Yes for documentation-only cleanup; no for auth changes |
-| Medium | Settings migration-backup trigger drift | Resolved: persistence compares the on-disk version with the outgoing Schema-analyzed document; current-schema saves create no migration backup. Original migration/recovery contents and failed-write retry protection remain covered | Resolved; existing backups retained |
-| Low | Profile Settings provisional-width/column cycle | Fixed in shared SettingsRow using parent available width; strict long-text/pinned-preview regression and native smoke pass | Resolved; see Profile layout review |
-| Medium | `QuickActions.qml` refreshes three status requests every 5s; Brightness polls every 2s | Repeated Python/subprocess work; Clipboard additionally multiplexes two queues with a 30ms wait. Investigate event-driven adapters before changing behavior | Yes |
-| Medium | Audio application grouping falls back to application.name after ID/binary | Same-name applications can share one volume row; document metadata limits, revisit only with real collisions | Yes; accepted current behavior |
-| Medium | Native authenticated Bluetooth hardware acceptance remains absent | Synthetic Agent1 tests do not prove every PIN/passkey device; test suitable hardware when available | Yes; keep capability limitations explicit |
-| Medium | Displays and fingerprint have synthetic groundwork but incomplete physical production acceptance | Complete guarded hardware gates before expanding deployment | Yes |
-| Medium | Theme activation has per-target publication/compensation, not global filesystem atomicity | Keep journals, ownership checks and honest partial-failure status; do not promise all-target atomic replacement | Yes; tested design boundary |
-| Low | Many presentation harnesses duplicate disposable-root and service-stub setup; some consume fixture text via AST/string substitution | Brittle isolation and warning lists; consolidate incrementally with before/after coverage | Yes |
-| Low | Chronological docs mix pending and completed checkpoints | Canonical index/current architecture must take precedence; preserve history without treating old instructions as current | Addressed by canonical documentation structure |
-| Low | Native lock README includes historical real-lock procedures | Label history prominently; never interpret old commands as current authorization | Addressed by current-doc pointer; security gate remains |
-| Low | Audio device icon classification uses Bluetooth/volume fallback | Future semantic roles can improve differentiation; no artwork added in cleanup | Yes |
-| Low | Test schema expectations hard-coded current versions and replaced custom lock data | Phase 15 fixes version assertions and preserves custom migration fixtures; retain historical input schemas | Addressed in test-only changes |
-| Cosmetic | Weather semantic artwork and depth-mask import remain deferred | Consider only after daily-use reliability/hardware priorities | Yes; no feature work in Phase 15 |
-
-No obsolete Tray shortcut popup or audio auto-switch implementation was found to
-remove. TrayOverflow is still used by the Bar's overflow control. `trayVisibility`
-appears only in the deliberate migration scrub and regression fixtures. Historical
-migration support is not dead code.
-
-Icon fallback compositor setup and old schema/catalogue/Theme assumptions were corrected in tests during regression reconciliation. No production resolver or runtime changes were made.
-
-## Phase 16 quality follow-up
-
-See [ranked audit and evidence](review/phase16-ux-quality-audit.md). Four findings have
-accepted, tested fixes: primary-tile focus, borderless-slider focus, Wi-Fi accessible
-names/actions and idle notification expiry work. Native/final acceptance is recorded
-in that audit rather than inferred from source inspection.
-
-| Severity | Unresolved issue | Direction / deferral |
+| Severity | Remaining issue / evidence | Boundary or next decision |
 | --- | --- | --- |
-| Medium | Bar-wide keyboard traversal and focus handoff when a custom control becomes unavailable are incomplete | Define panel keyboard-grab/focus-return semantics before expanding navigation; current shortcuts remain |
-| Medium | Elided audio/application/SSID labels lack consistent bounded hover disclosure | Follow a shared tooltip policy without expanding rows or leaking sensitive values |
-| Medium | Some canonical palettes have weak muted/coloured text contrast | Keep measured ratios in themes.md; review role/usage tradeoffs with the operator, not silent palette changes |
-| Medium | No reduced-motion contract | Consider a deliberate accessibility preference separately; do not add Settings in this polish phase |
+| P2 | Displays 10C.2B is not a production monitor transaction manager | HyprMon remains authority. Planner/synthetic watchdog coverage does not replace physical apply/rollback acceptance. |
+| P2 | Physical external-monitor lock acceptance remains deferred | Internal fingerprint/password, lock themes and suspend/resume passed. Do not generalize that evidence to unavailable external displays. |
+| P2 | Native transport/private-bus tests encounter sandbox restrictions | Keep exact source hashes, independent denial probes and failure-case checks. Native/auth changes require fresh host proofs, not broader skips. |
+| P2 | QuickActions polls three status requests every 5s; Brightness polls every 2s | Accepted current behavior; investigate event-driven ownership separately if an observed problem warrants it. Clipboard's bounded queue wait is not another compositor poll. |
+| P2 | Native fingerprint broker uses 10 ms bounded bus dispatch while an attempt is active | Cancellation/deadlines/retry are tested. Event-loop integration would require separate auth review; no change here. |
+| P2 | Ghostty appearance/history can accumulate generations beyond the ordinary two-entry theme journal | Inventory pending/current/previous, ownership and audit recovery references before owner-validated pruning. No age-based cleanup or blind CSS deletion. |
+| P2 | GTK/Thunar native background transparency is deferred; Zen has partial theme/activation support | Do not apply broad opacity or transparent CSS as cleanup. Zen workspace colour remains a deliberate application action. |
+| P2 | Zen can report Playing with missing MPRIS duration until pause/resume | Keep valid-position timer handling; no fabricated duration, unsolicited playback change or extra polling. |
+| P2 | Bar-wide keyboard traversal/focus handoff lacks a complete contract | Preserve current shortcuts; decide keyboard-grab/return behavior separately. |
+| P2 | No reduced-motion policy; some semantic-role text contrast is weak | Requires explicit accessibility/visual choices, not silent palette or animation changes. |
+| P2 | Audio grouping can fall back to application.name | Same-name apps can share a row. Revisit only with observed metadata collisions. |
+| P2 | Authenticated Bluetooth PIN/passkey hardware and physical multi-monitor Tray coverage are incomplete | Preserve application-scoped Agent1 and native menus; synthetic tests are not complete hardware proof. |
+| P3 | Some QML harnesses duplicate fixture/stub setup or transform fixture source | Retain distinct behavioral coverage; consolidate only with evidence that isolation and assertion strictness survive. |
+| P3 | Native lock README is a chronological proof/deployment log with old headers | Current architecture/security/testing docs take precedence. Old commands and package references are historical, never installation authority. |
+| P4 | Hover disclosure, weather semantic artwork, depth-mask import and rounded-edge pixelation need separate review | No visual redesign here. Pixelation cause is unproven; existing corners were accepted. |
 
+Resolved items are recorded in their review documents rather than kept as open debt:
+Settings backup-version drift, Profile column cycling, notification idle work,
+Wi-Fi/focus feedback, production fingerprint integration, curated lock themes,
+Hyprland 0.57 border/effects compatibility, normal Ghostty blur/reload acceptance,
+and guarded canonical Hyprland link/enrollment placement with unchanged native readback.
 
-## Zen MPRIS startup reporting — 2026-10-29
+The scoped Ghostty opt-out is inherited by terminal descendants; direct absolute-binary
+or D-Bus launches bypass the wrapper. These are documented launch boundaries, not
+claims that every possible terminal invocation is covered. Theme publication remains
+per-target atomic with compensation, not a global filesystem transaction.
 
-Operator snapshots show Playing with explicit Position=0 and missing mpris:length,
-then valid position/duration after pause/resume. See [evidence](review/daily-use-polish.md).
-A valid-data MAGI timer-start improvement is separate; no fabricated duration or
-automatic playback manipulation is acceptable. Browser reporting/native recheck
-remains unresolved.
-
-## Lock external-monitor acceptance — 2026-10-30
-
-The [installed integration](review/lock-fingerprint-production.md) passes internal
-visual, fingerprint/password and suspend/resume acceptance. Physical external-monitor
-acceptance is deferred because no monitor is available. Synthetic topology tests
-pass; service-loss/removal/reload evidence is synthetic, not hardware injection.
-
-## Blur architecture deployment acceptance (2026-11-05)
-
-Ghostty compositor-only A/B and the MAGI layer comparison are complete. Retain the
-existing MAGI regions; no measured benefit justifies replacing them. The scoped
-launch integration passed normal-launch, appearance-control and theme-switch/restore
-acceptance on 2026-11-05. Commit approval is pending. Its environment is inherited
-by terminal descendants; direct binary or
-D-Bus activation bypasses the wrapper. Existing rounded-edge pixelation was observed
-but its cause is unproven. Schema remains 22. See [audit](research/intel-blur-architecture.md).
+Optional Bluetooth audio auto-switch remains a policy decision; WirePlumber owns
+routing. It is not a missing cleanup fix. See [current priorities](current-roadmap.md).

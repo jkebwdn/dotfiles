@@ -14,9 +14,6 @@ from .executor import GenerationChanged
 def validate_ghostty(files):
     with tempfile.TemporaryDirectory(prefix='magi-ghostty-validate-') as tmp:
         config=files['colors.conf']
-        if 'background-blur.css' in files:
-            css=Path(tmp)/'background-blur.css';css.write_text(files['background-blur.css'])
-            config='\n'.join('gtk-custom-css = '+str(css) if line.startswith('gtk-custom-css = ') else line for line in config.splitlines())+'\n'
         path=Path(tmp)/'colors.conf';path.write_text(config)
         p=subprocess.run(['ghostty','+validate-config','--config-file='+str(path)],capture_output=True,text=True,timeout=8,
                          env={**__import__('os').environ,'HOME':tmp,'XDG_CONFIG_HOME':tmp})

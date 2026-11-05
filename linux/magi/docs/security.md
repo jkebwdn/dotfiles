@@ -1,7 +1,7 @@
 # Security boundaries
 
 This is a bounded source review and regression summary, not a formal security proof.
-No new authentication, lock or pairing feature is introduced by Phase 15.
+No authentication, lock or pairing behavior changes in this consolidation.
 
 | Boundary | Authority and reviewed invariant | Evidence / remaining limit |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ No new authentication, lock or pairing feature is introduced by Phase 15.
 
 Weather/Media lock auxiliaries are display-only snapshots with bounded preparation;
 they cannot dispatch media actions, acquire credentials or authorize unlock.
-Fingerprint and display physical completion remain separate hardware gates.
+Internal fingerprint unlock is accepted; physical external-display completion remains a separate hardware gate.
 
 Logging review found structured lifecycle/status messages and transient pairing
 transport, not intentional credential logging. Keep private pairing/credential

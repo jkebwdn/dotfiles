@@ -1,45 +1,37 @@
-# Current status and next priorities
+# Current status and next decisions
 
-Schema 22. Completed capabilities include the Bar visual builder and multi-output
-policy, Hub utilities, Control Centre/Settings ownership, theme/application appearance,
-native lock and designer/modules, detached launcher lifecycle, generic Bluetooth
-pairing/Agent1, System Tray, and Audio output/input routing with grouped application
-volume. Super+T is an inline runtime Bar toggle; there are no Tray visibility modes.
-Bluetooth audio auto-switch is deferred; WirePlumber remains routing authority.
+Schema 22. The accepted post-0.57 baseline is `e251450`. This consolidation adds no
+product feature and does not authorize a subsequent phase.
 
-TTY login is the accepted workflow. **MAGI Greeter is not on the active roadmap.**
-Historical Greeter proposals are retained as history, not pending commitments.
+Production includes the Bar/multi-output policy, Hub utilities, Control Centre and
+Settings ownership, shared tray/audio services, generic Bluetooth pairing/Agent1,
+detached application launching, wallpaper, Theme Orchestrator, terminal visuals and
+NERV fetch. Curated lock themes and production fingerprint/password unlock are
+accepted, including internal suspend/resume. The internal designer remains available
+only through its developer gate. Greeter is not on the active roadmap; TTY login stays.
 
-## Highest-value next decisions
+Hyprland uses Lua on 0.57. The T15g stays in Hybrid mode with Intel compositor rendering
+and NVIDIA available for application/game offload. Ghostty owns alpha, Hyprland owns
+its blur, and MAGI retains precise panel regions. NVIDIA-primary and Discrete desktop
+experiments are rejected history, not planned architecture.
 
-1. **Reliability:** run native lock/private-bus transport proofs on a host without
-   sandbox denial. The Settings migration-backup trigger debt is resolved; normal
-   current-schema saves no longer create migration backups.
-2. **Hardware acceptance:** prioritize authenticated Bluetooth hardware and the
-   existing Displays 10C.2B / Fingerprint 11B gates when suitable devices are available.
-   Do not expand deployment based solely on synthetic evidence.
-3. **Daily-use polish:** choose an observed user pain before optional features. Weather
-   semantic icons and depth-mask import remain legitimate polish candidates; optional
-   Bluetooth audio auto-switch needs an explicit policy review, not silent default-on.
+Consolidation's guarded canonical-config placement and native readback passed;
+regression is complete and the operator approved one consolidation commit. Push remains
+a separate approval. Settings, audit evidence, monitor behavior and packages are
+preserved; GPU experiments remain closed.
 
-Physical multi-monitor Tray acceptance, GTK/Thunar transparency and Zen activation
-limitations remain documented deferrals. None is automatically scheduled by Phase 15.
-No next feature phase begins as part of this consolidation.
+Remaining decisions are bounded by evidence:
 
+1. Complete Displays 10C.2B and physical external-monitor lock/Tray acceptance only
+   with suitable hardware and an explicit native gate. Production fingerprint work
+   is already complete; the old Phase 11B integration plan is not outstanding.
+2. Revisit authenticated Bluetooth hardware coverage and native transport tests when
+   needed for affected source changes. Current sandbox exceptions remain narrow.
+3. Choose an observed daily-use problem before optional work: GTK/Thunar transparency,
+   Zen reporting/activation polish, selected polling, reduced motion, or depth-mask
+   import require their own decisions. Bluetooth audio switching requires an explicit
+   routing policy; it is never silently enabled by consolidation.
 
-The daily-use pass now implements independent Bar item backgrounds and shade
-refinement, centered connected Battery regions, and immediate valid-position refresh.
-See [the review and native evidence](review/daily-use-polish.md). Zen omitting initial
-MPRIS duration remains a specific browser reporting limitation, not a reason to add
-a polling loop or start another feature phase.
-
-The requested [lock refinement and T15G fingerprint integration](review/lock-fingerprint-production.md)
-has passed internal visual, fingerprint/password and suspend/resume acceptance.
-The operator approved repository closeout as two reviewed commits. Physical external-monitor acceptance is
-deferred for lack of hardware. No subsequent feature is authorized.
-
-## Curated lock themes — accepted
-
-The [theme simplification implementation](review/lock-screen-themes.md) adds six curated
-compositions and a gallery over the retained internal designer. Internal native acceptance is complete; Git closeout is approved. Physical
-external-monitor acceptance remains deferred. No subsequent feature phase is implied.
+See [technical debt](technical-debt.md) for concrete limitations and
+[historical checkpoints](history.md) for dated development evidence. Completed work
+must not be inferred to be pending from those old records.

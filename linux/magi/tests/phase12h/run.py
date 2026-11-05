@@ -43,7 +43,10 @@ class Transactions(unittest.TestCase):
     def test_render_or_validation_failure_publishes_and_activates_nothing(self):
         for method in ('render','validate'):
             with self.subTest(method=method), patch.object(ADAPTERS['neovim'],method,side_effect=ValueError('candidate invalid')), patch.object(self.store,'publish') as publish:
-                self.f.request('apply')
+                response=self.f.request('apply')
+                row=next(t for t in response['targets'] if t['id']=='ghostty')
+                self.assertEqual(row['statusLabel'],'Generation failed')
+                self.assertIn('candidate invalid',row['activationDetail'])
                 publish.assert_not_called(); self.executor.activate.assert_not_called()
                 self.assertEqual(self.store.load()['targets']['ghostty']['stage'], 'generation')
 
@@ -53,7 +56,10 @@ class Transactions(unittest.TestCase):
         def broken(target, files, digest):
             if target == 'neovim': raise OSError('disk failure')
             return publish(target,files,digest)
-        with patch.object(self.store,'publish',side_effect=broken): self.f.request('apply')
+        with patch.object(self.store,'publish',side_effect=broken): response=self.f.request('apply')
+        row=next(t for t in response['targets'] if t['id']=='ghostty')
+        self.assertEqual(row['statusLabel'],'Publication failed')
+        self.assertIn('disk failure',row['activationDetail'])
         self.executor.activate.assert_not_called()
         status = self.c.load(); self.assertEqual(status['phase'],'publication_error')
         self.assertEqual(status['publication'],{'ghostty':'restored','neovim':'unchanged'})

@@ -1,3 +1,7 @@
+> 2026-11-05: post-0.57 consolidation preserves this historical journal. See
+> [current findings and cleanup](review/post-057-consolidation.md); accepted blur,
+> fingerprint and lock-theme work is no longer pending.
+
 > Historical chronological journal. For current ownership, schema and roadmap, start at [the documentation index](README.md). Old deployment commands are not current authorization.
 
 ## Phase 14B — Audio routing and inline Tray toggle (2026-10-27)

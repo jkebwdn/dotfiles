@@ -9,12 +9,15 @@ SERVICES=ROOT/'.config/quickshell/magi/services';sys.path.insert(0,str(SERVICES)
 from application_appearance.policy import DEFAULT,normalize
 from application_appearance.planner import plan,toggle_lua
 from application_appearance.registry import CAPABILITIES
-from application_appearance.executor import BlurExecutor,BUILD,GenerationChanged,compatible_version
+from application_appearance.executor import BlurExecutor,GenerationChanged,compatible_version
 from application_appearance.coordinator import ApplicationAppearanceCoordinator,validate_ghostty
 from theme_orchestrator.storage import Store
 from theme_orchestrator.coordinator import Orchestrator
 from theme_orchestrator.adapters import ADAPTERS
 from theme_orchestrator.palette import resolve
+
+# Historical 0.56.2 output fixture; not a production compatibility gate.
+BUILD = 'efb50993780079460b0cbed1363e2166a2de1d9f'
 
 class Blur:
  def __init__(self):self.state=dict(instance='test-instance',generation='one',enabled=False);self.calls=[];self.fail=False;self.offline=False;self.mismatch=False

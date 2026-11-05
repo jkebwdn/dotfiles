@@ -1,8 +1,8 @@
 # Current MAGI architecture
 
-> Phase 15 source/ownership review; validation limits are listed explicitly below.
+> Post-0.57 source/ownership review; native evidence and remaining limits are explicit.
 
-Canonical overview, reviewed against production source in Phase 15 (2026-10-27).
+Canonical overview, reconciled against production `e251450` on 2026-11-05.
 Settings schema **22**. Source, tests and documentation live in `~/dotfiles/linux/magi`.
 The chronological [architecture journal](../architecture.md) and phase records are
 historical evidence, not instructions to deploy old candidates.
@@ -141,8 +141,8 @@ The [current implementation](../review/lock-fingerprint-production.md) runs a bo
 owner-pinned fprintd broker beside the independent PAM worker. Controller validates
 a one-shot current binding before the existing unlock/sync path. Presentation remains
 read-only, with stable corner geometry, confirmed native power intent, density-aware
-buffers and bounded media refresh. Installed 0.1.0-10 passed internal visual, normal
-fingerprint/password and suspend/resume acceptance. External hardware is deferred.
+buffers and bounded media refresh. Installed 0.1.0-11 follows the accepted presentation refinement; the integration passed internal visual, normal
+fingerprint/password and suspend/resume acceptance. Physical external-monitor acceptance is deferred.
 
 ## Curated lock screen theme layer (2026-10-30 accepted)
 
@@ -153,20 +153,57 @@ Internal native acceptance passed; physical external-monitor acceptance remains
 deferred. Evidence and compatibility details are in the review record.
 
 
-## Hyprland 0.57 compatibility candidate
+## Accepted Hyprland 0.57 compatibility
 
 The [adapter audit and native acceptance gate](../review/hyprland-057.md) records the bounded
 0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
 and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
 The operator approved closeout. Settings schema stays 22.
 
-## Intel blur review candidate (2026-11-05)
+## Accepted Intel blur integration (2026-11-05)
 
 Ghostty alpha plus compositor-owned blur passed native A/B with blur retained and
-improved typing/workspace responsiveness. The final proposal retains MAGI's painted
+improved typing/workspace responsiveness. The integration retains MAGI's painted
 regions: Lua layer rules looked correct but used more compositor engine time with
 no observed responsiveness benefit. The Ghostty launch integration and 0.57 effects
 fix are deployed and passed normal-launch and theme-switch/restore acceptance
 after a full Ghostty quit/reopen. The reload executor identifies the real binary
-behind the wrapper and retains its existing D-Bus owner guards. Commit approval
-is pending. See [evidence and limits](../research/intel-blur-architecture.md).
+behind the wrapper and retains its existing D-Bus owner guards. The implementation is committed at `e251450`. See [evidence and limits](../research/intel-blur-architecture.md).
+
+
+## Session and configuration ownership
+
+The accepted T15g session uses BIOS Hybrid Graphics, Intel compositor rendering and
+NVIDIA application/game offload. There is no production NVIDIA-first environment
+or alternate session launcher. Login remains `.bash_profile` → `start-hyprland` →
+Hyprland Lua → the full MAGI shell; HyprMon owns its local monitor profile output.
+The internal panel is 3840×2160 at 60 Hz, scale 2 (1920×1080 logical pixels).
+
+Consolidation preserves the already accepted panel-description match and numeric
+scale 2 in canonical `linux/t15g/hypr/.config/hypr/hyprland.lua`. The approved
+`~/.config/hypr` repair now resolves directly to that canonical directory. All four
+effective config files retain their accepted bytes, including HyprMon's local profile.
+The border enrollment identity was reconciled under its journal lock, without reload.
+Native readback confirms unchanged 4K/60 Hz/scale 2, zero config errors and Live border
+activation. The earlier monitor audit remains evidence, not a live dependency.
+
+Theme targets are MAGI, Hyprland borders, Ghostty, GTK/Thunar, Zen, Yazi/yatline,
+Neovim, Starship, Fastfetch, btop, CAVA and ascii-splash. Both border activation and
+the independent appearance/blur controls accept audited stable Hyprland 0.56/0.57
+Lua releases, with instance/configuration/readback guards and fail-closed unknown
+versions. Current generation/publication errors take precedence over an older
+successful activation receipt; receipts remain retained for activation accounting.
+
+Ghostty owns background alpha; Hyprland owns its backdrop blur. The application
+wrapper adds only the GTK protocol opt-out and preserves arguments/other environment,
+including PRIME settings. The desktop entry uses that wrapper and native single-instance
+handling. Reload discovery resolves the wrapper's real executable and validates its
+D-Bus owner. MAGI keeps its precise BackgroundEffect regions, with no Lua layer-rule
+replacement. GlobalBlur owns size only; four passes/optimizations remain static policy.
+
+The normal Lock Screen page offers Split Corners, Centered, Minimal, Editorial, Media
+and Compact, using current wallpaper previews. Legacy Custom remains preserved.
+`MAGI_LOCK_DESIGNER=1` exposes the existing internal designer; it is not a second
+normal product route. Fingerprint Settings management and the native lock broker
+remain separate consumers of fprintd; only the native owner/PAM or current validated
+broker result can authorize unlock. No authentication code changed in consolidation.

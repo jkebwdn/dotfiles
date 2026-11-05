@@ -11,9 +11,9 @@ DEFERRED = [dict(id='qt', label='Qt', reason='Active platform plugin not verifie
             dict(id='hyprtoolkit', label='hyprtoolkit', reason='Authentication/helper dialogs need native validation')]
 
 # Compatibility evidence is a capability, not a claim of current runtime success.
-for target, version in {'magi': 'Quickshell 0.3.2', 'hyprland': 'Hyprland 0.56.x Lua',
-                        'ghostty': 'Ghostty 1.3.1', 'gtk': 'GTK3 3.24.52 / GTK4 policy',
-                        'zen': 'Zen 1.23.2b, native release install 15B76BAA26BA15E7',
+for target, version in {'magi': 'Quickshell 0.3.2', 'hyprland': 'Hyprland 0.56–0.57 Lua',
+                        'ghostty': 'Ghostty 1.4.0', 'gtk': 'GTK3 3.24.52 / GTK4 policy',
+                        'zen': 'Zen release-profile CSS aliases; restart and manual workspace colour',
                         'yazi': 'Yazi 26.9.1 + configured yatline', 'neovim': 'Neovim 0.12.6',
                         'starship': 'Starship 1.27.0', 'fastfetch': 'Fastfetch 2.70.0 ANSI',
                         'btop': 'btop 1.4.7'}.items():

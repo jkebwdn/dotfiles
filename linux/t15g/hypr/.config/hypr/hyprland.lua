@@ -10,10 +10,10 @@
 ----------------------------------------------------------------
 
 hl.monitor({
-    output   = "eDP-1",
+    output   = "desc:California Institute of Technology 0x1500",
     mode     = "3840x2160@60.00",
     position = "0x0",
-    scale    = "2.00",
+    scale    = 2,
 })
 
 hl.monitor({

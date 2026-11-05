@@ -192,6 +192,13 @@ class Orchestrator:
         for target, adapter in ADAPTERS.items():
             record = state['targets'].get(target, {})
             probe = self.probe(adapter)
+            activation = record.get('activation', {})
+            label = activation.get('label', '')
+            detail = activation.get('detail', adapter.capability.detail)
+            if record.get('error'):
+                label = {'generation': 'Generation failed', 'publish': 'Publication failed'}.get(
+                    record.get('stage'), activation.get('label', 'Apply failed') if activation.get('status') == 'error' else 'Apply failed')
+                detail = record['error']
             rows.append(dict(id=target, label=adapter.label, compatibility=adapter.compatibility, **probe,
                              enabled=target == 'magi' or record.get('enabled', False),
                              installed=target == 'magi' or record.get('installed', False),
@@ -201,9 +208,9 @@ class Orchestrator:
                              error=record.get('error', ''), boundary=adapter.boundary,
                              phase=record.get('phase', 'disabled'),
                              activationKind=adapter.capability.kind, automaticSafe=adapter.capability.automatic,
-                             statusLabel='Live' if target == 'magi' else record.get('activation', {}).get('label', ''),
+                             statusLabel='Live' if target == 'magi' else label,
                              activationGeneration=record.get('activation', {}).get('generation', ''),
-                             activationDetail=record.get('activation', {}).get('detail', adapter.capability.detail)))
+                             activationDetail=detail))
         for item in DEFERRED:
             rows.append(dict(item, available=False, configured=False, enabled=False, installed=False,
                              result='Deferred', error='', boundary='Deferred'))

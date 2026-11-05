@@ -1,3 +1,12 @@
+# Quickshell API evidence journal
+
+Current host audit (2026-11-05): Quickshell 0.3.2, Hyprland 0.57 Lua, Ghostty 1.4.0.
+The dated entries below preserve the versions actually inspected at those dates;
+older “installed/target” claims are historical. Current ownership and native
+acceptance are summarized in [current architecture](architecture/current-system.md)
+and [post-0.57 consolidation](review/post-057-consolidation.md). No new Quickshell API
+or QML presentation change is introduced by this consolidation.
+
 ## Phase 14B — Audio routing and inline Tray toggle (2026-10-27)
 
 Audio provides output/input selection, grouped application volumes, shared sliders,

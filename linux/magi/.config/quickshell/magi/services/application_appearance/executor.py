@@ -1,7 +1,6 @@
 """Audited Lua fixed-rule toggle only. No application/window opacity API."""
 import json, os, re, subprocess
 from .planner import HANDLE, toggle_lua
-BUILD = 'efb50993780079460b0cbed1363e2166a2de1d9f'
 def compatible_version(output):
     match = re.match(r'\A(?:Hyprland\s+v?|v)(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?=\s|$)', output.strip())
     return bool(match and tuple(map(int, match.groups()[:2])) in ((0, 56), (0, 57)))

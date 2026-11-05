@@ -21,7 +21,8 @@ None of these runtime stores should be staged.
 | Thumbnails and weather | Assets / Wallpaper / Weather owners | `$CACHE/magi` | Disposable cache only after proving no active reader/write or rollback dependency. Owners regenerate on demand; do not delete user originals. |
 | Clipboard | Clipboard backend | Session runtime/cache; opt-in XDG data history | User history is not disposable build output. Default is session-only; explicit persistence is unencrypted. |
 | Lock auxiliary display snapshots | LockAuxiliary / lock_auxiliary.py | `$STATE/magi/lock-auxiliary`, `$CACHE/magi` prepared artwork | No credentials. Retain current snapshots while lock may consume them. Prepared artwork is bounded to 16 files by its owner. |
-| Display/fingerprint state | Respective Settings/backend/native owners | Owner-specific XDG state / external service | Physical production acceptance remains deferred. Preserve profiles and pending transaction state; do not repurpose test output as live state. |
+| Display profiles/transactions | Displays / HyprMon | Owner-specific XDG state and local monitor profile | Displays 10C.2B remains deferred; preserve profiles and transactions. |
+| Fingerprint enrollment | fprintd / system policy | External system service storage | Production internal unlock is accepted. No MAGI biometric store; preserve enrollment and never treat fixtures as live state. |
 | Test/build output | Test harness / build invocation | `mkdtemp` roots under `/tmp` | Disposable only after jobs end and useful evidence is summarized in docs. TemporaryDirectory harnesses clean automatically. No persistent source dependencies on phase folders. |
 
 ## Single-writer conclusions
@@ -58,7 +59,7 @@ age alone never proves a generation disposable.
 | Application | Tracked source / bootstrap | Generated payload / runtime owner | Journal and absent-state behavior |
 | --- | --- | --- | --- |
 | Bash/Starship | .bashrc guarded STARSHIP_CONFIG export | Theme Orchestrator Starship current/starship.toml | Read-only hook record; absent file keeps normal Starship config |
-| Ghostty | config.ghostty optional include | Theme Orchestrator current/colors.conf, background fragments | Read-only hook; absent include preserves static preferences |
+| Ghostty | config.ghostty optional include | Theme Orchestrator current/colors.conf and palette metadata | Read-only hook; absent include preserves static preferences |
 | GTK | gtk.css layout; settings.ini fallback | Generated named MAGI theme and runtime GSettings selection | Journal owns runtime theme link/GSettings rollback; absent state uses static theme |
 | Hyprland | hyprland.lua guarded border hook | Theme Orchestrator current/colors.lua | Read-only hook; absent file preserves baseline borders |
 | Neovim | init.lua guarded runtimepath/colourscheme | Theme Orchestrator current/colors/magi.lua | Read-only hook; absent file leaves plugin/default colourscheme |
@@ -92,9 +93,32 @@ and matching published snapshot. It creates no persistent generated state, cache
 activation receipt. Its frames and captured Fastfetch text live only in process memory.
 
 
-## Hyprland 0.57 compatibility candidate
+## Accepted Hyprland 0.57 compatibility
 
 The [adapter audit and native acceptance gate](review/hyprland-057.md) records the bounded
 0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
 and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
 The operator approved closeout. Settings schema stays 22.
+
+
+## Audit evidence and superseded generations
+
+`$STATE/magi/audits` is retained operator evidence, not a disposable cache. The 2026-11-05
+inventory retains four earlier audit stores: blur architecture acceptance, Hybrid GPU
+rejection, Discrete/monitor recovery, and a reboot-era evidence summary. Approved
+canonicalization removed the monitor store's live Hyprland dependency while preserving
+all effective config bytes and monitor readback. Retain its recovery/acceptance evidence;
+source/doc references do not authorize deletion or running historical helpers.
+
+Current and previous Ghostty generations use the accepted alpha-only/native-blur-off
+payload. Eight older CSS-bearing generations remain among 26 owned, hash-valid
+historical generations. Appearance publications and retained audit snapshots can leave
+more history than the ordinary two-entry theme journal. Unreferenced is not equivalent
+to disposable: protect current/previous, pending transactions, journal-listed generations,
+and audit recovery references before using the owner-validated pruning routine.
+No generations or evidence were deleted during this audit.
+
+The retired `$STATE/magi/window-appearance` journal is released/unmanaged with null
+ownership and transaction. It has no production consumer; retain it as rollback evidence
+until separately approved cleanup. The active `applicationAppearance` policy and
+`global-blur` journal are different owners and must remain intact.
