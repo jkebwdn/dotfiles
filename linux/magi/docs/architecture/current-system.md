@@ -207,3 +207,19 @@ and Compact, using current wallpaper previews. Legacy Custom remains preserved.
 normal product route. Fingerprint Settings management and the native lock broker
 remain separate consumers of fprintd; only the native owner/PAM or current validated
 broker result can authorize unlock. No authentication code changed in consolidation.
+
+
+## Thunar and Hub search focus
+
+The [acceptance record](../review/thunar-hub-focus.md) documents isolated GTK visual
+checks and successful normal-session focus/theme acceptance. Shared appearance
+now composes Thunar background alpha through the existing GTK theme owner, alongside
+Ghostty, with validation/publication rollback and next-launch GTK semantics. One
+static Thunar-only exclusion handle implements shared blur participation; compositor
+window opacity and global engine quality remain unchanged. Thunar's parent canvases
+paint alpha once; inactive GTK surfaces receive explicit backdrop rules.
+
+Hub's retained window claims layer-shell keyboard focus while a searchable mode is
+visible; existing item-focus callbacks select the current search field. Settings and
+Notifications retain their previous on-demand policy. Search/query persistence,
+backend activation, mouse controls and Escape remain separate from focus ownership.

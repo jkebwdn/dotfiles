@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 100-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 101-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -136,3 +136,17 @@ for this run's exact results and retained environment limits.
 Post-0.57 consolidation full run: **96 PASS / 4 ENVIRONMENT / 0 FAIL / 0 UNKNOWN**,
 100 unique suites with no skips. The unchanged environment limits are documented
 in the [consolidation review](review/post-057-consolidation.md).
+
+
+## Thunar backgrounds and Hub focus
+
+`thunar/run` validates palette-relative, application-scoped alpha CSS with GTK's parser,
+active/backdrop selectors, opaque foreground policy and independent fixed Lua blur rules.
+`phase12g/run` covers enrolled GTK/Ghostty composition, publication barriers, rollback,
+release and missing-bootstrap refusal. `hub/run` adds real key events on production
+content for typing, navigation, Enter and Escape, reopen and mode handoff. Its offscreen
+window substitution cannot prove Wayland keyboard ownership or absence of input in the
+previous app. The normal-session native gate separately passed all six immediate-typing
+cases, reopen/navigation and theme checks; see the
+[acceptance record](review/thunar-hub-focus.md). Test-only GTK captures exercise installed
+Thunar drawing and expose repeated-background painting that syntax tests cannot detect.

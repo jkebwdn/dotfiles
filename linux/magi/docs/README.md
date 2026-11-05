@@ -7,6 +7,9 @@ Bluetooth pairing support, the curated lock themes and internal designer, and th
 
 ## Current canonical documents
 
+- [Thunar backgrounds and Hub focus acceptance](review/thunar-hub-focus.md)
+- [tfm-tui research only](research/tfm-tui.md)
+
 - [Post-0.57 consolidation findings](review/post-057-consolidation.md)
 - [Historical acceptance index](history.md)
 - [Current architecture and service ownership](architecture/current-system.md)

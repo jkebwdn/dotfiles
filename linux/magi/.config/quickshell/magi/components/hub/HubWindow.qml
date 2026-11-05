@@ -31,7 +31,11 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "magi-hub"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    // Item focus alone cannot take the Wayland keyboard from the previous app.
+    // Claim it on mapping a searchable mode; release on close/suppression or when
+    // entering Settings/Notifications, whose existing interaction stays on-demand.
+    readonly property bool ownsSearchKeyboard: visible && content.searchable
+    WlrLayershell.keyboardFocus: !visible ? WlrKeyboardFocus.None : ownsSearchKeyboard ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand
     visible: Services.Hub.opened && !Services.Hub.suppressed && (readyToOpen || presented || previewPinned)
     color: "transparent"
     BackgroundEffect.blurRegion: Theme.Theme.sharedBlur ? panelBlur : null
@@ -61,7 +65,7 @@ PanelWindow {
         target: "hubWindow"
         function status(): string {
             const item = content.currentContent
-            return JSON.stringify({visible:root.visible, mode:content.mode,
+            return JSON.stringify({visible:root.visible, mode:content.mode, keyboardExclusive:root.ownsSearchKeyboard,
                 x:content.x, y:content.y, width:content.width, height:content.height,
                 focused:!!item && (content.mode === "notifications" || content.mode === "settings" ? item.activeFocus : item.searchField.activeFocus)})
         }

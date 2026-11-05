@@ -21,6 +21,7 @@ FocusScope {
     property alias surface: surface
     property var controller: Services.Hub
     readonly property string mode: controller.mode
+    readonly property bool searchable: mode === "apps" || mode === "clipboard" || mode === "emoji"
     readonly property var launcherPreferences: Services.Launcher.preferences
     readonly property int preferredWidth: mode === "apps"
         ? (launcherPreferences.layout === "grid" ? launcherPreferences.gridWidth : launcherPreferences.panelWidth)
