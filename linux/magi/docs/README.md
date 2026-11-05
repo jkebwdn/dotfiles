@@ -32,6 +32,12 @@ those records. Current canonical documents above take precedence.
 
 ## Phase 16 quality audit
 
+[Intel blur architecture investigation](research/intel-blur-architecture.md)
+records the historical-config limits, GTK protocol distinction and isolated
+compositor-only Ghostty candidate. GPU-routing experiments are cancelled; native
+performance, normal-launch and theme-switch/restore acceptance passed. The
+deployed candidate awaits commit approval.
+
 [UX, accessibility and performance findings](review/phase16-ux-quality-audit.md)
 records the bounded fixes, deferred work and validation limits.
 

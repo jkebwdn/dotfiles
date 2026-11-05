@@ -39,7 +39,7 @@ class Hyprland(Adapter):
 class Ghostty(Adapter):
     id, label, executable = 'ghostty', 'Ghostty', 'ghostty'
     config_path = 'ghostty/config.ghostty'
-    version = 3
+    version = 4
     boundary = 'Reload required — Ghostty reload_config (Ctrl+Shift+,)'
 
     def plan(self, store, options):
@@ -59,16 +59,12 @@ class Ghostty(Adapter):
         if policy['managed']:
             text += 'background-opacity = ' + format(policy['backgroundOpacity'], '.6g') + '\n'
             text += 'background-opacity-cells = false\n'
-            # GTK 4.24 advertises ext-background-effect even without a blur region.
-            # Ghostty 1.3.1 needs an explicit backdrop request. This provider is
-            # loaded only inside Ghostty; .window is its main-window CSS class.
-            # GTK 4.24 gskblurutils.c requires radius >= 20 to emit a region.
-            # Hyprland uses the requested region, not this CSS radius: strength
-            # remains compositor-owned. Keep the request stable across toggles;
-            # the immutable no-blur rule independently gates participation.
-            css_path = (store.current(self.id) if store else Path('.')) / 'background-blur.css'
-            text += 'gtk-custom-css = ' + str(css_path) + '\n'
-            files['background-blur.css'] = '/* MAGI: Ghostty-only compositor blur request. */\nwindow.window { backdrop-filter: blur(20px); }\n'
+            # Alpha belongs to Ghostty; blur belongs to Hyprland.
+            # GTK 4.24 also requires a fresh Ghostty process launched with
+            # GDK_WAYLAND_DISABLE=ext_background_effect_manager_v1; otherwise
+            # its empty protocol region suppresses compositor-native blur.
+            # The Ghostty Stow package supplies the application launch wrapper.
+            text += 'background-blur = false\n'
         # Releasing ownership omits these keys, so the existing operator config wins.
         return {**files, 'colors.conf': text}
 

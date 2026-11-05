@@ -1,6 +1,6 @@
 """Capabilities, not claims of native acceptance or running-process detection."""
 CAPABILITIES = [
- dict(id='ghostty', label='Ghostty', support='reload-required', blur='supported', detail='Native background alpha; reload with Ctrl+Shift+,. GTK blur request and the Ghostty-only rule work together. Native four-state transparency/blur acceptance passed on Ghostty 1.3.1 / GTK 4.24.1.'),
+ dict(id='ghostty', label='Ghostty', support='reload-required', blur='supported', detail='Native background transparency with Hyprland blur. Fully quit and reopen Ghostty once after installing the launch integration; subsequent appearance changes use normal config reload.'),
  dict(id='zen', label='Zen', support='partial', blur='deferred', detail='Linux chrome transparency exists; current hybrid theme and workspace colours need native verification. Web content unchanged. Restart required; no alpha output yet.'),
  dict(id='gtk', label='GTK / Thunar', support='partial', blur='deferred', detail='Nested view, toolbar and dialog backgrounds need coherent styling; transparency deferred. No broad transparent CSS.'),
  dict(id='neovim', label='Neovim', support='inherits-host', blur='via-host', detail='Normal and NormalNC already use NONE. Floating panels, selections and other explicit backgrounds remain opaque.'),

@@ -72,6 +72,7 @@ def suites():
     py('daily-polish/run.py')
     js('daily-polish/schema.cjs')
     py('fetch/run.py')
+    py('ghostty-launch.py')
     py('native_lock.py')
     return result
 

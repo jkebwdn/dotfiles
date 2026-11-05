@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import tempfile
 import unittest
 from unittest.mock import Mock, patch
 sys.dont_write_bytecode = True
@@ -137,10 +138,11 @@ class Transactions(unittest.TestCase):
             self.f.request('application-appearance',policy=dict(managed=True,backgroundOpacity=.85,blurEnabled=True))
             self.f.request('apply')
             colors=(self.store.current('ghostty')/'colors.conf').read_text()
-            css=(self.store.current('ghostty')/'background-blur.css').read_text()
             self.assertIn('background-opacity = 0.85',colors)
             self.assertIn('background-opacity-cells = false',colors)
-            self.assertIn('20px',css)
+            self.assertIn('background-blur = false',colors)
+            self.assertNotIn('gtk-custom-css',colors)
+            self.assertFalse((self.store.current('ghostty')/'background-blur.css').exists())
             self.f.request('application-appearance',policy=dict(managed=True,backgroundOpacity=.9,blurEnabled=True))
             updated=(self.store.current('ghostty')/'colors.conf').read_text()
             self.assertEqual(colors.replace('0.85','0.9'),updated)
@@ -181,6 +183,22 @@ class GhosttyDispatch(unittest.TestCase):
     def test_running_dispatches_parameterless_action_to_verified_unique_owner(self):
         r=self.ex.ghostty();self.assertEqual(r['status'],'reload_requested')
         self.bus.reload.assert_called_once_with(':1.55')
+
+    def test_magi_wrapper_resolves_running_binary_for_reload(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home=Path(tmp);wrapper=home/'.local/bin/ghostty'
+            wrapper.parent.mkdir(parents=True);wrapper.write_text('# wrapper fixture')
+            with patch('theme_activation.executor.Path.home',return_value=home), patch('theme_activation.executor.shutil.which',return_value=str(wrapper)), patch('theme_activation.executor.Path.is_file',return_value=True):
+                self.assertEqual(self.ex.ghostty()['status'],'reload_requested')
+            self.ex.processes.assert_called_once_with(Path('/usr/bin/ghostty').resolve())
+            self.bus.reload.assert_called_once_with(':1.55')
+
+    def test_unrecognized_wrapper_does_not_assume_binary_identity(self):
+        with patch('theme_activation.executor.shutil.which',return_value='/other/ghostty-wrapper'):
+            self.ex.processes.return_value=[]
+            self.assertEqual(self.ex.ghostty()['status'],'next_launch')
+        self.ex.processes.assert_called_once_with(Path('/other/ghostty-wrapper').resolve())
+        self.bus.reload.assert_not_called()
 
     def test_absent_never_connects_or_starts(self):
         self.ex.processes.return_value=[]

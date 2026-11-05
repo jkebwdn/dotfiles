@@ -54,3 +54,18 @@ Older shell references in research/checkpoints are historical; the current shell
 is MAGI. See [current documentation](magi/docs/README.md) for ownership and limitations
 and the [closeout policy](magi/docs/phase-closeout.md) for ephemeral worktrees and
 exact-path staging. `~/dotfiles` remains the persistent source checkout.
+
+## Ghostty compositor-blur candidate
+
+The Ghostty Stow package includes an application launch wrapper and desktop entry.
+In Hyprland it negotiates GTK without the background-effect protocol, leaving
+transparent-window blur to Hyprland; MAGI generates background alpha with native
+Ghostty blur disabled. The user's `~/.local/bin` must precede `/usr/bin` on PATH.
+A complete Ghostty quit/reopen is required once after installation, including any
+single-instance owner. Direct `/usr/bin/ghostty` and direct D-Bus activation bypass
+the wrapper. No session-wide GPU/environment settings are installed.
+
+Normal MAGI launch, blur responsiveness and theme switch/restore passed native
+acceptance on 2026-11-05. The deployed change awaits commit approval.
+The separate MAGI Lua layer-rule experiment is test-only. See the
+[blur audit](magi/docs/research/intel-blur-architecture.md).

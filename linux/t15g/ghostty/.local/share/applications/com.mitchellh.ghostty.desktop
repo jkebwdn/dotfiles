@@ -1,0 +1,28 @@
+# Ghostty desktop entry (MIT); see ghostty-desktop-LICENSE in the source Stow package.
+# Use the PATH wrapper before GTK starts; retain Ghostty single-instance routing.
+[Desktop Entry]
+Version=1.0
+Name=Ghostty
+Type=Application
+Comment=A terminal emulator
+TryExec=ghostty
+Exec=ghostty --gtk-single-instance=true
+Icon=com.mitchellh.ghostty
+Categories=System;TerminalEmulator;
+Keywords=terminal;tty;pty;
+StartupNotify=true
+StartupWMClass=com.mitchellh.ghostty
+Terminal=false
+Actions=new-window;
+X-GNOME-UsesNotifications=true
+X-TerminalArgExec=-e
+X-TerminalArgTitle=--title=
+X-TerminalArgAppId=--class=
+X-TerminalArgDir=--working-directory=
+X-TerminalArgHold=--wait-after-command
+DBusActivatable=false
+X-KDE-Shortcuts=Ctrl+Alt+T
+
+[Desktop Action new-window]
+Name=New Window
+Exec=ghostty --gtk-single-instance=true

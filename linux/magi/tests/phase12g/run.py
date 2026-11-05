@@ -9,7 +9,7 @@ SERVICES=ROOT/'.config/quickshell/magi/services';sys.path.insert(0,str(SERVICES)
 from application_appearance.policy import DEFAULT,normalize
 from application_appearance.planner import plan,toggle_lua
 from application_appearance.registry import CAPABILITIES
-from application_appearance.executor import BlurExecutor,BUILD,GenerationChanged
+from application_appearance.executor import BlurExecutor,BUILD,GenerationChanged,compatible_version
 from application_appearance.coordinator import ApplicationAppearanceCoordinator,validate_ghostty
 from theme_orchestrator.storage import Store
 from theme_orchestrator.coordinator import Orchestrator
@@ -68,11 +68,37 @@ assert(count==1 and effect.enabled==false and effect.no_blur==true)
   self.assertIsNone(re.search(r'\*\s*\{[^}]*background(?:-color)?\s*:\s*(?:transparent|rgba)',output))
  def test_api_blank_errors_and_toggle(self):
   sig=BUILD+'_123_456';generation='12345678-1234-1234-1234-123456789abc';snapshot='\n'.join([sig,generation,'false'])
-  with patch.dict(os.environ,HYPRLAND_INSTANCE_SIGNATURE=sig),patch.object(BlurExecutor,'call',side_effect=[BUILD,'[""]',snapshot]) as call:
+  with patch.dict(os.environ,HYPRLAND_INSTANCE_SIGNATURE=sig),patch.object(BlurExecutor,'call',side_effect=['Hyprland 0.56.2 built at '+BUILD,'[""]',snapshot]) as call:
    b=BlurExecutor();ctx=b.read();self.assertFalse(ctx['enabled']);self.assertIn('rule:is_enabled()',call.call_args.args[-1])
   self.assertEqual(toggle_lua(True),'magi_application_background.rule:set_enabled(true)')
-  with patch.dict(os.environ,HYPRLAND_INSTANCE_SIGNATURE=sig),patch.object(BlurExecutor,'call',side_effect=[BUILD,'["real error"]']):
+  with patch.dict(os.environ,HYPRLAND_INSTANCE_SIGNATURE=sig),patch.object(BlurExecutor,'call',side_effect=['Hyprland 0.56.2 built at '+BUILD,'["real error"]']):
    with self.assertRaisesRegex(RuntimeError,'real error'):BlurExecutor().read()
+ def test_audited_release_parser(self):
+  for text in ['Hyprland 0.56.0 built from branch v0.56.0','Hyprland 0.56.2 built at '+BUILD,
+               'Hyprland 0.57.0 built from branch v0.57.0 at commit 0aa6745 clean',
+               'Hyprland 0.57.12','v0.57.0','Hyprland v0.57.3']:
+   with self.subTest(text=text):self.assertTrue(compatible_version(text))
+  for text in ['',BUILD,'garbage Hyprland 0.57.0','Hyprland 0.57','Hyprland 0.58.0',
+               'Hyprland 1.0.0','Hyprland 0.55.9','Hyprland 0.57.0-rc1','v0.57.0junk','v0.057.0']:
+   with self.subTest(text=text):self.assertFalse(compatible_version(text))
+ def test_057_readback_and_runtime_failures(self):
+  sig='0aa6745f705f2c4b0a5004eb019ef76e5bbdb426_123_456'
+  gen='12345678-1234-1234-1234-123456789abc'
+  snap='\n'.join([sig,gen,'true'])
+  with patch.dict(os.environ,HYPRLAND_INSTANCE_SIGNATURE=sig):
+   e=BlurExecutor()
+   with patch.object(e,'call',side_effect=['Hyprland 0.57.0','[""]',snap]):ctx=e.read()
+   with patch.object(e,'call',side_effect=['ok','Hyprland 0.57.0','[""]',snap]):
+    self.assertTrue(e.set(True,ctx)['enabled'])
+   with patch.object(e,'call',return_value='runtime rejected'):
+    with self.assertRaisesRegex(RuntimeError,'runtime rejected'):e.set(True,ctx)
+   with patch.object(e,'call',side_effect=['ok','Hyprland 0.57.0','[""]',snap.replace('true','false')]):
+    with self.assertRaisesRegex(RuntimeError,'readback mismatch'):e.set(True,ctx)
+   with patch.object(e,'call',return_value='Hyprland 0.58.0') as call:
+    with self.assertRaisesRegex(RuntimeError,'audited'):e.read()
+    self.assertEqual(call.call_count,1)
+   with patch('application_appearance.executor.subprocess.run',side_effect=FileNotFoundError('hyprctl')):
+    with self.assertRaises(FileNotFoundError):e.read()
  def test_generated_ghostty_validates(self):
   files=ADAPTERS['ghostty'].render(resolve('catppuccin-mocha'),None,dict(managed=True,backgroundOpacity=.85))
   validate_ghostty(files)
@@ -82,7 +108,7 @@ assert(count==1 and effect.enabled==false and effect.no_blur==true)
    p=resolve(theme);base=adapter.render(p,None);managed=adapter.render(p,None,dict(managed=True,backgroundOpacity=.85))
    self.assertEqual(managed,adapter.render(p,None,dict(managed=True,backgroundOpacity=.85)))
    alpha_lines=[l for l in managed['colors.conf'].splitlines(True) if l.startswith('background-opacity')]
-   self.assertEqual(''.join(l for l in managed['colors.conf'].splitlines(True) if not l.startswith(('background-opacity','gtk-custom-css'))),base['colors.conf'])
+   self.assertEqual(''.join(l for l in managed['colors.conf'].splitlines(True) if not l.startswith(('background-opacity','background-blur'))),base['colors.conf'])
    self.assertEqual(alpha_lines,['background-opacity = 0.85\n','background-opacity-cells = false\n'])
    self.assertEqual(adapter.render(p,None,DEFAULT),base)
  def test_full_render_matrix(self):
@@ -98,7 +124,7 @@ assert(count==1 and effect.enabled==false and effect.no_blur==true)
       validate_ghostty(files)
       if not managed:self.assertEqual(files,base)
       else:
-       stripped=''.join(line for line in files['colors.conf'].splitlines(True) if not line.startswith(('background-opacity','gtk-custom-css')))
+       stripped=''.join(line for line in files['colors.conf'].splitlines(True) if not line.startswith(('background-opacity','background-blur')))
        self.assertEqual(stripped,base['colors.conf'])
  def test_shared_surface_boundaries(self):
   root=ROOT/'.config/quickshell/magi'
@@ -113,27 +139,21 @@ assert(count==1 and effect.enabled==false and effect.no_blur==true)
    self.assertNotIn('BackgroundEffect.blurRegion: mask',code)
   self.assertNotIn('hl.layer_rule', '\n'.join(p.read_text() for p in (root/'services/application_appearance').glob('*.py')))
   self.assertNotIn('passes=',(root/'services/global_blur.py').read_text())
- def test_ghostty_blur_request_scope_and_parser(self):
-  import gi
-  gi.require_version('Gtk','4.0')
-  from gi.repository import Gtk
+ def test_ghostty_alpha_only_compositor_candidate(self):
   adapter=ADAPTERS['ghostty'];palette=resolve('nord')
   on=adapter.render(palette,None,dict(managed=True,blurEnabled=True))
   off=adapter.render(palette,None,dict(managed=True,blurEnabled=False))
-  self.assertEqual(on,off) # runtime rule, not stylesheet churn, toggles blur
-  css=on['background-blur.css']
-  self.assertIn('window.window { backdrop-filter: blur(20px); }',css)
-  # GTK 4.24 BACKGROUND_BLUR_THRESHOLD: smaller valid CSS emits no region.
-  import re
-  self.assertGreaterEqual(float(re.search(r'blur\((\d+)px\)',css)[1]),20)
-  for forbidden in ['background-color:', 'opacity:', '* {', 'color:']:
-   self.assertNotIn(forbidden,css)
-  provider=Gtk.CssProvider();errors=[]
-  provider.connect('parsing-error',lambda p,s,e:errors.append(str(e)))
-  provider.load_from_data(css.encode());self.assertEqual(errors,[])
+  self.assertEqual(on,off) # existing narrow exclusion rule toggles participation
+  self.assertEqual(set(on),{'colors.conf'})
+  self.assertIn('background-blur = false\n',on['colors.conf'])
+  self.assertIn('background-opacity = 1\n',on['colors.conf'])
+  self.assertNotIn('gtk-custom-css',on['colors.conf'])
+  self.assertNotIn('backdrop-filter',''.join(on.values()))
+  validate_ghostty(on)
   released=adapter.render(palette,None,DEFAULT)
   self.assertNotIn('background-blur.css',released)
   self.assertNotIn('gtk-custom-css',released['colors.conf'])
+  self.assertNotIn('background-blur',released['colors.conf'])
 
 class Transactions(unittest.TestCase):
  def setUp(self):

@@ -1,7 +1,10 @@
-"""Pinned fixed-rule toggle only. No application/window opacity API."""
+"""Audited Lua fixed-rule toggle only. No application/window opacity API."""
 import json, os, re, subprocess
 from .planner import HANDLE, toggle_lua
 BUILD = 'efb50993780079460b0cbed1363e2166a2de1d9f'
+def compatible_version(output):
+    match = re.match(r'\A(?:Hyprland\s+v?|v)(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?=\s|$)', output.strip())
+    return bool(match and tuple(map(int, match.groups()[:2])) in ((0, 56), (0, 57)))
 class GenerationChanged(RuntimeError): pass
 class BlurExecutor:
     def __init__(self): self.instance=os.environ.get('HYPRLAND_INSTANCE_SIGNATURE','')
@@ -11,7 +14,7 @@ class BlurExecutor:
         if p.returncode: raise RuntimeError((p.stderr or p.stdout).strip())
         return p.stdout.strip()
     def read(self):
-        if BUILD not in self.call('version'): raise RuntimeError('Unaudited Hyprland build')
+        if not compatible_version(self.call('version')): raise RuntimeError('Hyprland appearance effects require audited 0.56–0.57 Lua APIs')
         errors=json.loads(self.call('-j','configerrors'))
         if not isinstance(errors,list) or any(not isinstance(e,str) for e in errors): raise RuntimeError('Invalid configuration diagnostics')
         errors=[e.strip() for e in errors if e.strip()]

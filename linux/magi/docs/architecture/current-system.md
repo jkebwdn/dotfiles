@@ -159,3 +159,14 @@ The [adapter audit and native acceptance gate](../review/hyprland-057.md) record
 0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
 and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
 The operator approved closeout. Settings schema stays 22.
+
+## Intel blur review candidate (2026-11-05)
+
+Ghostty alpha plus compositor-owned blur passed native A/B with blur retained and
+improved typing/workspace responsiveness. The final proposal retains MAGI's painted
+regions: Lua layer rules looked correct but used more compositor engine time with
+no observed responsiveness benefit. The Ghostty launch integration and 0.57 effects
+fix are deployed and passed normal-launch and theme-switch/restore acceptance
+after a full Ghostty quit/reopen. The reload executor identifies the real binary
+behind the wrapper and retains its existing D-Bus owner guards. Commit approval
+is pending. See [evidence and limits](../research/intel-blur-architecture.md).

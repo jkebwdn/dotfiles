@@ -58,3 +58,13 @@ The [installed integration](review/lock-fingerprint-production.md) passes intern
 visual, fingerprint/password and suspend/resume acceptance. Physical external-monitor
 acceptance is deferred because no monitor is available. Synthetic topology tests
 pass; service-loss/removal/reload evidence is synthetic, not hardware injection.
+
+## Blur architecture deployment acceptance (2026-11-05)
+
+Ghostty compositor-only A/B and the MAGI layer comparison are complete. Retain the
+existing MAGI regions; no measured benefit justifies replacing them. The scoped
+launch integration passed normal-launch, appearance-control and theme-switch/restore
+acceptance on 2026-11-05. Commit approval is pending. Its environment is inherited
+by terminal descendants; direct binary or
+D-Bus activation bypasses the wrapper. Existing rounded-edge pixelation was observed
+but its cause is unproven. Schema remains 22. See [audit](research/intel-blur-architecture.md).

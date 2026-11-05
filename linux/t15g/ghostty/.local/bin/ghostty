@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""Use Hyprland compositor blur for Ghostty; leave session/GPU routing untouched."""
+import os
+import re
+import sys
+
+
+def launch_environment(original):
+    env = dict(original)
+    if env.get("HYPRLAND_INSTANCE_SIGNATURE"):
+        protocol = "ext_background_effect_manager_v1"
+        disabled = [v for v in re.split(r"[:;,\s]+", env.get("GDK_WAYLAND_DISABLE", "")) if v]
+        if protocol not in disabled:
+            disabled.append(protocol)
+        env["GDK_WAYLAND_DISABLE"] = ",".join(disabled)
+    return env
+
+
+if __name__ == "__main__":
+    # Explicit binary prevents recursion through this PATH wrapper. Preserve
+    # argv, descriptors, exit status and all existing GPU/PRIME variables.
+    os.execve("/usr/bin/ghostty", ["/usr/bin/ghostty", *sys.argv[1:]], launch_environment(os.environ))

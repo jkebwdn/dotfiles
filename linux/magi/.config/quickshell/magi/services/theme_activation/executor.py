@@ -66,6 +66,11 @@ class Executor:
         executable=shutil.which('ghostty')
         if not executable: return result('next_launch', 'Ghostty is not installed/running.')
         executable=Path(executable).resolve()
+        # The installed MAGI launcher execs this audited Arch binary. Match
+        # /proc/PID/exe to the ELF, while retaining UID/bus-owner checks below.
+        wrapper=Path.home()/'.local/bin/ghostty'
+        if wrapper.is_file() and executable==wrapper.resolve() and Path('/usr/bin/ghostty').is_file():
+            executable=Path('/usr/bin/ghostty').resolve()
         processes=self.processes(executable)
         if not processes: return result('next_launch', 'Ready for the next Ghostty launch.')
         bus=self.bus_factory();owner=bus.owner('com.mitchellh.ghostty')
