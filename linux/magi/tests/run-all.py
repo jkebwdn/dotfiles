@@ -74,6 +74,7 @@ def suites():
     py('fetch/run.py')
     py('ghostty-launch.py')
     py('stow.py')
+    py('thunar/run.py')
     py('native_lock.py')
     return result
 

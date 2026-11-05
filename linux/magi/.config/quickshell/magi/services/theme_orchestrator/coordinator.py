@@ -48,7 +48,7 @@ class Orchestrator:
                     raise Conflict('Integration was removed outside MAGI')
 
     def render(self, adapter, palette, appearance=None):
-        if adapter.id == 'ghostty':
+        if adapter.id in ('ghostty', 'gtk'):
             policy = self.store.load().get('applicationAppearance') if appearance is None else appearance
             files = adapter.render(palette, self.store, policy)
         else:
@@ -120,8 +120,8 @@ class Orchestrator:
             self.store.save(state)
 
     def disable(self, state, target):
-        if target == 'ghostty' and state.get('applicationAppearance', {}).get('managed'):
-            raise Conflict('Release application appearance before removing Ghostty integration')
+        if target in ('ghostty', 'gtk') and state.get('applicationAppearance', {}).get('managed'):
+            raise Conflict('Release application appearance before removing '+ADAPTERS[target].label+' integration')
         record = state['targets'].setdefault(target, {})
         if any(i.get('kind') not in ('bootstrap', 'gsettings', 'symlink')
                and bootstrap.inside_git(i['resolved']) for i in record.get('edits', [])):
@@ -235,20 +235,20 @@ class Orchestrator:
             if op == 'application-appearance':
                 from application_appearance.coordinator import ApplicationAppearanceCoordinator
                 from application_appearance.executor import BlurExecutor
-                before = state['targets'].get('ghostty', {}).get('generation')
+                before = {key: row.get('generation') for key,row in state['targets'].items()}
                 outcome = ApplicationAppearanceCoordinator(self, BlurExecutor(), validator=ADAPTERS['ghostty'].validate).apply(state, request.get('policy'), palette)
                 if outcome.get('ok') and outcome.get('status') != 'released':
                     state = self.store.load()
-                    record = state['targets']['ghostty']
                     from .palette import fingerprint as generation_id
-                    generation = generation_id([palette['fingerprint'],state.get('applicationAppearance'),record['generation']])
-                    candidates = {'ghostty':dict(adapter=ADAPTERS['ghostty'],digest=record['generation'],record=record,palette=palette)}
+                    candidates = {key:dict(adapter=ADAPTERS[key],digest=state['targets'][key]['generation'],record=state['targets'][key],palette=palette) for key in outcome['publishedTargets']}
+                    generation = generation_id([palette['fingerprint'],state.get('applicationAppearance'),{key:c['digest'] for key,c in candidates.items()}])
                     activation = self.activation.activate_published(candidates,generation,
-                        changed={'ghostty':before != record['generation']})
+                        changed={key:before.get(key) != c['digest'] for key,c in candidates.items()})
                     self.store.save(state)
                     row = activation.get('targets', {}).get('ghostty', {})
-                    outcome.update(status=row.get('status','reload-required'), activation=row,
-                                   error=row.get('detail','') if row.get('status')=='error' else '')
+                    failed = [item.get('detail','Activation failed') for item in activation.get('targets',{}).values() if item.get('status')=='error']
+                    outcome.update(status='error' if failed else row.get('status','reload-required'), activation=row,
+                                   activationTargets=activation.get('targets',{}), error='; '.join(failed))
                 return outcome
             if state.get('applicationAppearancePending'):
                 raise Conflict('Recover pending application appearance transaction before theme updates')

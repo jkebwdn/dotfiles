@@ -64,13 +64,13 @@ assert(count==1 and effect.enabled==false and effect.no_blur==true)
  def test_registry(self):
   self.assertEqual(len(CAPABILITIES),9)
   self.assertEqual([r['id'] for r in CAPABILITIES if r['support']=='reload-required'],['ghostty'])
-  self.assertEqual(next(r for r in CAPABILITIES if r['id']=='gtk')['blur'],'deferred')
+  self.assertEqual(next(r for r in CAPABILITIES if r['id']=='gtk')['blur'],'supported')
  def test_no_broad_gtk_transparency(self):
   import re
   output='\n'.join(ADAPTERS['gtk'].render(resolve('catppuccin-mocha'),None).values())
   self.assertIsNone(re.search(r'\*\s*\{[^}]*background(?:-color)?\s*:\s*(?:transparent|rgba)',output))
  def test_api_blank_errors_and_toggle(self):
-  sig=BUILD+'_123_456';generation='12345678-1234-1234-1234-123456789abc';snapshot='\n'.join([sig,generation,'false'])
+  sig=BUILD+'_123_456';generation='12345678-1234-1234-1234-123456789abc';snapshot='\n'.join([sig,generation,'false','missing'])
   with patch.dict(os.environ,HYPRLAND_INSTANCE_SIGNATURE=sig),patch.object(BlurExecutor,'call',side_effect=['Hyprland 0.56.2 built at '+BUILD,'[""]',snapshot]) as call:
    b=BlurExecutor();ctx=b.read();self.assertFalse(ctx['enabled']);self.assertIn('rule:is_enabled()',call.call_args.args[-1])
   self.assertEqual(toggle_lua(True),'magi_application_background.rule:set_enabled(true)')
@@ -87,7 +87,7 @@ assert(count==1 and effect.enabled==false and effect.no_blur==true)
  def test_057_readback_and_runtime_failures(self):
   sig='0aa6745f705f2c4b0a5004eb019ef76e5bbdb426_123_456'
   gen='12345678-1234-1234-1234-123456789abc'
-  snap='\n'.join([sig,gen,'true'])
+  snap='\n'.join([sig,gen,'true','missing'])
   with patch.dict(os.environ,HYPRLAND_INSTANCE_SIGNATURE=sig):
    e=BlurExecutor()
    with patch.object(e,'call',side_effect=['Hyprland 0.57.0','[""]',snap]):ctx=e.read()
@@ -171,6 +171,67 @@ class Transactions(unittest.TestCase):
  def tearDown(self):self.tmp.cleanup()
  def apply(self,**kw):
   with self.store.locked():return self.service.apply(self.store.load(),{**DEFAULT,'managed':True,**kw},self.palette)
+ def enroll_gtk(self):
+  state=self.store.load();state['targets']['gtk']={'enabled':True,'edits':[]};self.store.save(state)
+  files,digest=self.orch.render(ADAPTERS['gtk'],self.palette);self.store.publish('gtk',files,digest)
+  self.blur.state['thunarEnabled']=False
+  def set_thunar(value,ctx):
+   if any(ctx[k]!=self.blur.state[k] for k in ('instance','generation')):raise GenerationChanged('new generation')
+   self.blur.state['thunarEnabled']=value
+  self.blur.set_thunar=set_thunar
+  return self.service.snapshot_files('gtk')
+ def test_gtk_alpha_release_and_theme_composition(self):
+  before=self.enroll_gtk()
+  outcome=self.apply(backgroundOpacity=.8,blurEnabled=False)
+  self.assertTrue(outcome['ok'],outcome);self.assertEqual(outcome['publishedTargets'],['ghostty','gtk'])
+  self.assertTrue(self.blur.state['thunarEnabled'])
+  self.assertIn(', 0.8)',self.service.snapshot_files('gtk')['files']['theme/gtk-3.0/gtk.css'])
+  for theme in ['nord','one-light','catppuccin-mocha','everforest-dark-hard']:
+   palette=resolve(theme);files,_=self.orch.render(ADAPTERS['gtk'],palette)
+   self.assertEqual(files['theme/gtk-3.0/gtk.css'],ADAPTERS['gtk'].render(palette,self.store,dict(managed=True,backgroundOpacity=.8,blurEnabled=False))['theme/gtk-3.0/gtk.css'])
+  self.assertTrue(self.apply(managed=False)['ok']);self.assertFalse(self.blur.state['thunarEnabled'])
+  self.assertEqual(self.service.snapshot_files('gtk'),before)
+ def test_gtk_validation_barrier(self):
+  before=self.enroll_gtk()
+  with patch.object(ADAPTERS['gtk'],'validate',side_effect=ValueError('invalid GTK candidate')):
+   result=self.apply(backgroundOpacity=.8)
+  self.assertFalse(result['ok']);self.assertIn('invalid GTK',result['error'])
+  self.assertEqual(self.service.snapshot_files(),self.baseline)
+  self.assertEqual(self.service.snapshot_files('gtk'),before);self.assertEqual(self.blur.calls,[])
+ def test_gtk_partial_publication_restores_both(self):
+  before=self.enroll_gtk();original=self.store.publish;calls=[]
+  def publish(target,*args):
+   result=original(target,*args);calls.append(target)
+   if len(calls)==2:raise RuntimeError('GTK publication fsync failure')
+   return result
+  with patch.object(self.store,'publish',side_effect=publish):result=self.apply(backgroundOpacity=.8)
+  self.assertFalse(result['ok']);self.assertNotIn('rollback failed',result['error'])
+  self.assertEqual(self.service.snapshot_files(),self.baseline)
+  self.assertEqual(self.service.snapshot_files('gtk'),before)
+  self.assertNotIn('applicationAppearancePending',self.store.load())
+ def test_gtk_missing_bootstrap_fails_before_publication(self):
+  before=self.enroll_gtk();self.blur.state['thunarEnabled']=None
+  result=self.apply(backgroundOpacity=.8)
+  self.assertFalse(result['ok']);self.assertIn('Thunar blur bootstrap missing',result['error'])
+  self.assertEqual(self.service.snapshot_files(),self.baseline);self.assertEqual(self.service.snapshot_files('gtk'),before)
+ def test_gtk_partial_blur_failure_restores_both(self):
+  before=self.enroll_gtk();original=self.blur.set_thunar;calls=[]
+  def fail(value,ctx):
+   original(value,ctx);calls.append(value)
+   if len(calls)==1:raise RuntimeError('partial Thunar toggle failure')
+  self.blur.set_thunar=fail;result=self.apply(backgroundOpacity=.8,blurEnabled=False)
+  self.assertFalse(result['ok']);self.assertNotIn('rollback failed',result['error'])
+  self.assertFalse(self.blur.state['enabled']);self.assertFalse(self.blur.state['thunarEnabled'])
+  self.assertEqual(self.service.snapshot_files(),self.baseline);self.assertEqual(self.service.snapshot_files('gtk'),before)
+ def test_gtk_unenrollment_requires_appearance_release(self):
+  self.enroll_gtk();self.assertTrue(self.apply()['ok'])
+  with self.assertRaisesRegex(RuntimeError,'Release application appearance'):self.orch.disable(self.store.load(),'gtk')
+ def test_appearance_activates_both_published_targets(self):
+  self.enroll_gtk()
+  with patch('application_appearance.executor.BlurExecutor',return_value=self.blur),patch.object(self.orch.activation,'activate_published',return_value={'targets':{'ghostty':{'status':'reload_requested'},'gtk':{'status':'next_launch'}}}) as activation:
+   result=self.orch.perform({'op':'application-appearance','theme':'nord','policy':dict(managed=True,backgroundOpacity=.8,blurEnabled=True)})
+  self.assertTrue(result['ok'],result);self.assertEqual(set(activation.call_args.args[0]),{'ghostty','gtk'})
+  self.assertEqual(result['activationTargets']['gtk']['status'],'next_launch')
  def test_enable_update_disable(self):
   self.assertEqual(self.apply(backgroundOpacity=.85,blurEnabled=False)['status'],'reload-required');self.assertTrue(self.blur.state['enabled'])
   self.assertIn('background-opacity = 0.85',self.service.snapshot_files()['files']['colors.conf'])
@@ -182,7 +243,7 @@ class Transactions(unittest.TestCase):
   self.apply(backgroundOpacity=.85)
   p=resolve('rose-pine-dawn');f,_=self.orch.render(ADAPTERS['ghostty'],p)
   self.assertIn('background-opacity = 0.85',f['colors.conf']);self.assertIn(p['terminal']['foreground'],f['colors.conf'])
-  for key in ['gtk','hyprland','zen','neovim','btop']:
+  for key in ['hyprland','zen','neovim','btop']:
    a=ADAPTERS[key];self.assertEqual(self.orch.render(a,p)[0],{**a.render(p,self.store),'palette.json':json.dumps(p,sort_keys=True,indent=2)+'\n'})
  def test_generation_validation_failures(self):
   for attribute in ['render','validator']:

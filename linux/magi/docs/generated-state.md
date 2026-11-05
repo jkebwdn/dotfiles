@@ -13,7 +13,7 @@ None of these runtime stores should be staged.
 | --- | --- | --- | --- |
 | Application theme artifacts | Theme Orchestrator storage + activation coordinator | `$DATA/magi/theme-orchestrator/<target>/generations/<digest>`, `current`, `previous` | Keep active and previous generations. Publisher retains the last two journal entries and refuses pruning of edited/unowned artifacts. Use enrollment/disable transactions, not directory deletion. |
 | Theme ownership and receipts | Theme Orchestrator; ThemeActivationCoordinator | `$STATE/magi/theme-orchestrator`, `$STATE/magi/theme-activation/status.json` | Keep ownership, rollback and activation evidence. Reconciliation uses these to avoid duplicate activation and overwriting user edits. |
-| Ghostty background/transparency | ApplicationAppearanceCoordinator composes through the same Theme Orchestrator store | Ghostty generation above; shared journal | No second writer for generated Ghostty files. Disable through the owner before removing output. |
+| Ghostty / Thunar background transparency | ApplicationAppearanceCoordinator composes through the same Theme Orchestrator store | Ghostty and enrolled GTK generations above; shared journal | Validate both before publication; retain rollback intent and release shared appearance before removing either integration. |
 | Global blur | GlobalBlurService / global_blur.py | `$STATE/magi/global-blur` | Keep captured baseline and pending restoration state; generation identity prevents restoring into another compositor session. |
 | Power/idle policy | Settings power_idle.py | `$STATE/magi/power-idle` | Active config, previous config and pending transaction are recovery state; never clean while a service uses them. |
 | Settings lock / backups | settings/persist.py | `$STATE/magi/settings-locks`, `$STATE/magi/settings-backups` | Preserve locks and backups during work. Back up original content when its schema is older than the outgoing Schema-analyzed document, or when recovering malformed content. Current-schema saves do not create migration backups; retries deduplicate by original content/path. No automatic deletion policy added. |
@@ -30,8 +30,10 @@ None of these runtime stores should be staged.
 Theme Orchestrator renders Ghostty, GTK, Zen, Yazi, Neovim, btop and Hyprland border
 artifacts. Application Appearance composes policy through that publisher rather than
 writing competing output. Global blur manages a separate compositor property.
-Zen workspace colour still requires a manual application step; GTK/Thunar background
-transparency is deferred. Yazi's runtime-owned flavour symlink remains local and exact-ignored.
+Zen workspace colour still requires a manual application step. Thunar background
+alpha composes through its existing GTK theme adapter and applies on relaunch;
+menus/dialogs and foregrounds retain opaque surfaces. See the
+[Thunar/Hub candidate and native evidence](review/thunar-hub-focus.md). Yazi's runtime-owned flavour symlink remains local and exact-ignored.
 
 Lock presentation comes from shared source under `native/lock/qml`, not a second
 generated authorizer. Bar layout is Settings-owned; active Tray items and Super+T
@@ -71,7 +73,7 @@ age alone never proves a generation disposable.
 Normal enable/switch/disable never rewrites these canonical source hooks. Disable
 restores runtime selection/removes owned links and detaches validated current pointers;
 generations remain for recovery. Loaded application colours can remain until its normal
-reload/restart boundary. Ghostty disable still requires release of managed application
+reload/restart boundary. Ghostty/GTK disable requires release of managed application
 appearance first; the background-only transparency architecture is unchanged.
 
 An explicit `migrate-bootstrap` operation under the existing journal lock converts old

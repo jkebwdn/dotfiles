@@ -13,7 +13,7 @@ this bounded source/runtime review; it is not a security certification.
 | P2 | QuickActions polls three status requests every 5s; Brightness polls every 2s | Accepted current behavior; investigate event-driven ownership separately if an observed problem warrants it. Clipboard's bounded queue wait is not another compositor poll. |
 | P2 | Native fingerprint broker uses 10 ms bounded bus dispatch while an attempt is active | Cancellation/deadlines/retry are tested. Event-loop integration would require separate auth review; no change here. |
 | P2 | Ghostty appearance/history can accumulate generations beyond the ordinary two-entry theme journal | Inventory pending/current/previous, ownership and audit recovery references before owner-validated pruning. No age-based cleanup or blind CSS deletion. |
-| P2 | GTK/Thunar native background transparency is deferred; Zen has partial theme/activation support | Do not apply broad opacity or transparent CSS as cleanup. Zen workspace colour remains a deliberate application action. |
+| P2 | Zen has partial theme/activation support | Workspace colour remains a deliberate application action. Thunar background alpha and compositor blur passed native acceptance; GTK changes still require application relaunch. |
 | P2 | Zen can report Playing with missing MPRIS duration until pause/resume | Keep valid-position timer handling; no fabricated duration, unsolicited playback change or extra polling. |
 | P2 | Bar-wide keyboard traversal/focus handoff lacks a complete contract | Preserve current shortcuts; decide keyboard-grab/return behavior separately. |
 | P2 | No reduced-motion policy; some semantic-role text contrast is weak | Requires explicit accessibility/visual choices, not silent palette or animation changes. |

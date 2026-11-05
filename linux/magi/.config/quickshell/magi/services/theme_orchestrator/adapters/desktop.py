@@ -72,6 +72,7 @@ class Ghostty(Adapter):
 class Gtk(Adapter):
     id, label, executable = 'gtk', 'GTK / Thunar', 'thunar'
     config_path = 'gtk-3.0/gtk.css'
+    version = 2
     boundary = 'Relaunch Thunar required; system scheme requested; GTK4 full palette deferred'
 
     def plan(self, store, options):
@@ -116,7 +117,7 @@ class Gtk(Adapter):
                  'before': command(['gsettings', 'get', schema, 'color-scheme']),
                  'after': "'prefer-dark'", 'dynamicScheme': True}]
 
-    def render(self, p, store):
+    def render(self, p, store, appearance=None):
         r = p['roles']
         text = '/* MAGI generated GTK3/Thunar palette v1 */\n'
         text += ''.join(f'@define-color magi_{k} {v};\n' for k, v in r.items())
@@ -130,6 +131,44 @@ class Gtk(Adapter):
         for selector, (bg, fg) in rules.items():
             text += f'{selector} {{ background-color: {r[bg]}; color: {r[fg]}; border-color: {r["border"]}; }}\n'
         text += f'.thunar *:disabled {{ color: {r["muted"]}; }}\n'
+        from application_appearance.policy import normalize
+        policy = normalize(appearance)
+        if policy['managed']:
+            text += self.background_css(r, policy['backgroundOpacity'])
         base = 'gtk-contained-dark.css' if p['dark'] else 'gtk-contained.css'
         theme = '/* MAGI generated named GTK3 theme v1 */\n@import url("resource:///org/gtk/libgtk/theme/Adwaita/' + base + '");\n' + text
         return {'gtk.css': definitions, 'theme/gtk-3.0/gtk.css': theme}
+
+    @staticmethod
+    def background_css(roles, opacity):
+        """One alpha-painted region per main-window background, never widget opacity.
+
+        Thunar 4.20.10 uses an RGBA visual; its main window alone has .thunar.
+        Notebook/scrolled/side-pane containers must not paint an opaque layer
+        underneath the file/sidebar views. Controls, selection, menus and dialogs
+        keep their solid semantic surfaces. No app-side blur request is emitted.
+        """
+        def rgba(role):
+            color = roles[role].lstrip('#')
+            return 'rgba(%s, %.6g)' % (', '.join(str(int(color[i:i+2], 16)) for i in (0, 2, 4)), opacity)
+        rules = [
+            ('window.thunar, window.thunar notebook, window.thunar notebook > stack, '
+             'window.thunar paned, window.thunar scrolledwindow, '
+             'window.thunar viewport', 'transparent'),
+            # GtkTreeView paints its background for the widget and rows. Put
+            # alpha on its scrolled parent once, covering both grid and list.
+            ('window.thunar .standard-view', rgba('background')),
+            ('window.thunar .sidebar', rgba('surface')),
+            ('window.thunar .standard-view .view, window.thunar .sidebar .view', 'transparent'),
+            ('window.thunar toolbar, window.thunar menubar, window.thunar statusbar, '
+             'window.thunar notebook > header, window.thunar .preview-pane', rgba('surface')),
+        ]
+        css = '/* Thunar main-window background alpha; compositor owns blur. */\n'
+        for selector, color in rules:
+            # Adwaita paints separate inactive-window surfaces. Match that state
+            # explicitly, including the root .background:backdrop canvas.
+            selector += ', ' + ', '.join(part.strip() + ':backdrop' for part in selector.split(','))
+            css += selector + ' { background-image: none; background-color: ' + color + '; }\n'
+        # Selected rows remain opaque despite the more-specific base-view selectors.
+        css += 'window.thunar .standard-view .view:selected, window.thunar .sidebar .view:selected, window.thunar .standard-view .view:selected:backdrop, window.thunar .sidebar .view:selected:backdrop { background-color: ' + roles['accent'] + '; color: ' + roles['onAccent'] + '; }\n'
+        return css

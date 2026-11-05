@@ -103,12 +103,12 @@ UI.SettingsPage {
 
     UI.SettingsSection {
         objectName: "applicationSupport"; title: "Application support"; collapsible: true
-        UI.SettingsHelp { text: "MAGI panels update immediately. Ghostty background changes need a configuration reload." }
+        UI.SettingsHelp { text: "MAGI panels update immediately. Ghostty uses a configuration reload; Thunar changes apply after relaunch." }
         Repeater {
             model: [
                 {name:"Ghostty",status:Services.ThemeOrchestrator.targets.find(t => t.id === "ghostty")?.statusLabel || "Applies next launch",detail:"Native background alpha. Safe reload is requested for the running application owner; independent instances may need Reload Configuration. Coloured cells remain opaque."},
                 {name:"Zen",status:"Partial · deferred",detail:"Chrome transparency exists on Linux. Current workspace styling needs verification; webpage content is unchanged."},
-                {name:"GTK / Thunar",status:"Deferred",detail:"Views, toolbars and dialogs need coherent transparency. Existing appearance is preserved."},
+                {name:"GTK / Thunar",status:Services.ThemeOrchestrator.targets.find(t => t.id === "gtk")?.statusLabel || "Applies next launch",detail:"Main-window backgrounds follow shared opacity and compositor blur. Relaunch Thunar after changes. Text, icons, selections, menus and dialogs remain opaque."},
                 {name:"Neovim / btop",status:"Via Ghostty",detail:"Base backgrounds inherit the terminal. Floating panels and deliberate coloured backgrounds remain opaque."},
                 {name:"Yazi / yatline",status:"Partial · via Ghostty",detail:"Default-background areas inherit; explicit cell backgrounds remain intentional."},
                 {name:"Starship / Fastfetch",status:"Via Ghostty",detail:"Terminal output; no independent transparency adapter."}
@@ -124,7 +124,7 @@ UI.SettingsPage {
     UI.SettingsSection {
         objectName: "applicationAdvanced"; title: "Details"; collapsible: true
         UI.SettingsHelp { text: "Unsupported applications stay unchanged. Only painted panel backgrounds use transparency; controls and content keep their colour. The preview illustrates intent." }
-        UI.SettingsHelp { text: "Turning shared appearance off restores individual panel backgrounds and removes the Ghostty override. Reload Ghostty to restore its own configured opacity." }
+        UI.SettingsHelp { text: "Turning shared appearance off restores individual panel backgrounds, removes the Ghostty override and restores opaque Thunar backgrounds. Reload Ghostty and relaunch Thunar." }
         UI.SettingsHelp { visible: Services.ApplicationAppearanceService.error.length>0; text: Services.ApplicationAppearanceService.error }
     }
     UI.SettingsButton { actionKind: "reset"; text: "Reset shared appearance"; onClicked: Services.Settings.resetSection("applicationAppearance") }

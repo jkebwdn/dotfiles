@@ -1,7 +1,7 @@
 """Shared-lock application transaction; Theme Orchestrator remains the sole writer.
 
 No automatic app reload. Published config requires Ghostty's native reload action.
-All runtime calls are confined to the fixed blur handle.
+All runtime calls are confined to the fixed application blur handles.
 """
 import copy, hashlib, json, subprocess, tempfile
 from pathlib import Path
@@ -24,11 +24,11 @@ class ApplicationAppearanceCoordinator:
     def __init__(self, orchestrator, blur, validator=validate_ghostty):
         self.orchestrator=orchestrator;self.store=orchestrator.store;self.blur=blur;self.validator=validator
 
-    def snapshot_files(self):
-        pointer=self.store.current('ghostty')
-        if not pointer.is_symlink(): raise RuntimeError('Enroll Ghostty theme before managing its background')
+    def snapshot_files(self, target='ghostty'):
+        pointer=self.store.current(target)
+        if not pointer.is_symlink(): raise RuntimeError('Enroll '+target+' theme before managing its background')
         root=pointer.resolve()
-        if not root.is_relative_to(self.store.data/'ghostty/generations'): raise RuntimeError('Ghostty generation redirected')
+        if not root.is_relative_to(self.store.data/target/'generations'): raise RuntimeError(target+' generation redirected')
         manifest=json.loads((root/'.manifest.json').read_text());files={}
         for name,digest in manifest['files'].items():
             path=root/name
@@ -37,8 +37,8 @@ class ApplicationAppearanceCoordinator:
             if hashlib.sha256(files[name].encode()).hexdigest()!=digest: raise RuntimeError('Generated config was edited')
         return dict(files=files,digest=root.name)
 
-    def verify_files(self,expected):
-        if self.snapshot_files()!=expected: raise RuntimeError('Published generation readback mismatch')
+    def verify_files(self,expected,target='ghostty'):
+        if self.snapshot_files(target)!=expected: raise RuntimeError('Published generation readback mismatch')
 
     def restore(self,pending):
         current=self.blur.read()
@@ -46,8 +46,11 @@ class ApplicationAppearanceCoordinator:
         # A new config load has its own initially disabled rule: never restore an old flag into it.
         if all(current[k]==ctx[k] for k in ('instance','generation')):
             self.blur.set(ctx['enabled'],ctx)
-        previous=pending['publication']
-        self.store.publish('ghostty',previous['files'],previous['digest']);self.verify_files(previous)
+            if ctx.get('thunarEnabled') is not None:
+                self.blur.set_thunar(ctx['thunarEnabled'],ctx)
+        # Retain recovery of existing Ghostty-only pending journals.
+        for key,previous in pending.get('publications',{'ghostty':pending['publication']}).items():
+            self.store.publish(key,previous['files'],previous['digest']);self.verify_files(previous,key)
         self.store.save(pending['state'])
 
     def apply(self,state,desired,palette):
@@ -63,28 +66,39 @@ class ApplicationAppearanceCoordinator:
             record=state['targets'].get('ghostty',{})
             if not record.get('enabled'): raise RuntimeError('Enable Ghostty in Theme applications first')
             from theme_orchestrator.adapters import ADAPTERS
-            adapter=ADAPTERS['ghostty']
-            self.orchestrator.ready(adapter);self.orchestrator.check_hooks(record)
-            publication=self.snapshot_files()
-            files,digest=self.orchestrator.render(adapter,palette,appearance=policy)
-            self.validator(files)
+            targets=['ghostty'] + (['gtk'] if state['targets'].get('gtk',{}).get('enabled') else [])
+            publications={};candidates={}
+            # Validate every affected output and hook before publication or runtime changes.
+            for key in targets:
+                adapter=ADAPTERS[key]
+                self.orchestrator.ready(adapter);self.orchestrator.check_hooks(state['targets'][key])
+                publications[key]=self.snapshot_files(key)
+                files,digest=self.orchestrator.render(adapter,palette,appearance=policy)
+                (self.validator if key=='ghostty' else adapter.validate)(files)
+                candidates[key]=dict(files=files,digest=digest)
             ctx=self.blur.read()
+            if 'gtk' in targets and ctx.get('thunarEnabled') is None:
+                raise RuntimeError('Thunar blur bootstrap missing; load the canonical Hyprland config first')
             candidate=plan(policy)
-            intent=dict(state=copy.deepcopy(state),publication=publication,blur=ctx)
+            intent=dict(state=copy.deepcopy(state),publication=publications['ghostty'],publications=publications,blur=ctx)
             journal={**state,'applicationAppearancePending':intent};self.store.save(journal)
             pending=intent
-            self.store.publish('ghostty',files,digest)
-            self.verify_files(dict(files=files,digest=digest))
+            for key,c in candidates.items():
+                self.store.publish(key,c['files'],c['digest']);self.verify_files(c,key)
             if ctx['enabled']!=candidate['blurExcluded']:self.blur.set(candidate['blurExcluded'],ctx)
+            if 'gtk' in targets and ctx['thunarEnabled']!=candidate['blurExcluded']:
+                self.blur.set_thunar(candidate['blurExcluded'],ctx)
             verified=self.blur.read()
             if any(verified[k]!=ctx[k] for k in ('instance','generation')): raise GenerationChanged('Configuration changed')
             if verified['enabled']!=candidate['blurExcluded']: raise RuntimeError('Blur state mismatch')
+            if 'gtk' in targets and verified['thunarEnabled']!=candidate['blurExcluded']: raise RuntimeError('Thunar blur state mismatch')
             state['applicationAppearance']=policy
-            record.update(generation=digest,publishedPalette=palette['id'],appliedPalette=None,
-                          result='Reload Ghostty configuration to load background appearance',error='')
+            for key,c in candidates.items():
+                state['targets'][key].update(generation=c['digest'],publishedPalette=palette['id'],appliedPalette=None,
+                          result='Reload Ghostty configuration' if key=='ghostty' else 'Relaunch Thunar to load background appearance',error='')
             state['applicationAppearanceStatus']=dict(status='reload-required',blur=verified)
             self.store.save(state);pending=None
-            return dict(ok=True,status='reload-required',error='',support=CAPABILITIES,
+            return dict(ok=True,status='reload-required',error='',support=CAPABILITIES,publishedTargets=targets,
                         background='published' if policy['managed'] else 'operator configuration restored; reload required',blur=verified)
         except Exception as error:
             detail=str(error)

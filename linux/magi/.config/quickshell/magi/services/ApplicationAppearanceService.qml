@@ -15,6 +15,8 @@ Scope {
     property var outcome: null
     readonly property string desired: JSON.stringify(Settings.data.applicationAppearance)
     onDesiredChanged: if (active) schedule()
+    readonly property bool gtkEnabled: ThemeOrchestrator.targets.some(t => t.id === "gtk" && t.enabled)
+    onGtkEnabledChanged: if (active) schedule()
     function activate() { active = true; schedule() }
     function schedule() { pending = true; debounce.restart() }
     function reconcile() {

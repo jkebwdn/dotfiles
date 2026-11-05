@@ -550,7 +550,7 @@ do
 end
 
 -- MAGI APPLICATION BACKGROUND BEGIN -- after operator rules/includes
--- One immutable Ghostty-only rule. No opacity options or generated include.
+-- Fixed application-specific blur exclusions. No window opacity or generated include.
 do
     local uuid = assert(io.open("/proc/sys/kernel/random/uuid", "r"))
     magi_application_background = {
@@ -558,6 +558,12 @@ do
         rule = hl.window_rule({
             name = "magi-ghostty-background-no-blur",
             match = {class = "^com\\.mitchellh\\.ghostty$"},
+            enabled = false,
+            no_blur = true,
+        }),
+        thunar_rule = hl.window_rule({
+            name = "magi-thunar-background-no-blur",
+            match = {class = "^[Tt]hunar$"},
             enabled = false,
             no_blur = true,
         }),
