@@ -15,7 +15,7 @@ SettingsUI.SettingsPage {
     SettingsUI.EditorSelection {
         id: selection
         familyKeys: ["statusPills", "workspaces"]
-        familyForInstance: function(id) { return id === "workspaces" ? "workspacePills" : "statusPills" }
+        familyForInstance: function(id) { return id === "customImage" ? "artwork" : id === "workspaces" ? "workspacePills" : "statusPills" }
     }
     RowLayout {
         Repeater {
@@ -49,6 +49,10 @@ SettingsUI.SettingsPage {
             Layout.alignment: Qt.AlignTop
             Layout.minimumWidth: 0
             selection: root.selection
+        }
+        SettingsUI.CustomImageSettings {
+            visible: root.mode === "Layout" && selection.instance === "customImage"
+            Layout.fillWidth: true
         }
     }
     ColumnLayout {

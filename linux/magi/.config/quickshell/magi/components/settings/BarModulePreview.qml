@@ -17,9 +17,10 @@ Item {
         id: loader
         anchors.centerIn: parent
         sourceComponent: root.moduleId === "clock" || root.moduleId === "date" ? time
-        : root.moduleId === "tray" ? tray : root.moduleId === "workspaces" ? workspace : root.moduleId === "battery" ? battery
+        : root.moduleId === "customImage" ? customImage : root.moduleId === "tray" ? tray : root.moduleId === "workspaces" ? workspace : root.moduleId === "battery" ? battery
         : root.moduleId === "notifications" || root.moduleId === "clipboard" ? utility : status
     }
+    Component { id: customImage; Bar.CustomImage {} }
     Component { id: tray; Tray.TrayGroup { interactive: false; nativeMenus: false; maximumWidth: 132; items: fixture.items; Tray.TrayPreviewModel { id: fixture } } }
     Component { id: time; Calendar.TimeDatePill { interactive: false; datePart: root.moduleId === "date"; previewText: root.moduleId === "clock" ? "10:24" : "23/10/2026" } }
     Component { id: workspace; Workspaces.Workspaces { preview: true } }

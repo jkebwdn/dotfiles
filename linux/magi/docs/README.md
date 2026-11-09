@@ -7,6 +7,8 @@ Bluetooth pairing support, the curated lock themes and internal designer, and th
 
 ## Current canonical documents
 
+- [Custom Image Bar item and deployment](review/bar-custom-image.md)
+
 - [Thunar backgrounds and Hub focus acceptance](review/thunar-hub-focus.md)
 - [tfm-tui research only](research/tfm-tui.md)
 

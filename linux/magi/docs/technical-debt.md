@@ -36,3 +36,11 @@ per-target atomic with compensation, not a global filesystem transaction.
 
 Optional Bluetooth audio auto-switch remains a policy decision; WirePlumber owns
 routing. It is not a missing cleanup fix. See [current priorities](current-roadmap.md).
+
+Custom Image: the operator confirmed the live visual check passed. Physical mixed-DPI
+output acceptance remains pending. The importer requires installed `python-pyqt6`; optional
+WebP decoding also depends on the host Qt image-format plugin. This host decodes
+GIF/PNG/JPEG; unsupported formats fail import without replacing the selected asset.
+The current Bar catalogue permits one configurable Custom Image item, shared across
+enabled outputs. Multiple independent artwork instances would require a deliberate
+catalogue-instance design. See [candidate evidence](review/bar-custom-image.md).

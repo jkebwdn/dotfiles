@@ -26,7 +26,17 @@ function controlDefinitions() {
         return d
     })
 }
-const barIds = ["clock", "date", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre", "tray"]
+const barIds = ["clock", "date", "customImage", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre", "tray"]
+function validBarImageAsset(asset) {
+    return asset === null || (object(asset)
+        && typeof asset.id === "string" && /^bar-image:[a-f0-9]{64}\.(gif|png|jpg|webp)$/.test(asset.id)
+        && [asset.width, asset.height].every(v => Number.isInteger(v) && v > 0 && v <= 4096)
+        && Array.isArray(asset.bounds) && asset.bounds.length === 4
+        && asset.bounds.every(v => Number.isInteger(v) && v >= 0)
+        && asset.bounds[2] > 0 && asset.bounds[3] > 0
+        && asset.bounds[0] + asset.bounds[2] <= asset.width
+        && asset.bounds[1] + asset.bounds[3] <= asset.height)
+}
 const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar", "albumArt", "hubSelector", "secondaryControl"]
 const controlAccentRoles = ["red", "peach", "yellow", "green", "teal", "blue", "lavender"]
 const controlAccentDefaults = {wifi: "teal", bluetooth: "blue", "power-saver": "green",
@@ -204,7 +214,19 @@ function analyze(input) {
     }
     // Optional item overrides: absent/null keeps the accepted family/foreground.
     // Keep the sparse module map; old documents and appearance resolve unchanged.
-    for (const id of barIds.filter(id => id !== "workspaces")) {
+    const image = effective.bar.modules.customImage
+    if (image !== undefined) {
+        if (!object(image)) { errors.push("bar.modules.customImage: expected object"); delete effective.bar.modules.customImage }
+        else {
+            for (const [key, fallback, good] of [
+                ["asset", null, image.asset === undefined || validBarImageAsset(image.asset)],
+                ["height", 32, image.height === undefined || (Number.isInteger(image.height) && image.height >= 16 && image.height <= 40)],
+                ["trim", true, image.trim === undefined || typeof image.trim === "boolean"]]) {
+                if (!good) { errors.push("bar.modules.customImage." + key + ": invalid value"); image[key] = fallback }
+            }
+        }
+    }
+    for (const id of barIds.filter(id => !["workspaces", "customImage"].includes(id))) {
         const style = effective.bar.modules[id]
         if (style === undefined) continue
         if (!object(style)) { errors.push("bar.modules." + id + ": expected object"); delete effective.bar.modules[id]; continue }

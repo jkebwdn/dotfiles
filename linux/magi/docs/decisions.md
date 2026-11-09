@@ -1164,3 +1164,12 @@ The [adapter audit and native acceptance gate](review/hyprland-057.md) records t
 0.56–0.57 Lua border API policy, verified runtime readback, generated-state status
 and unchanged XDG/bootstrap ownership. Native host acceptance passed with exact border readback and Nord restoration;
 The operator approved closeout. Settings schema stays 22.
+
+## 2026-11-09 — Native Bar artwork, original asset retained
+
+Choose generic Custom Image over an asset-specific module. Use the existing Bar
+model, AssetManager and Settings store. Retain original GIF bytes and crop the QML
+viewport to the alpha union over every frame, avoiding palette/timing/disposal loss.
+Artwork is separate from semantic icons, pill styling and painted pill blur regions.
+Defaults leave existing placements unchanged; first-use configuration follows Date.
+See [review, API evidence and validation](review/bar-custom-image.md).

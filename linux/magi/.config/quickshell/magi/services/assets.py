@@ -12,6 +12,7 @@ import re
 import shutil
 import sys
 import tempfile
+import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -78,6 +79,65 @@ def import_image(value):
     data = path.read_bytes()
     if len(data) > IMAGE_LIMIT: raise ValueError("Avatar exceeds the 5 MiB limit")
     return persist(data, data_root() / "avatars", image_extension(data), "avatar")
+
+
+def import_bar_image(value):
+    """Keep source bytes; measure composited alpha across every frame with Qt.
+
+    No extracted frames or rewritten GIF palette/disposal/timing. The presenter
+    crops a viewport using this union, so later smoke/motion remains visible.
+    """
+    from PyQt6.QtCore import QBuffer, QByteArray, QIODevice
+    from PyQt6.QtGui import QImage, QImageReader
+
+    with local_path(value).open("rb") as source:
+        data = source.read(20 * 1024 * 1024 + 1)
+    if len(data) > 20 * 1024 * 1024:
+        raise ValueError("Image exceeds the 20 MiB limit")
+    buffer = QBuffer()
+    buffer.setData(QByteArray(data))
+    buffer.open(QIODevice.OpenModeFlag.ReadOnly)
+    reader = QImageReader(buffer)
+    extension = bytes(reader.format()).decode("ascii")
+    if extension not in ("gif", "png", "jpeg", "webp"):
+        raise ValueError("Choose a GIF, PNG, JPEG or WebP image")
+    size = reader.size()
+    if not (0 < size.width() <= 4096 and 0 < size.height() <= 4096):
+        raise ValueError("Image dimensions must be between 1 and 4096 pixels")
+    # Animated formats other than GIF are deliberately not silently flattened.
+    if reader.supportsAnimation() and extension != "gif":
+        raise ValueError("Use GIF for animated images")
+    bounds = None
+    frames = 0
+    pixels = 0
+    started = time.monotonic()
+    while reader.canRead():
+        frames += 1
+        pixels += size.width() * size.height()
+        if frames > 500 or pixels > 100_000_000 or time.monotonic() - started > 10:
+            raise ValueError("Image exceeds the animation import budget")
+        frame = reader.read()
+        if frame.isNull() or frame.size() != size:
+            raise ValueError("Cannot decode every image frame")
+        rgba = frame.convertToFormat(QImage.Format.Format_RGBA8888)
+        alpha = bytes(rgba.constBits().asstring(rgba.sizeInBytes()))[3::4]
+        width = size.width()
+        for y in range(size.height()):
+            row = alpha[y * width:(y + 1) * width]
+            if not row.strip(b"\0"):
+                continue
+            left, right = width - len(row.lstrip(b"\0")), len(row.rstrip(b"\0"))
+            bounds = [left, y, right, y + 1] if bounds is None else [
+                min(bounds[0], left), min(bounds[1], y),
+                max(bounds[2], right), max(bounds[3], y + 1)]
+        if not reader.supportsAnimation():
+            break
+    if reader.imageCount() > frames or not frames or bounds is None:
+        raise ValueError("Image is incomplete or entirely transparent")
+    result = persist(data, data_root() / "bar-images", "jpg" if extension == "jpeg" else extension, "bar-image")
+    result["asset"] = {"id": result["assetId"], "width": size.width(), "height": size.height(),
+                       "bounds": [bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1]]}
+    return result
 
 
 def numeric_dimension(value):
@@ -254,6 +314,7 @@ def cache_artwork(value):
 
 def perform(request):
     operation = request.get("op")
+    if operation == "bar-image": return import_bar_image(request["url"])
     if operation == "avatar": return import_image(request["url"])
     if operation == "icon-pack": return import_pack(request["url"])
     if operation == "pack-list": return list_packs()

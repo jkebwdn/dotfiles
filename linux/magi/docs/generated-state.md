@@ -124,3 +124,8 @@ The retired `$STATE/magi/window-appearance` journal is released/unmanaged with n
 ownership and transaction. It has no production consumer; retain it as rollback evidence
 until separately approved cleanup. The active `applicationAppearance` policy and
 `global-blur` journal are different owners and must remain intact.
+
+Custom Image imports use `$DATA/magi/bar-images/<sha256>.<gif|png|jpg|webp>` through
+AssetManager. Original bytes are retained; alpha bounds and display preferences
+live in untracked Settings. Clearing/removing an item does not delete its imported
+asset. Preserve referenced imports; no automatic garbage collector is introduced.

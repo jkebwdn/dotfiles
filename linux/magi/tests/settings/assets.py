@@ -5,6 +5,7 @@ import importlib.util
 import os
 from pathlib import Path
 import tempfile
+from PyQt6.QtGui import QImage, QColor
 
 root = Path(__file__).resolve().parents[2]
 source = root / '.config/quickshell/magi/services/assets.py'
@@ -21,6 +22,30 @@ with tempfile.TemporaryDirectory(prefix='magi-assets-') as temporary:
     avatar = assets.perform({'op':'avatar','url':png.as_uri()})
     assert avatar['assetId'].startswith('avatar:') and Path(avatar['url'][7:]).is_file()
     assert assets.perform({'op':'avatar','url':png.as_uri()})['assetId'] == avatar['assetId']
+
+    gif = root / 'tests/bar-image/alpha.gif'
+    imported = assets.perform({'op':'bar-image', 'url':gif.as_uri()})
+    assert imported['asset']['bounds'] == [1, 6, 20, 13], imported
+    assert imported['asset']['width'] == imported['asset']['height'] == 24
+    assert Path(imported['url'][7:]).read_bytes() == gif.read_bytes(), 'GIF remains byte-identical'
+    assert assets.perform({'op':'bar-image', 'url':gif.as_uri()}) == imported
+    static = stage / 'alpha.png'
+    frame = QImage(24, 24, QImage.Format.Format_RGBA8888)
+    frame.fill(QColor(0, 0, 0, 0))
+    frame.setPixelColor(3, 4, QColor(20, 40, 60, 128))
+    frame.save(str(static))
+    result = assets.import_bar_image(str(static))
+    assert result['asset']['bounds'] == [3, 4, 1, 1]
+    assert Path(result['url'][7:]).read_bytes() == static.read_bytes(), 'partial alpha is unchanged'
+    frame.fill(QColor(0, 0, 0, 0)); frame.save(str(static))
+    for rejected in [str(static), 'https://example.com/image.gif', 'file://example.com/image.gif']:
+        try: assets.import_bar_image(rejected)
+        except ValueError: pass
+        else: raise AssertionError('invalid image accepted: ' + rejected)
+    broken = stage / 'broken.gif'; broken.write_bytes(gif.read_bytes()[:40])
+    try: assets.import_bar_image(str(broken))
+    except ValueError: pass
+    else: raise AssertionError('truncated GIF accepted')
 
     svg = stage / 'icon.svg'
     svg.write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M1 1h22v22H1z"/></svg>')

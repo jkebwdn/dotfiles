@@ -130,7 +130,7 @@ PanelWindow {
         id: pillBlurRegions
         model: [...(leftSection.opacity > 0 ? leftSection.children : []),
             ...(centerSection.opacity > 0 ? centerSection.children : []),
-            ...(statusSurface.phase === 0 ? statusSurface.paintedPills : [])].filter(child => child["item"] !== undefined && child.item && child.visible)
+            ...(statusSurface.phase === 0 ? statusSurface.paintedPills : [])].filter(child => child["item"] !== undefined && child.item && child.visible && child.modelData !== "customImage")
         delegate: PaintedBlurRegion {
             required property var modelData
             target: modelData.item
@@ -190,6 +190,7 @@ PanelWindow {
     readonly property var pluginComponents: ({
         "clock": clockComponent,
         "date": dateComponent,
+        "customImage": customImageComponent,
         "workspaces": workspacesComponent,
         "volume": volumeComponent,
         "wifi": wifiComponent,
@@ -221,6 +222,7 @@ PanelWindow {
             Component.onDestruction: { bar.closeTray(); if (bar.trayPresenter === tray) bar.trayPresenter = null }
         }
     }
+    Component { id: customImageComponent; CustomImage {} }
     TrayUI.TrayOverflow {
         id: trayOverflow
         objectName: "trayOverflowSurface"

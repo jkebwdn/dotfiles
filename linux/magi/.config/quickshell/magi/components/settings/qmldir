@@ -25,6 +25,7 @@ PreviewControlGrid 1.0 PreviewControlGrid.qml
 BarModulePreview 1.0 BarModulePreview.qml
 
 BarInspector 1.0 BarInspector.qml
+CustomImageSettings 1.0 CustomImageSettings.qml
 
 EditorSelection 1.0 EditorSelection.qml
 

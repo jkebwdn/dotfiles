@@ -223,3 +223,14 @@ Hub's retained window claims layer-shell keyboard focus while a searchable mode 
 visible; existing item-focus callbacks select the current search field. Settings and
 Notifications retain their previous on-demand policy. Search/query persistence,
 backend activation, mouse controls and Escape remain separate from focus ownership.
+
+## Custom Image Bar
+
+The reusable `customImage` catalogue item uses existing region ordering, sparse
+per-item Settings and output-local Bar creation. Its artwork family has no pill
+styling or blur region. Managed originals remain byte-identical; all-frame alpha
+bounds drive an optional native QML crop. See [implementation and acceptance limits](../review/bar-custom-image.md).
+
+Custom Image native visual acceptance is complete. The currently saved asset follows
+Date at 20px; Settings offers a 16–40px slider and precise stepper. User assets and
+preferences remain outside Git, and the schema stays at 22.

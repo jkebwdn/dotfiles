@@ -816,3 +816,13 @@ The gallery reuses installed/previously verified QtQuick GridLayout, AbstractBut
 keyboard navigation and the shared LockScreen QML renderer. It adds no Quickshell API.
 `Quickshell.env("MAGI_LOCK_DESIGNER")` selects the internal page only when set to `1`.
 `tests/runtime-visual/lock-themes.qml` exercises production components offscreen.
+
+## 2026-11-09 — Custom Image Bar item
+
+Verified against Quickshell 0.3.2 / Qt 6.12.0: QtQuick AnimatedImage decodes/loops GIF
+with source alpha; Image handles static artwork. Native offscreen pixel tests cover
+scaling, partial alpha and later-frame crop content. Derive sourceSize from validated
+asset dimensions/display scale (bounded by original dimensions), never the loaded
+Image's provisional width: that can recursively change implicit size during loading.
+The crop uses an unpainted Item viewport, and the pill blur collector excludes it.
+[API sources, installed versions and tests](review/bar-custom-image.md).

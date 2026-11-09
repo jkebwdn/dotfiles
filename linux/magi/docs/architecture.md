@@ -955,3 +955,10 @@ layout engine. The designer is developer-gated; normal Settings is a gallery and
 small relevant editor. Schema 22 and authentication/service ownership are retained.
 Internal native acceptance passed; physical external-monitor acceptance remains
 deferred. Evidence and compatibility details are in the review record.
+
+## 2026-11-09 — Custom Image Bar item
+
+An artwork item joins the existing Bar catalogue/regions and sparse module Settings.
+The importer retains originals and measures the union of composited alpha bounds;
+QtQuick renders/animates an unpainted crop viewport. Ownership and remaining native
+acceptance are recorded in [the candidate review](review/bar-custom-image.md).

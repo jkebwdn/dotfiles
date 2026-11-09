@@ -19,6 +19,7 @@ Item {
     readonly property var labels: ({
             clock: "Time",
             date: "Date",
+            customImage: "Custom Image",
             workspaces: "Workspaces",
             volume: "Volume",
             wifi: "Wi-Fi",
@@ -37,9 +38,15 @@ Item {
                 label: !editing && id === "workspaces" ? "Workspace pills" : labels[id],
                 lane: lane,
                 position: lane === "hidden" ? Schema.barIds.indexOf(id) : bar[lane].indexOf(id),
-                width: id === "tray" ? 132 : id === "workspaces" ? 90 : id === "date" ? 92 : id === "clock" || id === "battery" ? 62 : 36
+                width: id === "customImage" ? imageWidth : id === "tray" ? 132 : id === "workspaces" ? 90 : id === "date" ? 92 : id === "clock" || id === "battery" ? 62 : 36
             };
         });
+    }
+    readonly property real imageWidth: {
+        const config = bar.modules.customImage || {}, asset = config.asset
+        if (!asset) return 100
+        const bounds = config.trim === false ? [0, 0, asset.width, asset.height] : asset.bounds
+        return Math.min(240, bounds[2] * (config.height || 32) / bounds[3])
     }
     implicitWidth: 680
     Layout.preferredWidth: 680
@@ -97,7 +104,7 @@ Item {
             x: root.bar.horizontalInset
             width: stage.width - 2 * x
             y: root.bar.position === "bottom" ? 60 - root.bar.edgeOffset : root.bar.edgeOffset
-            familySelection: key => root.styling && ((root.selectedKey === "statusPills" && key !== "workspaces") || (root.selectedKey === "workspaces" && key === "workspaces"))
+            familySelection: key => root.styling && ((root.selectedKey === "statusPills" && !["workspaces", "customImage"].includes(key)) || (root.selectedKey === "workspaces" && key === "workspaces"))
             removeLane: "hidden"
             canvasMode: true
             editing: root.editing

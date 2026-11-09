@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 101-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 103-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -150,3 +150,22 @@ previous app. The normal-session native gate separately passed all six immediate
 cases, reopen/navigation and theme checks; see the
 [acceptance record](review/thunar-hub-focus.md). Test-only GTK captures exercise installed
 Thunar drawing and expose repeated-background painting that syntax tests cannot detect.
+
+## Custom Image Bar
+
+`bar-image/schema`, extended `settings/assets`, and `runtime-visual/run:bar-image.qml`
+cover placement/persistence, all-frame bounds, byte-identical imports, Qt GIF playback,
+source colour/alpha composition, static/animated replacement, preview and multiple
+Bar presenters. Real mouse/keyboard input checks size slider/stepper synchronization,
+immediate rendering and persisted height after reload. Import tests require installed
+`python-pyqt6`.
+
+The earlier full run passed **99 PASS / 4 ENVIRONMENT / 0 FAIL / 0 UNKNOWN** across
+103 suites with no skips. Final slider coverage also passed in the focused native
+Qt harness. The final complete matrix, including the finished size controls, passed **99 PASS / 4 ENVIRONMENT / 0 FAIL / 0 UNKNOWN / 0 SKIPPED** (`/tmp/magi-regression-3mb5bbpe`).
+
+The operator confirmed native visual acceptance, including the deployed size controls.
+The currently saved 20px preference is preserved exactly at commit closeout. Physical
+mixed-DPI/output coverage remains separate. See the [implementation and acceptance
+record](review/bar-custom-image.md) for exact logs, source-alpha evidence and the four
+unchanged sandbox restrictions; no exemptions were broadened.

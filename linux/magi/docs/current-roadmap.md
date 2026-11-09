@@ -35,3 +35,8 @@ Remaining decisions are bounded by evidence:
 See [technical debt](technical-debt.md) for concrete limitations and
 [historical checkpoints](history.md) for dated development evidence. Completed work
 must not be inferred to be pending from those old records.
+
+The [Custom Image Bar item](review/bar-custom-image.md) is deployed and native visual
+acceptance has passed. The supplied AE86 follows Date at the currently saved 20px
+height, adjustable in Settings. Schema remains 22. One focused commit is authorized;
+push remains a separate operator approval. Preserve live Settings exactly.

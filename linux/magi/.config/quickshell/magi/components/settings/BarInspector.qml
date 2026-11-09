@@ -21,7 +21,7 @@ ColumnLayout {
     readonly property string foregroundKey: ["wifi", "bluetooth"].includes(instance) ? "accentRole" : "foregroundRole"
     readonly property string defaultForeground: foregroundKey === "accentRole" ? "accent" : "text"
     readonly property var itemStyle: Services.Settings.data.bar.modules[instance] || ({})
-    readonly property var style: Services.Settings.data.bar.visual[family]
+    readonly property var style: Services.Settings.data.bar.visual[family] || ({})
     readonly property var roles: ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "accent", "blue", "lavender", "green", "yellow", "peach", "red", "teal", "border"]
     function setStyle(key, value) {
         const visual = JSON.parse(JSON.stringify(Services.Settings.data.bar.visual));
@@ -61,7 +61,7 @@ ColumnLayout {
     }
     SettingsSection {
         objectName: "barIdentityInspector"
-        visible: root.individual
+        visible: root.individual && root.instance !== "customImage"
         collapsible: false
         title: ({
                 wifi: "Wi-Fi",
@@ -135,6 +135,7 @@ ColumnLayout {
             text: "Application icons keep their own colours. Background colour styles the shared Tray pill."
         }
     }
+    CustomImageSettings { visible: root.individual && root.instance === "customImage" }
     SettingsSection {
         objectName: "barColourRefinement"
         visible: root.individual && root.family === "statusPills"
@@ -175,6 +176,7 @@ ColumnLayout {
 
     SettingsSection {
         id: familySection
+        visible: root.family !== "artwork"
         objectName: "barFamilyInspector"
         collapsible: root.individual
         expanded: !root.individual
