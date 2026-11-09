@@ -13,6 +13,7 @@ Scope {
     readonly property string dataRoot: StandardPaths.writableLocation(StandardPaths.GenericDataLocation) + "/magi"
     readonly property string cacheRoot: StandardPaths.writableLocation(StandardPaths.GenericCacheLocation) + "/magi"
     signal completed(int requestId, string operation, string assetId, string url, string error)
+    signal decorationImageImported(int requestId, var asset, string error)
     signal barImageImported(int requestId, var asset, string error)
 
     function enqueue(operation, url, context) {
@@ -22,6 +23,7 @@ Scope {
         return request.id
     }
     function importAvatar(url) { return enqueue("avatar", url, {}) }
+    function importDecorationImage(url) { return enqueue("decoration-image", url, {}) }
     function importBarImage(url) { return enqueue("bar-image", url, {}) }
     function importIconPack(url) { return enqueue("icon-pack", url, {}) }
     function cacheArtwork(url, token) { return enqueue("artwork", url, {token:token || ""}) }
@@ -29,7 +31,7 @@ Scope {
         if (!assetId) return ""
         const parts = String(assetId).split(":")
         if (parts.length !== 2 || !/^[a-f0-9]{64}\.(png|jpg|webp|svg|gif)$/.test(parts[1])) return ""
-        const directory = parts[0] === "avatar" ? "avatars" : parts[0] === "bar-image" ? "bar-images" : ""
+        const directory = parts[0] === "avatar" ? "avatars" : parts[0] === "bar-image" ? "bar-images" : parts[0] === "decoration-image" ? "images" : ""
         return directory ? dataRoot + "/" + directory + "/" + parts[1] : ""
     }
     function startNext() {
@@ -49,9 +51,11 @@ Scope {
             root.active = null
             try {
                 const result = JSON.parse(root.response)
+                if (request.op === "decoration-image") root.decorationImageImported(request.id, result.asset || null, result.ok ? "" : result.error)
                 if (request.op === "bar-image") root.barImageImported(request.id, result.asset || null, result.ok ? "" : result.error)
                 root.completed(request.id, request.op, result.assetId || "", result.url || "", result.ok ? "" : result.error)
             } catch (error) {
+                if (request.op === "decoration-image") root.decorationImageImported(request.id, null, "Image import failed: " + String(error))
                 if (request.op === "bar-image") root.barImageImported(request.id, null, "Image import failed: " + String(error))
                 root.completed(request.id, request.op, "", "", "Asset helper failed: " + String(error))
             }

@@ -234,3 +234,13 @@ bounds drive an optional native QML crop. See [implementation and acceptance lim
 Custom Image native visual acceptance is complete. The currently saved asset follows
 Date at 20px; Settings offers a 16–40px slider and precise stepper. User assets and
 preferences remain outside Git, and the schema stays at 22.
+
+## Control Centre decorative image
+
+The [accepted implementation](../review/controlcentre-image.md) places an optional PNG or animated GIF
+above the combined Control Centre in its existing per-output Bar window. Panel
+geometry, precise blur and input ownership are unchanged. Shared asset import and
+additive schema-22 preferences support native size/position tuning; default is off.
+The operator accepted the revised GIF artwork and tests on 2026-11-09. Physical
+multi-output acceptance and sandbox-inaccessible native CPU measurement remain
+separate limitations.

@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 103-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 105-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -169,3 +169,32 @@ The currently saved 20px preference is preserved exactly at commit closeout. Phy
 mixed-DPI/output coverage remains separate. See the [implementation and acceptance
 record](review/bar-custom-image.md) for exact logs, source-alpha evidence and the four
 unchanged sandbox restrictions; no exemptions were broadened.
+
+## Control Centre decorative image
+
+`controlcentre-image/schema`, extended `settings/assets`, and
+`runtime-visual/run:controlcentre-image.qml` cover default-off/additive persistence,
+shared byte-identical PNG/GIF import, source alpha and real-border overlap, theme
+invariance, unchanged panel/blur geometry, staged animation and repeats/reversal,
+compact fallback, output routing/removal, missing assets and Settings controls.
+Only the intentional missing-fixture diagnostic is expected in the new harness;
+unrelated QML warnings and assertions remain failures. Native acceptance is separate.
+Full feature matrix: **101 PASS / 4 ENVIRONMENT / 0 FAIL / 0 UNKNOWN / 0 SKIPPED**
+across 105 suites (`/tmp/magi-regression-qoeishms`), after 14/14 affected passes.
+See [review and native acceptance status](review/controlcentre-image.md).
+
+The subsequent Control Centre reveal refinement passed all 3 affected suites
+(`/tmp/magi-regression-sbbq2evx`): schema, shared status lifecycle and decoration
+runtime. It verifies actual gradual progress at 80ms for the 320ms reveal, the
+120–500ms Settings range, repeat/reversal and early close. The prior full matrix
+precedes this small timing refinement.
+
+The final GIF extension matrix (including the timing refinement) passes **101 PASS /
+4 ENVIRONMENT / 0 FAIL / 0 UNKNOWN / 0 SKIPPED** across 105 suites
+(`/tmp/magi-regression-h912wlzu`). Added coverage verifies native GIF looping,
+closed-frame stability, pause on non-owning outputs, static Settings preview,
+PNG/GIF replacement, all-frame bounds and rendered alpha/colours/later content.
+The operator's actual six-frame GIF also passes an isolated Qt render/loop check.
+The operator accepted the revised GIF artwork and tests on 2026-11-09. This
+operator acceptance is separate from the automated results above; physical
+multi-output and native CPU measurements are not claimed.

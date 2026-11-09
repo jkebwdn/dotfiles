@@ -7,6 +7,8 @@ Bluetooth pairing support, the curated lock themes and internal designer, and th
 
 ## Current canonical documents
 
+- [Control Centre decorative image acceptance](review/controlcentre-image.md)
+
 - [Custom Image Bar item and deployment](review/bar-custom-image.md)
 
 - [Thunar backgrounds and Hub focus acceptance](review/thunar-hub-focus.md)

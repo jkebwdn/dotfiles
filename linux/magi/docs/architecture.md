@@ -962,3 +962,13 @@ An artwork item joins the existing Bar catalogue/regions and sparse module Setti
 The importer retains originals and measures the union of composited alpha bounds;
 QtQuick renders/animates an unpainted crop viewport. Ownership and remaining native
 acceptance are recorded in [the candidate review](review/bar-custom-image.md).
+
+## Control Centre decorative image
+
+An unpainted sibling above the shared status panel uses its existing full-output
+window and animation completion. The panel keeps its geometry and precise blur;
+no alternate surface/layout is introduced. See [review and acceptance](review/controlcentre-image.md).
+
+The same decoration supports animated GIFs through Qt AnimatedImage, retaining the
+shared all-frame importer. Hidden/non-owning presenters pause; Settings keeps a
+still preview. No new surface, timer or animation worker is introduced.

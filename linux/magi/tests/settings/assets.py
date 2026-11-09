@@ -37,6 +37,17 @@ with tempfile.TemporaryDirectory(prefix='magi-assets-') as temporary:
     result = assets.import_bar_image(str(static))
     assert result['asset']['bounds'] == [3, 4, 1, 1]
     assert Path(result['url'][7:]).read_bytes() == static.read_bytes(), 'partial alpha is unchanged'
+    decoration = assets.perform({'op':'decoration-image','url':static.as_uri()})
+    assert decoration['asset']['bounds'] == result['asset']['bounds']
+    assert decoration['asset']['id'].startswith('decoration-image:')
+    assert Path(decoration['url'][7:]).parent.name == 'images'
+    assert Path(decoration['url'][7:]).read_bytes() == static.read_bytes()
+    assert assets.perform({'op':'decoration-image','url':static.as_uri()}) == decoration
+    animated_decoration = assets.perform({'op':'decoration-image','url':gif.as_uri()})
+    assert animated_decoration['asset']['bounds'] == imported['asset']['bounds'], 'same all-frame union for Bar and decoration'
+    assert animated_decoration['assetId'].endswith('.gif')
+    assert Path(animated_decoration['url'][7:]).read_bytes() == gif.read_bytes(), 'decoration preserves every GIF byte'
+    assert assets.perform({'op':'decoration-image','url':gif.as_uri()}) == animated_decoration
     frame.fill(QColor(0, 0, 0, 0)); frame.save(str(static))
     for rejected in [str(static), 'https://example.com/image.gif', 'file://example.com/image.gif']:
         try: assets.import_bar_image(rejected)

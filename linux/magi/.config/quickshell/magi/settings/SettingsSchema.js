@@ -27,15 +27,21 @@ function controlDefinitions() {
     })
 }
 const barIds = ["clock", "date", "customImage", "workspaces", "volume", "wifi", "bluetooth", "battery", "notifications", "clipboard", "controlcentre", "tray"]
-function validBarImageAsset(asset) {
+function validImageAsset(asset, idPattern) {
     return asset === null || (object(asset)
-        && typeof asset.id === "string" && /^bar-image:[a-f0-9]{64}\.(gif|png|jpg|webp)$/.test(asset.id)
+        && typeof asset.id === "string" && idPattern.test(asset.id)
         && [asset.width, asset.height].every(v => Number.isInteger(v) && v > 0 && v <= 4096)
         && Array.isArray(asset.bounds) && asset.bounds.length === 4
         && asset.bounds.every(v => Number.isInteger(v) && v >= 0)
         && asset.bounds[2] > 0 && asset.bounds[3] > 0
         && asset.bounds[0] + asset.bounds[2] <= asset.width
         && asset.bounds[1] + asset.bounds[3] <= asset.height)
+}
+function validBarImageAsset(asset) {
+    return validImageAsset(asset, /^bar-image:[a-f0-9]{64}\.(gif|png|jpg|webp)$/)
+}
+function decorationDefaults() {
+    return {enabled:false, asset:null, height:340, overlap:8, verticalOffset:0, duration:180, flip:false}
 }
 const radiusRoles = ["barPill", "surface", "controlTile", "slider", "action", "avatar", "albumArt", "hubSelector", "secondaryControl"]
 const controlAccentRoles = ["red", "peach", "yellow", "green", "teal", "blue", "lavender"]
@@ -89,7 +95,7 @@ function defaults() {
             workspacePills: {roundness:null}},
             modules: {wifi: {accentRole:"accent"}, bluetooth: {accentRole:"accent"}}, position: "top", horizontalInset: 0, edgeOffset: 0, externalDisplays: false, left: ["clock", "date"], center: ["workspaces"],
             right: ["volume", "wifi", "bluetooth", "battery", "controlcentre"]},
-        controlCentre: {columns: 4, actionColumns: 6, layout: ["profile", "controls", "sliders", "actions", "media"], controls: [
+        controlCentre: {decoration: decorationDefaults(), columns: 4, actionColumns: 6, layout: ["profile", "controls", "sliders", "actions", "media"], controls: [
             {key: "network", module: "wifi", accent: "teal", enabled: true, presentation: "tile"},
             {key: "wireless", module: "bluetooth", accent: "blue", enabled: true, presentation: "tile"},
             {key: "power-saver", module: "power-saver", accent: "green", enabled: true, presentation: "tile"},
@@ -449,6 +455,23 @@ function analyze(input) {
         })
     }
     const cc = effective.controlCentre
+    const decoration = cc.decoration, decorationFallback = decorationDefaults()
+    for (const key of ["enabled", "flip"]) {
+        if (typeof decoration[key] !== "boolean") {
+            errors.push("controlCentre.decoration." + key + ": invalid value")
+            decoration[key] = decorationFallback[key]
+        }
+    }
+    for (const [key, low, high] of [["height",120,600],["overlap",0,24],["verticalOffset",-300,300],["duration",120,500]]) {
+        if (!Number.isInteger(decoration[key]) || decoration[key] < low || decoration[key] > high) {
+            errors.push("controlCentre.decoration." + key + ": invalid value")
+            decoration[key] = decorationFallback[key]
+        }
+    }
+    if (!validImageAsset(decoration.asset, /^decoration-image:[a-f0-9]{64}\.(png|gif)$/)) {
+        errors.push("controlCentre.decoration.asset: invalid image")
+        decoration.asset = null
+    }
     // Compatibility input is read once. The v18 document has one structural authority.
     if (input.schemaVersion < 18 && input.controlCentre && !input.controlCentre.layout) {
         const legacy = input.controlCentre.sections || {}

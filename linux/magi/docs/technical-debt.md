@@ -44,3 +44,9 @@ GIF/PNG/JPEG; unsupported formats fail import without replacing the selected ass
 The current Bar catalogue permits one configurable Custom Image item, shared across
 enabled outputs. Multiple independent artwork instances would require a deliberate
 catalogue-instance design. See [candidate evidence](review/bar-custom-image.md).
+
+Control Centre decoration, revised GIF artwork and tests were accepted by the
+operator on 2026-11-09. Native CPU measurement remains unavailable in the sandbox;
+synthetic routing does not establish physical multi-output acceptance. The existing
+outside-dismiss catcher still owns outside clicks while open; artwork adds no input
+target. See [acceptance review](review/controlcentre-image.md).

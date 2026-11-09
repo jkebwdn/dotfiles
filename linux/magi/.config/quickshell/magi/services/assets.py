@@ -81,12 +81,14 @@ def import_image(value):
     return persist(data, data_root() / "avatars", image_extension(data), "avatar")
 
 
-def import_bar_image(value):
+def import_measured_image(value, kind="bar-image"):
     """Keep source bytes; measure composited alpha across every frame with Qt.
 
     No extracted frames or rewritten GIF palette/disposal/timing. The presenter
     crops a viewport using this union, so later smoke/motion remains visible.
     """
+    directories = {"bar-image": "bar-images", "decoration-image": "images"}
+    directory = directories[kind]
     from PyQt6.QtCore import QBuffer, QByteArray, QIODevice
     from PyQt6.QtGui import QImage, QImageReader
 
@@ -101,6 +103,8 @@ def import_bar_image(value):
     extension = bytes(reader.format()).decode("ascii")
     if extension not in ("gif", "png", "jpeg", "webp"):
         raise ValueError("Choose a GIF, PNG, JPEG or WebP image")
+    if kind == "decoration-image" and extension not in ("png", "gif"):
+        raise ValueError("Choose a PNG or GIF for the decorative image")
     size = reader.size()
     if not (0 < size.width() <= 4096 and 0 < size.height() <= 4096):
         raise ValueError("Image dimensions must be between 1 and 4096 pixels")
@@ -134,10 +138,14 @@ def import_bar_image(value):
             break
     if reader.imageCount() > frames or not frames or bounds is None:
         raise ValueError("Image is incomplete or entirely transparent")
-    result = persist(data, data_root() / "bar-images", "jpg" if extension == "jpeg" else extension, "bar-image")
+    result = persist(data, data_root() / directory, "jpg" if extension == "jpeg" else extension, kind)
     result["asset"] = {"id": result["assetId"], "width": size.width(), "height": size.height(),
                        "bounds": [bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1]]}
     return result
+
+
+def import_bar_image(value):
+    return import_measured_image(value, "bar-image")
 
 
 def numeric_dimension(value):
@@ -314,7 +322,8 @@ def cache_artwork(value):
 
 def perform(request):
     operation = request.get("op")
-    if operation == "bar-image": return import_bar_image(request["url"])
+    if operation in ("bar-image", "decoration-image"):
+        return import_measured_image(request["url"], operation)
     if operation == "avatar": return import_image(request["url"])
     if operation == "icon-pack": return import_pack(request["url"])
     if operation == "pack-list": return list_packs()

@@ -40,3 +40,9 @@ The [Custom Image Bar item](review/bar-custom-image.md) is deployed and native v
 acceptance has passed. The supplied AE86 follows Date at the currently saved 20px
 height, adjustable in Settings. Schema remains 22. One focused commit is authorized;
 push remains a separate operator approval. Preserve live Settings exactly.
+
+Control Centre Decorative Image and the revised GIF artwork passed operator
+acceptance on 2026-11-09. The focused commit preserves current Settings exactly;
+push requires separate approval. Physical multi-output acceptance and native CPU
+measurement remain documented limitations. No additional decoration features are
+planned. See [review](review/controlcentre-image.md).

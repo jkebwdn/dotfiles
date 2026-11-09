@@ -18,6 +18,11 @@ Item {
     property alias contentHeight: inspector.contentHeight
     readonly property int boundsBehavior: inspector.boundsBehavior
     readonly property var cc: Services.Settings.data.controlCentre
+    function resetComposition() {
+        const defaults = Schema.defaults().controlCentre
+        for (const key of ["columns", "actionColumns", "layout", "controls", "sliders", "actions"])
+            Services.Settings.setValue("controlCentre", key, defaults[key])
+    }
     function resetAppearance() {
         const defaults = Schema.defaults().appearance, visual = Schema.clone(Services.Settings.data.appearance.visual);
         for (const key of Object.keys(defaults.visual))
@@ -104,6 +109,7 @@ Item {
                 Layout.minimumHeight: root.height < 650 ? 100 : 160
                 title: ""
                 description: ""
+                SettingsUI.DecorationSettings { }
                 SettingsUI.CCInspector {
                     id: contextual
                     behaviourOnly: false
@@ -119,7 +125,7 @@ Item {
                     actionKind: "reset";
                     visible: !contextual.individual || contextual.familySection.expanded
                     text: "Reset composition"
-                    onClicked: Services.Settings.resetSection("controlCentre")
+                    onClicked: root.resetComposition()
                 }
             }
         }
@@ -127,7 +133,7 @@ Item {
             actionKind: "reset";
             visible: root.mode === "Layout"
             text: "Reset composition"
-            onClicked: Services.Settings.resetSection("controlCentre")
+            onClicked: root.resetComposition()
         }
     }
 }

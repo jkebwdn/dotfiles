@@ -5,6 +5,7 @@ import "../../services" as Services
 import "../../theme" as Theme
 import "../../settings/SettingsSchema.js" as Schema
 import "../controls" as Controls
+import "../bar" as BarUI
 import "../../plugins/bar/controlcentre/SectionLayout.js" as SectionLayout
 
 Item {
@@ -31,7 +32,9 @@ Item {
     readonly property bool paletteBeside: editing
     readonly property real paletteX: canvasWidth + 24
     readonly property real paletteWidth: 240
-    readonly property real sceneWidth: editing ? paletteX + paletteWidth : canvasWidth
+    readonly property real decorationSpace: !editing && layout.decoration.enabled && layout.decoration.asset
+        ? Math.min(340, layout.decoration.height * layout.decoration.asset.bounds[2] / layout.decoration.asset.bounds[3]) + 8 : 0
+    readonly property real sceneWidth: editing ? paletteX + paletteWidth : canvasWidth + decorationSpace
     readonly property real sceneHeight: Math.max(composition.height, editing ? Math.max(structureBoard.implicitHeight, moduleBoard.implicitHeight) : 0)
     readonly property real fitScale: Math.min(1, width / sceneWidth, height / Math.max(1, sceneHeight))
     readonly property var order: structureBoard.preview ? structureBoard.order("structure") : editing ? layout.layout.concat(["controls", "actions"].filter(id => !layout.layout.includes(id))) : layout.layout.concat(["controls", "actions", "sliders"].filter(id => !layout.layout.includes(id)))
@@ -227,7 +230,8 @@ Item {
         ScrollBar.vertical: ScrollBar {}
         Item {
             id: fittedScene
-            width: root.sceneWidth
+            x: root.decorationSpace * root.fitScale
+            width: root.sceneWidth - root.decorationSpace
             height: root.sceneHeight
             scale: root.fitScale
             transformOrigin: Item.TopLeft
@@ -417,6 +421,21 @@ Item {
                         }
                     }
                 }
+            }
+        }
+        Item {
+            width: root.sceneWidth
+            height: root.sceneHeight
+            scale: root.fitScale
+            transformOrigin: Item.TopLeft
+            z: 10
+            BarUI.ControlCentreDecoration {
+                objectName: "decorationPreview"
+                animate: false
+                playbackEnabled: false
+                panelPresent: !root.editing
+                panelReady: panelPresent
+                panelRect: Qt.rect(root.decorationSpace, 0, root.canvasWidth, root.composition.height)
             }
         }
     }

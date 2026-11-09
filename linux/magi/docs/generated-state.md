@@ -129,3 +129,9 @@ Custom Image imports use `$DATA/magi/bar-images/<sha256>.<gif|png|jpg|webp>` thr
 AssetManager. Original bytes are retained; alpha bounds and display preferences
 live in untracked Settings. Clearing/removing an item does not delete its imported
 asset. Preserve referenced imports; no automatic garbage collector is introduced.
+
+Control Centre decorations reuse the measured image importer and store
+byte-identical PNG/GIF originals at `$DATA/magi/images/<sha256>.<png|gif>`, with
+`decoration-image:` descriptors in local Settings. Existing Bar asset IDs/storage
+remain valid. Clearing a selection does not delete originals; no automatic pruning
+is added. See the [acceptance review](review/controlcentre-image.md).

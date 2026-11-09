@@ -826,3 +826,17 @@ asset dimensions/display scale (bounded by original dimensions), never the loade
 Image's provisional width: that can recursively change implicit size during loading.
 The crop uses an unpainted Item viewport, and the pill blur collector excludes it.
 [API sources, installed versions and tests](review/bar-custom-image.md).
+
+## Control Centre decorative image candidate
+
+Installed QS 0.3.2 / Qt 6.12 supports sibling Item z-order, Image readiness/native
+alpha and the existing precise Region geometry. Production combined Bars already
+span their output; no popup widening or second Wayland surface is needed. See
+[dated API evidence and remaining native checks](review/controlcentre-image.md).
+
+The decoration GIF extension (Qt 6.12, inspected 2026-11-09) uses a separate native
+AnimatedImage presenter, cache disabled, with playback paused when hidden, before
+panel readiness, on non-owning outputs, and in the static Settings preview. Separate
+Image/AnimatedImage instances avoid Qt's documented static-to-animation playing-state
+caveat. See [Qt AnimatedImage](https://doc.qt.io/qt-6/qml-qtquick-animatedimage.html)
+and the [review evidence](review/controlcentre-image.md).

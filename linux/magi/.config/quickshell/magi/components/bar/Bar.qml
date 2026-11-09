@@ -123,7 +123,7 @@ PanelWindow {
         Region { regions: pillBlurRegions.instances }
         PaintedBlurRegion { target: trayOverflow; painted: trayOverflow.visible; cornerRadius: trayOverflow.radius }
         PaintedBlurRegion { target: barStrip; painted: barStrip.color.a > 0; cornerRadius: barStrip.radius }
-        PaintedBlurRegion { target: statusSurface.paintedBackground; painted: bar.combinedMode && statusSurface.phase !== 0; cornerRadius: statusSurface.paintedBackground.radius }
+        PaintedBlurRegion { objectName: "statusPanelBlur"; target: statusSurface.paintedBackground; painted: bar.combinedMode && statusSurface.phase !== 0; cornerRadius: statusSurface.paintedBackground.radius }
         PaintedBlurRegion { target: calendarSurface.paintedBackground; painted: calendarSurface.absorbed; cornerRadius: calendarSurface.paintedBackground.radius }
     }
     Variants {
@@ -467,6 +467,15 @@ PanelWindow {
     // ---------------------------------------------------------
     // Right section
     // ---------------------------------------------------------
+
+    ControlCentreDecoration {
+        id: decoration
+        z: 11
+        panelRect: Qt.rect(statusSurface.x, statusSurface.y, statusSurface.width, statusSurface.height)
+        panelPresent: bar.combinedMode && bar.ownsMenu && statusSurface.phase !== 0
+            && statusSurface.displayedModule !== null && statusSurface.displayedModule.menuId === "controlcentre"
+        panelReady: panelPresent && statusSurface.interactive
+    }
 
     SharedStatusSurface {
         id: statusSurface

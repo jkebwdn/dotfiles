@@ -40,6 +40,7 @@ def suites():
         py('settings/modules.py', fixture)
     js('settings/catalogue.cjs')
     js('bar-image/schema.cjs')
+    js('controlcentre-image/schema.cjs')
     js('settings/icons.cjs', '.config/quickshell/magi/icons')
     js('visual/state.cjs')
     js('lock-themes/model.cjs')
@@ -66,7 +67,7 @@ def suites():
                  'notifications/policy', 'wallpaper/schema'):
         js(path + '.cjs')
     py('runtime-visual/run.py')
-    for fixture in ('bar-image.qml', 'lock-themes.qml', 'daily-polish.qml', 'settings-finish.qml', 'theme-gallery.qml', 'settings-product.qml', 'quality.qml', 'palettes.qml', 'profile.qml', 'appearance.qml', 'colours.qml', 'feedback.qml',
+    for fixture in ('controlcentre-image.qml', 'bar-image.qml', 'lock-themes.qml', 'daily-polish.qml', 'settings-finish.qml', 'theme-gallery.qml', 'settings-product.qml', 'quality.qml', 'palettes.qml', 'profile.qml', 'appearance.qml', 'colours.qml', 'feedback.qml',
                     'polish.qml', 'secondary.qml', 'typography.qml', 'weather.qml',
                     '../phase12b/surfaces.qml', '../phase12d/runtime.qml'):
         py('runtime-visual/run.py', fixture)

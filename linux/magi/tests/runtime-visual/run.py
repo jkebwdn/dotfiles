@@ -22,7 +22,7 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
         (config/f'{name}.ppm').write_bytes(f'P6\n{w} {h}\n255\n'.encode() + bytes([255,120,20]) * w * h)
     (config/'services/TrayService.qml').write_text('pragma Singleton\nimport QtQuick\nTrayModel {}\n')
     (config/'settings.json').write_text('{"schemaVersion":10}')
-    if len(sys.argv) > 1 and sys.argv[1] == 'bar-image.qml':
+    if len(sys.argv) > 1 and sys.argv[1] in ('bar-image.qml', 'controlcentre-image.qml'):
         shutil.copy(root/'tests/bar-image/alpha.gif', config/'alpha.gif')
         # Optional operator asset is imported through the production worker in
         # this disposable XDG home, never copied into source or live Settings.
@@ -111,6 +111,17 @@ QtObject {
         static.fill(QColor(20, 40, 60, 128))
         static.save(str(config/'static-alpha.png'))
         env['MAGI_BAR_IMAGE_TEST_CAPTURE'] = str(stage)
+    if len(sys.argv) > 1 and sys.argv[1] == 'controlcentre-image.qml':
+        from PyQt6.QtGui import QImage, QColor
+        fixture = QImage(100, 200, QImage.Format.Format_RGBA8888)
+        fixture.fill(QColor(0, 0, 0, 0))
+        for y in range(10, 190):
+            for x in range(10, 80): fixture.setPixelColor(x, y, QColor(240, 40, 20, 255))
+        for y in list(range(40, 60)) + list(range(120, 140)):
+            for x in range(80, 95): fixture.setPixelColor(x, y, QColor(20, 80, 240, 255))
+        fixture.setPixelColor(10, 10, QColor(240, 40, 20, 128))
+        fixture.save(str(config/'decoration.png'))
+        env['MAGI_DECORATION_TEST_CAPTURE'] = str(stage)
     env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None);env.pop('MAGI_LOCK_DESIGNER',None)
     try:
         result=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,capture_output=True,text=True,timeout=180 if len(sys.argv) > 1 and sys.argv[1] in ("appearance.qml", "typography.qml", "palettes.qml") else 60)
@@ -122,6 +133,12 @@ QtObject {
     checked='\n'.join(line for line in output.splitlines() if 'Failed to start IPC server' not in line
                       and 'This plugin does not support setting window masks' not in line
                       and 'WARN: Unable to find hyprland socket. Cannot connect to hyprland.' not in line)
+    if len(sys.argv) > 1 and sys.argv[1] == 'controlcentre-image.qml':
+        # Only this deliberately missing fixture's Image errors are expected.
+        # The QML test must also prove it hides and the panel remains interactive.
+        checked = '\n'.join(line for line in checked.splitlines()
+            if not ('Cannot open:' in line and 'e' * 64 + '.png' in line
+                and ('QML Image:' in line or 'QML Loader (parent or ancestor of QQuickImage)' in line)))
     print(checked)
     if len(sys.argv) > 1 and sys.argv[1] == 'bar-image.qml' and result.returncode == 0:
         from PyQt6.QtGui import QImage
@@ -136,7 +153,25 @@ QtObject {
         assert composed.pixelColor(80, 36).getRgb() == (255, 0, 0, 255)
         assert later.pixelColor(58, 20).blue() == 255, 'later-frame content survives union crop'
         assert static.pixelColor(80, 32).alpha() == 128, 'partial PNG alpha survives QML'
-    assert result.returncode==0 and 'PASS' in output and ({'bar-image.qml':'Custom Image runtime PASS','lock-themes.qml':'Lock themes product and runtime PASS','daily-polish.qml':'Daily polish runtime PASS','settings-finish.qml':'Settings finish PASS','theme-gallery.qml':'Theme gallery PASS','settings-product.qml':'Settings product review PASS','quality.qml':'Phase16 quality PASS','palettes.qml':'Palette expansion preview PASS','profile.qml':'Profile responsive pinned navigation PASS','../phase12d/runtime.qml':'Phase12D runtime composition PASS','../phase12b/surfaces.qml':'Phase12B surfaces PASS','typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
+    if len(sys.argv) > 1 and sys.argv[1] == 'controlcentre-image.qml' and result.returncode == 0:
+        from PyQt6.QtGui import QImage
+        a = QImage(str(stage/'decoration-alpha.png'))
+        b = QImage(str(stage/'decoration-theme.png'))
+        assert not a.isNull() and not b.isNull()
+        assert a.pixelColor(195,110).alpha() == 0, 'source alpha outside panel'
+        assert a.pixelColor(205,110).getRgb() == (0,255,0,255), 'real panel through source alpha'
+        assert a.pixelColor(200,65).getRgb() == (20,80,240,255), 'hand above real panel border'
+        assert a.pixelColor(130,80).getRgb() == (240,40,20,255), 'original body colour'
+        assert a.pixelColor(123,30).alpha() == 128, 'partial source alpha survives'
+        assert a == b, 'theme changes leave artwork unchanged'
+        first = QImage(str(stage/'decoration-gif-first.png'))
+        later = QImage(str(stage/'decoration-gif-later.png'))
+        assert not first.isNull() and not later.isNull()
+        assert first.pixelColor(20,70).alpha() == 0, 'GIF transparent padding survives'
+        assert first.pixelColor(60,140).getRgb() == (255,0,0,255), 'GIF original red'
+        assert later.pixelColor(20,70).getRgb() == (0,0,255,255), 'later GIF content fits union'
+
+    assert result.returncode==0 and 'PASS' in output and ({'controlcentre-image.qml':'Control Centre decoration runtime PASS','bar-image.qml':'Custom Image runtime PASS','lock-themes.qml':'Lock themes product and runtime PASS','daily-polish.qml':'Daily polish runtime PASS','settings-finish.qml':'Settings finish PASS','theme-gallery.qml':'Theme gallery PASS','settings-product.qml':'Settings product review PASS','quality.qml':'Phase16 quality PASS','palettes.qml':'Palette expansion preview PASS','profile.qml':'Profile responsive pinned navigation PASS','../phase12d/runtime.qml':'Phase12D runtime composition PASS','../phase12b/surfaces.qml':'Phase12B surfaces PASS','typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
 
     if len(sys.argv) > 1 and sys.argv[1] == 'palettes.qml' and env.get('MAGI_PALETTE_PREVIEWS'):
         captures = Path(env['MAGI_PALETTE_PREVIEWS'])

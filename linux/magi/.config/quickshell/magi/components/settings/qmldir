@@ -50,3 +50,4 @@ ApplicationAppearancePreview 1.0 ApplicationAppearancePreview.qml
 LockLayoutCanvas 1.0 LockLayoutCanvas.qml
 LockThemePreview 1.0 LockThemePreview.qml
 LockPreviewBackground 1.0 LockPreviewBackground.qml
+DecorationSettings 1.0 DecorationSettings.qml

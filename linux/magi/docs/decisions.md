@@ -1173,3 +1173,11 @@ viewport to the alpha union over every frame, avoiding palette/timing/disposal l
 Artwork is separate from semantic icons, pill styling and painted pill blur regions.
 Defaults leave existing placements unchanged; first-use configuration follows Date.
 See [review, API evidence and validation](review/bar-custom-image.md).
+
+## Control Centre decorative image
+
+Reuse the full-output combined Bar host, shared measured asset importer and native
+Image/AnimatedImage renderers. Gate reveal on the existing interactive phase, shrink/hide
+on narrow outputs, keep schema 22 through additive defaults, and default off.
+Do not move the panel or enlarge blur/input ownership for artwork. Details and
+operator acceptance: [review](review/controlcentre-image.md).
