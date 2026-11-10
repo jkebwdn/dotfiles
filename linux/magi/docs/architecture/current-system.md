@@ -219,15 +219,15 @@ static Thunar-only exclusion handle implements shared blur participation; compos
 window opacity and global engine quality remain unchanged. Thunar's parent canvases
 paint alpha once; inactive GTK surfaces receive explicit backdrop rules.
 
-The [focus review](../review/focus-picker-settings.md) replaces the visibility-long
-Exclusive claim with a search-only HyprlandFocusGrab. Its cleared signal dismisses
-the Hub; mapped keyboard policy is OnDemand, hidden is None. Selector and content
-share one registered window. Settings/Notifications retain their on-demand
-lifecycle; query behavior and routing are unchanged. Native focus acceptance passed
-on 2026-11-10.
-
-The retained Settings image picker explicitly parents Qt's in-window file dialog.
-Native chooser acceptance passed; AssetManager and storage remain unchanged.
+The [focus/picker/cards candidate](../review/focus-picker-settings.md) replaces the
+visibility-long Exclusive claim with a search-only HyprlandFocusGrab. Its cleared
+signal dismisses the Hub; mapped keyboard policy is OnDemand, hidden is None.
+Selector and content share one registered window. Settings/Notifications keep their
+on-demand lifecycle, and search/query behavior is unchanged. Native Hub focus
+acceptance and picker/card review passed on 2026-11-10. The retained
+Settings image picker explicitly parents Qt's in-window file
+dialog; shared SettingsSection cards add hierarchy without changing navigation,
+schema, asset storage or theme semantics.
 
 ## Custom Image Bar
 

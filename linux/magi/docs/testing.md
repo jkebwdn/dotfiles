@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 106-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 107-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -199,12 +199,15 @@ The operator accepted the revised GIF artwork and tests on 2026-11-09. This
 operator acceptance is separate from the automated results above; physical
 multi-output and native CPU measurements are not claimed.
 
-## Hub focus release
+## Hub focus, picker and Settings cards candidate
 
-`hub/run` covers simulated grab-clear dismissal, real Qt search keys and mode/query
-lifecycle. The separate Zen/Ghostty/Thunar native gate passed on 2026-11-10. See
-[evidence](review/focus-picker-settings.md).
-
-`settings/image-picker` exercises real Qt FileDialog selection, Cancel, reopening,
-explicit parenting, retained imports, errors and byte-identical assets. Native
-chooser acceptance passed separately.
+`hub/run` covers simulated grab-clear dismissal alongside existing real Qt search
+keys and mode/query lifecycle; external app key delivery remains a real Hyprland
+gate. `settings/image-picker` exercises actual Qt FileDialog selection/cancel/reopen,
+explicit parenting, retained import ownership, errors and byte-identical persistence.
+`settings/cards` checks grouping and controls across three actual window sizes and
+two palettes. Profile's long-text/pinned-preview check remains warning-strict.
+The final 107-command run passed 103 with 0 FAIL / 0 UNKNOWN and four established
+D-Bus/socket ENVIRONMENT limits. Native Hub focus, chooser and light/dark
+compact/normal card review passed on 2026-11-10. See
+[evidence and native acceptance](review/focus-picker-settings.md).

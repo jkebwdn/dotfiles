@@ -15,53 +15,59 @@ SettingsUI.SettingsPage {
     title: "Profile"
     maximumBodyWidth: 520
     description: ""
-    RowLayout {
-        spacing: 16
-        Controls.RoundedArtwork {
-            objectName: "profileAvatarPreview"
-            Layout.preferredWidth: 88; Layout.preferredHeight: 88
-            radius: Theme.Theme.radius("avatar", 10, width, height)
-            source: Services.AssetManager.assetUrl(Services.Settings.data.profile.avatar)
-            placeholder: "profile"
-            borderColor: Theme.Theme.border
-            borderWidth: 1
-        }
-        ColumnLayout {
-            SettingsUI.SettingsButton { text: "Choose avatar…"; onClicked: avatarDialog.open() }
-            SettingsUI.SettingsButton {
-                flat: true
-                text: "Clear avatar"; enabled: Services.Settings.data.profile.avatar !== null
-                onClicked: Services.Settings.setValue("profile", "avatar", null)
+    SettingsUI.SettingsSection {
+        id: identity
+        title: "Identity"
+        RowLayout {
+            spacing: 16
+            Controls.RoundedArtwork {
+                objectName: "profileAvatarPreview"
+                Layout.preferredWidth: 88; Layout.preferredHeight: 88
+                radius: Theme.Theme.radius("avatar", 10, width, height)
+                source: Services.AssetManager.assetUrl(Services.Settings.data.profile.avatar)
+                placeholder: "profile"
+                borderColor: Theme.Theme.border
+                borderWidth: 1
+            }
+            ColumnLayout {
+                SettingsUI.SettingsButton { text: "Choose avatar…"; onClicked: avatarDialog.open() }
+                SettingsUI.SettingsButton {
+                    flat: true
+                    text: "Clear avatar"; enabled: Services.Settings.data.profile.avatar !== null
+                    onClicked: Services.Settings.setValue("profile", "avatar", null)
+                }
             }
         }
-    }
-    SettingsUI.SettingsRow {
-    Label { text: "Display name"; Layout.fillWidth: true }
-    SettingsUI.SettingsTextField {
-        Layout.fillWidth: true
-        text: Services.Settings.data.profile.displayName
-        maximumLength: 80
-        placeholderText: "Optional"
-        onTextEdited: Services.Settings.setValue("profile", "displayName", text)
-        onEditingFinished: Services.Settings.setValue("profile", "displayName", text.trim())
-    }
-    }
-    SettingsUI.SettingsToggle {
-        text: "Personal message"
-        checked: Services.Settings.data.profile.subtitleMode === "custom"
-        onToggled: Services.Settings.setValue("profile", "subtitleMode", checked ? "custom" : "greeting")
-    }
-    SettingsUI.SettingsRow {
-    visible: Services.Settings.data.profile.subtitleMode === "custom"
-    Label { text: "Message"; Layout.fillWidth: true }
-    SettingsUI.SettingsTextField {
-        Layout.fillWidth: true
-        text: Services.Settings.data.profile.subtitle
-        maximumLength: 160
-        placeholderText: "Optional"
-        onTextEdited: Services.Settings.setValue("profile", "subtitle", text)
-        onEditingFinished: Services.Settings.setValue("profile", "subtitle", text.trim())
-    }
+        SettingsUI.SettingsRow {
+        columns: root.body.width - identity.padding * 2 < 420 ? 1 : 2
+        Label { text: "Display name"; Layout.fillWidth: true }
+        SettingsUI.SettingsTextField {
+            Layout.fillWidth: true
+            text: Services.Settings.data.profile.displayName
+            maximumLength: 80
+            placeholderText: "Optional"
+            onTextEdited: Services.Settings.setValue("profile", "displayName", text)
+            onEditingFinished: Services.Settings.setValue("profile", "displayName", text.trim())
+        }
+        }
+        SettingsUI.SettingsToggle {
+            text: "Personal message"
+            checked: Services.Settings.data.profile.subtitleMode === "custom"
+            onToggled: Services.Settings.setValue("profile", "subtitleMode", checked ? "custom" : "greeting")
+        }
+        SettingsUI.SettingsRow {
+        columns: root.body.width - identity.padding * 2 < 420 ? 1 : 2
+        visible: Services.Settings.data.profile.subtitleMode === "custom"
+        Label { text: "Message"; Layout.fillWidth: true }
+        SettingsUI.SettingsTextField {
+            Layout.fillWidth: true
+            text: Services.Settings.data.profile.subtitle
+            maximumLength: 160
+            placeholderText: "Optional"
+            onTextEdited: Services.Settings.setValue("profile", "subtitle", text)
+            onEditingFinished: Services.Settings.setValue("profile", "subtitle", text.trim())
+        }
+        }
     }
     SettingsUI.SettingsSection {
         title: "Weather"; collapsible: true; expanded: true

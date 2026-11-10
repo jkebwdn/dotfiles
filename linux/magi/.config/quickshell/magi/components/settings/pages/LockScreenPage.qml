@@ -55,6 +55,7 @@ UI.SettingsPage {
         }
     }
     UI.SettingsSection {
+        carded: false // The live preview already owns its surface.
         title:root.selection.legacy ? "Custom (legacy)" : root.theme.name
         UI.SettingsHelp {visible:root.selection.legacy || root.selection.unavailable;text:root.selection.legacy ? "This lock screen uses an older custom layout. It is preserved until you choose a theme." : "This theme is unavailable. A safe default is shown; your saved layout is preserved until you choose a theme."}
         UI.SettingsHelp {visible:!root.selection.legacy && !root.selection.unavailable;text:root.theme.description}

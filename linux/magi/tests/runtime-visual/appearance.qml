@@ -234,8 +234,17 @@ ShellRoot {
                 }
                 if (name === "Profile") {
                     const profilePage = findChild(settings.contentItem,"settingsPage-Profile")
-                    const fields = collect(profilePage,i => i.maximumLength === 80 || i.maximumLength === 160)
+                    // Earlier visibility permutations finish in greeting mode.
+                    // Enable the real editor explicitly; never click hidden fields
+                    // (or accidentally include the unrelated Weather location).
+                    const personalMessage = findChild(profilePage, "settingsToggle-Personal message")
+                    if (!personalMessage.checked) { reveal(profilePage, personalMessage); mouseClick(personalMessage) }
+                    tryCompare(personalMessage, "checked", true)
+                    const fields = collect(profilePage,i => (i.maximumLength === 80 || i.maximumLength === 160)
+                        && ["Display name", "Message"].includes(i.parent.children[0]?.text))
+                    compare(fields.length, 2)
                     for (const field of fields) {
+                        verify(field.visible, "Only visible identity fields receive input")
                         reveal(profilePage,field); mouseClick(field); field.forceActiveFocus()
                         keyClick(Qt.Key_A,Qt.ControlModifier);
                         for (const character of (field.maximumLength === 80 ? "Operator" : "Live third line")) keyClick(character)

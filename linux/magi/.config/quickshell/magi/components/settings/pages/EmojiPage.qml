@@ -9,36 +9,42 @@ SettingsUI.SettingsPage {
     id: root
     title: "Emoji Picker"
     description: "SUPER + E · Search, choose, then paste"
-    Repeater {
-        model: [{key:"enabled",label:"Enable Emoji Picker"}, {key:"showCategories",label:"Show category selector"},
-            {key:"closeOnSelect",label:"Close after copying"}]
-        SettingsUI.SettingsToggle {
-            required property var modelData
-            text: modelData.label; checked: Services.Settings.data.emoji[modelData.key]
-            onClicked: Services.Settings.setValue("emoji", modelData.key, checked)
-        }
-    }
-    Repeater {
-        model: [{key:"gridColumns",label:"Grid columns",min:4,max:12},
-            {key:"emojiSize",label:"Emoji size",min:20,max:48}, {key:"recentLimit",label:"Recent history limit (0 disables)",min:0,max:60}]
-        SettingsUI.SettingsRow {
-            required property var modelData
-            Layout.fillWidth: true
-            Label { text: parent.modelData.label; Layout.fillWidth: true; wrapMode: Text.Wrap }
-            SettingsUI.SettingsNumber {
-                readonly property var option: parent.modelData
-                Accessible.name: option.label
-                from: option.min; to: option.max
-                value: Services.Settings.data.emoji[option.key]
-                onValueModified: Services.Settings.setValue("emoji", option.key, value)
+    SettingsUI.SettingsSection {
+        title: "Behaviour"
+        Repeater {
+            model: [{key:"enabled",label:"Enable Emoji Picker"}, {key:"showCategories",label:"Show category selector"},
+                {key:"closeOnSelect",label:"Close after copying"}]
+            SettingsUI.SettingsToggle {
+                required property var modelData
+                text: modelData.label; checked: Services.Settings.data.emoji[modelData.key]
+                onClicked: Services.Settings.setValue("emoji", modelData.key, checked)
             }
         }
     }
-    Label {
-        Layout.fillWidth: true; wrapMode: Text.Wrap; color: Theme.Theme.text
-        text: "Recents are saved between sessions. Clear them below."
+    SettingsUI.SettingsSection {
+        title: "Layout and history"
+        Repeater {
+            model: [{key:"gridColumns",label:"Grid columns",min:4,max:12},
+                {key:"emojiSize",label:"Emoji size",min:20,max:48}, {key:"recentLimit",label:"Recent history limit (0 disables)",min:0,max:60}]
+            SettingsUI.SettingsRow {
+                required property var modelData
+                Layout.fillWidth: true
+                Label { text: parent.modelData.label; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                SettingsUI.SettingsNumber {
+                    readonly property var option: parent.modelData
+                    Accessible.name: option.label
+                    from: option.min; to: option.max
+                    value: Services.Settings.data.emoji[option.key]
+                    onValueModified: Services.Settings.setValue("emoji", option.key, value)
+                }
+            }
+        }
+        Label {
+            Layout.fillWidth: true; wrapMode: Text.Wrap; color: Theme.Theme.text
+            text: "Recents are saved between sessions. Clear them below."
+        }
+        SettingsUI.SettingsButton { destructive: true; text: "Clear Recently Used"; onClicked: Services.Settings.setValue("emoji", "recents", []) }
     }
-    SettingsUI.SettingsButton { destructive: true; text: "Clear Recently Used"; onClicked: Services.Settings.setValue("emoji", "recents", []) }
     SettingsUI.SettingsButton {
         actionKind: "reset";  destructive: true; text: "Reset Emoji settings and history"; onClicked: Services.Settings.resetSection("emoji") }
 

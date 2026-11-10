@@ -138,5 +138,5 @@ is added. See the [acceptance review](review/controlcentre-image.md).
 
 The Settings image-picker candidate changes only dialog ownership; AssetManager and
 its content-addressed Bar/decoration stores remain the sole import path. Picker
-requests/errors are transient state, not new Settings fields.
+requests/errors and card disclosure are transient state, not new Settings fields.
 Private phase evidence and rollback snapshots remain in `$STATE/magi/audits`.

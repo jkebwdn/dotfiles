@@ -27,22 +27,25 @@ SettingsUI.SettingsPage {
                 actionKind: "navigation";  text: "Shared card roundness ↗"; onClicked: Services.SettingsWindowState.page = "Appearance" }
         }
     }
-    Repeater {
-        model: [{key:"enabled",label:"Accept notifications"}, {key:"toastsEnabled",label:"Show toasts"},
-            {key:"dnd",label:"Do Not Disturb"}, {key:"showBody",label:"Show body previews"},
-            {key:"criticalBypassDnd",label:"Critical notifications bypass DND"}]
-        SettingsUI.SettingsToggle {
-            required property var modelData
-            text: modelData.label
-            checked: Services.Settings.data.notifications[modelData.key]
-            onClicked: Services.Settings.setValue("notifications", modelData.key, checked)
+    SettingsUI.SettingsSection {
+        title: "Behaviour and history"
+        Repeater {
+            model: [{key:"enabled",label:"Accept notifications"}, {key:"toastsEnabled",label:"Show toasts"},
+                {key:"dnd",label:"Do Not Disturb"}, {key:"showBody",label:"Show body previews"},
+                {key:"criticalBypassDnd",label:"Critical notifications bypass DND"}]
+            SettingsUI.SettingsToggle {
+                required property var modelData
+                text: modelData.label
+                checked: Services.Settings.data.notifications[modelData.key]
+                onClicked: Services.Settings.setValue("notifications", modelData.key, checked)
+            }
         }
+        SettingsUI.SettingsRow {
+            Label { text: "History retention"; Layout.fillWidth: true }
+            SettingsUI.SettingsSelector { model: ["2 hours","6 hours","24 hours","Until cleared"]; currentIndex: [2,6,24,0].indexOf(Services.Settings.data.notifications.retentionHours); onActivated: Services.Settings.setValue("notifications","retentionHours",[2,6,24,0][currentIndex]) }
+        }
+        SettingsUI.SettingsHelp { text: "Critical notifications stay until cleared. History lasts for this session." }
     }
-    SettingsUI.SettingsRow {
-        Label { text: "History retention"; Layout.fillWidth: true }
-        SettingsUI.SettingsSelector { model: ["2 hours","6 hours","24 hours","Until cleared"]; currentIndex: [2,6,24,0].indexOf(Services.Settings.data.notifications.retentionHours); onActivated: Services.Settings.setValue("notifications","retentionHours",[2,6,24,0][currentIndex]) }
-    }
-    SettingsUI.SettingsHelp { text: "Critical notifications stay until cleared. History lasts for this session." }
     SettingsUI.SettingsSection {
         title: "Limits and timing"
         collapsible: true

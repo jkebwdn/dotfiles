@@ -21,8 +21,9 @@ UI.SettingsPage {
             backgroundOpacity: root.policy.managed ? root.policy.backgroundOpacity : 1
             blurEnabled: root.policy.blurEnabled
         }
-        ColumnLayout {
-            Layout.fillWidth: true; Layout.minimumWidth: 260; Layout.alignment: Qt.AlignTop; spacing: 12
+        UI.SettingsSection {
+            title: "Shared backgrounds"
+            Layout.fillWidth: true; Layout.minimumWidth: 260; Layout.alignment: Qt.AlignTop
             UI.SettingsToggle {
                 objectName: "applicationManaged"; Layout.fillWidth: true
                 text: "Use shared appearance"; checked: root.policy.managed
@@ -92,7 +93,7 @@ UI.SettingsPage {
                 : ""
             visible: text.length > 0
         }
-        UI.SettingsSection { title: "Error details"; collapsible: true; visible: Services.GlobalBlurService.error.length > 0
+        UI.SettingsSection { carded: false; title: "Error details"; collapsible: true; visible: Services.GlobalBlurService.error.length > 0
             UI.SettingsHelp { text: Services.GlobalBlurService.error }
         }
         UI.SettingsButton {

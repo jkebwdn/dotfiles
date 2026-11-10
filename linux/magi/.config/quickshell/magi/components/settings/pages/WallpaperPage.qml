@@ -44,15 +44,18 @@ SettingsUI.SettingsPage {
             wrapMode: Text.Wrap; Layout.fillWidth: true; color: Theme.Theme.text
         }
     }
-    SettingsUI.SettingsRow {
-        Label { text: "Thumbnail size"; Layout.fillWidth: true }
-        SettingsUI.SettingsNumber {
-            from: 160; to: 320; stepSize: 20
-            value: Services.Settings.data.wallpaper.thumbnailSize
-            onValueModified: Services.Settings.setValue("wallpaper", "thumbnailSize", value)
+    SettingsUI.SettingsSection {
+        title: "Library preferences"
+        SettingsUI.SettingsRow {
+            Label { text: "Thumbnail size"; Layout.fillWidth: true }
+            SettingsUI.SettingsNumber {
+                from: 160; to: 320; stepSize: 20
+                value: Services.Settings.data.wallpaper.thumbnailSize
+                onValueModified: Services.Settings.setValue("wallpaper", "thumbnailSize", value)
+            }
         }
+        SettingsUI.SettingsButton { destructive: true; text: "Clear recent wallpapers"; enabled: !Services.Wallpaper.busy; onClicked: Services.Wallpaper.start({op:"clearRecents"}) }
     }
-    SettingsUI.SettingsButton { destructive: true; text: "Clear recent wallpapers"; enabled: !Services.Wallpaper.busy; onClicked: Services.Wallpaper.start({op:"clearRecents"}) }
     SettingsUI.SettingsButton {
         actionKind: "reset";  text: "Reset Wallpaper preferences"; onClicked: Services.Settings.resetSection("wallpaper") }
 

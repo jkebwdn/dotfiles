@@ -51,11 +51,9 @@ synthetic routing does not establish physical multi-output acceptance. The exist
 outside-dismiss catcher still owns outside clicks while open; artwork adds no input
 target. See [acceptance review](review/controlcentre-image.md).
 
-## Focus acceptance
+## Focus/picker/cards acceptance
 
-Component tests cannot prove compositor key delivery. The operator passed the
-Zen/Ghostty/Thunar focus gate on 2026-11-10. No output or GPU changes are included.
-See [review](review/focus-picker-settings.md).
-
-Native file chooser acceptance also passed. The exact original native dialog
-placement failure remains an inference, distinguished from the accepted repair.
+Candidate fixes release searchable Hub focus and parent the retained image chooser.
+Component tests cannot prove first-key capture or external-application delivery.
+The operator passed the Zen/Ghostty/Thunar focus gate, file chooser and light/dark
+compact/normal card reviews on 2026-11-10. Commit review is approved; push remains pending. No physical output or GPU configuration change is part of this phase. See [review and API evidence](review/focus-picker-settings.md).

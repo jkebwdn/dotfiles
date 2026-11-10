@@ -61,6 +61,7 @@ ColumnLayout {
     }
     SettingsUI.SettingsSection {
         id: familySection
+        carded: false
         objectName: "ccFamilyInspector"
         title: root.individual ? root.familyLabel : ""
         collapsible: root.individual
@@ -133,6 +134,7 @@ ColumnLayout {
             }
 
             SettingsUI.VisualSettingsGroup {
+                carded: false
                 title: "Fine tune"
                 objectName: "ccProfileFineTune"
                 description: "Avatar and typography"
@@ -264,6 +266,7 @@ ColumnLayout {
             }
 
             SettingsUI.VisualSettingsGroup {
+                carded: false
                 visible: !root.behaviourOnly
                 title: "Fine tune"
                 objectName: "ccMediaFineTune"
@@ -439,6 +442,7 @@ ColumnLayout {
                 }
             }
             SettingsUI.SettingsSection {
+                carded: false
                 objectName: "ccStatusRowFineTune"
                 visible: !root.behaviourOnly && root.family === "host"
                 title: "Fine tune"
@@ -462,6 +466,7 @@ ColumnLayout {
                 }
             }
             SettingsUI.SurfaceStyleSettings {
+                carded: false
                 visible: !root.behaviourOnly && (root.family === "host")
                 title: "Border"
                 group: "surfaceBorders"

@@ -1182,10 +1182,8 @@ on narrow outputs, keep schema 22 through additive defaults, and default off.
 Do not move the panel or enlarge blur/input ownership for artwork. Details and
 operator acceptance: [review](review/controlcentre-image.md).
 
-## 2026-11-10 — transient Hub ownership
+## 2026-11-10 — transient Hub ownership and Settings presentation
 
-Replace visibility-long Exclusive focus with a search-only compositor grab and
-outside dismissal. See [review and API evidence](review/focus-picker-settings.md).
-
-Use the installed Qt 6.12 in-window FileDialog with an explicit parent and retained
-Settings owner. Reuse AssetManager for Bar and decoration imports.
+Replace visibility-long Exclusive focus with popup-style dismissal. Use the installed
+Qt 6.12 in-window FileDialog with an explicit parent to avoid unattached chooser
+windows. Share card styling through SettingsSection and opt out for nested groups. See [review and API evidence](review/focus-picker-settings.md).

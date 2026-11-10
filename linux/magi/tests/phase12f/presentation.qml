@@ -67,10 +67,10 @@ ShellRoot {
     compare(item("ccInstanceAccent").visible,group!=="sliders")
     verify(!item("settingsButton-Reset Control Centre appearance").visible)
     capture("cc-item-"+module)
-    family.children[1].forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
+    family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
     verify(family.expanded);verify(item("ccFamilyShape").visible);compare(p.selection.instance,module)
     // Collapsing must clamp a scrolled inspector instead of leaving a blank viewport.
-    p.contentY=1000;family.children[1].forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
+    p.contentY=1000;family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
     verify(!family.expanded);verify(p.contentY<=Math.max(0,p.contentHeight-item("controlCentreEditor").height)+1)
     p.contentY=0
     region.forceActiveFocus();keyClick(Qt.Key_Return);wait(30);compare(p.selection.scope,"family")
@@ -110,7 +110,7 @@ ShellRoot {
     verify(!item("visualSetting-statusIconSize").visible);verify(item("barInstanceAccent").visible)
     compare(item("barOrder-row-"+id).border.width,2);verify(!item("barOrder-row-"+id).familyHighlighted)
     capture("bar-item-"+id)
-    barFamily.children[1].forceActiveFocus();keyClick(Qt.Key_Space);wait(30);verify(item("visualSetting-statusIconSize").visible)
+    barFamily.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(30);verify(item("visualSetting-statusIconSize").visible)
    }
    item("barFamilyTarget-workspaces").forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
    compare(p.selection.scope,"family");compare(p.selection.family,"workspacePills");verify(barFamily.expanded);verify(!item("barIdentityInspector").visible)
@@ -216,7 +216,7 @@ ShellRoot {
    verify(clearRecent.destructive);compare(clearRecent.contentItem.color,Theme.Theme.red)
    clearRecent.down=true;compare(clearRecent.contentItem.color,Theme.Theme.accentText);clearRecent.down=false
    p=page("Clipboard");const privacy=item("clipboardHistoryPrivacy"),unchanged=JSON.stringify(Services.Settings.data)
-   verify(!privacy.expanded);privacy.children[1].forceActiveFocus();keyClick(Qt.Key_Space);verify(privacy.expanded)
+   verify(!privacy.expanded);privacy.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);verify(privacy.expanded)
    compare(JSON.stringify(Services.Settings.data),unchanged,"Privacy disclosure is presentation-only");p.contentY=0;capture("clipboard-history-details")
    privacy.expanded=false;p.contentY=0;item("clipboardAppearance").expanded=true;wait(30);verify(item("settingsToggle-Clipboard card borders").visible);capture("clipboard-appearance")
    p=page("Control Centre");const preview=item("controlCentrePreview")
@@ -246,7 +246,7 @@ ShellRoot {
     const disclosure=item(section),precision=item("visualSetting-"+key),saved=JSON.stringify(Services.Settings.data)
     verify(!disclosure.expanded);verify(!precision.visible)
     // Focus-only access opens the real disclosure; exact tuning is retained.
-    disclosure.children[1].forceActiveFocus();keyClick(Qt.Key_Space);wait(30)
+    disclosure.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(30)
     verify(disclosure.expanded);verify(precision.visible);compare(JSON.stringify(Services.Settings.data),saved)
     disclosure.expanded=false
    }

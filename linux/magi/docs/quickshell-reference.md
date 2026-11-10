@@ -841,10 +841,8 @@ Image/AnimatedImage instances avoid Qt's documented static-to-animation playing-
 caveat. See [Qt AnimatedImage](https://doc.qt.io/qt-6/qml-qtquick-animatedimage.html)
 and the [review evidence](review/controlcentre-image.md).
 
-## Hub focus ownership
+## Hub focus and Settings dialog ownership
 
-Installed Quickshell 0.3.2 exposes HyprlandFocusGrab. The grab is limited to searchable
-Hub modes. See [review and API evidence](review/focus-picker-settings.md).
-
-Installed Qt 6.12 exposes Dialog.parentWindow and Popup.Item. A retained Settings
-singleton owns explicitly parented Bar/decoration file dialogs in the host overlay.
+Installed Quickshell 0.3.2 exposes HyprlandFocusGrab; Qt 6.12 exposes Dialog.parentWindow
+and Popup.Item. The candidate uses the grab only for searchable Hub modes and a
+retained Settings singleton for Bar/decoration file dialogs. See [review and API evidence](review/focus-picker-settings.md).

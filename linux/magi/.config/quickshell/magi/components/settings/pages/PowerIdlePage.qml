@@ -21,33 +21,37 @@ SettingsUI.SettingsPage {
     function resetDraft() { draft = Object.assign({}, Services.Settings.data.powerIdle) }
     Component.onCompleted: resetDraft()
     Connections { target: Services.Settings; function onDataChanged() { root.resetDraft() } }
-    Repeater {
-        model: [{key:"lockAfter",label:"Lock after"}, {key:"displayOffAfter",label:"Display off after"}, {key:"suspendAfter",label:"Suspend after"}]
-        SettingsUI.SettingsRow {
-            required property var modelData
-            Label { text: parent.modelData.label; Layout.fillWidth: true }
-            SettingsUI.SettingsSelector {
-                readonly property string policyKey: parent.modelData.key
-                readonly property var choices: policyKey === "suspendAfter" ? root.suspendDurations : root.durations
-                objectName: "powerIdle-" + policyKey
-                model: choices.map(root.label)
-                currentIndex: choices.indexOf(root.draft[policyKey])
-                onActivated: root.draft = Object.assign({}, root.draft, {[policyKey]: choices[currentIndex]})
+    SettingsUI.SettingsSection {
+        title: "Idle timers"
+        Repeater {
+            model: [{key:"lockAfter",label:"Lock after"}, {key:"displayOffAfter",label:"Display off after"}, {key:"suspendAfter",label:"Suspend after"}]
+            SettingsUI.SettingsRow {
+                required property var modelData
+                Label { text: parent.modelData.label; Layout.fillWidth: true }
+                SettingsUI.SettingsSelector {
+                    readonly property string policyKey: parent.modelData.key
+                    readonly property var choices: policyKey === "suspendAfter" ? root.suspendDurations : root.durations
+                    objectName: "powerIdle-" + policyKey
+                    model: choices.map(root.label)
+                    currentIndex: choices.indexOf(root.draft[policyKey])
+                    onActivated: root.draft = Object.assign({}, root.draft, {[policyKey]: choices[currentIndex]})
+                }
             }
         }
-    }
-    SettingsUI.SettingsHelp { text: "Locks before sleep. “Never” disables only the selected timer." }
-    SettingsUI.SettingsHelp {
-        visible: !root.validOrder
-        text: "Enabled timers must run in order: lock, display off, then suspend."
-    }
-    RowLayout {
-        SettingsUI.SettingsButton {
-            objectName: "powerIdle-apply"
-            primary: true; text: "Apply"
-            enabled: Services.Settings.ready && root.validOrder && Services.Settings.saveState !== "pending"
-            onClicked: Services.Settings.setPowerIdle(root.draft)
+        SettingsUI.SettingsHelp { text: "Locks before sleep. “Never” disables only the selected timer." }
+        SettingsUI.SettingsHelp {
+            visible: !root.validOrder
+            text: "Enabled timers must run in order: lock, display off, then suspend."
         }
-        SettingsUI.SettingsButton { text: "Cancel"; flat: true; enabled: root.changed; onClicked: root.resetDraft() }
+        RowLayout {
+            SettingsUI.SettingsButton {
+                objectName: "powerIdle-apply"
+                primary: true; text: "Apply"
+                enabled: Services.Settings.ready && root.validOrder && Services.Settings.saveState !== "pending"
+                onClicked: Services.Settings.setPowerIdle(root.draft)
+            }
+            SettingsUI.SettingsButton { text: "Cancel"; flat: true; enabled: root.changed; onClicked: root.resetDraft() }
+        }
     }
+
 }

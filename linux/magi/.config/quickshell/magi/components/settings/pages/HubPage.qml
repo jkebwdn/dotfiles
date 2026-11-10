@@ -81,7 +81,8 @@ Item {
                 Layout.minimumHeight: 140
                 title: root.mode === "Layout" ? "" : selection.instance === "selector" ? "Selector" : selection.instance === "toggles" ? "Switches" : "Hub content"
                 description: ""
-                ColumnLayout {
+                SettingsUI.SettingsSection {
+                    title: "Layout"
                     visible: root.mode === "Layout"
                     Layout.fillWidth: true
                     Label {
@@ -133,7 +134,8 @@ Item {
                         onClicked: Services.SettingsWindowState.page = "Appearance"
                     }
                 }
-                ColumnLayout {
+                SettingsUI.SettingsSection {
+                    title: "Selector appearance"
                     visible: root.mode === "Appearance" && selection.instance === "selector"
                     Layout.fillWidth: true
                     Label {
@@ -149,6 +151,7 @@ Item {
                     }
                     SettingsUI.SurfaceStyleSettings {
                         title: ""
+                        carded: false
                         group: "surfaceBorders"
                         showSharedControls: false
                         targets: [
@@ -183,7 +186,8 @@ Item {
                         onClicked: Services.SettingsWindowState.page = "Appearance"
                     }
                 }
-                ColumnLayout {
+                SettingsUI.SettingsSection {
+                    title: "Switch appearance"
                     visible: root.mode === "Appearance" && selection.instance === "toggles"
                     Layout.fillWidth: true
                     Label {

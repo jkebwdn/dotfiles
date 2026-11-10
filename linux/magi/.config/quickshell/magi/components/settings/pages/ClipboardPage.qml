@@ -12,30 +12,33 @@ SettingsUI.SettingsPage {
     title: "Clipboard"
     description: "Super + C opens history."
 
-    Repeater {
-        model: [{key:"enabled",label:"Collect clipboard history"},
-            {key:"includeImages",label:"Include PNG and JPEG images"},
-            {key:"includeFiles",label:"Include file / URI lists"},
-            {key:"persistHistory",label:"Keep history across restarts (stored on disk)"}]
-        SettingsUI.SettingsToggle {
-            required property var modelData
-            text: modelData.label
-            checked: Services.Settings.data.clipboard[modelData.key]
-            onClicked: Services.Settings.setValue("clipboard", modelData.key, checked)
+    SettingsUI.SettingsSection {
+        title: "Collection and limits"
+        Repeater {
+            model: [{key:"enabled",label:"Collect clipboard history"},
+                {key:"includeImages",label:"Include PNG and JPEG images"},
+                {key:"includeFiles",label:"Include file / URI lists"},
+                {key:"persistHistory",label:"Keep history across restarts (stored on disk)"}]
+            SettingsUI.SettingsToggle {
+                required property var modelData
+                text: modelData.label
+                checked: Services.Settings.data.clipboard[modelData.key]
+                onClicked: Services.Settings.setValue("clipboard", modelData.key, checked)
+            }
         }
-    }
-    Label {
-        Layout.fillWidth: true; wrapMode: Text.Wrap
-        text: "History is session-only by default. Saved history is unencrypted."
-        color: Theme.Theme.text
-    }
-    SettingsUI.SettingsRow {
-        Layout.fillWidth: true
-        Label { text: "Maximum history entries"; Layout.fillWidth: true }
-        SettingsUI.SettingsNumber {
-            from: 10; to: 200; stepSize: 10
-            value: Services.Settings.data.clipboard.historyLimit
-            onValueModified: Services.Settings.setValue("clipboard", "historyLimit", value)
+        Label {
+            Layout.fillWidth: true; wrapMode: Text.Wrap
+            text: "History is session-only by default. Saved history is unencrypted."
+            color: Theme.Theme.text
+        }
+        SettingsUI.SettingsRow {
+            Layout.fillWidth: true
+            Label { text: "Maximum history entries"; Layout.fillWidth: true }
+            SettingsUI.SettingsNumber {
+                from: 10; to: 200; stepSize: 10
+                value: Services.Settings.data.clipboard.historyLimit
+                onValueModified: Services.Settings.setValue("clipboard", "historyLimit", value)
+            }
         }
     }
     SettingsUI.SettingsSection {

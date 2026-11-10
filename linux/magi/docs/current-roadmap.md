@@ -46,3 +46,10 @@ acceptance on 2026-11-09. The focused commit preserves current Settings exactly;
 push requires separate approval. Physical multi-output acceptance and native CPU
 measurement remain documented limitations. No additional decoration features are
 planned. See [review](review/controlcentre-image.md).
+
+## Focus, picker and Settings grouping
+
+The synchronized decoration baseline is `771cf7c`. The bounded new candidate passed
+103 checks with 0 FAIL / 0 UNKNOWN and four established environment limits. Native
+focus, picker and grouped-card acceptance passed on 2026-11-10. Three focused
+commits are approved; push still requires separate approval. See [review and API evidence](review/focus-picker-settings.md).

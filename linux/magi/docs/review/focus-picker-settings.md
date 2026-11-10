@@ -88,6 +88,51 @@ and missing-file failures preserve the previous selection. Managed bytes and sav
 GIF descriptors are verified in isolated XDG directories. Synthetic tests do not establish native layer-shell behavior. The separate operator
 response “Picker checks passed” establishes that acceptance.
 
+## Shared card composition
+
+`SettingsSection` remains the one grouping abstraction. Its non-focusable outer
+Item owns a semantic elevated background, a subtle border-role outline and the
+existing surface roundness policy. Internal layouts provide 12px inset, shared
+spacing, heading, description and the existing optional disclosure. Controls keep
+their own focus/hover semantics. The page owns width; Profile's responsive identity
+rows use the page's available width minus card padding, avoiding provisional-width
+feedback during first creation with long text and a pinned preview.
+
+`carded: false` removes the surface and inset for structural groups and already
+painted previews. CC family containers, nested Fine tune/border groups, Hub's nested
+border controls, application error details and Lock Screen's live preview opt out.
+Theme, palette, icon, lock-theme and wallpaper galleries are not wrapped again.
+
+Reviewed coverage:
+
+| Page | Treatment |
+| --- | --- |
+| Appearance / application themes | Existing conceptual sections receive shared cards; galleries remain independent. |
+| Wallpaper | Existing Library sources card; Library preferences added; gallery retained. |
+| Transparency | Shared backgrounds, Global blur, Application support and Details cards; preview separate. |
+| Profile | Identity and Weather; long-text responsive rows retain alignment. |
+| Bar | Existing identity, family, refinement and Custom Image sections share cards; visual layout editor retained. |
+| Control Centre | Decorative Image and contextual appearance sections share cards; preview/layout unchanged; nested groups opt out. |
+| Hub | Layout, Selector appearance and Switch appearance grouped; existing surface controls share cards. |
+| Date & time | Formats and spacing; Calendar details. |
+| Launcher | Existing Behaviour, Layout, result-limit and hidden-app sections share cards. |
+| Notifications | Card borders; Behaviour and history; Limits and timing. |
+| Clipboard | Collection and limits; existing privacy, borders and history-action sections. |
+| Emoji | Behaviour; Layout and history. |
+| Lock Screen | Selected-theme appearance/authentication options receive cards; gallery and live preview kept separate. |
+| Security | Existing fingerprint status/enrollment groups receive cards. |
+| Power & Idle | One coherent Idle timers card, preserving apply/cancel semantics. |
+
+`settings/cards` checks semantic surfaces, roundness, no extra focus targets,
+no nested card regression and horizontal control bounds on Appearance, Bar,
+Control Centre, Lock Screen and Power & Idle at 720×560, 1000×760 and 1400×900
+in One Light and Nord. It resizes the actual backing QWindow and can save 30
+captures with `python3 linux/magi/tests/settings/cards.py <capture-directory>`.
+Existing presentation tests exercise the remaining pages and keyboard controls.
+Captures are private evidence at `/tmp/magi-settings-cards-preview`. The operator
+accepted the representative pages in light/dark palettes and compact/normal windows
+on 2026-11-10 (“Cards accepted”). Wide-window coverage is automated.
+
 ## API evidence (2026-11-10)
 
 Installed: Quickshell 0.3.2-1, Qt base 6.12.0-3 / declarative 6.12.0-4,
@@ -112,9 +157,73 @@ Hyprland 0.57.1-1. Installed QML type metadata confirms FocusGrab and dialog API
   resolution, and establishes Popup.Window as the default reset behavior. This
   prevents interpreting the null getter as conclusive missing-parent evidence.
 
+## Validation and commit gate
 
-## Focus and picker validation
+The targeted Hub, existing Settings presentation/palettes and importer checks passed
+4/4 (`/tmp/magi-regression-ugylmpsa`). The next 15 checks passed 14 and exposed a
+Profile recursive-layout warning; this was treated as a failure despite its PASS
+marker. The final width/layout correction passes the Profile and cards checks
+(`/tmp/magi-regression-g272keg1`). Separate picker/cards checks passed 2/2
+(`/tmp/magi-regression-c81ir0ct`). The broader phase12f disclosure test was updated
+to use the section’s stable disclosureButton instead of a child index after the
+wrapper change; all five sites still send real keyboard events. It and the chooser
+mode-exit case pass (`/tmp/magi-regression-7ft0n9bj`). No warning exemption was expanded.
 
-Hub and picker component checks passed. Native focus and chooser acceptance passed
-separately as recorded above. Shared Settings cards and final matrix evidence are
-allocated to the following commit.
+The first full run exposed an additional offscreen catalogue harness still creating
+a real compositor grab. It was stopped; existing native-window substitutions now
+substitute the protocol object too. No warnings are exempted. The subsequent broad run identified the old disclosure
+index assumption; the final complete matrix is rerun after that correction and the
+chooser mode-exit guard. The broad run completed 101 PASS / 2 FAIL / 4 ENVIRONMENT. Its second failure was
+an appearance fixture that left personal-message mode off after visibility
+permutations, then clicked hidden Message and Weather fields by maximumLength.
+The test now enables Personal message through its real toggle and edits exactly
+the two visible identity fields; the preview-text assertions remain intact.
+The corrected complete appearance/preview fixture passes
+(`/tmp/magi-regression-53u2cosf`), including all 96 visibility/gap combinations and
+real identity-field editing. The final complete matrix at
+`/tmp/magi-regression-t5i49jcv` finishes **103 PASS / 0 FAIL / 0 UNKNOWN /
+4 ENVIRONMENT / 0 SKIPPED** across 107 commands. Its exit 2 represents the four
+established environment limits: Bluetooth private D-Bus, Clipboard image decode
+requiring denied D-Bus, Notifications private D-Bus, and native-lock
+SOCK_SEQPACKET/private-bus denial after a clean native build and exact host audit.
+No exemption was widened. Results are retained as `final-regression.json` in the
+audit; individual logs remain in the matrix directory. Native focus, picker and
+card acceptance all passed separately. No schema change or new default asset.
+
+The review candidate was copied to the persistent source with per-file preconditions
+and rollback bytes, then loaded by the normal watcher at 09:05:25 on 2026-11-10.
+No Quickshell restart or Settings write was performed. The native log records
+`Configuration Loaded`; the subsequent Wi-Fi null-device warning also existed
+before this phase. Native input, picker and card review were requested separately. All three gates are
+operator-accepted; responses are recorded in `native-acceptance.json`. The native
+Wayland text-input `disableSurface` mismatch warnings still appear during focus
+changes and were present before this phase. They are recorded, not suppressed;
+the operator passed actual keyboard delivery and release despite those warnings.
+
+The post-deployment check verifies all 42 candidate paths match the worktree,
+all 32 frozen runtime/test hashes match the full-run input, and both indexes are
+empty. `git diff --check` passes in both locations. Main remains at the baseline
+commit with divergence 0/0; its working tree intentionally holds the review changes.
+Of 701 protected snapshot entries, 687 are identical and 14 are intended source
+file/directory changes. There are no unexpected changes; Settings is byte-identical,
+and existing artwork, managed assets and generated theme state are unchanged.
+Evidence is in `protected-deploy-result.json` and `deployment.json` under the audit.
+After native acceptance, the only additional protected change is Settings
+`emoji.recents`, reflecting recent-item activity during the focus check. All other
+Settings values remain identical; that operator history is preserved. Assets and
+all other protected configuration remain unchanged. The later snapshot is
+`protected-after-native.json`.
+
+Three focused commits approved by the operator:
+
+1. `magi: release hub focus on external interaction` — HubWindow, Hub focus tests
+   and focus-specific documentation.
+2. `magi: repair control centre image picker` — retained SettingsImagePicker,
+   decoration/Bar callers, registration, picker tests and picker documentation.
+3. `magi: group settings options into cards` — shared section, page grouping and
+   nested opt-outs, responsive Profile rows, card tests and presentation documentation.
+
+Shared matrix/document files must be staged by relevant hunks. Exclude live Settings,
+user artwork, managed imports, private audit/capture state and all unrelated files.
+Native review and commit approval are complete. Stop after the three commits for
+separate push approval.

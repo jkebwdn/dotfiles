@@ -973,11 +973,8 @@ The same decoration supports animated GIFs through Qt AnimatedImage, retaining t
 shared all-frame importer. Hidden/non-owning presenters pause; Settings keeps a
 still preview. No new surface, timer or animation worker is introduced.
 
-## Hub focus release
+## Hub focus, image picker and grouped Settings cards candidate
 
-Search popup focus moves to one compositor grab. Outside interaction dismisses
-search modes without changing query persistence or output routing. See
-[review and API evidence](review/focus-picker-settings.md).
-
-Settings image dialogs use one retained singleton with an explicit host and Qt
-in-window presentation, preserving the existing AssetManager import path.
+Search popup focus moves to one compositor grab; Settings image dialogs gain a
+retained explicit host; shared SettingsSection surfaces group existing controls.
+No schema, routing, storage or navigation redesign. See [review and API evidence](review/focus-picker-settings.md).
