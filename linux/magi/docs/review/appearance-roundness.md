@@ -435,3 +435,14 @@ Ready for one commit, **only after explicit approval**:
 `magi: simplify appearance settings`. No private evidence, live Settings, generated
 receipts or artwork belong in staging. Option A remains reserved for a separate
 phase after this commit; no centralization or B/C implementation is included.
+
+## Subsequent product decision — feature ownership
+
+The Appearance simplification was accepted, committed and synchronized at `fa40a70`.
+A separate Option A candidate then proved geometry-preserving relocation, but native
+product review reconsidered its UI ownership. Its review deployment was rolled back
+without changing Settings. The [feature-owned revision](roundness-feature-ownership.md)
+retains all twelve fields, hides only the base editor, uses explicit inheritance
+switches and keeps specialized editors with their features. The original inventory,
+A/B/C options and visual evidence above remain historical findings. No B/C field
+merge/removal or schema migration is authorized by this revision.

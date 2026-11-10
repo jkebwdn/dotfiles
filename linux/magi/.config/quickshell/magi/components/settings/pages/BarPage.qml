@@ -55,6 +55,14 @@ SettingsUI.SettingsPage {
             Layout.fillWidth: true
         }
     }
+    SettingsUI.SettingsSection {
+        objectName: "barRoundness"
+        title: "Bar roundness"
+        visible: root.mode === "Appearance"
+        description: "Shapes status and workspace pills, including connected joins."
+        SettingsUI.RoundnessValue { fieldKey: "barPill"; label: ""; accessibleLabel: "Bar roundness"; reference: 8; editingAllowed: Services.Settings.data.bar.visual.workspacePills.roundness === null }
+        SettingsUI.SettingsHelp { visible: Services.Settings.data.bar.visual.workspacePills.roundness !== null; text: "Workspace pills have a separate saved override. Review that value before changing unified Bar roundness." }
+    }
     ColumnLayout {
         objectName: "barBehaviourControls"
         visible: root.mode === "Behaviour"

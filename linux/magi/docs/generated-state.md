@@ -152,3 +152,20 @@ two runtime receipt files. Generated theme payloads/links and live Settings stay
 unchanged; all 701 protected entries were stable throughout native review. Preserve
 current owner-written receipts rather than restoring the pre-reload snapshot. See
 [the settled-state verification](review/appearance-roundness.md).
+
+Roundness Option A evidence lives in
+`$STATE/magi/audits/roundness-centralization-oj03ofrt`: fresh 701-entry manifest,
+exact Settings snapshot, nullable/absent field inventory, private captures and
+before/after comparison. The host review helper guards eight source files and
+keeps rollback copies; it never writes or restores production Settings. Private
+interaction documents are disposable. If the existing shell watcher refreshes
+activation receipts after deployment, record those owner writes separately and
+preserve their current bytes. No new generated-state owner or migration.
+
+The Option A review deployment was guardedly rolled back before the feature-owned
+revision; live Settings and owner receipts were not restored from stale snapshots.
+New evidence lives in the original audit's `feature-ownership/` subdirectory and
+uses a fresh 701-entry manifest and exact Settings/12-field snapshots. The new host
+review helper snapshots current state at invocation and checks Workspace inheritance
+before deploying. No obsolete Settings snapshot is required, and no runtime Settings,
+asset or generated payload is a commit candidate.

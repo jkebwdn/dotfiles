@@ -55,15 +55,15 @@ The synchronized decoration baseline is `771cf7c`. The bounded new candidate pas
 focus, picker and grouped-card acceptance passed on 2026-11-10. Three focused
 commits were approved and pushed; synchronization is verified at `eb19df4`. See [review and API evidence](review/focus-picker-settings.md).
 
-## Appearance and roundness review
+## Appearance and feature-owned Roundness
 
-Focus/picker/cards remain the committed baseline `eb19df4`. Appearance is reversibly
-deployed and native-accepted in all six Nord/One Light × compact/normal/wide cases,
-plus the actual live page. Its 26-path candidate awaits approval for one commit:
-`magi: simplify appearance settings`. Settings are byte-identical; the review records
-the shell reload's two owner-written activation receipt updates separately.
-
-Option A (UI centralization retaining all 12 fields) is selected for a separate phase
-only after the Appearance commit. No B/C, schema/migration, field derivation/removal,
-shape-style or geometry changes are authorized. No centralization is implemented.
-See the [acceptance and exact commit allocation](review/appearance-roundness.md).
+Appearance is native-accepted, committed and synchronized at `fa40a70`. Native product
+review superseded the uncommitted central Option A editor. Its review deployment was
+rolled back safely; the revised candidate distributes nine multiplier sliders and
+one pixel stepper across their features, retaining all twelve fields and the hidden
+base fallback. Buttons/switches ownership remains under focused review, with a
+temporary CC editor. [Revised phase](review/roundness-feature-ownership.md).
+The operator accepted the revised UI and authorized the focused commit. Push
+requires separate approval. Native acceptance is operator-reported; the helper did
+not save a completed case receipt. No schema/migration,
+field merge/removal or Options B/C work is authorized.

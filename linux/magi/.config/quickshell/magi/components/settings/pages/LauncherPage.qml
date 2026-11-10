@@ -62,6 +62,7 @@ SettingsUI.SettingsPage {
         }
     }
     SettingsUI.SettingsSection {
+        objectName: "launcherArtwork"
         title: "Artwork"
         collapsible: true
         description: "Local header artwork, inset within the Hub surface."
@@ -97,8 +98,27 @@ SettingsUI.SettingsPage {
                 }
             }
         }
+        SettingsUI.SettingsHelp { text: "Pixel radius for the optional header image." }
+        SettingsUI.SettingsRow {
+            Label { text: "Header image corners (px)"; Layout.fillWidth: true; wrapMode: Text.Wrap }
+            SettingsUI.SettingsNumber {
+                objectName: "roundness-header"
+                Accessible.name: "Header image corners in pixels"
+                from: 0; to: 75; stepSize: 1
+                value: Services.Settings.data.launcher.headerRadius
+                onValueModified: Services.Settings.setValue("launcher", "headerRadius", value)
+            }
+        }
+        Rectangle {
+            objectName: "roundnessPreview-header"
+            Layout.alignment: Qt.AlignHCenter
+            implicitWidth: 135; implicitHeight: 75
+            radius: Services.Settings.data.launcher.headerRadius / 2
+            color: Theme.Theme.surface; border.color: Theme.Theme.border
+            Accessible.name: "Header corner preview at half size"
+        }
         Repeater {
-            model: [{key:"headerRadius",label:"Header corner roundness",max:75}, {key:"headerBorderWidth",label:"Header border width",max:8}]
+            model: [{key:"headerBorderWidth",label:"Header border width",max:8}]
             SettingsUI.SettingsRow {
                 required property var modelData
                 Layout.fillWidth: true

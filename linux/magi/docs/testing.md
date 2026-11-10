@@ -230,3 +230,47 @@ PNG transport and native socket restrictions only. Corrected item captures and
 inventory export were also rechecked. Native operator acceptance subsequently passed
 all six Nord/One Light × compact/normal/wide cases plus the deployed Appearance page
 on 2026-11-10. See the review for native log limitations and protected-state receipts.
+
+## Roundness UI centralization — historical Option A
+
+The matrix contains 112 commands. `appearance/run:--roundness` checks the twelve
+actual editors, keyboard adjustment, existing ranges/units, null resets, private
+save/reload, six responsive palette/size cases, shape selectors and no construction
+writes. `appearance/roundness-audit` now describes the central editor locations;
+its previous committed CSV/report remains historical evidence.
+`appearance/roundness-equivalence` extracts accepted `fa40a70` with Git archive,
+compares 419 preserved runtime/schema/native files and 24 software-rendered image
+pairs (12 consumers × two palettes), with zero Settings writes. It does not use
+an old worktree or claim native GPU masks from software captures. Existing CC
+presentation tests retain runtime shape checks while the central test owns input.
+Full regression and native results: [phase review](review/roundness-centralization.md).
+
+Final Option A matrix: **108 PASS / 4 ENVIRONMENT / 0 FAIL / 0 UNKNOWN /
+0 SKIPPED**, 112 commands, evidence in
+`$STATE/magi/audits/roundness-centralization-oj03ofrt/full`. The final editor/census
+rerun passed both commands after strengthening completed-disk-read assertions.
+Native helper self-test passed; operator GPU/lock acceptance is still pending.
+
+## Feature-owned roundness revision
+
+The current matrix has 113 commands. `appearance/run:--roundness` now verifies the
+10 feature-owned editors, hidden base/workspace fields, exact Appearance copy,
+inheritance switches/disabled sliders, retained styles, null/absent persistence,
+keyboard/save/reload and 30 page/width/palette combinations with no passive writes.
+`runtime-visual/run:roundness-features.qml` adds shared-action min/current/max and
+unified Bar min/current/max at compact/normal widths, workspace active/inactive
+cells and expanded surfaces. `appearance/roundness-equivalence` now compares
+417 unchanged runtime/schema/native files and 28 pixel-identical image pairs,
+including collapsed/expanded connected surfaces, against `fa40a70`.
+Targeted: 14 PASS. Full regression and revised native acceptance are recorded in
+the [feature ownership review](review/roundness-feature-ownership.md). Historical
+Option A logs/captures remain under their original audit paths.
+
+Final feature-ownership matrix: **109 PASS / 4 ENVIRONMENT / 0 FAIL / 0 UNKNOWN /
+0 SKIPPED**, 113 commands, evidence in
+`$STATE/magi/audits/roundness-centralization-oj03ofrt/feature-ownership/full`.
+Established Bluetooth/notifications private-bus, clipboard PNG transport and native
+lock socket/private-bus limits remain explicitly classified. Revised native operator
+acceptance was subsequently confirmed by the operator. The deployment source
+hashes match, but the helper did not save a completed six-case result; automated
+case-by-case native completion is not claimed.

@@ -74,15 +74,15 @@ ShellRoot {
             verify(allFilter.mapToItem(page,0,0).y>=0,"Gallery start remains visible")
             verify(allFilter.mapToItem(page,0,allFilter.height).y<=page.height)
             gallery.expanded=false;wait(60)
-            const before=Services.Settings.data.appearance.roundness.master
-            const slider=item("masterRoundnessPrecision");reveal(slider);slider.forceActiveFocus();keyClick(Qt.Key_Left)
-            compare(Services.Settings.data.appearance.roundness.master,Math.max(0,before-.05))
-            compare(item("masterRoundnessPreview").radius,Math.min(14,8*Services.Settings.data.appearance.roundness.master))
-            tryCompare(Services.Settings,"saveState","saved")
-            capture("roundness-primary")
-            Services.Settings.reload();tryCompare(Services.Settings,"ready",true)
-            compare(Services.Settings.data.appearance.roundness.master,Math.max(0,before-.05))
-            Services.Settings.setRoundness("master",before)
+            const before=Services.Settings.data.appearance.roundness.roles.surface
+            verify(findChild(page,"masterRoundnessPrecision")===null)
+            const inherit=item("roundnessInherit-surface");reveal(inherit)
+            if(inherit.checked){inherit.forceActiveFocus();keyClick(Qt.Key_Space)}
+            const slider=item("roundness-surface"),old=slider.value;reveal(slider);slider.forceActiveFocus();keyClick(Qt.Key_Left)
+            compare(Services.Settings.data.appearance.roundness.roles.surface,Math.max(0,old-.05))
+            compare(item("roundnessPreview-surface").radius,Theme.Theme.radius("surface",12,56,28))
+            tryCompare(Services.Settings,"saveState","saved");capture("roundness-primary")
+            Services.Settings.setRoundness("surface",before)
             const revision=Services.Settings.revision
             reveal(packs);packs.focusIndex(0);keyClick(Qt.Key_Right);keyClick(Qt.Key_Return)
             compare(Services.Settings.data.icons.pack,packs.model[1].id);verify(packs.itemAt(1).Accessible.checked)

@@ -7,7 +7,11 @@ Bluetooth pairing support, the curated lock themes and internal designer, and th
 
 ## Current canonical documents
 
-- [Appearance simplification and complete roundness audit — review only](review/appearance-roundness.md)
+- [Roundness by feature — accepted ownership](review/roundness-feature-ownership.md)
+- [Buttons and switches — focused consumer audit](review/buttons-switches-roundness.md)
+- [Roundness Option A — superseded UI, retained evidence](review/roundness-centralization.md)
+
+- [Accepted Appearance simplification and historical roundness audit](review/appearance-roundness.md)
 
 - [Hub focus, image picker and grouped Settings cards candidate](review/focus-picker-settings.md)
 

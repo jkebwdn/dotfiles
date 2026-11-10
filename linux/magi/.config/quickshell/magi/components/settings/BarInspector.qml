@@ -217,28 +217,6 @@ ColumnLayout {
             }
         }
         SettingsRow {
-            visible: root.family !== "host"
-            Label {
-                text: "Roundness"
-                Layout.fillWidth: true
-            }
-            SettingsSlider {
-                Layout.fillWidth: true
-                Layout.minimumWidth: 100
-                from: 0
-                to: 2
-                stepSize: .05
-                value: root.family === "workspacePills" ? (root.style.roundness == null ? (Services.Settings.data.appearance.roundness.roles.barPill ?? Services.Settings.data.appearance.roundness.master) : root.style.roundness) : (Services.Settings.data.appearance.roundness.roles.barPill ?? Services.Settings.data.appearance.roundness.master)
-                onMoved: root.family === "workspacePills" ? root.setStyle("roundness", value) : Services.Settings.setRoundness("barPill", value)
-            }
-        }
-        SettingsButton {
-            actionKind: "reset"
-            visible: root.family !== "host"
-            text: root.family === "workspacePills" ? "Follow Bar pill roundness" : "Follow Master roundness"
-            onClicked: root.family === "workspacePills" ? root.setStyle("roundness", null) : Services.Settings.setRoundness("barPill", null)
-        }
-        SettingsRow {
             visible: root.family === "statusPills"
             Label {
                 text: "Status icon size"
@@ -262,23 +240,8 @@ ColumnLayout {
         visible: ["wifi", "bluetooth", "volume"].includes(root.instance)
         collapsible: true
         title: root.instance === "volume" ? "Audio menu" : root.instance === "wifi" ? "Wi-Fi menu" : "Bluetooth menu"
-        description: "Colour, width and roundness are shared with other menus."
+        description: "Colour and width are shared with other menus."
         group: "surfaceBorders"
-        SettingsRow {
-            Label {
-                text: "Shared surface roundness"
-                Layout.fillWidth: true
-            }
-            SettingsSlider {
-                Layout.fillWidth: true
-                Layout.minimumWidth: 100
-                from: 0
-                to: 2
-                stepSize: .05
-                value: Services.Settings.data.appearance.roundness.roles.surface ?? Services.Settings.data.appearance.roundness.master
-                onMoved: Services.Settings.setRoundness("surface", value)
-            }
-        }
         targets: [
             {
                 id: ["wifi", "bluetooth", "volume"].includes(root.instance) ? root.instance : "wifi",

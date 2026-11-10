@@ -58,21 +58,22 @@ Component tests cannot prove first-key capture or external-application delivery.
 The operator passed the Zen/Ghostty/Thunar focus gate, file chooser and light/dark
 compact/normal card reviews on 2026-11-10. The three reviewed commits are pushed and synchronized at `eb19df4`. No physical output or GPU configuration change is part of this phase. See [review and API evidence](review/focus-picker-settings.md).
 
-## Roundness audit findings (review only)
+## Roundness ownership review
 
-Shared surface has three editor locations; the 13 sliders plus one pixel stepper
-edit 12 numeric fields. No dead numeric fields; Theme.radiusLarge is an unused
-internal token. Primary-controls and slider labels understate/overstate their real
-consumer scope. Centralization options and mask/join risks are documented in the
-[roundness review](review/appearance-roundness.md). No consolidation or cleanup is
-implemented. Native Appearance acceptance passed six private Wayland cases and
-the deployed page; see the review for their fixture/log limitations.
-The prior worktree cleanup still needs a host process-reference check because
-/proc/1395/cwd was unreadable; sandbox invisibility is not proof it is unused.
+Option A proved relocation without geometry changes, but its central UI was
+reconsidered and rolled back after native product review. The revised candidate
+retains twelve fields with nine sliders/one stepper, hides the active base fallback
+and preserves inherited Workspace behavior. Independent Workspace overrides block
+unified editing/deployment until reviewed; they are never discarded. The cross-MAGI
+action role still needs a permanent UI-ownership decision; it remains temporarily
+under CC with a focused consumer report. The unused radiusLarge token is untouched.
+The operator accepted the revised UI and authorized its focused commit. The helper
+did not save a completed native receipt; acceptance is operator-reported. Push
+requires separate approval. See
+[feature ownership](review/roundness-feature-ownership.md).
 
-Appearance's three source files are reversibly deployed and native-accepted;
-commit approval remains pending. Option A is chosen for the subsequent phase.
-Settings and generated payloads are preserved. Two activation receipt files updated
-asynchronously after the deployment reload; the final preservation report records
-this distinction. The existing Qt Wayland text-input warnings remain known runtime
-debt despite the operator's successful Appearance review.
+Appearance is accepted/pushed at `fa40a70`. Earlier worktree cleanup still requires
+a host process-reference check because `/proc/1395/cwd` was unreadable; sandbox
+invisibility is not proof of inactivity. Existing Qt Wayland text-input warnings
+remain runtime debt despite the accepted Appearance review. No unrelated cleanup
+or renderer change is included here.

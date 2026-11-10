@@ -66,38 +66,13 @@ ColumnLayout {
         title: root.individual ? root.familyLabel : ""
         collapsible: root.individual
         expanded: !root.individual
+        SettingsUI.SettingsHelp { objectName: "ccRoundnessLocation"; visible: !root.behaviourOnly; text: "Use the Roundness card below for control and artwork corners." }
         SettingsUI.SettingsSection {
             title: "Profile Header"
             objectName: "profileHeaderSettings"
             collapsible: false
             visible: !root.behaviourOnly && (root.family === "profile")
 
-            SettingsUI.SettingsRow {
-                columns: 2
-                Label {
-                    Layout.columnSpan: 2
-                    text: "Avatar shape"
-                    Layout.fillWidth: true
-                }
-                SettingsUI.SettingsSlider {
-                    Layout.row: 1
-                    Layout.column: 0
-                    objectName: "artRoundness-avatar"
-                    Layout.fillWidth: true
-                    from: 0
-                    to: 2
-                    stepSize: .05
-                    value: Services.Settings.data.appearance.roundness.roles.avatar ?? Services.Settings.data.appearance.roundness.master
-                    onMoved: Services.Settings.setRoundness("avatar", value)
-                }
-                SettingsUI.SettingsButton {
-                    Layout.row: 1
-                    Layout.column: 1
-                    actionKind: "reset"
-                    text: "Default"
-                    onClicked: Services.Settings.setRoundness("avatar", null)
-                }
-            }
             SettingsUI.SettingsToggle {
                 text: "Background"
                 checked: Services.Settings.data.appearance.profileBackground.enabled
@@ -198,33 +173,6 @@ ColumnLayout {
             collapsible: false
             visible: root.family === "media"
 
-            SettingsUI.SettingsRow {
-                columns: 2
-                visible: !root.behaviourOnly
-                Label {
-                    Layout.columnSpan: 2
-                    text: "Artwork shape"
-                    Layout.fillWidth: true
-                }
-                SettingsUI.SettingsSlider {
-                    Layout.row: 1
-                    Layout.column: 0
-                    objectName: "artRoundness-albumArt"
-                    Layout.fillWidth: true
-                    from: 0
-                    to: 2
-                    stepSize: .05
-                    value: Services.Settings.data.appearance.roundness.roles.albumArt ?? Services.Settings.data.appearance.roundness.master
-                    onMoved: Services.Settings.setRoundness("albumArt", value)
-                }
-                SettingsUI.SettingsButton {
-                    Layout.row: 1
-                    Layout.column: 1
-                    actionKind: "reset"
-                    text: "Default"
-                    onClicked: Services.Settings.setRoundness("albumArt", null)
-                }
-            }
             SettingsUI.SettingsRow {
                 visible: !root.behaviourOnly
                 Label {
@@ -344,7 +292,7 @@ ColumnLayout {
         }
         SettingsUI.SettingsSection {
             id: shapeSection
-            visible: !root.behaviourOnly && (["controls", "actions", "sliders", "host"].includes(root.family))
+            visible: !root.behaviourOnly && root.family === "host"
             title: root.individual ? "" : ({
                     controls: "Primary controls",
                     actions: "Secondary controls",
@@ -352,41 +300,9 @@ ColumnLayout {
                     host: "Surface"
                 })[root.family] || ""
             description: ""
-            readonly property string radiusRole: ({
-                    controls: "controlTile",
-                    actions: "secondaryControl",
-                    sliders: "slider",
-                    host: "surface"
-                })[root.family] || "surface"
             SettingsUI.SettingsHelp {
                 visible: !root.behaviourOnly && (root.family === "host")
-                text: "Shape and border styling are shared with other menus."
-            }
-            SettingsUI.SettingsRow {
-                columns: 2
-                Label {
-                    Layout.columnSpan: 2
-                    text: "Shape"
-                    Layout.fillWidth: true
-                }
-                SettingsUI.SettingsSlider {
-                    Layout.row: 1
-                    Layout.column: 0
-                    Layout.fillWidth: true
-                    from: 0
-                    to: 2
-                    stepSize: .05
-                    objectName: "ccFamilyShape"
-                    value: Services.Settings.data.appearance.roundness.roles[shapeSection.radiusRole] ?? Services.Settings.data.appearance.roundness.master
-                    onMoved: Services.Settings.setRoundness(shapeSection.radiusRole, value)
-                }
-                SettingsUI.SettingsButton {
-                    Layout.row: 1
-                    Layout.column: 1
-                    actionKind: "reset"
-                    text: "Default"
-                    onClicked: Services.Settings.setRoundness(shapeSection.radiusRole, null)
-                }
+                text: "Border styling is shared with other menus."
             }
             SettingsUI.SettingsRow {
                 visible: !root.behaviourOnly && (root.family === "host")

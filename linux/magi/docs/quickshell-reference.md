@@ -864,3 +864,16 @@ overload (Quickshell 0.3.2). The roundness evidence fixture uses this API to avo
 QtTest nested-item capture offsets; it is test-only and not a live preview loop.
 Actual capture success and visual bounds were checked. Software captures cannot
 establish GPU/compositor shader-mask acceptance.
+
+Roundness Option A (2026-11-10) adds no protocol API: production SettingsSlider
+`onMoved`, SettingsNumber `onValueModified`, SettingsSection disclosure and the
+existing Settings setters remain authoritative. The central QtTest exercises real
+keyboard events, null reset, save/reload and item capture; no write occurs merely
+by constructing the editors. See [tests and limitations](review/roundness-centralization.md).
+
+The feature-owned revision reuses SettingsToggle/CompactToggle's existing checked
+binding and `onClicked` event: construction does not write values. An unchecked
+inheritance switch seeds a custom override from the current base; checking writes
+null. QtTest verifies checked/disabled state, keyboard transitions and completed
+SettingsStore disk reads. Native protocols/renderers and the three shape enums do
+not change. [Consumer audit and evidence](review/roundness-feature-ownership.md).

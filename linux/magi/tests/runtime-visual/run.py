@@ -22,6 +22,17 @@ with tempfile.TemporaryDirectory(prefix='magi-runtime-visual-') as temporary:
         (config/f'{name}.ppm').write_bytes(f'P6\n{w} {h}\n255\n'.encode() + bytes([255,120,20]) * w * h)
     (config/'services/TrayService.qml').write_text('pragma Singleton\nimport QtQuick\nTrayModel {}\n')
     (config/'settings.json').write_text('{"schemaVersion":10}')
+    if os.environ.get('MAGI_ROUNDNESS_EQUIVALENCE'):
+        script="const fs=require('fs'),vm=require('vm'),c=vm.createContext({});vm.runInContext(fs.readFileSync(process.argv[1],'utf8'),c);console.log(JSON.stringify(vm.runInContext('defaults()',c)))"
+        seed=json.loads(subprocess.check_output(['node','-e',script,str(config/'settings/SettingsSchema.js')],text=True))
+        values=json.loads(os.environ['MAGI_ROUNDNESS_SEED'])
+        seed['appearance']['roundness']=values['roundness']
+        seed['appearance']['theme']=os.environ['MAGI_ROUNDNESS_THEME']
+        seed['bar']['visual']['workspacePills']['roundness']=values['workspace']
+        if values['header_present']: seed['launcher']['headerRadius']=values['header']
+        else: seed['launcher'].pop('headerRadius',None)
+        (config/'settings.json').write_text(json.dumps(seed))
+        before_settings=(config/'settings.json').read_bytes()
     if len(sys.argv) > 1 and sys.argv[1] in ('bar-image.qml', 'controlcentre-image.qml'):
         shutil.copy(root/'tests/bar-image/alpha.gif', config/'alpha.gif')
         # Optional operator asset is imported through the production worker in
@@ -132,6 +143,8 @@ QtObject {
         print((error.stderr or b"").decode(errors="replace"), flush=True)
         raise
     output=result.stdout+result.stderr
+    if os.environ.get('MAGI_ROUNDNESS_EQUIVALENCE'):
+        assert (config/'settings.json').read_bytes()==before_settings, 'Read-only capture wrote Settings'
     checked='\n'.join(line for line in output.splitlines() if 'Failed to start IPC server' not in line
                       and 'This plugin does not support setting window masks' not in line
                       and 'WARN: Unable to find hyprland socket. Cannot connect to hyprland.' not in line)
@@ -173,7 +186,7 @@ QtObject {
         assert first.pixelColor(60,140).getRgb() == (255,0,0,255), 'GIF original red'
         assert later.pixelColor(20,70).getRgb() == (0,0,255,255), 'later GIF content fits union'
 
-    assert result.returncode==0 and 'PASS' in output and ({'roundness.qml':'Roundness impact PASS','controlcentre-image.qml':'Control Centre decoration runtime PASS','bar-image.qml':'Custom Image runtime PASS','lock-themes.qml':'Lock themes product and runtime PASS','daily-polish.qml':'Daily polish runtime PASS','settings-finish.qml':'Settings finish PASS','theme-gallery.qml':'Theme gallery PASS','settings-product.qml':'Settings product review PASS','quality.qml':'Phase16 quality PASS','palettes.qml':'Palette expansion preview PASS','profile.qml':'Profile responsive pinned navigation PASS','../phase12d/runtime.qml':'Phase12D runtime composition PASS','../phase12b/surfaces.qml':'Phase12B surfaces PASS','typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
+    assert result.returncode==0 and 'PASS' in output and ({'roundness-features.qml':'Feature roundness geometry PASS','roundness.qml':'Roundness impact PASS','controlcentre-image.qml':'Control Centre decoration runtime PASS','bar-image.qml':'Custom Image runtime PASS','lock-themes.qml':'Lock themes product and runtime PASS','daily-polish.qml':'Daily polish runtime PASS','settings-finish.qml':'Settings finish PASS','theme-gallery.qml':'Theme gallery PASS','settings-product.qml':'Settings product review PASS','quality.qml':'Phase16 quality PASS','palettes.qml':'Palette expansion preview PASS','profile.qml':'Profile responsive pinned navigation PASS','../phase12d/runtime.qml':'Phase12D runtime composition PASS','../phase12b/surfaces.qml':'Phase12B surfaces PASS','typography.qml':'Phase 2E.2 typography navigation toggles PASS','weather.qml':'Weather service PASS','feedback.qml':'Phase 2E.1 feedback PASS','polish.qml':'Phase 2E polish PASS','secondary.qml':'Secondary surfaces PASS','appearance.qml':'CC appearance and preview PASS','colours.qml':'7afd1c6 colour equivalence PASS','hub.qml':'Hub production preview PASS'}[sys.argv[1]] if len(sys.argv) > 1 else 'Artwork contour geometry PASS') in output and 'ERROR' not in checked and 'WARN' not in checked and 'FAIL!' not in checked and 'FAIL:' not in checked
 
     if len(sys.argv) > 1 and sys.argv[1] == 'palettes.qml' and env.get('MAGI_PALETTE_PREVIEWS'):
         captures = Path(env['MAGI_PALETTE_PREVIEWS'])

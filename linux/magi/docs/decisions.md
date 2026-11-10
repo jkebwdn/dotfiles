@@ -1196,3 +1196,26 @@ healthy details stay expanded-only, failures remain discoverable. Remove only th
 primary roundness presets now. Inventory every numeric role before offering A/B/C
 consolidation choices; preserve saved numbers/null inheritance. No option is selected
 or implemented. See [evidence and review gate](review/appearance-roundness.md).
+
+## 2026-11-10 — Roundness Option A, no geometry consolidation
+
+Following accepted/pushed Appearance `fa40a70`, the operator selected UI
+centralization only. Retain all twelve fields, nullable values, defaults and range
+semantics. Keep Global visible and group ten specialized multipliers plus the
+pixel-valued header control beneath disclosures. Preserve broad component resets
+and local shape styles. Compare identical production consumers against `fa40a70`
+using private test documents; leave native GPU/lock review explicit. No B/C,
+inheritance redesign, schema bump or migration. Commit/push remain separate gates.
+See [implementation evidence](review/roundness-centralization.md).
+
+## 2026-11-10 — revise roundness ownership after native product review
+
+Do not commit the centralized Option A UI. Its geometry proof remains useful, but
+feature-specific controls belong with their features. Hide master from Settings
+without deleting its active fallback behavior; expose only surface on Appearance.
+Use checked inheritance switches with the real saved-base parent, not invented
+surface/primary relationships. Workspace already inherits barPill, so one Bar slider
+needs no normalization. Retain the shared action editor temporarily under CC pending
+its focused ownership audit; retain the independent slider role there too. All
+fields/defaults/current values, styles, masks and schema stay unchanged. Guarded
+rollback restored production before revision. [Review](review/roundness-feature-ownership.md).

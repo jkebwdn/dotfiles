@@ -979,10 +979,30 @@ Search popup focus moves to one compositor grab; Settings image dialogs gain a
 retained explicit host; shared SettingsSection surfaces group existing controls.
 No schema, routing, storage or navigation redesign. See [review and API evidence](review/focus-picker-settings.md).
 
-## Appearance simplification and roundness audit — candidate
+## Appearance simplification and roundness audit — accepted at fa40a70
 
 Reuse ThemeGallery's registry/cards and SettingsSection; move routine application
 status behind individual disclosures while preserving attention and enrollment.
 Roundness audit separates numeric fields, shape styles, derived tokens and mask
 geometry. No schema, native lock, theme adapter or consolidation change. See
 [review](review/appearance-roundness.md).
+
+## Roundness Option A — superseded UI ownership
+
+The central Appearance RoundnessPicker owns all twelve numeric editors, with
+RoundnessValue sharing nullable multiplier/reset handling. Five subordinate
+SettingsSection disclosures reuse the existing card and keyboard system. Removing
+two redundant surface editors yields eleven sliders plus one pixel stepper; the
+fields, schema, Theme tokens, native mask bridge and all runtime consumers remain
+unchanged. Component-wide reset actions retain their existing scope. Three shape
+selectors stay local. [Review and native gate](review/roundness-centralization.md).
+
+## Roundness by feature — revised candidate
+
+Native product review superseded the centralized UI. Retain RoundnessValue for
+shared editor mechanics, with explicit nullable inheritance switches; distribute
+numeric editors to Appearance/Hub/Bar/CC/Launcher. Global becomes hidden compatibility
+state. Current Workspace null preserves one visible Bar value without normalization.
+Action remains a cross-MAGI field temporarily reviewed under CC, not merged with its
+primary/secondary roles. No renderer, mask, schema or migration change. The original
+Option A results remain historical evidence. [Revision](review/roundness-feature-ownership.md).

@@ -127,6 +127,7 @@ Item {
                     SettingsUI.SettingsHelp {
                         text: "Colour, width and shape follow shared menu styling."
                     }
+                    SettingsUI.SettingsHelp { text: "Roundness is managed in Appearance → Roundness." }
                     SettingsUI.SettingsButton {
                         actionKind: "navigation";
                         Layout.minimumWidth: 0
@@ -135,6 +136,7 @@ Item {
                     }
                 }
                 SettingsUI.SettingsSection {
+                    objectName: "hubSelectorAppearance"
                     title: "Selector appearance"
                     visible: root.mode === "Appearance" && selection.instance === "selector"
                     Layout.fillWidth: true
@@ -161,23 +163,9 @@ Item {
                             }
                         ]
                     }
-                    Label {
-                        text: "Roundness"
-                        color: Theme.Theme.text
-                    }
-                    SettingsUI.SettingsSlider {
-                        Layout.fillWidth: true
-                        from: 0
-                        to: 2
-                        stepSize: .05
-                        value: Services.Settings.data.appearance.roundness.roles.hubSelector ?? Services.Settings.data.appearance.roundness.master
-                        onMoved: Services.Settings.setRoundness("hubSelector", value)
-                    }
-                    SettingsUI.SettingsButton {
-                        actionKind: "reset";
-                        Layout.minimumWidth: 0
-                        text: "Follow Master roundness"
-                        onClicked: Services.Settings.setRoundness("hubSelector", null)
+                    SettingsUI.RoundnessValue {
+                        fieldKey: "hubSelector"; label: "Selector roundness"; reference: 22
+                        description: "Shapes the mode selector."
                     }
                     SettingsUI.SettingsButton {
                         actionKind: "navigation";

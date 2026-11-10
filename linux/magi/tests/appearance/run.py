@@ -2,30 +2,41 @@
 """Production Settings UI under QtTest; never use operator HOME/config/state."""
 from pathlib import Path
 import os
+import json
 import shutil
 import subprocess
 import tempfile
 import sys
 root = Path(__file__).resolve().parents[2]
+arguments = sys.argv[1:]
+roundness = bool(arguments and arguments[0] == '--roundness')
+if roundness: arguments = arguments[1:]
 with tempfile.TemporaryDirectory(prefix='magi-appearance-review-') as tmp:
     stage = Path(tmp)
     config = stage/'shell'
     shutil.copytree(root/'.config/quickshell/magi', config)
     (config/'settings.json').write_text('{"schemaVersion":10}')
+    if roundness:
+        script = "const fs=require('fs'),vm=require('vm'),c=vm.createContext({});vm.runInContext(fs.readFileSync(process.argv[1],'utf8'),c);console.log(JSON.stringify(vm.runInContext('defaults()',c)))"
+        seed=json.loads(subprocess.check_output(['node','-e',script,str(config/'settings/SettingsSchema.js')],text=True))
+        seed['appearance']['roundness']={'master':1,'roles':{'surface':None,'barPill':1,'action':1.2,'controlTile':1.25,'secondaryControl':1.2,'slider':1.2,'avatar':1.2,'albumArt':1.2,'hubSelector':.4}}
+        seed['bar']['visual']['workspacePills']['roundness']=None
+        seed['launcher'].pop('headerRadius',None)
+        (config/'settings.json').write_text(json.dumps(seed))
     page = config/'components/settings/pages/AppearancePage.qml'
     page.write_text(page.read_text().replace('id: root', 'id: root; property alias testPackDialog: packDialog', 1))
-    (config/'test.qml').write_text(Path(__file__).with_name('appearance.qml').read_text().replace('../../.config/quickshell/magi/', ''))
+    (config/'test.qml').write_text(Path(__file__).with_name('roundness.qml' if roundness else 'appearance.qml').read_text().replace('../../.config/quickshell/magi/', ''))
     runtime = stage/'runtime'; runtime.mkdir(mode=0o700)
     env = dict(os.environ, HOME=str(stage), XDG_CONFIG_HOME=str(stage/'config'),
                XDG_DATA_HOME=str(stage/'data'), XDG_STATE_HOME=str(stage/'state'),
                XDG_RUNTIME_DIR=str(runtime), QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software')
     env.pop('WAYLAND_DISPLAY', None); env.pop('DISPLAY', None)
     env.pop('MAGI_APPEARANCE_CAPTURES', None)
-    if len(sys.argv) > 1:
-        captures = Path(sys.argv[1]); captures.mkdir(parents=True, exist_ok=True)
+    if arguments:
+        captures = Path(arguments[0]); captures.mkdir(parents=True, exist_ok=True)
         env['MAGI_APPEARANCE_CAPTURES'] = str(captures)
     result = subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'], env=env,
-                            text=True, capture_output=True, timeout=90)
+                            text=True, capture_output=True, timeout=120)
     output = result.stdout + result.stderr
     print(output)
     known = ('ERROR quickshell.ipc: Failed to start IPC server',
@@ -35,8 +46,8 @@ with tempfile.TemporaryDirectory(prefix='magi-appearance-review-') as tmp:
              'WARN quickshell.bluetooth: Could not connect to DBus. Bluetooth integration is not available.',
              'WARN: Unable to find hyprland socket. Cannot connect to hyprland.')
     checked = '\n'.join(line for line in output.splitlines() if not any(k in line for k in known))
-    assert result.returncode == 0 and 'Appearance simplification PASS' in output
+    assert result.returncode == 0 and ('Feature roundness PASS' if roundness else 'Appearance simplification PASS') in output
     assert not any(k in checked for k in ('FAIL!', 'FAIL:', 'ERROR', 'WARN'))
 
-    if len(sys.argv)>1:
+    if arguments:
         assert len(list(captures.glob('*.png'))) >= 8

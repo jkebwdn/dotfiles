@@ -7,6 +7,7 @@ import "../../.config/quickshell/magi/components/settings" as UI
 import "../../.config/quickshell/magi/components/controls" as Controls
 import "../../.config/quickshell/magi/components/bar" as Bar
 import "../../.config/quickshell/magi/components/hub" as Hub
+import "../../.config/quickshell/magi/components/notifications" as Notifications
 import "../../.config/quickshell/magi/plugins/bar/workspaces" as Workspaces
 import "../../.config/quickshell/magi/plugins/bar/controlcentre" as CC
 import "../../.config/quickshell/magi/components/lockPresentation" as Lock
@@ -49,6 +50,22 @@ ShellRoot {
                 Lock.LockCredential {id:credential;width:280;tokens:tokens;characterCount:6;style:Services.Settings.data.lockScreen.effects.credential}
                 UI.SwitchStylePicker {id:switches;width:280}
             }
+            Hub.HubSurface { id:hubSurface;x:750;y:545;width:280;height:55 }
+            Notifications.NotificationCard { id:notification;x:750;y:605;width:280;record:({notification:false,data:{appName:"MAGI",summary:"Roundness review",body:"Fixed notification"}});service:({}) }
+        }
+    }
+    QtObject {
+        id:surfaceModule
+        property int expandedWidth:320
+        property int menuHeight:120
+        property real viewRadius:Theme.RenderTokens.outerRadius
+        property Component menuContent:Component { Item {} }
+    }
+    FloatingWindow {
+        visible:true;implicitWidth:360;implicitHeight:240;color:Theme.Theme.background
+        Bar.SharedStatusSurface {
+            id:joined;x:10;y:10;combined:true;modules:[surfaceModule]
+            statusContent:Component { Bar.StatusPill { implicitWidth:240;implicitHeight:28 } }
         }
     }
     Timer{id:finish;interval:100;onTriggered:Qt.quit()}
@@ -65,6 +82,21 @@ ShellRoot {
             tryVerify(()=>saved,5000,"Save item capture")
         }
         function test_matrix(){try{
+            if(Quickshell.env("MAGI_ROUNDNESS_EQUIVALENCE")) {
+                const revision=Services.Settings.revision
+                wait(250);secondary.forceActiveFocus();wait(50)
+                const targets=({controlCentre:cc,statusWorkspacePills:barSample,settingsCard:card,controls:actionSample,hubSelector:hub,hubSurface:hubSurface,notification:notification,slider:slider,launcherHeader:header,avatar:avatar,media:album,lockProfile:lockSample})
+                for(const name in targets)capture(targets[name],Quickshell.env("MAGI_ROUNDNESS_CAPTURES")+"/"+name+".png")
+                capture(joined,Quickshell.env("MAGI_ROUNDNESS_CAPTURES")+"/connected-collapsed.png")
+                joined.requestedModule=surfaceModule;tryCompare(joined,"phase",3);wait(50)
+                compare(joined.paintedBackground.radius,Theme.RenderTokens.outerRadius)
+                capture(joined,Quickshell.env("MAGI_ROUNDNESS_CAPTURES")+"/connected-expanded.png")
+                compare(Services.Settings.revision,revision,"Read-only geometry capture")
+                compare(findChild(avatar,"artworkMask").radius,Math.max(0,avatar.outerRadius-avatar.frameWidth))
+                compare(findChild(album,"artworkMask").radius,Math.max(0,album.outerRadius-album.frameWidth))
+                compare(pill.radius,Theme.Theme.barPillRadius);compare(workspaces.radius,Theme.Theme.workspacePillRadius)
+                console.log("Roundness impact PASS");finish.start();return
+            }
             const input=Quickshell.env("MAGI_ROUNDNESS_VALUES")
             const saved=input?JSON.parse(input):{master:1,roles:{barPill:1,surface:null,controlTile:1.25,slider:1.2,action:1.2,avatar:1.2,albumArt:1.2,hubSelector:.4,secondaryControl:1.2},workspace:null,header:12}
             const fields=["master","barPill","surface","controlTile","slider","action","avatar","albumArt","hubSelector","secondaryControl","workspace","header"]

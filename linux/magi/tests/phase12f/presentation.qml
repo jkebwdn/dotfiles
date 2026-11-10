@@ -59,16 +59,16 @@ ShellRoot {
     mouseClick(region,region.width-8,10);wait(40)
     compare(p.selection.scope,"family");compare(p.selection.family,group);verify(!family.collapsible);verify(family.expanded)
     verify(item("ccFamilyHighlight-"+group).visible);compare(item("ccModuleBoard-row-"+module).border.width,0)
-    verify(item("ccFamilyShape").visible);capture("cc-family-"+captureName)
+    verify(item("ccRoundnessLocation").visible);capture("cc-family-"+captureName)
     mouseClick(item("ccModuleBoard-row-"+module),12,12);wait(40)
     compare(p.selection.scope,"module");compare(p.selection.instance,module);verify(family.collapsible);verify(!family.expanded)
-    verify(!item("ccFamilyShape").visible);verify(!item("ccFamilyHighlight-"+group).visible)
+    verify(!item("ccRoundnessLocation").visible);verify(!item("ccFamilyHighlight-"+group).visible)
     compare(item("ccModuleBoard-row-"+module).border.width,2)
     compare(item("ccInstanceAccent").visible,group!=="sliders")
     verify(!item("settingsButton-Reset Control Centre appearance").visible)
     capture("cc-item-"+module)
     family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
-    verify(family.expanded);verify(item("ccFamilyShape").visible);compare(p.selection.instance,module)
+    verify(family.expanded);verify(item("ccRoundnessLocation").visible);compare(p.selection.instance,module)
     // Collapsing must clamp a scrolled inspector instead of leaving a blank viewport.
     p.contentY=1000;family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
     verify(!family.expanded);verify(p.contentY<=Math.max(0,p.contentHeight-item("controlCentreEditor").height)+1)
@@ -87,7 +87,7 @@ ShellRoot {
     compare(JSON.stringify(Services.Settings.data.appearance),appearance);compare(JSON.stringify(Services.Settings.data.controlCentre[group].find(e=>e.module===sibling)),other)
     const record=Services.Settings.data.controlCentre[group].find(e=>e.module===module);Services.Settings.editEntry(group,record.key,"accent",previous)
     mouseClick(item("ccAppearanceRegion-"+group),8,8);wait(30)
-    const shape=item("ccFamilyShape"),old=shape.value;shape.forceActiveFocus();keyClick(Qt.Key_Right);wait(30);verify(shape.value>old)
+    verify(findChild(p,"ccFamilyShape")===null);Services.Settings.setRoundness(group==="controls"?"controlTile":"secondaryControl",1.05);wait(30)
     const a=item("ccPreview-"+module).presenter,b=item("ccPreview-"+sibling).presenter
     compare(group==="controls"?a.radius:a.children[0].radius,group==="controls"?b.radius:b.children[0].radius)
     Services.Settings.setRoundness(group==="controls"?"controlTile":"secondaryControl",null)
@@ -167,13 +167,13 @@ ShellRoot {
    compare(Icons.IconRegistry.resolvePack("volume","preview-incomplete").sourcePack,"magi-default")
    Icons.IconRegistry.packs=inventory
    Services.Settings.setIconPack(originalPack);wait(20);capture("appearance-icon-gallery")
-   const roles=JSON.stringify(Services.Settings.data.appearance.roundness.roles)
-   verify(findChild(p,"roundnessChoice-0")===null,"preset controls removed")
-   const fine=item("masterRoundnessPrecision");p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,fine.mapToItem(p,0,0).y+p.contentY));waitForPolish(win.contentItem.Window.window)
-   Services.Settings.setRoundness("master",.85);wait(20)
-   verify(fine.visible);fine.forceActiveFocus();keyClick(Qt.Key_Right);verify(Services.Settings.data.appearance.roundness.master>.85)
-   compare(JSON.stringify(Services.Settings.data.appearance.roundness.roles),roles)
-   capture("roundness-slider");Services.Settings.setRoundness("master",1)
+   const previousSurface=Services.Settings.data.appearance.roundness.roles.surface,compatibilityBase=Services.Settings.data.appearance.roundness.master
+   verify(findChild(p,"roundnessChoice-0")===null);verify(findChild(p,"masterRoundnessPrecision")===null)
+   const inherit=item("roundnessInherit-surface");p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,inherit.mapToItem(p,0,0).y+p.contentY));waitForPolish(win.contentItem.Window.window)
+   if(inherit.checked){inherit.forceActiveFocus();keyClick(Qt.Key_Space)}
+   const fine=item("roundness-surface"),previousValue=fine.value;fine.forceActiveFocus();keyClick(Qt.Key_Right);verify(fine.value>previousValue)
+   compare(Services.Settings.data.appearance.roundness.master,compatibilityBase)
+   capture("roundness-slider");Services.Settings.setRoundness("surface",previousSurface)
    // Immediate fractional, normal and continuous wheel input; no waiting for animation.
    win.contentItem.Window.window.height=560;wait(80);p.contentY=0
    mouseWheel(p,10,200,0,-1);verify(p.contentY>0&&p.contentY<2)

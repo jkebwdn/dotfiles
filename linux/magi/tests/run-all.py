@@ -33,6 +33,8 @@ def suites():
                  'appearance/run', 'appearance/roundness-audit', 'settings/reorder', 'settings/assets', 'settings/image-picker', 'settings/cards', 'settings/actions',
                  'settings/media'):
         py(path + '.py')
+    py('appearance/run.py', '--roundness')
+    py('appearance/roundness-equivalence.py')
     py('settings/reorder.py', '--hub')
     for fixture in ('modules.qml', 'control-layout.qml', 'action-layout.qml',
                     'catalogue-layout.qml', 'anchored-layout.qml', 'wifi-inline.qml',
@@ -67,7 +69,7 @@ def suites():
                  'notifications/policy', 'wallpaper/schema'):
         js(path + '.cjs')
     py('runtime-visual/run.py')
-    for fixture in ('controlcentre-image.qml', 'bar-image.qml', 'lock-themes.qml', 'daily-polish.qml', 'settings-finish.qml', 'theme-gallery.qml', 'roundness.qml', 'settings-product.qml', 'quality.qml', 'palettes.qml', 'profile.qml', 'appearance.qml', 'colours.qml', 'feedback.qml',
+    for fixture in ('controlcentre-image.qml', 'bar-image.qml', 'lock-themes.qml', 'daily-polish.qml', 'settings-finish.qml', 'theme-gallery.qml', 'roundness.qml', 'roundness-features.qml', 'settings-product.qml', 'quality.qml', 'palettes.qml', 'profile.qml', 'appearance.qml', 'colours.qml', 'feedback.qml',
                     'polish.qml', 'secondary.qml', 'typography.qml', 'weather.qml',
                     '../phase12b/surfaces.qml', '../phase12d/runtime.qml'):
         py('runtime-visual/run.py', fixture)

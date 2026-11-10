@@ -2,8 +2,10 @@
 
 > Post-0.57 source/ownership review; native evidence and remaining limits are explicit.
 
-Canonical overview; synchronized production baseline `eb19df4` verified 2026-11-10.
-The Appearance source below is reversibly deployed and native-accepted, uncommitted.
+Canonical overview; synchronized production baseline `fa40a70` verified 2026-11-10.
+Appearance simplification is accepted and pushed. Roundness is a separate
+feature-owned UI revision accepted by the operator, with one focused commit authorized.
+Push remains a separate gate; the synchronized remote baseline is still `fa40a70`.
 Settings schema **22**. Source, tests and documentation live in `~/dotfiles/linux/magi`.
 The chronological [architecture journal](../architecture.md) and phase records are
 historical evidence, not instructions to deploy old candidates.
@@ -251,12 +253,18 @@ The operator accepted the revised GIF artwork and tests on 2026-11-09. Physical
 multi-output acceptance and sandbox-inaccessible native CPU measurement remain
 separate limitations.
 
-## Appearance review candidate (2026-11-10)
+## Appearance and feature-owned roundness (2026-11-10)
 
-The synchronized production baseline for this review is `eb19df4`. The isolated
-candidate changes only ThemeGallery, RoundnessPicker and AppearancePage: responsive
-registry cards, a primary slider without presets, and compact application disclosures.
-Existing SettingsSection, importer and Theme Orchestrator owners are retained.
-The roundness census finds 12 live numeric fields edited by 13 sliders and one
-stepper; shared surface has three editor locations. Consolidation is a proposal,
-not implementation. See [review and consumer map](../review/appearance-roundness.md).
+Production `fa40a70` includes the accepted responsive theme row, primary slider
+without presets and compact application disclosures. After native product review,
+the uncommitted all-in-Appearance Option A was rolled back and revised. Appearance
+now owns only the surface role; Hub owns hubSelector; Bar owns barPill while current
+workspace=null follows it; CC owns controlTile/secondaryControl/slider/albumArt/avatar
+and temporarily action for shared-controls review; Launcher owns headerRadius pixels.
+There are nine multiplier sliders and one stepper, no duplicates. The twelve fields,
+defaults, schema and runtime consumers remain unchanged. Master has no numeric UI
+but remains the compatibility/fallback parent. RoundnessValue displays that true
+relationship with checked inheritance switches and disables inherited sliders.
+No custom-value cache, automatic normalization or new derived runtime geometry.
+Non-numeric shape selectors and whole-feature resets stay local. See
+[review, consumers and native gate](../review/roundness-feature-ownership.md).
