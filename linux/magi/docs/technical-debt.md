@@ -56,3 +56,6 @@ target. See [acceptance review](review/controlcentre-image.md).
 Component tests cannot prove compositor key delivery. The operator passed the
 Zen/Ghostty/Thunar focus gate on 2026-11-10. No output or GPU changes are included.
 See [review](review/focus-picker-settings.md).
+
+Native file chooser acceptance also passed. The exact original native dialog
+placement failure remains an inference, distinguished from the accepted repair.

@@ -978,3 +978,6 @@ still preview. No new surface, timer or animation worker is introduced.
 Search popup focus moves to one compositor grab. Outside interaction dismisses
 search modes without changing query persistence or output routing. See
 [review and API evidence](review/focus-picker-settings.md).
+
+Settings image dialogs use one retained singleton with an explicit host and Qt
+in-window presentation, preserving the existing AssetManager import path.

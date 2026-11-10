@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 105-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 106-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -204,3 +204,7 @@ multi-output and native CPU measurements are not claimed.
 `hub/run` covers simulated grab-clear dismissal, real Qt search keys and mode/query
 lifecycle. The separate Zen/Ghostty/Thunar native gate passed on 2026-11-10. See
 [evidence](review/focus-picker-settings.md).
+
+`settings/image-picker` exercises real Qt FileDialog selection, Cancel, reopening,
+explicit parenting, retained imports, errors and byte-identical assets. Native
+chooser acceptance passed separately.

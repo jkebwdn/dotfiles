@@ -1186,3 +1186,6 @@ operator acceptance: [review](review/controlcentre-image.md).
 
 Replace visibility-long Exclusive focus with a search-only compositor grab and
 outside dismissal. See [review and API evidence](review/focus-picker-settings.md).
+
+Use the installed Qt 6.12 in-window FileDialog with an explicit parent and retained
+Settings owner. Reuse AssetManager for Bar and decoration imports.

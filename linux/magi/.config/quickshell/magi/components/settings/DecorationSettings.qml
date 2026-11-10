@@ -1,18 +1,19 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
-import QtQuick.Dialogs
+import QtQuick.Window
 import QtQuick.Layouts
 import "../../services" as Services
 import "../../theme" as Theme
 
 SettingsSection {
     id: root
+    objectName: "decorationSettings"
     title: "Decorative Image"
     collapsible: true
     expanded: configuration.enabled
-    property int requestId: 0
-    property string error: ""
+    readonly property int requestId: SettingsImagePicker.kind === "decoration" ? SettingsImagePicker.requestId : 0
+    readonly property string error: SettingsImagePicker.errors["decoration"] || ""
     readonly property var configuration: Services.Settings.data.controlCentre.decoration
     function setOption(key, value) {
         const next = Object.assign({}, configuration)
@@ -29,8 +30,8 @@ SettingsSection {
     SettingsButton {
         objectName: "chooseDecorationImage"
         text: root.requestId ? "Importing…" : "Choose PNG or GIF…"
-        enabled: root.requestId === 0
-        onClicked: imageDialog.open()
+        enabled: !SettingsImagePicker.busy
+        onClicked: SettingsImagePicker.choose("decoration", root.Window.window)
     }
     SettingsButton {
         text: "Clear image"
@@ -89,22 +90,4 @@ SettingsSection {
         onClicked: root.setOption("flip", checked)
     }
     Label { visible: root.error.length > 0; text: root.error; color: Theme.Theme.red; wrapMode: Text.Wrap; Layout.fillWidth: true }
-    FileDialog {
-        id: imageDialog
-        title: "Select a decorative image"
-        nameFilters: ["Images (*.png *.gif)"]
-        onAccepted: {
-            root.error = ""
-            root.requestId = Services.AssetManager.importDecorationImage(selectedFile)
-        }
-    }
-    Connections {
-        target: Services.AssetManager
-        function onDecorationImageImported(requestId, asset, error) {
-            if (requestId !== root.requestId) return
-            root.requestId = 0
-            root.error = error
-            if (!error) root.setOption("asset", asset)
-        }
-    }
 }

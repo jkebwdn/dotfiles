@@ -226,6 +226,9 @@ share one registered window. Settings/Notifications retain their on-demand
 lifecycle; query behavior and routing are unchanged. Native focus acceptance passed
 on 2026-11-10.
 
+The retained Settings image picker explicitly parents Qt's in-window file dialog.
+Native chooser acceptance passed; AssetManager and storage remain unchanged.
+
 ## Custom Image Bar
 
 The reusable `customImage` catalogue item uses existing region ordering, sparse

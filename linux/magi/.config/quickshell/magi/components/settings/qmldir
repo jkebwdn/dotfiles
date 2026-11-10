@@ -51,3 +51,4 @@ LockLayoutCanvas 1.0 LockLayoutCanvas.qml
 LockThemePreview 1.0 LockThemePreview.qml
 LockPreviewBackground 1.0 LockPreviewBackground.qml
 DecorationSettings 1.0 DecorationSettings.qml
+singleton SettingsImagePicker 1.0 SettingsImagePicker.qml

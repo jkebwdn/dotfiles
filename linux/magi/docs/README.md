@@ -7,7 +7,7 @@ Bluetooth pairing support, the curated lock themes and internal designer, and th
 
 ## Current canonical documents
 
-- [Hub focus release acceptance](review/focus-picker-settings.md)
+- [Hub focus release and image picker acceptance](review/focus-picker-settings.md)
 
 - [Control Centre decorative image acceptance](review/controlcentre-image.md)
 

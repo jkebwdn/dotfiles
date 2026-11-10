@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
-import QtQuick.Dialogs
+import QtQuick.Window
 import QtQuick.Layouts
 import "../../services" as Services
 import "../../theme" as Theme
@@ -10,8 +10,8 @@ SettingsSection {
     id: root
     title: "Custom Image"
     collapsible: false
-    property int requestId: 0
-    property string error: ""
+    readonly property int requestId: SettingsImagePicker.kind === "bar" ? SettingsImagePicker.requestId : 0
+    readonly property string error: SettingsImagePicker.errors["bar"] || ""
     readonly property var configuration: Services.Settings.data.bar.modules.customImage || ({})
     function setOption(key, value) {
         const modules = JSON.parse(JSON.stringify(Services.Settings.data.bar.modules))
@@ -43,8 +43,8 @@ SettingsSection {
     SettingsButton {
         objectName: "chooseBarImage"
         text: root.requestId ? "Importing…" : "Choose image or GIF…"
-        enabled: root.requestId === 0
-        onClicked: imageDialog.open()
+        enabled: !SettingsImagePicker.busy
+        onClicked: SettingsImagePicker.choose("bar", root.Window.window)
     }
     SettingsButton {
         text: "Clear image"
@@ -59,22 +59,4 @@ SettingsSection {
     }
     SettingsHelp { text: "Trimming includes every animation frame. Wide images fit within 240px without stretching." }
     Label { visible: root.error.length > 0; text: root.error; color: Theme.Theme.red; wrapMode: Text.Wrap; Layout.fillWidth: true }
-    FileDialog {
-        id: imageDialog
-        title: "Select a Bar image"
-        nameFilters: ["Images (*.gif *.png *.jpg *.jpeg *.webp)"]
-        onAccepted: {
-            root.error = ""
-            root.requestId = Services.AssetManager.importBarImage(selectedFile)
-        }
-    }
-    Connections {
-        target: Services.AssetManager
-        function onBarImageImported(requestId, asset, error) {
-            if (requestId !== root.requestId) return
-            root.requestId = 0
-            root.error = error
-            if (!error) root.setOption("asset", asset)
-        }
-    }
 }

@@ -30,7 +30,7 @@ def suites():
         result.append((path.removesuffix('.cjs'), ['node', 'tests/' + path, *args]))
 
     for path in ('settings/run', 'settings/presentation', 'settings/appearance',
-                 'settings/reorder', 'settings/assets', 'settings/actions',
+                 'settings/reorder', 'settings/assets', 'settings/image-picker', 'settings/actions',
                  'settings/media'):
         py(path + '.py')
     py('settings/reorder.py', '--hub')

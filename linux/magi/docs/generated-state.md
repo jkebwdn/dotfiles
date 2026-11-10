@@ -135,3 +135,8 @@ byte-identical PNG/GIF originals at `$DATA/magi/images/<sha256>.<png|gif>`, with
 `decoration-image:` descriptors in local Settings. Existing Bar asset IDs/storage
 remain valid. Clearing a selection does not delete originals; no automatic pruning
 is added. See the [acceptance review](review/controlcentre-image.md).
+
+The Settings image-picker candidate changes only dialog ownership; AssetManager and
+its content-addressed Bar/decoration stores remain the sole import path. Picker
+requests/errors are transient state, not new Settings fields.
+Private phase evidence and rollback snapshots remain in `$STATE/magi/audits`.

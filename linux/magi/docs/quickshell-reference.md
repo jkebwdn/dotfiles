@@ -845,3 +845,6 @@ and the [review evidence](review/controlcentre-image.md).
 
 Installed Quickshell 0.3.2 exposes HyprlandFocusGrab. The grab is limited to searchable
 Hub modes. See [review and API evidence](review/focus-picker-settings.md).
+
+Installed Qt 6.12 exposes Dialog.parentWindow and Popup.Item. A retained Settings
+singleton owns explicitly parented Bar/decoration file dialogs in the host overlay.

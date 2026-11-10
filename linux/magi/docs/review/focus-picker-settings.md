@@ -47,6 +47,47 @@ in all three search modes, immediate typing, outside dismissal and typing back
 into the previous app, reopening, mode switching and Escape. The response was
 “All focus checks passed.” `hubWindow status` reports actual grab state.
 
+## File-picker diagnosis and ownership
+
+Both image controls already imported QtQuick.Dialogs, created FileDialog, called
+`open()` and connected acceptance to AssetManager. Settings pages are retained after
+visiting, so a missing import, disconnected button or unloaded page was not the
+observed cause. An isolated reproduction of the original DecorationSettings showed
+`parentWindow: null` before and after clicking while `visible` became true. Qt source
+clarifies that its getter only returns the stored pointer: `windowForOpen()` may
+resolve an implicit parent separately. Therefore null alone does **not** establish
+that the dialog was unparented. The verified issue is in presentation ownership:
+the button opens a page-local dialog with the default separate Popup.Window path
+from an overlay-layer host, without an explicit in-window presentation contract.
+The exact native stacking/activation failure is still an inference, not established
+by offscreen visibility. Existing native text logs supplied no picker-specific
+warning. The operator subsequently passed opening, Cancel, reopening and final-asset
+import in the real Settings host. This accepts the repaired behavior without proving
+the exact original compositor failure.
+
+`SettingsImagePicker` is one retained Settings-module singleton. Callers pass their
+actual `Window.window`; FileDialog binds that explicit parent. Qt 6.12's native
+QtQuick dialog fallback is deliberately used as `Popup.Item` with
+`DontUseNativeDialog`, so it appears in the retained host's existing overlay/input
+region instead of an unrelated top-level behind the layer surface. This remains
+QtQuick.Dialogs.FileDialog, with no external file-picker process or shell script.
+
+The owner serializes dialog/import requests, dispatches to the unchanged
+AssetManager Bar/decoration operations, reports errors to the relevant page and
+merges only the successful asset descriptor into the latest preferences. Requests
+finish if a page unloads; hiding the parent or leaving Settings for another Hub mode cancels an open chooser. Cancel changes
+nothing. PNG/GIF decoration filters and broader Bar filters remain distinct; the
+same existing validation/storage/alpha measurement handles both. Originals are
+never converted or deleted.
+
+`settings/image-picker` clicks the production choose button, checks a non-null exact
+parent, selects PNG/GIF through the real Qt file-list delegates, cancels/reopens,
+unloads/reloads the caller during import, cancels on leaving Settings with the host
+still mapped, verifies Bar reuse and checks unsupported
+and missing-file failures preserve the previous selection. Managed bytes and saved
+GIF descriptors are verified in isolated XDG directories. Synthetic tests do not establish native layer-shell behavior. The separate operator
+response “Picker checks passed” establishes that acceptance.
+
 ## API evidence (2026-11-10)
 
 Installed: Quickshell 0.3.2-1, Qt base 6.12.0-3 / declarative 6.12.0-4,
@@ -62,9 +103,18 @@ Hyprland 0.57.1-1. Installed QML type metadata confirms FocusGrab and dialog API
   demonstrates initial keyboard refocus to a committed surface and clearing the seat
   grab. This is version-family evidence, not a claim to have inspected 0.57.1's exact
   implementation; the 0.57.1 raw source was unavailable and native checks remain required.
+- [Qt 6.12 Dialog](https://doc.qt.io/qt-6/qml-qtquick-dialogs-dialog.html) documents
+  explicit parentWindow and Popup.Item (since Qt 6.10); [FileDialog](https://doc.qt.io/qt-6/qml-qtquick-dialogs-filedialog.html)
+  documents filters, acceptance and the QtQuick fallback. The candidate requires the
+  already installed Qt 6.12 API; older Qt compatibility is not claimed.
+  [Qt 6.12 dialog implementation](https://raw.githubusercontent.com/qt/qtdeclarative/6.12/src/quickdialogs/quickdialogs/qquickabstractdialog.cpp)
+  distinguishes the stored parentWindow getter from implicit `windowForOpen()`
+  resolution, and establishes Popup.Window as the default reset behavior. This
+  prevents interpreting the null getter as conclusive missing-parent evidence.
 
-## Focus validation
 
-Hub component tests cover item typing, reopening, mode switching and simulated
-grab clearing. The separate native Zen/Ghostty/Thunar gate passed as recorded above.
-Picker and card implementation are allocated to the following commits.
+## Focus and picker validation
+
+Hub and picker component checks passed. Native focus and chooser acceptance passed
+separately as recorded above. Shared Settings cards and final matrix evidence are
+allocated to the following commit.
