@@ -22,7 +22,7 @@ ShellRoot {
             const original = Services.Settings.data.appearance.theme
             const originalData = JSON.stringify(Services.Settings.data)
             const all = Theme.ThemeRegistry.themes
-            compare(gallery.expanded, false, "Gallery starts with a family preview")
+            compare(gallery.expanded, false, "Gallery starts with a registry-ordered preview")
             const disclosure = findChild(gallery, "themeGalleryDisclosure")
             verify(!findChild(gallery, "themeFilter-Light").visible)
             verify(gallery.visibleThemes.some(theme => theme.id === original))
@@ -65,7 +65,7 @@ ShellRoot {
                     Services.Settings.setTheme(definition.id)
                     waitForPolish(content.Window.window)
                     verify(gallery.visibleThemes.some(theme => theme.id === definition.id), "Current theme always remains in collapsed row")
-                    verify(gallery.visibleThemes.every(theme => theme.family === definition.family))
+                    compare(gallery.visibleThemes.map(t => all.findIndex(x => x.id === t.id)), gallery.visibleThemes.map(t => all.findIndex(x => x.id === t.id)).sort((a,b) => a-b))
                     verify(gallery.count <= gallery.columns)
                     for (let i = 0; i < gallery.count; ++i) {
                         compare(gallery.itemAt(i).y, 0, "Exactly one preview row")
@@ -132,7 +132,7 @@ ShellRoot {
             compare(Services.Settings.revision, toggleRevision, "Navigation retains local view state without saving")
             gallery.filter = 0; waitForPolish(content.Window.window)
             gallery.focusIndex(0); keyClick(Qt.Key_Tab)
-            const nextControl = findChild(content, "settingsButton-Install icon pack…")
+            const nextControl = disclosure
             tryVerify(() => nextControl.activeFocus)
             tryVerify(() => nextControl.mapToItem(page, 0, 0).y >= 0 && nextControl.mapToItem(page, 0, 0).y + nextControl.height <= page.height)
             keyClick(Qt.Key_Backtab); verify(gallery.itemAt(0).activeFocus)

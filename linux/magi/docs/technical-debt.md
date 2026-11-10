@@ -56,4 +56,23 @@ target. See [acceptance review](review/controlcentre-image.md).
 Candidate fixes release searchable Hub focus and parent the retained image chooser.
 Component tests cannot prove first-key capture or external-application delivery.
 The operator passed the Zen/Ghostty/Thunar focus gate, file chooser and light/dark
-compact/normal card reviews on 2026-11-10. Commit review is approved; push remains pending. No physical output or GPU configuration change is part of this phase. See [review and API evidence](review/focus-picker-settings.md).
+compact/normal card reviews on 2026-11-10. The three reviewed commits are pushed and synchronized at `eb19df4`. No physical output or GPU configuration change is part of this phase. See [review and API evidence](review/focus-picker-settings.md).
+
+## Roundness audit findings (review only)
+
+Shared surface has three editor locations; the 13 sliders plus one pixel stepper
+edit 12 numeric fields. No dead numeric fields; Theme.radiusLarge is an unused
+internal token. Primary-controls and slider labels understate/overstate their real
+consumer scope. Centralization options and mask/join risks are documented in the
+[roundness review](review/appearance-roundness.md). No consolidation or cleanup is
+implemented. Native Appearance acceptance passed six private Wayland cases and
+the deployed page; see the review for their fixture/log limitations.
+The prior worktree cleanup still needs a host process-reference check because
+/proc/1395/cwd was unreadable; sandbox invisibility is not proof it is unused.
+
+Appearance's three source files are reversibly deployed and native-accepted;
+commit approval remains pending. Option A is chosen for the subsequent phase.
+Settings and generated payloads are preserved. Two activation receipt files updated
+asynchronously after the deployment reload; the final preservation report records
+this distinction. The existing Qt Wayland text-input warnings remain known runtime
+debt despite the operator's successful Appearance review.

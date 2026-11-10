@@ -2,7 +2,8 @@
 
 > Post-0.57 source/ownership review; native evidence and remaining limits are explicit.
 
-Canonical overview, reconciled against production `e251450` on 2026-11-05.
+Canonical overview; synchronized production baseline `eb19df4` verified 2026-11-10.
+The Appearance source below is reversibly deployed and native-accepted, uncommitted.
 Settings schema **22**. Source, tests and documentation live in `~/dotfiles/linux/magi`.
 The chronological [architecture journal](../architecture.md) and phase records are
 historical evidence, not instructions to deploy old candidates.
@@ -249,3 +250,13 @@ additive schema-22 preferences support native size/position tuning; default is o
 The operator accepted the revised GIF artwork and tests on 2026-11-09. Physical
 multi-output acceptance and sandbox-inaccessible native CPU measurement remain
 separate limitations.
+
+## Appearance review candidate (2026-11-10)
+
+The synchronized production baseline for this review is `eb19df4`. The isolated
+candidate changes only ThemeGallery, RoundnessPicker and AppearancePage: responsive
+registry cards, a primary slider without presets, and compact application disclosures.
+Existing SettingsSection, importer and Theme Orchestrator owners are retained.
+The roundness census finds 12 live numeric fields edited by 13 sliders and one
+stepper; shared surface has three editor locations. Consolidation is a proposal,
+not implementation. See [review and consumer map](../review/appearance-roundness.md).

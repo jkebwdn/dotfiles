@@ -84,13 +84,15 @@ ShellRoot {
    verify(Feedback.appearance("reload_required",true,"saved").includes("Reload Ghostty"))
    const appearance=page("Appearance");appearance.contentY=0
    Services.ThemeOrchestrator.targets=[{id:"zen",label:"Zen",enabled:true,available:true,configured:true,installed:true,statusLabel:"Restart required",result:"Restart Zen",error:""}]
-   tryVerify(()=>item("applicationThemeAttention").text.includes("Restart Zen"))
-   verify(item("applicationThemeReview").visible)
+   verify(findChild(appearance,"applicationThemeAttention")===null)
+   verify(findChild(appearance,"applicationThemeReview")===null)
    capture("feedback-restart")
-   item("applicationThemeReview").clicked();tryCompare(item("applicationThemesSummary"),"expanded",true)
+   item("applicationThemesSummary").expanded=true;wait(40)
+   verify(!item("themeStatus-zen").visible)
+   item("themeDetails-zen").clicked();verify(item("themeStatus-zen").visible)
+   verify(item("themeStatus-zen").text.includes("Restart Zen"))
    Services.ThemeOrchestrator.error="Synthetic diagnostic"
-   tryVerify(()=>item("applicationThemeAttention").text.includes("could not update"))
-   verify(!item("applicationThemeAttention").text.includes("Synthetic diagnostic"))
+   tryCompare(item("applicationThemesSummary"),"description","Application themes need attention")
    appearance.contentY=0;capture("feedback-error")
    Services.ThemeOrchestrator.error="";Services.ThemeOrchestrator.targets=[]
    Services.Settings.setTheme(original.appearance.theme);tryCompare(Services.Settings,"saveState","saved")

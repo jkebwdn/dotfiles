@@ -846,3 +846,21 @@ and the [review evidence](review/controlcentre-image.md).
 Installed Quickshell 0.3.2 exposes HyprlandFocusGrab; Qt 6.12 exposes Dialog.parentWindow
 and Popup.Item. The candidate uses the grab only for searchable Hub modes and a
 retained Settings singleton for Bar/decoration file dialogs. See [review and API evidence](review/focus-picker-settings.md).
+
+## Appearance candidate: existing APIs and geometry
+
+The 2026-11-10 candidate reuses installed Qt/Quickshell APIs already exercised by
+Settings: SettingsChoiceCard accessibility, forceActiveFocus, registry repeaters,
+Qt.callLater after gallery layout, and the existing FileDialog/import path. No new
+protocol API or Wayland surface. Isolated QtTest checks focus, actual window widths
+and production radius/mask bindings; it does not establish native compositor or
+lock-mask acceptance. Source evidence: [review](review/appearance-roundness.md) and
+[linked consumer map](review/roundness-consumers.md).
+
+Capture API verification, 2026-11-10: [Qt 6.12 Item.grabToImage](https://doc.qt.io/qt-6/qml-qtquick-item.html#grabToImage-method)
+documents an asynchronous item-sized capture and callback result that can save a
+file. Installed `/usr/lib/qt6/qml/QtQuick/plugins.qmltypes` exposes the callback
+overload (Quickshell 0.3.2). The roundness evidence fixture uses this API to avoid
+QtTest nested-item capture offsets; it is test-only and not a live preview loop.
+Actual capture success and visual bounds were checked. Software captures cannot
+establish GPU/compositor shader-mask acceptance.

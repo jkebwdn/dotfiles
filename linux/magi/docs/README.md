@@ -7,6 +7,8 @@ Bluetooth pairing support, the curated lock themes and internal designer, and th
 
 ## Current canonical documents
 
+- [Appearance simplification and complete roundness audit — review only](review/appearance-roundness.md)
+
 - [Hub focus, image picker and grouped Settings cards candidate](review/focus-picker-settings.md)
 
 - [Control Centre decorative image acceptance](review/controlcentre-image.md)

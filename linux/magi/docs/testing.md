@@ -211,3 +211,22 @@ The final 107-command run passed 103 with 0 FAIL / 0 UNKNOWN and four establishe
 D-Bus/socket ENVIRONMENT limits. Native Hub focus, chooser and light/dark
 compact/normal card review passed on 2026-11-10. See
 [evidence and native acceptance](review/focus-picker-settings.md).
+
+## Appearance simplification and roundness audit
+
+The canonical matrix now contains 110 commands. New `appearance/run` covers the
+production page, responsive active-theme row, gallery expansion focus, icon-picker
+open/cancel, primary precision slider/save/reload, application status fixtures,
+keyboard/mouse disclosure and compact/wide alignment. `appearance/roundness-audit`
+reads schema/defaults and inventories source without modifying Settings.
+`runtime-visual/run:roundness.qml` exercises actual shared geometry and produces
+optional min/current/max captures from a supplied snapshot. Existing gallery,
+Theme Orchestrator pointer, Settings and quality checks remain warning-strict.
+See [review, evidence limitations and final results](review/appearance-roundness.md).
+
+Final Appearance matrix: **106 PASS / 4 ENVIRONMENT / 0 FAIL / 0 UNKNOWN /
+0 SKIPPED**, 110 commands (`/tmp/magi-regression-lzqv44r2`). Existing private D-Bus,
+PNG transport and native socket restrictions only. Corrected item captures and
+inventory export were also rechecked. Native operator acceptance subsequently passed
+all six Nord/One Light × compact/normal/wide cases plus the deployed Appearance page
+on 2026-11-10. See the review for native log limitations and protected-state receipts.

@@ -978,3 +978,11 @@ still preview. No new surface, timer or animation worker is introduced.
 Search popup focus moves to one compositor grab; Settings image dialogs gain a
 retained explicit host; shared SettingsSection surfaces group existing controls.
 No schema, routing, storage or navigation redesign. See [review and API evidence](review/focus-picker-settings.md).
+
+## Appearance simplification and roundness audit — candidate
+
+Reuse ThemeGallery's registry/cards and SettingsSection; move routine application
+status behind individual disclosures while preserving attention and enrollment.
+Roundness audit separates numeric fields, shape styles, derived tokens and mask
+geometry. No schema, native lock, theme adapter or consolidation change. See
+[review](review/appearance-roundness.md).

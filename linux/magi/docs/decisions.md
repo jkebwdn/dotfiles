@@ -1187,3 +1187,12 @@ operator acceptance: [review](review/controlcentre-image.md).
 Replace visibility-long Exclusive focus with popup-style dismissal. Use the installed
 Qt 6.12 in-window FileDialog with an explicit parent to avoid unattached chooser
 windows. Share card styling through SettingsSection and opt out for nested groups. See [review and API evidence](review/focus-picker-settings.md).
+
+## 2026-11-10 — quieter Appearance, roundness decisions deferred
+
+Keep active theme among a stable responsive registry subset and place expansion
+below the cards. Application identity/disclosure and follow toggle are independent;
+healthy details stay expanded-only, failures remain discoverable. Remove only the
+primary roundness presets now. Inventory every numeric role before offering A/B/C
+consolidation choices; preserve saved numbers/null inheritance. No option is selected
+or implemented. See [evidence and review gate](review/appearance-roundness.md).

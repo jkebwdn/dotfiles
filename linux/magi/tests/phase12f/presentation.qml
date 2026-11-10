@@ -168,12 +168,12 @@ ShellRoot {
    Icons.IconRegistry.packs=inventory
    Services.Settings.setIconPack(originalPack);wait(20);capture("appearance-icon-gallery")
    const roles=JSON.stringify(Services.Settings.data.appearance.roundness.roles)
-   const roundness=item("roundnessChoice-0");p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,roundness.mapToItem(p,0,0).y+p.contentY));waitForPolish(win.contentItem.Window.window)
-   for(let i=0;i<3;++i){mouseClick(item("roundnessChoice-"+i));compare(Services.Settings.data.appearance.roundness.master,i)}
+   verify(findChild(p,"roundnessChoice-0")===null,"preset controls removed")
+   const fine=item("masterRoundnessPrecision");p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,fine.mapToItem(p,0,0).y+p.contentY));waitForPolish(win.contentItem.Window.window)
+   Services.Settings.setRoundness("master",.85);wait(20)
+   verify(fine.visible);fine.forceActiveFocus();keyClick(Qt.Key_Right);verify(Services.Settings.data.appearance.roundness.master>.85)
    compare(JSON.stringify(Services.Settings.data.appearance.roundness.roles),roles)
-   Services.Settings.setRoundness("master",.85);item("roundnessFineTune").expanded=true;wait(20)
-   const fine=item("masterRoundnessPrecision");verify(fine.visible);fine.forceActiveFocus();keyClick(Qt.Key_Right);verify(Services.Settings.data.appearance.roundness.master>.85)
-   capture("roundness-fine-tune");Services.Settings.setRoundness("master",1);item("roundnessFineTune").expanded=false
+   capture("roundness-slider");Services.Settings.setRoundness("master",1)
    // Immediate fractional, normal and continuous wheel input; no waiting for animation.
    win.contentItem.Window.window.height=560;wait(80);p.contentY=0
    mouseWheel(p,10,200,0,-1);verify(p.contentY>0&&p.contentY<2)

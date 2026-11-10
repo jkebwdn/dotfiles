@@ -1,7 +1,8 @@
 # Current status and next decisions
 
-Schema 22. The accepted post-0.57 baseline is `e251450`. This consolidation adds no
-product feature and does not authorize a subsequent phase.
+Schema 22. Current synchronized production is `eb19df4` after the accepted
+Hub focus, image-picker and grouped Settings-card work. Appearance simplification
+and a roundness audit are under review; consolidation requires operator direction.
 
 Production includes the Bar/multi-output policy, Hub utilities, Control Centre and
 Settings ownership, shared tray/audio services, generic Bluetooth pairing/Agent1,
@@ -52,4 +53,17 @@ planned. See [review](review/controlcentre-image.md).
 The synchronized decoration baseline is `771cf7c`. The bounded new candidate passed
 103 checks with 0 FAIL / 0 UNKNOWN and four established environment limits. Native
 focus, picker and grouped-card acceptance passed on 2026-11-10. Three focused
-commits are approved; push still requires separate approval. See [review and API evidence](review/focus-picker-settings.md).
+commits were approved and pushed; synchronization is verified at `eb19df4`. See [review and API evidence](review/focus-picker-settings.md).
+
+## Appearance and roundness review
+
+Focus/picker/cards remain the committed baseline `eb19df4`. Appearance is reversibly
+deployed and native-accepted in all six Nord/One Light × compact/normal/wide cases,
+plus the actual live page. Its 26-path candidate awaits approval for one commit:
+`magi: simplify appearance settings`. Settings are byte-identical; the review records
+the shell reload's two owner-written activation receipt updates separately.
+
+Option A (UI centralization retaining all 12 fields) is selected for a separate phase
+only after the Appearance commit. No B/C, schema/migration, field derivation/removal,
+shape-style or geometry changes are authorized. No centralization is implemented.
+See the [acceptance and exact commit allocation](review/appearance-roundness.md).

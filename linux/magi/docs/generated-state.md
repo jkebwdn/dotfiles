@@ -140,3 +140,15 @@ The Settings image-picker candidate changes only dialog ownership; AssetManager 
 its content-addressed Bar/decoration stores remain the sole import path. Picker
 requests/errors and card disclosure are transient state, not new Settings fields.
 Private phase evidence and rollback snapshots remain in `$STATE/magi/audits`.
+
+Appearance/roundness review does not write live Settings, generated theme payloads
+or assets. It uses private HOME/XDG test fixtures and a read-only snapshot for the
+roundness matrix. Review PNG/HTML, source hashes and protected-state receipts live
+in `$STATE/magi/audits/appearance-roundness-t2utt7bf`; only source/test/docs are
+commit candidates. Null inheritance and schema 22 remain unchanged.
+
+After Appearance deployment, the existing Theme Orchestrator activation refreshed
+two runtime receipt files. Generated theme payloads/links and live Settings stayed
+unchanged; all 701 protected entries were stable throughout native review. Preserve
+current owner-written receipts rather than restoring the pre-reload snapshot. See
+[the settled-state verification](review/appearance-roundness.md).

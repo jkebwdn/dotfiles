@@ -30,7 +30,8 @@ ColumnLayout {
     }
     readonly property var visibleThemes: groups.reduce((themes, group) => themes.concat(group.themes), [])
     readonly property int count: visibleThemes.length
-    readonly property int columns: Math.max(1, Math.floor((width + 12) / (176 + 12)))
+    readonly property int columns: expanded ? Math.max(1, Math.floor((width + 12) / 188))
+        : Math.max(2, Math.min(5, Math.floor((width + 12) / 188)))
     readonly property real cardWidth: Math.min(220, Math.max(0, (width - (columns - 1) * 12) / columns))
     readonly property real cardHeight: 138
     readonly property string selectedId: Services.Settings.data.appearance.theme
@@ -38,18 +39,16 @@ ColumnLayout {
     readonly property string tabId: visibleThemes.some(theme => theme.id === focusId) ? focusId
         : currentIndex >= 0 ? selectedId : count ? visibleThemes[0].id : ""
 
-    // Keep a single row, including the selected variant. Preserve the existing
+    // Keep a registry-ordered row, including the selected theme. Preserve the existing
     // row while selecting another visible card so focus/card instances stay put.
     function updatePreview() {
         if (!model || !selectedId) return
-        const family = Theme.ThemeRegistry.resolve(selectedId).family
-        const members = model.filter(theme => theme.family === family)
-        const size = Math.min(columns, members.length)
-        if (previewThemes.length === size && previewThemes.every(theme => theme.family === family)
-                && previewThemes.some(theme => theme.id === selectedId)) return
-        const index = Math.max(0, members.findIndex(theme => theme.id === selectedId))
-        const start = Math.max(0, Math.min(index - Math.floor(size / 2), members.length - size))
-        previewThemes = members.slice(start, start + size)
+        const size = Math.min(columns, model.length)
+        if (previewThemes.length === size && previewThemes.some(theme => theme.id === selectedId)) return
+        const selected = Theme.ThemeRegistry.resolve(selectedId)
+        const ids = model.filter(theme => theme.id !== selected.id).slice(0, size - 1).map(theme => theme.id)
+        ids.push(selected.id)
+        previewThemes = model.filter(theme => ids.includes(theme.id))
     }
     onSelectedIdChanged: updatePreview()
     onColumnsChanged: updatePreview()
@@ -108,37 +107,12 @@ ColumnLayout {
         return index
     }
     RowLayout {
-        Layout.fillWidth: true
-        spacing: 12
-        SettingsButton {
-            id: disclosure
-            objectName: "themeGalleryDisclosure"
-            text: gallery.expanded ? "Show fewer themes  ▴" : "Show all themes  ▾"
-            Accessible.name: gallery.expanded ? "Show fewer themes" : "Show all themes"
-            checked: gallery.expanded
-            actionKind: "navigation"
-            onClicked: {
-                gallery.expanded = !gallery.expanded
-                Qt.callLater(() => gallery.revealItem(disclosure))
-            }
-        }
-        Label {
-            Layout.fillWidth: true
-            Layout.minimumWidth: 0
-            horizontalAlignment: Text.AlignRight
-            text: "Current · " + Theme.ThemeRegistry.resolve(gallery.selectedId).label
-            color: Theme.Theme.subtext
-            elide: Text.ElideRight
-            ToolTip.visible: hovered.hovered && truncated
-            ToolTip.text: text
-            HoverHandler { id: hovered }
-        }
-    }
-    RowLayout {
+        id: filters
         Layout.fillWidth: true
         visible: gallery.expanded
         spacing: 6
         Repeater {
+            id: filterButtons
             model: ["All", "Dark", "Light"]
             SettingsButton {
                 required property string modelData
@@ -166,6 +140,7 @@ ColumnLayout {
             Layout.minimumWidth: 0
             spacing: 8
             Label {
+                visible: gallery.expanded
                 text: section.modelData.family
                 color: Theme.Theme.subtext
                 font.bold: true
@@ -247,4 +222,24 @@ ColumnLayout {
             }
         }
     }
+    SettingsButton {
+        id: disclosure
+        objectName: "themeGalleryDisclosure"
+        Layout.alignment: Qt.AlignHCenter
+        text: gallery.expanded ? "Show fewer themes  ▴" : "Show all themes  ▾"
+        Accessible.name: gallery.expanded ? "Show fewer themes" : "Show all themes"
+        checked: gallery.expanded
+        actionKind: "navigation"
+        onClicked: {
+            gallery.expanded = !gallery.expanded
+            Qt.callLater(() => {
+                if (gallery.expanded) {
+                    const firstFilter = filterButtons.itemAt(0)
+                    if (firstFilter) firstFilter.forceActiveFocus(Qt.TabFocusReason)
+                    gallery.revealItem(filters)
+                } else gallery.revealItem(disclosure)
+            })
+        }
+    }
+
 }

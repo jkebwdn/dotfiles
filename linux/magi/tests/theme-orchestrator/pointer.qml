@@ -70,21 +70,8 @@ ShellRoot {
             try {
             const summary = findChild(page,"applicationThemesSummary")
             verify(!summary.expanded, "application targets start collapsed")
-            const supported = Services.ThemeOrchestrator.targets.filter(t => t.id !== "magi" && t.available)
-            compare(summary.title,"Application themes · " + supported.filter(t => t.enabled).length + " of " + supported.length + " following MAGI")
+            compare(summary.title,"Application themes")
             summary.expanded = true; wait(50)
-            const labels = [
-                ["Applied — reactive palette", "Applied"],
-                ["Runtime update accepted; configerrors clear (visual check required)", "Applied"],
-                ["Reload required — :colorscheme magi; otherwise next launch", "Reload"],
-                ["Relaunch Thunar required; system scheme requested; GTK4 full palette deferred", "Relaunch"],
-                ["Next launch after terminal palette reload; inherits Ghostty ANSI", "Next launch"],
-                ["Next prompt in shells with MAGI environment; existing shells need a new shell", "New shell"],
-                ["CSS generated · Manual workspace colour required · Restart Zen after CSS changes", "Manual step"],
-                ["Restart application after changes", "Restart"],
-                ["Future adapter with a long status that should remain in details", "Details"]
-            ]
-            for (const pair of labels) compare(page.compactThemeResult(pair[0]), pair[1])
             verify(!control("follow", "qt").enabled, "deferred target is disabled")
             verify(findChild(page, "themeStatus-qt").text.indexOf("Unavailable") >= 0)
             verify(!findChild(page, "themeStatus-qt").visible, "deferred detail is quiet")
@@ -105,15 +92,17 @@ ShellRoot {
             confirm("ghostty")
             verify(!control("follow", "ghostty").checked, "enrollment failure rolls checkbox back")
             verify(row("ghostty").error.indexOf("preview changed") >= 0, "useful enrollment error")
-            verify(findChild(page, "themeStatus-ghostty").visible, "errors are never collapsed")
-            compare(findChild(page, "themeSummary-ghostty").text, "Apply failed")
+            verify(findChild(page, "themeAttention-ghostty").visible, "failure remains visible as attention")
+            const errorDetails=findChild(page,"themeDetails-ghostty");reveal(errorDetails);mouseClick(errorDetails)
+            verify(findChild(page,"themeStatus-ghostty").visible,"error explanation is available inside disclosure")
+            compare(findChild(page, "themeSummary-ghostty").text, "Status · Apply failed")
 
             clickFollow("ghostty"); confirm("ghostty")
             verify(row("ghostty").enabled && row("ghostty").installed)
             verify(control("follow", "ghostty").checked)
             compare(row("ghostty").statusLabel, "Applies next launch")
             verify(!findChild(page, "themeStatus-ghostty").visible, "healthy verbose detail is collapsed")
-            compare(findChild(page, "themeSummary-ghostty").text, "Applies next launch")
+            compare(findChild(page, "themeSummary-ghostty").text, "Status · Applies next launch")
             const details = findChild(page, "themeDetails-ghostty")
             reveal(details); mouseClick(details)
             verify(findChild(page, "themeStatus-ghostty").visible, "full reload instructions remain available")
@@ -142,6 +131,9 @@ ShellRoot {
                 verify(findChild(page, "zenWorkspaceColor").text.indexOf(theme.roles.background) >= 0)
                 if (theme.id === "catppuccin-mocha") compare(theme.roles.background, "#1e1e2e")
                 if (theme.id === "everforest-dark-hard") compare(theme.roles.background, "#272e33")
+                if (!findChild(page,"applicationRow-zen").expanded) {
+                    const zenDetails=findChild(page,"themeDetails-zen");reveal(zenDetails);mouseClick(zenDetails)
+                }
                 const copy = findChild(page, "copyZenWorkspaceColor")
                 reveal(copy); mouseClick(copy)
                 tryCompare(Services.ThemeOrchestrator, "copyingZenColor", false)
@@ -152,12 +144,12 @@ ShellRoot {
                         wait(80)
                         for (const target of Services.ThemeOrchestrator.targets) {
                             const summary = findChild(page, "themeSummary-" + target.id)
-                            compare(summary.lineCount, 1, "collapsed status remains one line")
-                            verify(["Live", "Applied", "Reload requested", "Reload required", "Reloaded", "Applies next launch", "Restart required", "Unsupported", "Apply failed", "Pending", "Generation failed", "Publication failed", "Deferred", "Unavailable", "Setup", "Review", "Paused", "Not following", "Working…", "Manual step", "Next launch", "New shell", "Reload", "Relaunch", "Restart", "Details"].includes(summary.text), "collapsed status uses the accepted finite status vocabulary")
+                            compare(summary.visible, findChild(page, "applicationRow-" + target.id).expanded, "status belongs inside disclosure")
+
                             const follow = control("follow", target.id)
                             const details = findChild(page, "themeDetails-" + target.id)
                             const point = details.mapToItem(page, details.width, 0)
-                            verify(point.x <= page.width && follow.width >= 130, "target controls remain bounded")
+                            verify(point.x <= page.width && follow.width >= 32, "target controls remain bounded")
                         }
                         page.contentY = Math.max(0, control("follow", "ghostty").mapToItem(page.contentItem, 0, 0).y - 60)
                         wait(50)

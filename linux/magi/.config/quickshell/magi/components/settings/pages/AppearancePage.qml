@@ -18,48 +18,32 @@ SettingsUI.SettingsPage {
         if (Services.ThemeOrchestrator.plan) { Services.ThemeOrchestrator.plan = null; event.accepted = true }
         else event.accepted = false
     }
-    // Presentation only: retain the complete adapter result in expandable details.
-    function compactThemeResult(result) {
-        const text = (result || "").toLowerCase()
-        if (/manual/.test(text)) return "Manual step"
-        if (/next prompt|new shell/.test(text)) return "New shell"
-        if (/next launch/.test(text) && !/^reload/.test(text)) return "Next launch"
-        if (/relaunch/.test(text)) return "Relaunch"
-        if (/reload/.test(text)) return "Reload"
-        if (/restart/.test(text)) return "Restart"
-        if (/^applied|runtime update accepted/.test(text)) return "Applied"
-        // Unknown future adapter wording stays available in details, never in the narrow column.
-        return "Details"
+    // Presentation only: preserve complete adapter results in each disclosure.
+    function needsAttention(target) {
+        return !!target.error || !target.available || !target.configured
+            || ["failed", "error", "unavailable", "unsupported"].includes(target.phase)
+            || /failed|error|unsupported|unavailable/i.test(target.statusLabel || "")
+    }
+    function applicationIcon(id) {
+        return ({magi:"preferences-desktop-theme",hyprland:"preferences-desktop-display",
+            ghostty:"com.mitchellh.ghostty",gtk:"org.xfce.thunar",zen:"zen-browser",
+            yazi:"yazi",neovim:"nvim",starship:"utilities-terminal",fastfetch:"utilities-terminal",
+            btop:"btop",cava:"multimedia-volume-control","ascii-splash":"utilities-terminal"})[id] || "application-x-executable"
     }
     maximumBodyWidth: 1100
     title: "Appearance"
     description: ""
     property int packRequest: 0
     property string packError: ""
-    Label { text: "Theme"; font.pixelSize: SettingsUI.SettingsMetrics.sectionSize; font.bold: true }
+    Label { text: "Themes"; font.pixelSize: SettingsUI.SettingsMetrics.sectionSize; font.bold: true }
     SettingsUI.ThemeGallery {}
-    SettingsUI.SettingsHelp {
-        objectName: "applicationThemeAttention"
-        text: Feedback.attention(Services.ThemeOrchestrator.targets, Services.ThemeOrchestrator.error,
-            Services.ThemeOrchestrator.busy, Services.Settings.saveState)
-        visible: text.length > 0
-        color: Services.ThemeOrchestrator.error ? Theme.Theme.danger : Theme.Theme.subtext
-    }
-    SettingsUI.SettingsButton {
-        objectName: "applicationThemeReview"
-        text: "Review application themes"
-        visible: Feedback.attention(Services.ThemeOrchestrator.targets, Services.ThemeOrchestrator.error, false, Services.Settings.saveState).length > 0
-        onClicked: {
-            applicationThemes.expanded = true
-            Qt.callLater(() => root.contentY = Math.max(0, Math.min(root.contentHeight-root.height, applicationThemes.y+root.body.y)))
-        }
-    }
-    RowLayout {
-        Layout.fillWidth: true
-        Label { text: "Icon Pack"; font.pixelSize: SettingsUI.SettingsMetrics.sectionSize; font.bold: true; Layout.fillWidth: true }
-        SettingsUI.SettingsButton { text: "Install icon pack…"; onClicked: packDialog.open() }
-    }
+    Label { text: "Icon packs"; font.pixelSize: SettingsUI.SettingsMetrics.sectionSize; font.bold: true }
     SettingsUI.IconPackGallery {}
+    SettingsUI.SettingsButton {
+        objectName: "installIconPack"
+        Layout.alignment: Qt.AlignHCenter
+        text: "Install icon pack…"; onClicked: packDialog.open()
+    }
     SettingsUI.SettingsHelp {
         visible: root.packError.length > 0 || !Icons.IconRegistry.packs.some(p => p.id === Services.Settings.data.icons.pack)
         text: root.packError || "Selected pack unavailable; using MAGI Default."
@@ -70,14 +54,9 @@ SettingsUI.SettingsPage {
         id: applicationThemes
         objectName: "applicationThemesSummary"
         collapsible: true
-        readonly property var supportedApplications: Services.ThemeOrchestrator.targets.filter(t => t.id !== "magi" && t.available)
-        title: "Application themes · " + supportedApplications.filter(t => t.enabled).length
-            + " of " + supportedApplications.length + " following MAGI"
-        description: {
-            const next = supportedApplications.filter(t => t.enabled && t.statusLabel === "Applies next launch").length
-            const restart = supportedApplications.filter(t => t.enabled && t.statusLabel === "Restart required").length
-            return [next ? next + " apply next launch" : "", restart ? restart + " need restart" : ""].filter(Boolean).join(" · ")
-        }
+        readonly property int attentionCount: Services.ThemeOrchestrator.targets.filter(t => root.needsAttention(t)).length
+        title: "Application themes"
+        description: Services.ThemeOrchestrator.error ? "Application themes need attention" : attentionCount ? attentionCount + (attentionCount === 1 ? " application needs attention" : " applications need attention") : ""
         SettingsUI.SettingsHelp {
             visible: Services.ThemeOrchestrator.busy
             text: "Updating application themes…"
@@ -96,14 +75,13 @@ SettingsUI.SettingsPage {
                 id: targetRow
                 required property var modelData
                 property bool expanded: false
-                readonly property bool needsAttention: !!modelData.error || reviewing
-                    || (modelData.available && !modelData.configured)
-                    || (modelData.enabled && /manual/i.test(modelData.result || ""))
+                onReviewingChanged: if (reviewing) expanded = true
+                objectName: "applicationRow-" + modelData.id
+                readonly property var iconPresentation: Services.LauncherIcons.resolve({name:modelData.label, icon:root.applicationIcon(modelData.id)})
+                readonly property bool needsAttention: root.needsAttention(modelData)
                 readonly property string shortStatus: pending ? "Working…" : modelData.error ? "Apply failed"
-                    : !modelData.available ? (modelData.result === "Deferred" ? "Deferred" : "Unavailable")
-                    : !modelData.configured ? "Setup" : reviewing ? "Review"
-                    : !modelData.enabled ? (modelData.installed ? "Paused" : "Not following")
-                    : modelData.statusLabel || root.compactThemeResult(modelData.result)
+                    : !modelData.available ? "Unavailable" : !modelData.configured ? "Setup required"
+                    : reviewing ? "Review" : !modelData.enabled ? "Disabled" : modelData.statusLabel || modelData.result
                 spacing: 4
                 readonly property bool reviewing: Services.ThemeOrchestrator.plan !== null
                     && Services.ThemeOrchestrator.plan.target === modelData.id
@@ -113,12 +91,48 @@ SettingsUI.SettingsPage {
                 Layout.fillWidth: true
                 RowLayout {
                     Layout.fillWidth: true
-                    Label { text: targetRow.modelData.label; font.bold: true; Layout.fillWidth: true; Layout.minimumWidth: 75; elide: Text.ElideRight }
+                    Item {
+                        Layout.preferredWidth: 24; Layout.preferredHeight: 24
+                        Image {
+                            id: applicationImage
+                            anchors.fill: parent
+                            source: targetRow.iconPresentation.source
+                            sourceSize.width: 24; sourceSize.height: 24
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        Label { anchors.centerIn: parent; visible: applicationImage.status !== Image.Ready; text: targetRow.iconPresentation.fallbackText }
+                    }
+                    SettingsUI.SettingsButton {
+                        id: disclosure
+                        objectName: "themeDetails-" + targetRow.modelData.id
+                        flat: true
+                        Layout.fillWidth: true; Layout.minimumWidth: 0
+                        text: targetRow.modelData.label
+                        Accessible.name: (targetRow.expanded ? "Hide details for " : "Details for ") + targetRow.modelData.label
+                        Accessible.description: targetRow.expanded ? "Expanded" : "Collapsed"
+                        onClicked: targetRow.expanded = !targetRow.expanded
+                        contentItem: RowLayout {
+                            spacing: 6
+                            Label { text: disclosure.text; font.bold: true; Layout.maximumWidth: Math.max(0, disclosure.availableWidth - 22); elide: Text.ElideRight }
+                            Label { text: targetRow.expanded ? "▾" : "▸" }
+                            Item { Layout.fillWidth: true }
+                        }
+                    }
+                    Label {
+                        objectName: "themeAttention-" + targetRow.modelData.id
+                        visible: targetRow.needsAttention
+                        text: "!"; color: Theme.Theme.warning
+                        Accessible.name: targetRow.modelData.label + " needs attention"
+                        ToolTip.visible: attentionHover.hovered
+                        ToolTip.text: "Open details for " + targetRow.modelData.label
+                        HoverHandler { id: attentionHover }
+                    }
                     SettingsUI.SettingsToggle {
                         Layout.fillWidth: false
-                        Layout.preferredWidth: 135
+                        Layout.preferredWidth: 34
                         objectName: "followTheme-" + targetRow.modelData.id
-                        text: "Follow MAGI"
+                        text: ""
+                        Accessible.name: "Follow MAGI for " + targetRow.modelData.label
                         checked: targetRow.modelData.enabled || targetRow.reviewing || (targetRow.pending
                             && ["plan", "enable", "resume"].indexOf(Services.ThemeOrchestrator.request.op) >= 0)
                         enabled: !Services.ThemeOrchestrator.busy && targetRow.modelData.id !== "magi"
@@ -133,27 +147,17 @@ SettingsUI.SettingsPage {
                                 || (targetRow.pending && ["plan", "enable", "resume"].indexOf(Services.ThemeOrchestrator.request.op) >= 0))
                         }
                     }
-                    Label {
-                        objectName: "themeSummary-" + targetRow.modelData.id
-                        text: targetRow.shortStatus
-                        Layout.preferredWidth: 110
-                        wrapMode: Text.NoWrap
-                        elide: Text.ElideRight
-                        font.pixelSize: SettingsUI.SettingsMetrics.helperSize
-                        color: targetRow.modelData.error ? Theme.Theme.danger : Theme.Theme.text
-                    }
-                    SettingsUI.SettingsButton {
-                        objectName: "themeDetails-" + targetRow.modelData.id
-                        flat: true; text: targetRow.expanded ? "▾" : "▸"
-                        implicitWidth: 28; leftPadding: 4; rightPadding: 4
-                        Accessible.name: "Details for " + targetRow.modelData.label
-                        Accessible.description: targetRow.modelData.reason || targetRow.modelData.result
-                        onClicked: targetRow.expanded = !targetRow.expanded
-                    }
+                }
+                Label {
+                    objectName: "themeSummary-" + targetRow.modelData.id
+                    visible: targetRow.expanded
+                    text: "Status · " + targetRow.shortStatus
+                    color: targetRow.needsAttention ? Theme.Theme.warning : Theme.Theme.subtext
+                    wrapMode: Text.Wrap; Layout.fillWidth: true
                 }
                 Label {
                     objectName: "themeStatus-" + targetRow.modelData.id
-                    visible: targetRow.expanded || targetRow.needsAttention
+                    visible: targetRow.expanded
                     text: targetRow.pending ? "Working…" : (targetRow.modelData.error ? Feedback.savedContext(Services.Settings.saveState) + "Could not update " + targetRow.modelData.label + ". Retry below; open details for the diagnostic." : "") ||
                         (!targetRow.modelData.available ? "Unavailable — " + targetRow.modelData.reason :
                          !targetRow.modelData.configured ? "Setup required — " + targetRow.modelData.reason :
@@ -168,11 +172,19 @@ SettingsUI.SettingsPage {
                     wrapMode: Text.Wrap; Layout.fillWidth: true
                 }
                 SettingsUI.SettingsHelp {
+                    objectName: "themeIntegration-" + targetRow.modelData.id
+                    visible: targetRow.expanded && text.length > 0
+                    text: [targetRow.modelData.boundary ? "Integration · " + targetRow.modelData.boundary : "",
+                        targetRow.modelData.compatibility ? "Compatibility · " + targetRow.modelData.compatibility : "",
+                        targetRow.modelData.activationDetail ? "Activation · " + targetRow.modelData.activationDetail : "",
+                        targetRow.modelData.path ? "Configuration · " + targetRow.modelData.path : ""].filter(Boolean).join("\n")
+                }
+                SettingsUI.SettingsHelp {
                     visible: targetRow.expanded && !!targetRow.modelData.error
                     text: targetRow.modelData.error || ""
                 }
                 RowLayout {
-                    visible: targetRow.expanded || !!targetRow.modelData.error
+                    visible: targetRow.expanded
                     SettingsUI.SettingsButton {
                         visible: targetRow.modelData.enabled && targetRow.modelData.id !== "magi"
                         flat: true
@@ -187,7 +199,7 @@ SettingsUI.SettingsPage {
                     }
                 }
                 RowLayout {
-                    visible: targetRow.modelData.id === "zen" && targetRow.modelData.enabled
+                    visible: targetRow.expanded && targetRow.modelData.id === "zen" && targetRow.modelData.enabled
                     Layout.fillWidth: true
                     Label {
                         objectName: targetRow.modelData.id === "zen" ? "zenWorkspaceColor" : ""
@@ -209,7 +221,7 @@ SettingsUI.SettingsPage {
                 }
                 SettingsUI.SettingsTextField {
                     id: profileInput
-                    visible: targetRow.modelData.id === "zen" && !targetRow.modelData.confirmedProfile
+                    visible: targetRow.expanded && targetRow.modelData.id === "zen" && !targetRow.modelData.confirmedProfile
                     Layout.fillWidth: true
                     placeholderText: "Confirm the new Profile Directory from about:support"
                 }
@@ -314,6 +326,7 @@ SettingsUI.SettingsPage {
 
     FileDialog {
         id: packDialog
+        objectName: "iconPackInstallDialog"
         title: "Install a local MAGI icon-pack manifest"
         nameFilters: ["JSON manifests (*.json)"]
         onAccepted: { root.packError = ""; root.packRequest = Services.AssetManager.importIconPack(selectedFile) }

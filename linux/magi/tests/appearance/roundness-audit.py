@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Read-only, reproducible roundness inventory. Optional snapshot is never modified."""
+import argparse,csv,json,re,subprocess
+from pathlib import Path
+root=Path(__file__).resolve().parents[2]
+source=root/'.config/quickshell/magi'
+parser=argparse.ArgumentParser();parser.add_argument('--settings',type=Path);parser.add_argument('--output',type=Path);args=parser.parse_args()
+script="const fs=require('fs'),vm=require('vm'),c=vm.createContext({});vm.runInContext(fs.readFileSync(process.argv[1],'utf8'),c);const raw=JSON.parse(fs.readFileSync(0,'utf8'));console.log(JSON.stringify(vm.runInContext('({defaults:defaults(),effective:analyze('+JSON.stringify(raw)+').effective})',c)))"
+raw=json.loads(args.settings.read_text()) if args.settings else {'schemaVersion':22}
+schema=json.loads(subprocess.check_output(['node','-e',script,str(source/'settings/SettingsSchema.js')],input=json.dumps(raw),text=True))
+def get(obj,path):
+ for key in path.split('.'):
+  if not isinstance(obj,dict) or key not in obj:return 'ABSENT'
+  obj=obj[key]
+ return obj
+roles=['barPill','surface','controlTile','slider','action','avatar','albumArt','hubSelector','secondaryControl']
+# Each logical field binding at a canonical editor location counts once. Repeated
+# module selections, previews and outputs are contextual aliases, not new controls.
+entries=[
+('Roundness','Appearance','Roundness','master','RoundnessPicker.qml','Master roundness','KEEP — global base','Low'),
+('Surfaces and cards — shared','Appearance','Advanced shell styling / Shared shell roundness','surface','pages/AppearancePage.qml','Surfaces and cards','KEEP BUT CENTRALIZE','High: shared popup and blur contours'),
+('Buttons and switches — shared','Appearance','Advanced shell styling / Shared shell roundness','action','pages/AppearancePage.qml','Buttons and switches','ADVANCED OVERRIDE','Medium: toggle saturation differs from buttons'),
+('Roundness','Bar','Status pills','barPill','BarInspector.qml','text: "Roundness"','KEEP — connected Bar silhouette','High: joins/expanded transitions'),
+('Roundness','Bar','Workspace pills','workspace','BarInspector.qml','text: "Roundness"','ADVANCED OVERRIDE','Medium: active segment shares outer contour'),
+('Shared surface roundness','Bar','Wi-Fi / Bluetooth / Audio menu disclosure','surface','BarInspector.qml','Shared surface roundness','REMOVE CANDIDATE — duplicate UI only','Low UI-only; high if field removed'),
+('Avatar shape','Control Centre','Profile Header','avatar','CCInspector.qml','Avatar shape','KEEP — image masks/native lock','High: native image mask and shared profile geometry'),
+('Artwork shape','Control Centre','Media Player','albumArt','CCInspector.qml','artRoundness-albumArt','ADVANCED OVERRIDE','High: artwork crop and progress perimeter'),
+('Shape','Control Centre','Primary controls','controlTile','CCInspector.qml','id: shapeSection','KEEP — tile and card silhouette','Medium/high: also profile/media containers'),
+('Shape','Control Centre','Secondary controls','secondaryControl','CCInspector.qml','id: shapeSection','MERGE CANDIDATE with action, only opt-in','Medium: separate 10px base and 1px inner glyph'),
+('Shape','Control Centre','Sliders','slider','CCInspector.qml','id: shapeSection','KEEP — slider track/knob geometry','Medium/high: independent fill/frame contour'),
+('Shape','Control Centre','Surface','surface','CCInspector.qml','id: shapeSection','REMOVE CANDIDATE — duplicate UI only','Low UI-only; high if field removed'),
+('Roundness','Hub','Selector appearance','hubSelector','pages/HubPage.qml','text: "Roundness"','ADVANCED OVERRIDE','Medium: selector mask/border; current .4 distinct'),
+('Header corner roundness','Launcher','Header image','header','pages/LauncherPage.qml','Header corner roundness','KEEP — pixel-valued image crop','High: not a multiplier; independent mask/frame')]
+field=lambda role: 'bar.visual.workspacePills.roundness' if role=='workspace' else 'launcher.headerRadius' if role=='header' else 'appearance.roundness.'+('master' if role=='master' else 'roles.'+role)
+# Exported geometry aliases; this is a token count, not every radius-bearing Item.
+tokens={'radiusSmall':'action','radiusMedium':'surface','radiusLarge':'surface','barPillRadius':'barPill','workspacePillRadius':'workspace','outerRadius':'surface','tileRadius':'controlTile','sliderRadius':'slider','avatarRadius':'avatar'}
+files=[]
+for p in root.rglob('*'):
+ if p.is_file() and not p.is_symlink() and p.suffix in ['.qml','.js','.py','.cpp','.hpp','.cjs','.md','.json','.frag','.vert'] and '.git' not in p.parts:
+  files.append(p)
+scan=[];bindings=[];consumers={role:[] for role in roles+['workspace','header','master']}
+pattern=re.compile(r'roundness|rounded|radius',re.I)
+for p in sorted(files):
+ rel=str(p.relative_to(root));text=p.read_text(errors='replace')
+ category='test' if rel.startswith('tests/') or '/tests/' in rel else 'historical experiment' if rel.startswith('experiments/') else 'documentation' if rel.startswith('docs/') or p.suffix=='.md' else 'runtime'
+ for line_no,line in enumerate(text.splitlines(),1):
+  if pattern.search(line):scan.append({'file':rel,'line':line_no,'category':category,'text':line.strip()})
+  if category!='runtime':continue
+  if p.suffix=='.qml':
+   for match in re.finditer(r'(?:^|[;{,])\s*(?:(?:readonly\s+)?property\s+\w+\s+)?([A-Za-z_]*[Rr]adius\w*)\s*:\s*([^;\n}]+)',line):
+    expression=match.group(2).strip()
+    kind='fixed literal' if re.fullmatch(r'\d+(?:\.\d+)?',expression) else 'derived/propagated geometry'
+    bindings.append({'file':rel,'line':line_no,'property':match.group(1),'expression':expression,'kind':kind})
+  for role in consumers:
+   direct=bool(re.search(r'\bradius\("'+role+'"',line))
+   aliases=[t for t,r in tokens.items() if r==role and t not in ['outerRadius','avatarRadius']]
+   bridge=(role=='avatar' and ('roles.avatar' in line or 'rounding.roles.avatar' in line or 'avatarRadius' in line))
+   bridge|=(role=='surface' and 'RenderTokens.outerRadius' in line)
+   bridge|=(role=='header' and 'headerRadius' in line) or (role=='workspace' and 'workspacePills.roundness' in line)
+   if direct or bridge or any(re.search(r'\b'+t+r'\b',line) for t in aliases):
+    consumers[role].append({'file':rel,'line':line_no,'text':line.strip()})
+# Master reaches every nullable role but does not override an explicit role value.
+consumers['master']=[{'file':'.config/quickshell/magi/theme/Theme.qml','line':44,'text':'radius(): nullable role -> master -> reference * multiplier -> geometry clamp'}, {'file':'native/lock/src/visual_data.cpp','line':80,'text':'native avatar override -> master -> 12px reference'}]
+controls=[]
+for n,(label,page,group,role,file,needle,disposition,risk) in enumerate(entries,1):
+ path=field(role);text=(source/'components/settings'/file).read_text();line=next(i for i,s in enumerate(text.splitlines(),1) if needle in s)
+ mask=role in ['master','barPill','surface','avatar','albumArt','hubSelector','header']
+ inherited='No' if role in ['master','header'] else 'Bar pill override, then master when null' if role=='workspace' else 'Master when null'
+ current=get(schema['effective'],path);default=get(schema['defaults'],path)
+ displayed=current if current is not None else (get(schema['effective'],'appearance.roundness.roles.barPill') if role=='workspace' and get(schema['effective'],'appearance.roundness.roles.barPill') is not None else get(schema['effective'],'appearance.roundness.master'))
+ c={'Number':n,'Visible label':label,'Settings page':page,'Settings group/card':group,'Persisted field/path':path,'Stored current value':get(raw,path),'Current value':displayed,'Normalized stored value':current,'Default value':default,'Minimum':0,'Maximum':75 if role=='header' else 2,'Step':1 if role=='header' else .05,'Unit':'logical px' if role=='header' else 'multiplier','Control kind':'number stepper' if role=='header' else 'slider','Runtime consumers':role,'Visual scope':{'master':'All inheriting roles, including native lock avatar','surface':'Hub/Settings, menus, notifications/clipboard/emoji/launcher panels, shared borders','action':'Buttons, switches, inputs, result/gallery cards, small controls','barPill':'Status/time/date/utility/tray and connected Bar regions','workspace':'Workspace background and active segment','avatar':'CC avatar, Profile preview, native lock profile and image mask','albumArt':'CC media artwork and progress perimeter','controlTile':'CC primary tiles AND profile/media container backgrounds','secondaryControl':'CC action buttons and inner glyph treatment','slider':'CC sliders and ValueSlider tracks/knobs','hubSelector':'Hub selector shell and border','header':'Launcher header RoundedArtwork crop/frame'}[role],'Affects clipping/masks':mask,'Affects border geometry':True,'Inheritance':inherited,'Overlap':'Same field as #2/#6/#12' if role=='surface' else 'Master applies only while null' if inherited!='No' else 'None (base or pixel-valued field)','Proposed disposition':disposition,'Risk of consolidation':risk,'Source':f'.config/quickshell/magi/components/settings/{file}:{line}','Impact key':role}
+ controls.append(c)
+assert len(controls)==14 and len({c['Persisted field/path'] for c in controls})==12
+fixed=[b for b in bindings if b['kind']=='fixed literal']
+# Conditional fixed/fallback branches are separate from literal assignments.
+# These are reviewed source sites, not independent preferences or every numeric operand.
+conditional_specs=[
+('.config/quickshell/magi/components/bar/ExpandablePlugin.qml','bottomLeftRadius: revealedHeight'),
+('.config/quickshell/magi/components/bar/ExpandablePlugin.qml','bottomRightRadius: revealedHeight'),
+('.config/quickshell/magi/components/notifications/ToastHost.qml','radius: modelData ?'),
+('.config/quickshell/magi/components/settings/LockThemePreview.qml','radius:root.layout.effects.avatar'),
+('native/lock/qml/LockCredential.qml','radius: root.style'),
+('native/lock/qml/LockProfile.qml','radius: root.treatment'),
+('native/lock/qml/LockTokens.qml','readonly property real avatarRadius:'),
+('native/lock/src/visual_data.cpp','{"wallpaperTint",wallpaperTint}'),
+('native/lock/src/presentation.cpp','const double outerRadius=')]
+conditional=[]
+for f,needle in conditional_specs:
+ line=next(i for i,s in enumerate((root/f).read_text().splitlines(),1) if needle in s)
+ conditional.append({'file':f,'line':line,'kind':'conditional/default radius constant site'})
+shape_controls=[]
+for n,label,page,group,path,choices,f,needle in [
+(15,'Profile picture treatment','Lock Screen','Selected theme options','lockScreen.effects.avatar',['plain','frame'],'pages/LockScreenPage.qml','lockOption-avatarStyle'),
+(16,'Password marks','Lock Screen','Authentication appearance','lockScreen.effects.credential',['dots','line','segments','ring','minimal'],'pages/LockScreenPage.qml','lockCredentialStyle'),
+(17,'Pill / Filled / Minimal','Hub','Switch appearance','appearance.toggleStyle',['pill','filled','minimal'],'SwitchStylePicker.qml','switchStylePicker')]:
+ line=next(i for i,s in enumerate((source/'components/settings'/f).read_text().splitlines(),1) if needle in s)
+ shape_controls.append({'Number':n,'Visible label':label,'Settings page':page,'Settings group/card':group,'Persisted field/path':path,'Current value':get(schema['effective'],path),'Default value':get(schema['defaults'],path),'Minimum':'N/A','Maximum':'N/A','Step':'choice','Unit':'enum','Choices':choices,'Runtime consumers':'LockProfile + native avatar mask' if n==15 else 'LockCredential (read-only presentation)' if n==16 else 'CompactToggle','Visual scope':'Picture treatment' if n==15 else 'Credential glyph geometry' if n==16 else 'Toggle track/knob silhouette','Affects clipping/masks':n==15,'Affects border geometry':n!=16,'Inheritance':'Avatar plain follows avatar role; frame forces 4px' if n==15 else 'No; style choice','Overlap':'Developer-gated designer edits same field' if n in [15,16] else 'action role scales corners separately','Proposed disposition':'KEEP — style, not a numeric roundness override','Risk of consolidation':'High if conflated with radius','Source':f'.config/quickshell/magi/components/settings/{f}:{line}'})
+result={'method':'Logical control binding per canonical editor; context/module/output copies not counted. Numeric radius fields separately from style enums. Fixed constants = literal QML radius assignment sites (not unique numbers); all other bindings and non-QML matches retained for manual geometry review. Symlinked lock presentation counted once at native source.','counts':{'sliders':13,'number_steppers':1,'numeric_fields':12,'duplicated_fields':1,'duplicate_control_copies':2,'primary_preset_groups_before':1,'primary_preset_buttons_before':3,'primary_preset_groups_after':0,'shape_selectors_normal':3,'shape_choices_normal':10,'designer_shape_selectors':2,'designer_shape_choices':9,'derived_exported_tokens':9,'unused_exported_tokens':1,'dead_numeric_fields':0,'fixed_internal_radius_sites':len(fixed)+len(conditional),'conditional_or_native_constant_sites':len(conditional),'fixed_qml_radius_assignment_sites':len(fixed),'all_runtime_qml_radius_binding_sites':len(bindings),'derived_or_propagated_binding_sites':len(bindings)-len(fixed)},'controls':controls,'shape_controls':shape_controls,'conditional_radius_sites':conditional,'tokens':tokens,'consumers':consumers,'fixed_radius_sites':fixed,'all_radius_bindings':bindings,'search_hits':scan,'snapshot':str(args.settings) if args.settings else 'Schema defaults'}
+if args.output:
+ args.output.mkdir(parents=True,exist_ok=True)
+ (args.output/'roundness-audit.json').write_text(json.dumps(result,indent=2)+'\n')
+ with (args.output/'roundness-controls.csv').open('w') as out:
+  writer=csv.DictWriter(out,fieldnames=list(controls[0])+['Choices'],lineterminator='\n');writer.writeheader()
+  writer.writerows({key: ('null' if value is None else json.dumps(value) if isinstance(value,list) else value) for key,value in row.items()} for row in controls+shape_controls)
+ for role,items in consumers.items():
+  (args.output/f'consumers-{role}.json').write_text(json.dumps(items,indent=2)+'\n')
+print(json.dumps(result['counts'],indent=2));print('Roundness audit PASS: 14 bindings, 12 live numeric fields; no Settings writes')
