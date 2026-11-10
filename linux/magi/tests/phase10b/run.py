@@ -32,6 +32,8 @@ with tempfile.TemporaryDirectory(prefix='magi-10b-') as temporary:
  # inject a name-matched monitor in the fixture instead of compositor IPC.
  p=config/'plugins/bar/workspaces/Workspaces.qml';s=p.read_text().replace('outputScreen ? Hyprland.monitorFor(outputScreen) : null','outputScreen ? outputScreen.monitor : null');s=s.replace('Hyprland.workspaces.values', '[{id:1,name:"1"},{id:2,name:"2"}]').replace('id: root', 'id: root; objectName: "workspaceStrip"; property string dispatched: ""; function dispatchCapture(value) { dispatched = value }',1).replace('Hyprland.dispatch(', 'root.dispatchCapture(');p.write_text(s)
  p=config/'components/hub/HubWindow.qml';s=p.read_text().replace('PanelWindow {','FloatingWindow {\n    implicitWidth: 1920; implicitHeight: 1080',1).replace('screen: Services.SurfaceOrigin.hubTarget()', 'property var routedScreen: Services.SurfaceOrigin.hubTarget()')
+ # Offscreen protocol fixture; native keyboard delivery remains an operator gate.
+ s = s.replace('HyprlandFocusGrab {', 'QtObject {\n        signal cleared()\n        property var windows\n        property bool active')
  p.write_text('\n'.join(line for line in s.splitlines() if not any(token in line for token in ['anchors { top: true;', 'exclusionMode:', 'WlrLayershell.'])))
  (config/'test.qml').write_text(Path(__file__).with_name('lifecycle.qml').read_text().replace('../../.config/quickshell/magi/',''))
  runtime=stage/'runtime';runtime.mkdir(mode=0o700)

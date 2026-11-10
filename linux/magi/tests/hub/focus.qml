@@ -34,6 +34,19 @@ ShellRoot {
                     verify(!window.ownsSearchKeyboard)
                 }
             }
+            for (const mode of ["apps", "clipboard", "emoji"]) {
+                search(mode)
+                verify(window.focusGrab.active)
+                compare(window.focusGrab.windows.length, 1)
+                compare(window.focusGrab.windows[0], window)
+                // Simulated protocol clear tests dismissal, not app key delivery.
+                window.focusGrab.cleared()
+                tryCompare(Services.Hub, "opened", false)
+                compare(window.visible, false)
+                compare(window.focusGrab.active, false)
+                search(mode)
+                keyClick(Qt.Key_Escape)
+            }
             const navigation = search("emoji")
             tryVerify(() => Services.Emoji.results.length > 10)
             keyClick(Qt.Key_Down)
@@ -64,8 +77,14 @@ ShellRoot {
             Services.Hub.open("notifications")
             tryCompare(window, "ownsSearchKeyboard", false)
             tryVerify(() => window.content.currentContent.activeFocus)
+            compare(window.focusGrab.active, false)
+            window.focusGrab.cleared()
+            verify(Services.Hub.opened)
             Services.Hub.open("settings")
             tryCompare(window, "ownsSearchKeyboard", false)
+            compare(window.focusGrab.active, false)
+            window.focusGrab.cleared()
+            verify(Services.Hub.opened)
             Services.Hub.close()
             search("apps")
             Services.Hub.suppressed = true

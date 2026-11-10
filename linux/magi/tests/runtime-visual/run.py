@@ -79,6 +79,8 @@ QtObject {
     path.write_text(source)
     path=config/'components/hub/HubWindow.qml'
     source=path.read_text().replace('PanelWindow {','FloatingWindow {\n    implicitWidth: 1920; implicitHeight: 1080',1)
+    # Offscreen protocol fixture; native keyboard delivery remains an operator gate.
+    source = source.replace('HyprlandFocusGrab {', 'QtObject {\n        signal cleared()\n        property var windows\n        property bool active')
     path.write_text('\n'.join(line for line in source.splitlines() if not any(token in line for token in
         ['anchors { top: true;', 'exclusionMode:', 'WlrLayershell.'])))
     if len(sys.argv) > 1 and sys.argv[1] == 'colours.qml':

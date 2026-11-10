@@ -12,7 +12,7 @@ assert "exclusiveZone:" not in (source / "components/hub/HubWindow.qml").read_te
 assert "exclusiveZone: fullSurface ? geometry.reservation : 0" in (source / "components/bar/Bar.qml").read_text()
 launcher = (source / "components/launcher/LauncherContent.qml").read_text()
 assert not any(value in launcher for value in ("backgroundEnabled", "backgroundImage", "Esc to close", "Enter to open", " applications  "))
-assert "ownsSearchKeyboard ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand" in (source / "components/hub/HubWindow.qml").read_text()
+assert "WlrKeyboardFocus.Exclusive" not in (source / "components/hub/HubWindow.qml").read_text()
 for retired in ["launcher/LauncherWindow.qml", "emoji/EmojiWindow.qml", "clipboard/ClipboardWindow.qml", "notifications/NotificationCentre.qml"]:
     assert not (source / "components" / retired).exists(), retired
 with tempfile.TemporaryDirectory(prefix="magi-hub-ui-") as tmp:
@@ -23,6 +23,9 @@ with tempfile.TemporaryDirectory(prefix="magi-hub-ui-") as tmp:
     path = config / "components/hub/HubWindow.qml"
     text = path.read_text().replace("PanelWindow {", "FloatingWindow {\n    implicitWidth: 1280; implicitHeight: 900")
     text = "\n".join(line for line in text.splitlines() if not any(token in line for token in ["anchors { top: true;", "exclusionMode:", "WlrLayershell."]))
+    # Offscreen cannot implement compositor focus grabs. Only substitute the
+    # protocol object; production lifecycle and item routing remain under test.
+    text = text.replace("HyprlandFocusGrab {", "QtObject {\n        signal cleared()\n        property var windows\n        property bool active")
     path.write_text(text)
     runtime = stage / "runtime"; runtime.mkdir(mode=0o700)
     env = dict(os.environ, QT_QPA_PLATFORM="offscreen", QT_QUICK_BACKEND="software", XDG_RUNTIME_DIR=str(runtime), XDG_STATE_HOME=str(stage / "state"), HOME=str(stage), XDG_CONFIG_HOME=str(stage / "xdg-config"), XDG_CACHE_HOME=str(stage / "cache"))

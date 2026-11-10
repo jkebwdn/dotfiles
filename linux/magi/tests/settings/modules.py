@@ -53,6 +53,8 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
     if len(sys.argv) > 1 and sys.argv[1] in ('catalogue', 'window.qml'):
         path = config / 'components/hub/HubWindow.qml'
         text = path.read_text().replace('PanelWindow {', 'FloatingWindow {\n    implicitWidth: 1280; implicitHeight: 900')
+        # Offscreen protocol fixture; native keyboard delivery remains an operator gate.
+        text = text.replace('HyprlandFocusGrab {', 'QtObject {\n        signal cleared()\n        property var windows\n        property bool active')
         path.write_text('\n'.join(line for line in text.splitlines() if not any(token in line for token in
             ['anchors { top: true;', 'exclusionMode:', 'WlrLayershell.'])))
     if len(sys.argv) > 1 and sys.argv[1] == 'anchored-layout.qml':

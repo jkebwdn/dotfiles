@@ -15,6 +15,8 @@ with tempfile.TemporaryDirectory(prefix='magi-orchestrator-qml-') as tmp:
     (config/'settings.json').write_text('{"schemaVersion":10}')
     path = config/'components/hub/HubWindow.qml'
     text = path.read_text().replace('PanelWindow {', 'FloatingWindow {\n    implicitWidth: 1280; implicitHeight: 900')
+    # Offscreen protocol fixture; native keyboard delivery remains an operator gate.
+    text = text.replace('HyprlandFocusGrab {', 'QtObject {\n        signal cleared()\n        property var windows\n        property bool active')
     path.write_text('\n'.join(line for line in text.splitlines() if not any(token in line for token in
         ['anchors { top: true;', 'exclusionMode:', 'WlrLayershell.'])))
     # No running host application may receive a fixture activation request.

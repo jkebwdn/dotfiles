@@ -6,6 +6,7 @@ import "."
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import Quickshell.Hyprland
 import "../../services" as Services
 import "../../theme" as Theme
 
@@ -31,11 +32,19 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "magi-hub"
     WlrLayershell.layer: WlrLayer.Overlay
-    // Item focus alone cannot take the Wayland keyboard from the previous app.
-    // Claim it on mapping a searchable mode; release on close/suppression or when
-    // entering Settings/Notifications, whose existing interaction stays on-demand.
+    // Search modes are transient popups. The compositor grab owns initial
+    // keyboard acquisition and outside dismissal; never lock other apps out
+    // with a visibility-long layer-shell Exclusive claim.
     readonly property bool ownsSearchKeyboard: visible && content.searchable
-    WlrLayershell.keyboardFocus: !visible ? WlrKeyboardFocus.None : ownsSearchKeyboard ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand
+    property alias focusGrab: searchGrab
+    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    HyprlandFocusGrab {
+        id: searchGrab
+        windows: [root] // Selector, results and Qt popup overlay share this window.
+        active: root.ownsSearchKeyboard
+        onActiveChanged: if (active) Qt.callLater(content.focusMode)
+        onCleared: if (root.ownsSearchKeyboard) Services.Hub.close()
+    }
     visible: Services.Hub.opened && !Services.Hub.suppressed && (readyToOpen || presented || previewPinned)
     color: "transparent"
     BackgroundEffect.blurRegion: Theme.Theme.sharedBlur ? panelBlur : null
@@ -65,7 +74,7 @@ PanelWindow {
         target: "hubWindow"
         function status(): string {
             const item = content.currentContent
-            return JSON.stringify({visible:root.visible, mode:content.mode, keyboardExclusive:root.ownsSearchKeyboard,
+            return JSON.stringify({visible:root.visible, mode:content.mode, keyboardExclusive:false, searchGrabActive:searchGrab.active,
                 x:content.x, y:content.y, width:content.width, height:content.height,
                 focused:!!item && (content.mode === "notifications" || content.mode === "settings" ? item.activeFocus : item.searchField.activeFocus)})
         }

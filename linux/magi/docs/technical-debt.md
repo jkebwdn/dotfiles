@@ -50,3 +50,9 @@ operator on 2026-11-09. Native CPU measurement remains unavailable in the sandbo
 synthetic routing does not establish physical multi-output acceptance. The existing
 outside-dismiss catcher still owns outside clicks while open; artwork adds no input
 target. See [acceptance review](review/controlcentre-image.md).
+
+## Focus acceptance
+
+Component tests cannot prove compositor key delivery. The operator passed the
+Zen/Ghostty/Thunar focus gate on 2026-11-10. No output or GPU changes are included.
+See [review](review/focus-picker-settings.md).

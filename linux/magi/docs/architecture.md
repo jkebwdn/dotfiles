@@ -972,3 +972,9 @@ no alternate surface/layout is introduced. See [review and acceptance](review/co
 The same decoration supports animated GIFs through Qt AnimatedImage, retaining the
 shared all-frame importer. Hidden/non-owning presenters pause; Settings keeps a
 still preview. No new surface, timer or animation worker is introduced.
+
+## Hub focus release
+
+Search popup focus moves to one compositor grab. Outside interaction dismisses
+search modes without changing query persistence or output routing. See
+[review and API evidence](review/focus-picker-settings.md).

@@ -198,3 +198,9 @@ The operator's actual six-frame GIF also passes an isolated Qt render/loop check
 The operator accepted the revised GIF artwork and tests on 2026-11-09. This
 operator acceptance is separate from the automated results above; physical
 multi-output and native CPU measurements are not claimed.
+
+## Hub focus release
+
+`hub/run` covers simulated grab-clear dismissal, real Qt search keys and mode/query
+lifecycle. The separate Zen/Ghostty/Thunar native gate passed on 2026-11-10. See
+[evidence](review/focus-picker-settings.md).

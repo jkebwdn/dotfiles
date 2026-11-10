@@ -23,6 +23,8 @@ with tempfile.TemporaryDirectory(prefix='magi-wallpaper-ui-') as tmp:
     (config/'settings.json').write_text(json.dumps({'schemaVersion':9,'wallpaper':{'directories':[str(library)]}}))
     path=config/'components/hub/HubWindow.qml'
     text=path.read_text().replace('PanelWindow {','FloatingWindow {\n    implicitWidth: 1200; implicitHeight: 900')
+    # Offscreen protocol fixture; native keyboard delivery remains an operator gate.
+    text = text.replace('HyprlandFocusGrab {', 'QtObject {\n        signal cleared()\n        property var windows\n        property bool active')
     text='\n'.join(line for line in text.splitlines() if not any(s in line for s in ['    anchors {','    exclusionMode:', '    WlrLayershell.']))
     path.write_text(text)
     bin_dir=stage/'bin'; bin_dir.mkdir()

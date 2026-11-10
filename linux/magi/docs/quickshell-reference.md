@@ -840,3 +840,8 @@ panel readiness, on non-owning outputs, and in the static Settings preview. Sepa
 Image/AnimatedImage instances avoid Qt's documented static-to-animation playing-state
 caveat. See [Qt AnimatedImage](https://doc.qt.io/qt-6/qml-qtquick-animatedimage.html)
 and the [review evidence](review/controlcentre-image.md).
+
+## Hub focus ownership
+
+Installed Quickshell 0.3.2 exposes HyprlandFocusGrab. The grab is limited to searchable
+Hub modes. See [review and API evidence](review/focus-picker-settings.md).

@@ -219,10 +219,12 @@ static Thunar-only exclusion handle implements shared blur participation; compos
 window opacity and global engine quality remain unchanged. Thunar's parent canvases
 paint alpha once; inactive GTK surfaces receive explicit backdrop rules.
 
-Hub's retained window claims layer-shell keyboard focus while a searchable mode is
-visible; existing item-focus callbacks select the current search field. Settings and
-Notifications retain their previous on-demand policy. Search/query persistence,
-backend activation, mouse controls and Escape remain separate from focus ownership.
+The [focus review](../review/focus-picker-settings.md) replaces the visibility-long
+Exclusive claim with a search-only HyprlandFocusGrab. Its cleared signal dismisses
+the Hub; mapped keyboard policy is OnDemand, hidden is None. Selector and content
+share one registered window. Settings/Notifications retain their on-demand
+lifecycle; query behavior and routing are unchanged. Native focus acceptance passed
+on 2026-11-10.
 
 ## Custom Image Bar
 

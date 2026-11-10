@@ -1181,3 +1181,8 @@ Image/AnimatedImage renderers. Gate reveal on the existing interactive phase, sh
 on narrow outputs, keep schema 22 through additive defaults, and default off.
 Do not move the panel or enlarge blur/input ownership for artwork. Details and
 operator acceptance: [review](review/controlcentre-image.md).
+
+## 2026-11-10 — transient Hub ownership
+
+Replace visibility-long Exclusive focus with a search-only compositor grab and
+outside dismissal. See [review and API evidence](review/focus-picker-settings.md).
