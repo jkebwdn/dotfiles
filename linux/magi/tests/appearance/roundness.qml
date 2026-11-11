@@ -21,13 +21,13 @@ ShellRoot {
             const p=page(name)
             if(name==="Hub"){p.mode="Appearance";p.selection.select("selector")}
             if(name==="Control Centre"){
-                p.mode="Appearance";item("ccRoundness").expanded=true
+                item("ccRoundness").expanded=true
                 for(const group of ["controls","artwork","action"])item("ccRoundness-"+group).expanded=group===(key==="action"?"action":["avatar","albumArt"].includes(key)?"artwork":"controls")
             }
             if(name==="Launcher")item("launcherArtwork").expanded=true
             wait(30);return p
         }
-        function viewport(){const n=Services.SettingsWindowState.page;return n==="Hub"?item("hubEditorInspector"):n==="Control Centre"?item("controlCentreEditor"):page(n)}
+        function viewport(){const n=Services.SettingsWindowState.page;return n==="Hub"?item("hubEditorInspector"):page(n)}
         function reveal(value){const p=viewport(),y=value.mapToItem(p,0,0).y+p.contentY;p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,y-20));waitForPolish(window.contentItem.Window.window)}
         function current(key){return key==="header"?Services.Settings.data.launcher.headerRadius:Services.Settings.data.appearance.roundness.roles[key]}
         function set(key,value){if(key==="header")Services.Settings.setValue("launcher","headerRadius",value);else Services.Settings.setRoundness(key,value)}

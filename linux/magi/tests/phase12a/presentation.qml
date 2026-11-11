@@ -18,8 +18,8 @@ ShellRoot {
   function test_configurator() {
    try {
     Services.SettingsWindowState.page="Control Centre";wait(250)
-    const page=item("settingsPage-Control Centre"), preview=item("controlCentrePreview"), editor=item("controlCentreEditor")
-    page.mode="Appearance";wait(80)
+    const page=item("settingsPage-Control Centre"), preview=item("controlCentrePreview"), editor=page
+    wait(80)
     verify(preview.width>=300);verify(editor.width>=400)
     for(const columns of [1,2,4]){
       Services.Settings.setValue("controlCentre","columns",columns);wait(20)

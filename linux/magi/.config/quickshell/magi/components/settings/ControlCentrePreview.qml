@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
+import QtQuick.Layouts
 import "../../services" as Services
 import "../../theme" as Theme
 import "../../settings/SettingsSchema.js" as Schema
@@ -17,6 +18,10 @@ Item {
     property alias moduleBoard: moduleBoard
     property alias structureBoard: structureBoard
     property alias viewport: view
+    property Flickable editorViewport: null
+    property Item availableCard: null
+    readonly property var palette: availableCard || fallbackPalette
+    readonly property var availableSections: structureBoard.order("availableStructure")
     signal selected(string key)
     readonly property var layout: Services.Settings.data.controlCentre
     readonly property var ids: ["profile", "controls", "sliders", "actions", "media"]
@@ -44,21 +49,15 @@ Item {
             Theme.Theme.visual.slidersActionsGap, Theme.Theme.visual.actionsMediaGap, Theme.Theme.visual.mediaSectionGap]
     })
     readonly property real canvasWidth: geometry.width
-    readonly property real sectionPaletteHeight: 30 + structureBoard.order("structure").length * 40
-    readonly property real componentPaletteHeight: structureBoard.order("availableStructure").length ? 30 + structureBoard.order("availableStructure").length * 40 : 80
-    readonly property real modulePaletteY: sectionPaletteHeight + componentPaletteHeight + 24
-    readonly property bool paletteBeside: editing
-    readonly property real paletteX: canvasWidth + 24
-    readonly property real paletteWidth: 300
-    readonly property real decorationSpace: !editing && layout.decoration.enabled && layout.decoration.asset
+    readonly property real decorationSpace: layout.decoration.enabled && layout.decoration.asset
         ? Math.min(340, layout.decoration.height * layout.decoration.asset.bounds[2] / layout.decoration.asset.bounds[3]) + 8 : 0
-    readonly property real sceneWidth: editing ? paletteX + paletteWidth : canvasWidth + decorationSpace
-    readonly property real sceneHeight: Math.max(composition.height, editing ? Math.max(structureBoard.implicitHeight, moduleBoard.implicitHeight) : 0)
-    readonly property real fitScale: Math.min(1, width / sceneWidth, height / Math.max(1, sceneHeight))
+    readonly property real sceneWidth: canvasWidth + decorationSpace + (editing && !availableCard ? 324 : 0)
+    readonly property real sceneHeight: composition.height
+    readonly property real fitScale: Math.min(1, width / sceneWidth, editorViewport ? 1 : height / Math.max(1, sceneHeight))
     readonly property var order: structureBoard.preview ? structureBoard.order("structure") : layout.layout
     readonly property var composition: compose()
     readonly property string fingerprint: JSON.stringify([layout.layout, layout.controls, layout.actions, layout.sliders])
-    implicitHeight: Math.max(400, composition.height + 28)
+    implicitHeight: composition.height * Math.min(1, width / sceneWidth)
     function entries(group) {
         return layout[group].filter(e => e.enabled);
     }
@@ -120,26 +119,20 @@ Item {
                     gap: gap(id)
                 });
         }
-        if (editing)
-            result.push({
-                id: "available",
-                label: "Available controls",
-                x: paletteX,
-                y: modulePaletteY,
-                width: paletteWidth,
-                height: Math.ceil(moduleBoard.order("available").length / 3) * 66 + 38,
-                keys: moduleBoard.order("available"),
-                columns: Math.max(1, Math.floor(paletteWidth / 100)),
-                cellWidth: 88,
-                cellHeight: 54
-            });
         if (editing) {
-            let y = modulePaletteY + Math.ceil(moduleBoard.order("available").length / 3) * 66 + 50
+            const box = paletteRect(palette), cells = paletteRect(palette.controlsArea)
+            const cols = palette.columns
+            result.push({id:"available",label:"",emptyLabel:"",x:box.x,y:box.y,width:box.width,height:box.height,
+                contentX:cells.x,contentY:cells.y,keys:moduleBoard.order("available"),columns:cols,
+                cellWidth:cells.width / cols,cellHeight:54 / fitScale,gap:0,rowGap:12 / fitScale})
+            // Empty sections have no runtime height. Offer a narrow insertion target
+            // only while dragging a compatible control; never cover another control.
             for (const id of ["controls", "sliders", "actions"]) {
-                if (result.some(lane => lane.id === id)) continue
-                result.push({id:id, label:labels[id], x:paletteX, y:y, width:paletteWidth, height:72,
-                    keys:[], columns:1, cellWidth:paletteWidth, cellHeight:48, emptyTarget:true})
-                y += 80
+                if (result.some(lane => lane.id === id) || !moduleBoard.dragging || !moduleBoard.canPlace(moduleBoard.dragKey,id)) continue
+                const following = order.slice(order.indexOf(id) + 1).find(key => composition.positions[key] !== undefined)
+                const y = following ? composition.positions[following] - 10 : composition.height - 10
+                result.push({id:id,label:"",emptyLabel:"",x:Theme.RenderTokens.padding,y:Math.max(1,y),width:geometry.innerWidth,height:8,
+                    keys:[],columns:1,cellWidth:geometry.innerWidth,cellHeight:8,emptyTarget:true})
             }
         }
         return result;
@@ -151,8 +144,9 @@ Item {
                 return {
                     lane: lane,
                     index: index,
-                    x: lane.x + (index % lane.columns) * (lane.cellWidth + (lane.gap ?? 12)),
-                    y: lane.y + (lane.id === "available" || lane.emptyTarget ? 30 : 0) + Math.floor(index / lane.columns) * (lane.cellHeight + (lane.gap ?? 12)),
+                    hidden: lane.id === "available" && !palette.expanded,
+                    x: (lane.contentX ?? lane.x) + (index % lane.columns) * (lane.cellWidth + (lane.gap ?? 12)),
+                    y: (lane.contentY ?? lane.y) + Math.floor(index / lane.columns) * (lane.cellHeight + (lane.rowGap ?? lane.gap ?? 12)),
                     width: lane.cellWidth,
                     height: lane.cellHeight
                 };
@@ -173,32 +167,58 @@ Item {
             lane:layout.layout.includes(id) ? "structure" : "availableStructure",
             position:layout.layout.includes(id) ? layout.layout.indexOf(id) : ids.indexOf(id)}))
     }
+    function paletteRect(item) {
+        // Read layout dependencies so mapped coordinates track column stacking,
+        // wrapping, disclosure and preview-scale changes without polling.
+        let revision = fitScale
+        for (let ancestor = item; ancestor; ancestor = ancestor.parent)
+            revision += ancestor.x + ancestor.y + ancestor.width + ancestor.height + ancestor.scale
+        for (let ancestor = fittedScene; ancestor; ancestor = ancestor.parent)
+            revision += ancestor.x + ancestor.y + ancestor.width + ancestor.height + ancestor.scale
+        const point = item.mapToItem(fittedScene,0,0)
+        const end = item.mapToItem(fittedScene,item.width,item.height)
+        return {x:point.x,y:point.y,width:end.x-point.x,height:end.y-point.y,revision:revision}
+    }
     function structureGeometry() {
+        const box = paletteRect(palette)
         return [
-            {id:"structure", label:"Sections", x:paletteX, y:0, width:paletteWidth,
-                height:sectionPaletteHeight, keys:structureBoard.order("structure")},
-            {id:"availableStructure", label:structureBoard.order("availableStructure").length ? "Available sections" : "",
-                emptyLabel:"Drag here to remove", x:paletteX, y:sectionPaletteHeight + 8,
-                width:paletteWidth, height:Math.max(editing ? 28 : 0, componentPaletteHeight),
+            {id:"structure",label:"",emptyLabel:"",x:0,y:0,width:canvasWidth,
+                height:composition.height,keys:structureBoard.order("structure")},
+            {id:"availableStructure",label:"",emptyLabel:"",x:box.x,y:box.y,width:box.width,height:box.height,
                 keys:structureBoard.order("availableStructure")}
         ]
     }
     function structureLocation(key, regions) {
         const lane = regions.find(l => l.keys.includes(key))
-        if (!lane) return {lane:{id:""}, index:-1, x:0, y:0, width:0}
+        if (!lane) return {lane:{id:""},index:-1,x:0,y:0,width:0,height:0}
         const index = lane.keys.indexOf(key)
-        return {lane:lane, index:index, x:lane.x + 4, y:lane.y + 30 + index * 40,
-            width:lane.width - 8, height:36}
+        if (lane.id === "structure") return {lane:lane,index:index,x:0,y:composition.positions[key] ?? 0,
+            width:canvasWidth,height:sectionHeight(key) || 1,hidden:composition.positions[key] === undefined}
+        const box = paletteRect(palette.sectionsArea),cols=palette.columns
+        return {lane:lane,index:index,x:box.x+(index%cols)*box.width/cols,y:box.y+Math.floor(index/cols)*40/fitScale,
+            width:box.width/cols,height:36/fitScale,hidden:!palette.expanded}
+    }
+    CCAvailableControls {
+        id: fallbackPalette
+        objectName: "ccStandaloneAvailableControls"
+        visible: root.editing && !root.availableCard
+        preview: root
+        x: (root.canvasWidth + root.decorationSpace + 24) * root.fitScale
+        width: 300 * root.fitScale
     }
     Flickable {
         id: view
-        anchors.fill: parent
-        clip: true
+        // The editor's shared board also owns palette handles outside the panel.
+        // Its viewport must contain those handles for pointer delivery, while the
+        // painted preview and its layout allocation remain panel-sized.
+        width: root.editorViewport ? Math.max(root.width, root.palette.mapToItem(root,root.palette.width,0).x) : root.width
+        height: root.editorViewport ? Math.max(root.height, root.palette.mapToItem(root,0,root.palette.height).y) : root.height
+        clip: !root.editorViewport
         contentWidth: width
         contentHeight: height
         interactive: false
         boundsBehavior: Flickable.StopAtBounds
-        ScrollBar.vertical: ScrollBar {}
+
         Item {
             id: fittedScene
             x: root.decorationSpace * root.fitScale
@@ -276,10 +296,10 @@ Item {
                 id: moduleBoard
                 canvasContentMargin: 0
                 objectName: "ccModuleBoard"
-                width: root.sceneWidth
+                width: Math.max(root.canvasWidth, root.paletteRect(root.palette).x + root.paletteRect(root.palette).width)
                 visible: true
                 removeLane: "available"
-                viewport: view
+                viewport: root.editorViewport || view
                 canvasMode: true
                 editing: root.editing
                 selectedKey: root.selectedKey
@@ -321,7 +341,7 @@ Item {
                         readonly property string lane: parent.previewLane
                         CCControlPreview {
                             anchors.fill: parent
-                            anchors.bottomMargin: parent.lane === "available" ? 18 : 0
+                            anchors.bottomMargin: parent.lane === "available" ? 18 / root.fitScale : 0
                             entry: parent.entry.data
                             family: parent.lane === "available" ? "actions" : parent.lane
                         }
@@ -332,7 +352,7 @@ Item {
                             text: parent.entry.label
                             elide: Text.ElideRight
                             color: Theme.Theme.text
-                            font.pixelSize: 10
+                            font.pixelSize: parent.lane === "available" ? 10 / root.fitScale : 10
                             horizontalAlignment: Text.AlignHCenter
                         }
                     }
@@ -341,11 +361,12 @@ Item {
             SettingsReorderBoard {
                 id: structureBoard
                 rowHeight: 36
+                canvasHandleWidth: Theme.RenderTokens.padding
                 objectName: "ccStructureBoard"
-                width: root.sceneWidth
+                width: Math.max(root.canvasWidth, root.paletteRect(root.palette).x + root.paletteRect(root.palette).width)
                 visible: root.editing
                 removeLane: "availableStructure"
-                viewport: view
+                viewport: root.editorViewport || view
                 canvasMode: true
                 editing: visible
                 selectedKey: root.selectedKey
@@ -372,12 +393,13 @@ Item {
                         readonly property var entry: parent.entry
                         readonly property bool placed: parent.previewLane === "structure"
                         Text {
-                            text: parent.entry.label
+                            x: parent.placed ? 0 : Theme.RenderTokens.padding
+                            width: parent.width - x
+                            text: parent.placed ? "⋮" : parent.entry.label
                             color: Theme.Theme.text
-                            font.bold: true
-                            font.pixelSize: 12
+                            font.pixelSize: parent.placed ? 14 : 11 / root.fitScale
+                            wrapMode: Text.Wrap
                         }
-
                     }
                 }
             }
@@ -392,7 +414,7 @@ Item {
                 objectName: "decorationPreview"
                 animate: false
                 playbackEnabled: false
-                panelPresent: !root.editing
+                panelPresent: true
                 panelReady: panelPresent
                 panelRect: Qt.rect(root.decorationSpace, 0, root.canvasWidth, root.composition.height)
             }

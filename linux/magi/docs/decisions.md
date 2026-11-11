@@ -1229,3 +1229,14 @@ action route. Schema/defaults/migrations and saved operator values are unchanged
 The operator accepted the revised live UI and approved committing on 2026-11-11.
 Acceptance is operator-reported; no complete six-case helper receipt or real Suspend
 execution is claimed. Push remains subject to separate approval.
+
+## Control Centre Settings workflow, pass 1 accepted (2026-11-11)
+
+The accepted `87b21fd` baseline is preserved. One retained page replaces the CC
+Layout/Appearance tabs: real-geometry preview and Reset composition on the left,
+Available controls → contextual inspector → Global controls → Roundness → Decoration
+on the right (stacked on narrow windows). Existing keyed reorder boards adapt to
+preview section bounds and the catalogue card; existing placement writers remain
+authoritative. Runtime Control Centre is not editable. Schema22 and values are
+unchanged. The operator accepted the live refinements and authorized one focused
+commit; push is separate. [Ownership and acceptance](review/controlcentre-settings-workflow.md).

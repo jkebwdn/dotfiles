@@ -1,9 +1,11 @@
 # Current status and next decisions
 
-Schema 22. The synchronized baseline is `5e00c38` after accepted Appearance and
-feature-owned Roundness work. The separate [Settings refinement](review/settings-refinement.md)
-is natively accepted and approved for four commits; pushing requires separate approval.
-No further roundness consolidation is authorized.
+Schema 22. The synchronized baseline is `87b21fd` after the accepted and pushed
+[Settings refinement](review/settings-refinement.md). The separate
+[Control Centre workflow pass 1](review/controlcentre-settings-workflow.md)
+is operator-accepted and approved for one focused commit; push
+requires separate approval. No second pass or additional
+roundness consolidation is authorized.
 
 Production includes the Bar/multi-output policy, Hub utilities, Control Centre and
 Settings ownership, shared tray/audio services, generic Bluetooth pairing/Agent1,

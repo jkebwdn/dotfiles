@@ -7,6 +7,8 @@ Bluetooth pairing support, the curated lock themes and internal designer, and th
 
 ## Current canonical documents
 
+- [Control Centre Settings workflow — pass 1 accepted](review/controlcentre-settings-workflow.md)
+
 - [Settings refinement — Bar, Wallpaper, roundness wording and Control Centre — accepted](review/settings-refinement.md)
 
 - [Roundness by feature — accepted ownership](review/roundness-feature-ownership.md)

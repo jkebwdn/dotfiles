@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 107-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 115-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -294,3 +294,17 @@ The full refinement matrix before the last Bar presentation follow-ups has
 those follow-ups; no completed second full matrix is claimed. The operator accepted
 the revised live UI on 2026-11-11. This is operator-reported acceptance, not inferred
 from disconnected tests or a completed six-case helper receipt.
+
+## Control Centre workflow pass 1
+
+`settings/controlcentre-workflow` adds private real-QML coverage for unified card
+ordering, passive Settings preservation, contextual selection, section drag/keyboard
+movement, catalogue add/remove and invalid destinations. Initial catalogue delegate
+size is checked before interaction as well as across responsive/light/dark cases.
+No system action runs. Existing tests follow the new page scroll owner and disclosures,
+without weakening runtime geometry or schema checks. `native-controlcentre-workflow.qml`
+is a host-only private review fixture; it is not an automated compositor acceptance.
+The operator accepted the live refinements. The full matrix before these small
+presentation follow-ups passed 111 checks with four established ENVIRONMENT limits;
+all seven affected suites and the refreshed capture fixture pass afterward. No
+second full rerun is claimed. See [ownership, evidence and acceptance](review/controlcentre-settings-workflow.md).

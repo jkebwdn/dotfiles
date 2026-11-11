@@ -39,8 +39,9 @@ ShellRoot {
    grabImage(win.contentItem).save(Quickshell.env("MAGI_PHASE12F_PREVIEWS")+"/"+n+".png")
   }
   function checkScopes(){
-   let p=page("Control Centre");p.mode="Appearance";p.contentY=0;wait(60)
+   let p=page("Control Centre");p.contentY=0;wait(60)
    p.selection.select("");wait(50)
+   item("ccGlobalControls").expanded=true;wait(30)
    const statusPicker=item("ccStatusRowColour");verify(statusPicker.visible)
    statusPicker.roleSelected("teal");compare(Services.Settings.data.appearance.statusRowRole,"teal")
    for(const channel of ["r","g","b","a"]) verify(Math.abs(item("ccStatusRowSample").color[channel]-Theme.Theme.expandedStatusForeground[channel])<1/255)
@@ -61,15 +62,18 @@ ShellRoot {
     mouseClick(item("ccModuleBoard-row-"+module),12,12);wait(40)
     compare(p.selection.scope,"module");compare(p.selection.instance,module);verify(family.collapsible);verify(!family.expanded)
     verify(!item("ccRoundnessLocation").visible);verify(!item("ccFamilyHighlight-"+group).visible)
-    compare(item("ccModuleBoard-row-"+module).border.width,2)
+    compare(item("ccModuleBoard-row-"+module).border.width,1)
     compare(item("ccInstanceAccent").visible,group!=="sliders")
-    verify(!item("settingsButton-Reset Control Centre appearance").visible)
+    verify(item("settingsButton-Reset Control Centre appearance").visible)
     capture("cc-item-"+module)
-    family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
-    verify(family.expanded);verify(item("ccRoundnessLocation").visible);compare(p.selection.instance,module)
-    // Collapsing must clamp a scrolled inspector instead of leaving a blank viewport.
-    p.contentY=1000;family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
-    verify(!family.expanded);verify(p.contentY<=Math.max(0,p.contentHeight-item("controlCentreEditor").height)+1)
+    if(group==="controls") verify(!family.visible,"Primary button has only its own options")
+    else {
+     family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
+     verify(family.expanded);verify(item("ccRoundnessLocation").visible);compare(p.selection.instance,module)
+     // Collapsing must clamp a scrolled inspector instead of leaving a blank viewport.
+     p.contentY=1000;family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
+     verify(!family.expanded);verify(p.contentY<=Math.max(0,p.contentHeight-p.height)+1)
+    }
     p.contentY=0
     region.forceActiveFocus();keyClick(Qt.Key_Return);wait(30);compare(p.selection.scope,"family")
     item("ccModuleBoard-row-"+module).forceActiveFocus();keyClick(Qt.Key_Space);wait(30);compare(p.selection.scope,"module");verify(!family.expanded)
@@ -233,8 +237,8 @@ ShellRoot {
    verify(preview.moduleBoard.canonicalKeys("available").includes("wifi"))
    Services.Settings.resetSection("controlCentre");wait(100)
    checkScopes();p=page("Control Centre")
-   for(const [id,section,key] of [["wifi","ccPrimaryFineTune","primaryIconSize"],["dnd","ccSecondaryFineTune","secondaryIconSize"],["profile","ccProfileFineTune","avatarSize"],["media","ccMediaFineTune","mediaArtworkSize"]]){
-    p.mode="Appearance";p.selection.select(id);p.contentY=0;wait(50)
+   for(const [id,section,key] of [["controls","ccPrimaryFineTune","primaryIconSize"],["dnd","ccSecondaryFineTune","secondaryIconSize"],["profile","ccProfileFineTune","avatarSize"],["media","ccMediaFineTune","mediaArtworkSize"]]){
+    p.selection.select(id);p.contentY=0;wait(50)
     if(item("ccFamilyInspector").collapsible){item("ccFamilyInspector").expanded=true;wait(30)}
     const disclosure=item(section),precision=item("visualSetting-"+key),saved=JSON.stringify(Services.Settings.data)
     verify(!disclosure.expanded);verify(!precision.visible)
@@ -243,8 +247,8 @@ ShellRoot {
     verify(disclosure.expanded);verify(precision.visible);compare(JSON.stringify(Services.Settings.data),saved)
     disclosure.expanded=false
    }
-   for(const id of ["wifi","profile","volume","media",""]){p.mode="Appearance";p.selection.select(id);p.contentY=0;capture("cc-"+(id||"host"))}
-   p.selection.select("wifi");wait(30);item("ccFamilyInspector").expanded=true;item("ccPrimaryFineTune").expanded=true;p.contentY=200;capture("cc-fine-tune");item("ccPrimaryFineTune").expanded=false;item("ccFamilyInspector").expanded=false;p.contentY=0
+   for(const id of ["wifi","profile","volume","media",""]){p.selection.select(id);p.contentY=0;capture("cc-"+(id||"host"))}
+   p.selection.select("controls");wait(30);item("ccFamilyInspector").expanded=true;item("ccPrimaryFineTune").expanded=true;p.contentY=200;capture("cc-fine-tune");item("ccPrimaryFineTune").expanded=false;item("ccFamilyInspector").expanded=false;p.contentY=0
    p=page("Bar")
    for(const id of ["","wifi","bluetooth"]){p.selection.select(id);wait(50);capture("bar-"+(id||"global"))}
    p=page("Hub");const hub=item("hubEditorPreview")
@@ -259,8 +263,8 @@ ShellRoot {
    for(const mode of ["apps","clipboard","notifications","emoji","settings"]){hub.mode=mode;wait(30);capture("hub-"+mode)}
    for(const key of ["","selector","toggles"]){p.mode="Appearance";p.selection.select(key);hub.mode=key==="toggles"?"settings":"apps";capture("hub-"+(key||"host"))}
    win.contentItem.Window.window.width=720;win.contentItem.Window.window.height=650
-   for(const name of ["Appearance","Control Centre","Hub","Profile"]){p=page(name);if(["Control Centre","Hub"].includes(name)){p.mode="Appearance";p.selection.select(name==="Control Centre"?"wifi":"selector");p.contentY=0}capture("compact-"+name.toLowerCase().replace(/ /g,"-"))}
-   p=page("Control Centre");p.mode="Appearance";p.selection.select("controls");wait(40)
+   for(const name of ["Appearance","Control Centre","Hub","Profile"]){p=page(name);if(["Control Centre","Hub"].includes(name)){if(name==="Hub")p.mode="Appearance";p.selection.select(name==="Control Centre"?"wifi":"selector");p.contentY=0}capture("compact-"+name.toLowerCase().replace(/ /g,"-"))}
+   p=page("Control Centre");p.selection.select("controls");wait(40)
    verify(item("ccFamilyHighlight-controls").visible);verify(item("ccFamilyInspector").expanded);capture("compact-cc-family-primary")
    p=page("Bar");p.contentY=0
    const compactBefore=JSON.stringify(Services.Settings.data)
@@ -268,12 +272,12 @@ ShellRoot {
    compare(JSON.stringify(Services.Settings.data),compactBefore)
    p.contentY=0;mouseClick(item("barOrder-row-wifi"),10,10);wait(40);compare(item("barOrder-row-wifi").border.width,1);capture("compact-bar-item-wifi")
    win.contentItem.Window.window.width=1400;win.contentItem.Window.window.height=900
-   p=page("Control Centre");p.mode="Layout";capture("large-control-centre")
+   p=page("Control Centre");capture("large-control-centre")
    win.contentItem.Window.window.width=1080;win.contentItem.Window.window.height=780
    p=page("Appearance")
    for(const theme of ["catppuccin-mocha","everforest-dark-hard","rose-pine","nord","tokyo-night-moon","rose-pine-dawn"]){Services.Settings.setTheme(theme);wait(50);capture("palette-"+theme)}
    Services.Settings.setTheme("rose-pine-dawn")
-   for(const name of ["Appearance","Control Centre","Hub","Profile","Notifications"]){p=page(name);if(["Control Centre","Hub"].includes(name)){p.mode="Appearance";p.selection.select(name==="Control Centre"?"wifi":"selector");p.contentY=0}capture("light-"+name.toLowerCase().replace(/ /g,"-"))}
+   for(const name of ["Appearance","Control Centre","Hub","Profile","Notifications"]){p=page(name);if(["Control Centre","Hub"].includes(name)){if(name==="Hub")p.mode="Appearance";p.selection.select(name==="Control Centre"?"wifi":"selector");p.contentY=0}capture("light-"+name.toLowerCase().replace(/ /g,"-"))}
    tryCompare(Services.Settings,"saveState","saved");wait(150)
    const saved=JSON.stringify(Services.Settings.data)
    Services.Settings.setTheme("nord");verify(Services.Settings.discardAndReload());tryCompare(Services.Settings,"ready",true)

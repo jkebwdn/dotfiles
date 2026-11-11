@@ -8,8 +8,11 @@ import "../../theme" as Theme
 import "../../settings/SettingsSchema.js" as Schema
 import "../controls" as Controls
 
-ColumnLayout {
+SettingsUI.SettingsSection {
     id: root
+    objectName: "ccSelectedInspector"
+    title: individual ? (Schema.controlDefinitions().find(d => d.id === selection.instance)?.label || "Control") : ({profile:"Profile Header",controls:"Primary controls",actions:"Secondary controls",sliders:"Sliders",media:"Media Player"})[family] || ""
+    visible: selection.instance.length > 0
     property alias identitySection: identitySection
     property alias familySection: familySection
     readonly property bool individual: selection.scope === "module" && ["controls", "actions", "sliders"].includes(family)
@@ -45,14 +48,15 @@ ColumnLayout {
     Layout.fillWidth: true
     SettingsUI.SettingsSection {
         id: identitySection
+        carded: false
         objectName: "ccIdentityInspector"
         visible: !root.behaviourOnly && (root.individual && root.entry !== null)
-        title: (Schema.controlDefinitions().find(d => d.id === root.selection.instance)?.label || "Control")
+        title: ""
         description: root.family === "sliders" ? "" : "Accent"
         SettingsUI.SettingsSelector {
             objectName: "ccInstanceAccent"
             visible: root.family !== "sliders"
-            Accessible.name: identitySection.title + " accent"
+            Accessible.name: root.title + " accent"
             readonly property var roles: root.family === "actions" ? [null].concat(Schema.controlAccentRoles) : Schema.controlAccentRoles
             model: roles.map(role => role || "Shared accent")
             currentIndex: Math.max(0, roles.indexOf(root.entry?.value.accent || null))
@@ -63,12 +67,14 @@ ColumnLayout {
         id: familySection
         carded: false
         objectName: "ccFamilyInspector"
+        visible: !(root.individual && root.family === "controls")
         title: root.individual ? root.familyLabel : ""
         collapsible: root.individual
         expanded: !root.individual
         SettingsUI.SettingsHelp { objectName: "ccRoundnessLocation"; visible: !root.behaviourOnly; text: "Use the Roundness card below for control and artwork corners." }
         SettingsUI.SettingsSection {
-            title: "Profile Header"
+            title: ""
+            carded: false
             objectName: "profileHeaderSettings"
             collapsible: false
             visible: !root.behaviourOnly && (root.family === "profile")
@@ -168,7 +174,8 @@ ColumnLayout {
             }
         }
         SettingsUI.SettingsSection {
-            title: "Media Player"
+            title: ""
+            carded: false
             objectName: "mediaPlayerSettings"
             collapsible: false
             visible: root.family === "media"
@@ -263,7 +270,8 @@ ColumnLayout {
             }
         }
         SettingsUI.VisualSettingsGroup {
-            title: root.individual ? "" : "Sliders"
+            carded: false
+            title: ""
             visible: !root.behaviourOnly && (root.family === "sliders")
             collapsible: false
             numbers: [
@@ -291,110 +299,7 @@ ColumnLayout {
             ]
         }
         SettingsUI.SettingsSection {
-            id: shapeSection
-            visible: !root.behaviourOnly && root.family === "host"
-            title: root.individual ? "" : ({
-                    controls: "Primary controls",
-                    actions: "Secondary controls",
-                    sliders: "",
-                    host: "Surface"
-                })[root.family] || ""
-            description: ""
-            SettingsUI.SettingsHelp {
-                visible: !root.behaviourOnly && (root.family === "host")
-                text: "Border styling is shared with other menus."
-            }
-            SettingsUI.SettingsRow {
-                visible: !root.behaviourOnly && (root.family === "host")
-                Label {
-                    text: "Surface background"
-                    Layout.fillWidth: true
-                }
-                SettingsUI.SemanticPaletteSelector {
-                    model: ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "border", "accent"].concat(Theme.ThemeRegistry.accentRoles)
-                    role: Services.Settings.data.appearance.controlCentreBackgroundRole
-                    onRoleSelected: value => Services.Settings.setValue("appearance", "controlCentreBackgroundRole", value)
-                }
-            }
-            SettingsUI.SettingsRow {
-                visible: !root.behaviourOnly && root.family === "host"
-                Label { text: "Status row colour"; Layout.fillWidth: true }
-                SettingsUI.SemanticPaletteSelector {
-                    objectName: "ccStatusRowColour"
-                    Accessible.name: "Expanded status row colour"
-                    model: ["text", "subtext", "muted", "background", "surface", "elevated", "accent"].concat(Theme.ThemeRegistry.accentRoles)
-                    role: Services.Settings.data.appearance.statusRowRole || "text"
-                    onRoleSelected: value => Services.Settings.setValue("appearance", "statusRowRole", value)
-                }
-            }
-            SettingsUI.SettingsHelp {
-                visible: !root.behaviourOnly && root.family === "host"
-                text: "Icons and Battery percentage in the expanded status header. Bar colours return when the panel closes. Also applies when switching to another status menu."
-            }
-            Rectangle {
-                visible: !root.behaviourOnly && root.family === "host"
-                Layout.fillWidth: true
-                implicitHeight: 42
-                radius: Theme.Theme.radiusSmall
-                color: Theme.Theme.roles[Services.Settings.data.appearance.controlCentreBackgroundRole]
-                Row {
-                    anchors.centerIn: parent
-                    spacing: 12
-                    Repeater {
-                        model: ["wifi", "bluetooth-connected", "volume", "settings", "battery-high"]
-                        Controls.Icon {
-                            required property string modelData
-                            role: modelData
-                            size: Theme.Theme.statusIconSize
-                            color: Theme.Theme.expandedStatusForeground
-                        }
-                    }
-                    Label {
-                        objectName: "ccStatusRowSample"
-                        text: "100%"
-                        color: Theme.Theme.expandedStatusForeground
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
-            }
-            SettingsUI.SettingsSection {
-                carded: false
-                objectName: "ccStatusRowFineTune"
-                visible: !root.behaviourOnly && root.family === "host"
-                title: "Fine tune"
-                collapsible: true
-                expanded: false
-                SettingsUI.SettingsRow {
-                    Label { text: "Status row shade"; Layout.fillWidth: true }
-                    SettingsUI.SettingsSlider {
-                        objectName: "ccStatusRowShade"
-                        Accessible.name: "Expanded status row shade"
-                        Layout.fillWidth: true
-                        from: -1; to: 1; stepSize: .05
-                        value: Services.Settings.data.appearance.statusRowShade ?? 0
-                        onMoved: Services.Settings.setValue("appearance", "statusRowShade", value)
-                    }
-                }
-                SettingsUI.SettingsHelp { text: "Negative lightens · 0 keeps the palette colour · positive darkens." }
-                SettingsUI.SettingsButton {
-                    text: "Reset status row"
-                    onClicked: { Services.Settings.setValue("appearance", "statusRowRole", null); Services.Settings.setValue("appearance", "statusRowShade", null) }
-                }
-            }
-            SettingsUI.SurfaceStyleSettings {
-                carded: false
-                visible: !root.behaviourOnly && (root.family === "host")
-                title: "Border"
-                group: "surfaceBorders"
-                targets: [
-                    {
-                        id: "controlcentre",
-                        label: "Show border"
-                    }
-                ]
-            }
-        }
-        SettingsUI.SettingsSection {
+            carded: false
             visible: !root.behaviourOnly && (["controls", "actions"].includes(root.family))
             title: ""
             SettingsUI.SettingsRow {
@@ -413,6 +318,7 @@ ColumnLayout {
             }
         }
         SettingsUI.VisualSettingsGroup {
+            carded: false
             title: "Fine tune"
             objectName: "ccPrimaryFineTune"
             visible: !root.behaviourOnly && (root.family === "controls")
@@ -484,6 +390,7 @@ ColumnLayout {
             ]
         }
         SettingsUI.VisualSettingsGroup {
+            carded: false
             title: "Fine tune"
             objectName: "ccSecondaryFineTune"
             description: ""
@@ -550,6 +457,7 @@ ColumnLayout {
             ]
         }
         SettingsUI.VisualSettingsGroup {
+            carded: false
             visible: !root.behaviourOnly && (["profile", "controls", "sliders", "actions", "media"].includes(root.family))
             title: "Section spacing"
             collapsible: true

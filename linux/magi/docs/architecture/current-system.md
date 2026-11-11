@@ -2,11 +2,13 @@
 
 > Post-0.57 source/ownership review; native evidence and remaining limits are explicit.
 
-Canonical overview; synchronized production baseline `5e00c38` verified 2026-11-11.
-Appearance and feature-owned Roundness are accepted and pushed. The separate
-[Settings refinement candidate](../review/settings-refinement.md) keeps persisted
-semantics while refining Bar/Wallpaper workflows and sharing CC preview geometry.
-Its native acceptance and commit/push gates remain pending.
+Canonical overview; synchronized production baseline `87b21fd` verified 2026-11-11.
+The Bar/Wallpaper/roundness/CC-preview [Settings refinement](../review/settings-refinement.md)
+is accepted and pushed. The separate [accepted CC workflow pass 1](../review/controlcentre-settings-workflow.md)
+removes editor tabs, places contextual controls below the available catalogue and
+uses the preview for module ordering. Settings writers and runtime geometry remain
+unchanged. Native refinements are operator-accepted and one focused commit is
+authorized. Push requires separate approval.
 Settings schema **22**. Source, tests and documentation live in `~/dotfiles/linux/magi`.
 The chronological [architecture journal](../architecture.md) and phase records are
 historical evidence, not instructions to deploy old candidates.
@@ -285,5 +287,6 @@ Control Centre and its editor use `SectionLayout.geometry()` for columns, widths
 section positions and measured profile/media heights. Editing labels/drop palettes
 are outside panel geometry. Preview presenters read live metadata but cannot dispatch
 actions. Suspend extends the existing confirmed system-action catalogue, with no
-default placement or independent backend. See the linked review for boundaries and
-pending native acceptance; schema remains 22.
+default placement or independent backend. The operator accepted this refinement
+and synchronized it at `87b21fd`; schema remains 22. The separate workflow pass 1
+is also operator-accepted; its push gate remains separate.

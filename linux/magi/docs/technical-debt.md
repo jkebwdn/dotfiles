@@ -76,3 +76,10 @@ removed 141 obsolete temporary entries, including the three completed worktrees;
 Settings and 701 protected entries were preserved. The unique AE86 PNG remains
 retained. Existing Qt Wayland text-input warnings remain runtime debt. The new
 Settings refinement phase does not change their renderer or begin more cleanup.
+
+Control Centre workflow pass 1 follows synchronized `87b21fd`. Its preview editing,
+shared reorder delegates and review remain bounded to Settings. The operator
+accepted the live workflow and follow-up disclosures/scope refinements; this is
+operator-reported acceptance, not an inferred completed native-helper receipt.
+Existing Wayland text-input warnings and hardware acceptance limitations remain;
+this phase introduces no runtime rendering or power-backend change.

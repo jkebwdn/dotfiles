@@ -14,7 +14,7 @@ import tempfile
 from PyQt6.QtGui import QImage
 
 ROOT = Path(__file__).resolve().parents[2]
-BASELINE = '5e00c381f76830ba2a75e952e6f723efe2604ea1'
+BASELINE = '87b21fd9525221c142e0c23364fcbc3e231718a3'
 parser = argparse.ArgumentParser()
 parser.add_argument('--settings', type=Path)
 parser.add_argument('--output', type=Path)
@@ -28,18 +28,11 @@ seed = {'roundness': raw['appearance']['roundness'],
         'workspace': raw['bar']['visual']['workspacePills']['roundness'],
         'header_present': 'headerRadius' in raw['launcher'],
         'header': raw['launcher'].get('headerRadius', 12)}
-# Exact refinement allocation: geometry changes are also checked against independent
-# runtime coordinates in settings/refinement; defaults/migrations remain protected.
-allowed = {
-    'components/settings/' + name for name in [
-        'BarCanvas.qml', 'BarInspector.qml', 'CCSectionPreview.qml', 'ControlCentrePreview.qml',
-        'CustomImageSettings.qml', 'RoundnessPicker.qml', 'RoundnessValue.qml',
-        'SettingsReorderBoard.qml', 'qmldir', 'pages/BarPage.qml',
-        'pages/ControlCentrePage.qml', 'pages/WallpaperPage.qml']
-} | {'components/wallpaper/WallpaperContent.qml', 'components/wallpaper/WallpaperTile.qml',
-     'plugins/bar/controlcentre/ControlCentre.qml', 'plugins/bar/controlcentre/SectionLayout.js',
-     'services/QuickActions.qml', 'services/Wallpaper.qml', 'services/system_actions.py',
-     'settings/SettingsSchema.js'}
+# Pass 1 changes Settings presentation only. All runtime, schema, migration and
+# native files must match the synchronized production baseline byte-for-byte.
+allowed = {'components/settings/' + name for name in [
+    'CCInspector.qml', 'ControlCentrePreview.qml', 'SettingsReorderBoard.qml',
+    'qmldir', 'pages/ControlCentrePage.qml']}
 with tempfile.TemporaryDirectory(prefix='magi-roundness-equivalence-') as temporary:
     stage = Path(temporary)
     archive = subprocess.check_output(['git', 'archive', BASELINE, 'linux/magi'], cwd=ROOT.parents[1])

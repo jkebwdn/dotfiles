@@ -55,3 +55,6 @@ DecorationSettings 1.0 DecorationSettings.qml
 singleton SettingsImagePicker 1.0 SettingsImagePicker.qml
 
 BarGlobalSettings 1.0 BarGlobalSettings.qml
+
+CCAvailableControls 1.0 CCAvailableControls.qml
+CCGlobalSettings 1.0 CCGlobalSettings.qml

@@ -31,7 +31,7 @@ def suites():
 
     for path in ('settings/run', 'settings/presentation', 'settings/appearance',
                  'appearance/run', 'appearance/roundness-audit', 'settings/reorder', 'settings/assets', 'settings/image-picker', 'settings/cards', 'settings/actions',
-                 'settings/media', 'settings/refinement'):
+                 'settings/media', 'settings/refinement', 'settings/controlcentre-workflow'):
         py(path + '.py')
     py('appearance/run.py', '--roundness')
     py('appearance/roundness-equivalence.py')

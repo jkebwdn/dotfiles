@@ -20,6 +20,8 @@ Item {
     onCanonicalRevisionChanged: if (dragging || candidate) cancel()
     property bool canvasMode: false
     property real canvasContentMargin: 2
+    property real canvasHandleWidth: 0
+    property string rejectedLane: ""
     property string removeLane: ""
     property real paletteY: 110
     property bool paletteHeadingVisible: true
@@ -161,12 +163,13 @@ Item {
     }
     function updateTarget() {
         boardPointer = viewport.mapToItem(root, pointerPosition.x, pointerPosition.y)
-        targetLane = ""; targetIndex = -1
+        targetLane = ""; targetIndex = -1; rejectedLane = ""
         if (pointerPosition.x < 0 || pointerPosition.x > viewport.width
                 || pointerPosition.y < 0 || pointerPosition.y > viewport.height) return
         const lane = geometry.find(l => boardPointer.x >= l.x && boardPointer.x <= l.x + l.width
             && boardPointer.y >= l.y && boardPointer.y <= l.y + l.height)
-        if (!lane || !canPlace(dragKey, lane.id)) return
+        if (!lane) return
+        if (!canPlace(dragKey, lane.id)) { rejectedLane = lane.id; return }
         const others = lane.keys.filter(key => key !== dragKey)
         let index = 0
         for (const key of others) {
@@ -192,7 +195,7 @@ Item {
         if (valid) request(key, lane, index)
     }
     function cancel() {
-        candidate = ""; dragKey = ""; preview = null; heldHeights = ({}); targetLane = ""; targetIndex = -1
+        candidate = ""; dragKey = ""; preview = null; heldHeights = ({}); targetLane = ""; targetIndex = -1; rejectedLane = ""
     }
     function request(key, lane, index, keyboard) {
         const source = entryFor(key)
@@ -267,7 +270,7 @@ Item {
                 x: root.inset + 8; y: root.inset + root.headingHeight
                 width: parent.width - root.inset * 2 - 16; height: root.rowHeight
                 visible: modelData.height > 0 && modelData.keys.length === 0 && (!root.canvasMode || root.editing)
-                text: modelData.emptyLabel || (root.multiLane ? "Drop a module here" : "No items configured")
+                text: modelData.emptyLabel ?? (root.multiLane ? "Drop a module here" : "No items configured")
                 color: Theme.Theme.text; font.pixelSize: 12; wrapMode: Text.Wrap
                 verticalAlignment: Text.AlignVCenter
             }
@@ -284,7 +287,7 @@ Item {
             readonly property var slot: root.location(entryKey)
             readonly property bool moving: root.dragKey === entryKey
             readonly property bool familyHighlighted: !root.editing && root.familySelection(entryKey)
-            visible: !root.canvasMode || slot.index >= 0
+            visible: !root.canvasMode || (slot.index >= 0 && !slot.hidden)
             activeFocusOnTab: root.canvasMode && (!root.editing || row.activeFocus)
             Accessible.role: Accessible.Button
             Accessible.name: entry ? entry.label + (root.canvasMode && !root.editing ? " appearance" : "") : ""
@@ -292,7 +295,7 @@ Item {
             Keys.onSpacePressed: root.selected(entryKey)
             Keys.onReturnPressed: root.selected(entryKey)
             objectName: root.objectName + "-row-" + entryKey
-            x: moving ? Math.max(0, Math.min(root.width - width, root.boardPointer.x - root.offset.x)) : slot.x
+            x: moving ? Math.max(root.canvasMode ? Math.min(0, ...root.geometry.map(lane => lane.x)) : 0, Math.min(root.width - width, root.boardPointer.x - root.offset.x)) : slot.x
             y: moving ? root.boardPointer.y - root.offset.y : slot.y
             width: moving ? root.dragWidth : slot.width; height: slot.height || root.rowHeight
             z: moving ? 10 : 1
@@ -306,7 +309,12 @@ Item {
             Loader {
                 readonly property var entry: row.entry
                 readonly property string previewLane: row.slot.lane.id
-                anchors { left: parent.left; top: parent.top; bottom: parent.bottom; right: root.canvasMode ? parent.right : handle.left; margins: root.canvasMode ? root.canvasContentMargin : 8 }
+                // Explicit size also survives Loader's initial implicit-size pass.
+                // Top/bottom anchors could leave newly loaded catalogue rows at 0px.
+                readonly property real inset: root.canvasMode ? root.canvasContentMargin : 8
+                x: inset; y: inset
+                width: Math.max(0, (root.canvasMode ? row.width : handle.x) - 2 * inset)
+                height: Math.max(0, row.height - 2 * inset)
                 sourceComponent: root.rowContent
             }
             MouseArea {
@@ -343,7 +351,7 @@ Item {
                 objectName: root.objectName + "-handle-" + row.entryKey
                 visible: root.editing
                 x: root.canvasMode ? 0 : parent.width - width - 4; y: root.canvasMode ? 0 : 8
-                width: root.canvasMode ? parent.width : 28; height: root.canvasMode ? parent.height : 28
+                width: root.canvasMode ? (root.canvasHandleWidth && row.slot.lane.id !== root.removeLane ? root.canvasHandleWidth : parent.width) : 28; height: root.canvasMode ? parent.height : 28
                 label: row.entry ? row.entry.label : ""
                 hasLanes: root.multiLane
                 cancellingDrag: root.dragging || root.candidate.length > 0

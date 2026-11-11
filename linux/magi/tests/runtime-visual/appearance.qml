@@ -19,13 +19,12 @@ ShellRoot {
             return found
         }
         function reveal(page, item) {
-            page = findChild(page, "controlCentreEditor") || page
             page.contentY = Math.max(0, Math.min(page.contentHeight - page.height, item.mapToItem(page.contentItem, 0, 0).y - 40))
             wait(30)
         }
         function setting(page, key) {
             const families = {primaryIconSize:"controls", primaryContainerSize:"controls", secondaryIconSize:"actions", avatarSize:"profile", mediaArtworkSize:"media", profileGreetingSize:"profile", profileWeatherSize:"profile", profileThirdLineSize:"profile", profileControlsGap:"profile", controlsSlidersGap:"controls", slidersActionsGap:"sliders", actionsMediaGap:"actions"}
-            page.mode = "Appearance"
+
             page.selection.select(families[key])
             wait(0)
             const slider = findChild(page, "visualSetting-" + key)

@@ -11,7 +11,7 @@ ShellRoot {
  TestCase {
   name:"Phase12D";when:Services.Settings.ready
   function item(n){const x=findChild(win.contentItem,n);verify(x!==null,n);return x}
-  function capture(n){verify(item("ccEditorTitle").mapToItem(win.contentItem,0,0).y>=0,"editor title stays in bounds");win.contentItem.opacity=.999;wait(30);win.contentItem.opacity=1;wait(180);grabImage(win.contentItem).save(Quickshell.env("MAGI_PHASE12D_PREVIEWS")+"/"+n+".png")}
+  function capture(n){compare(item("settingsPage-Control Centre").title,"Control Centre");win.contentItem.opacity=.999;wait(30);win.contentItem.opacity=1;wait(180);grabImage(win.contentItem).save(Quickshell.env("MAGI_PHASE12D_PREVIEWS")+"/"+n+".png")}
   function test_editor(){try{
    Services.SettingsWindowState.page="Control Centre";wait(350)
    const page=item("settingsPage-Control Centre"),preview=item("controlCentrePreview")
@@ -52,7 +52,7 @@ ShellRoot {
    Services.Settings.setRoundness("controlTile",1.4);wait(100)
    compare(item("ccPreview-wifi").presenter.radius,item("ccPreview-bluetooth").presenter.radius)
    compare(item("ccPreview-wifi").presenter.accentRole,"red");compare(item("ccPreview-bluetooth").presenter.accentRole,"lavender")
-   page.mode="Appearance"
+
    for(const id of ["","profile","controls","wifi","sliders","volume","actions","dnd","media"]){page.selection.select(id);capture(id||"host")}
    page.selection.select("wifi");capture("wifi-identity");page.contentY=0
    Services.Settings.setVisual("tileBorderWidth",2);wait(20)
@@ -70,42 +70,44 @@ ShellRoot {
    compare(item("ccPreview-wifi").presenter.children[0].border.width,2);compare(item("ccPreview-bluetooth").presenter.children[0].border.width,2)
    verify(item("ccPreview-wifi").presenter.children[0].color!==item("ccPreview-bluetooth").presenter.children[0].color)
    Services.Settings.placeCCModule("bluetooth","controls",0)
-   page.mode="Layout";capture("structure")
+   capture("structure")
    const structure=preview.structureBoard,mediaHandle=item("ccStructureBoard-handle-media")
    const saved=JSON.stringify(Services.Settings.data.controlCentre.layout)
-   mousePress(mediaHandle,12,12,Qt.LeftButton);mouseMove(structure,preview.paletteX+30,35,40);verify(structure.dragging)
+   mousePress(mediaHandle,12,12,Qt.LeftButton);mouseMove(structure,20,15,40);verify(structure.dragging)
    compare(JSON.stringify(Services.Settings.data.controlCentre.layout),saved);capture("structural-drag")
-   mouseRelease(structure,preview.paletteX+30,35,Qt.LeftButton);wait(180);compare(Services.Settings.data.controlCentre.layout[0],"media");capture("media-first")
+   mouseRelease(structure,20,15,Qt.LeftButton);wait(180);compare(Services.Settings.data.controlCentre.layout[0],"media");capture("media-first")
    const staleStructure=item("ccStructureBoard-handle-media")
-   mousePress(staleStructure,12,12,Qt.LeftButton);mouseMove(structure,preview.paletteX+45,90,40);verify(structure.dragging)
-   Services.Settings.placeCCSection("profile",0);wait(20);verify(!structure.dragging);mouseRelease(structure,preview.paletteX+45,90,Qt.LeftButton)
+   mousePress(staleStructure,12,12,Qt.LeftButton);mouseMove(structure,25,preview.composition.height-20,40);verify(structure.dragging)
+   Services.Settings.placeCCSection("profile",0);wait(20);verify(!structure.dragging);mouseRelease(structure,25,preview.composition.height-20,Qt.LeftButton)
    for(const id of ["profile","media","sliders"]){const style=JSON.stringify(Services.Settings.data.appearance);Services.Settings.placeCCSection(id,-1);verify(!Services.Settings.data.controlCentre.layout.includes(id));Services.Settings.placeCCSection(id,0);compare(JSON.stringify(Services.Settings.data.appearance),style)}
 
    for(const entry of Services.Settings.data.controlCentre.controls.slice())Services.Settings.placeCCModule(entry.module,"available")
-   wait(100);capture("empty-primary");verify(preview.moduleBoard.geometry.some(l=>l.id==="controls"))
+   wait(100);capture("empty-primary")
+   board.begin("wifi",item("ccModuleBoard-handle-wifi"),10,10);board.motion(board,20,15)
+   verify(preview.moduleBoard.geometry.some(l=>l.id==="controls"));board.cancel()
    Services.Settings.placeCCModule("wifi","controls",0)
    tryCompare(Services.Settings,"saveState","saved");wait(200)
    const persisted=JSON.stringify(Services.Settings.data.controlCentre)
    Services.Settings.placeCCSection("profile",2);Services.Settings.setRoundness("controlTile",.1)
    verify(Services.Settings.discardAndReload());tryCompare(Services.Settings,"ready",true);compare(JSON.stringify(Services.Settings.data.controlCentre),persisted)
    for(const theme of ["catppuccin-mocha","everforest-dark-hard","rose-pine","nord","tokyo-night-moon","rose-pine-dawn"]){Services.Settings.setTheme(theme);capture(theme)}
-   page.mode="Appearance";page.selection.select("media");capture("media-behaviour")
-   page.mode="Appearance";Services.Settings.setTheme("rose-pine-dawn");capture("light")
+   page.selection.select("media");capture("media-behaviour")
+   Services.Settings.setTheme("rose-pine-dawn");capture("light")
    win.contentItem.Window.window.width=720;win.contentItem.Window.window.height=900;capture("compact")
    Services.Settings.resetSection("controlCentre");Services.Settings.resetSection("appearance")
    for(const size of [Qt.size(1080,780),Qt.size(720,500)]) {
     win.contentItem.Window.window.width=size.width;win.contentItem.Window.window.height=size.height
-    for(const mode of ["Layout","Appearance"]) {
-     page.mode=mode;;wait(180)
+    {
+     wait(180)
      verify(preview.composition.height*preview.fitScale<=preview.height+1,"entire composition fits vertically")
      verify(preview.sceneWidth*preview.fitScale<=preview.width+1,"canvas and palette fit horizontally")
      const inspector=item("controlCentreEditor")
-     if(mode!=="Layout") {
+     if(item("ccUnifiedEditor").sideBySide) {
       verify(inspector.visible)
       verify(inspector.mapToItem(page,0,0).x>=preview.mapToItem(page,preview.width,0).x,"inspector stays to the right")
       compare(Math.round(inspector.mapToItem(page,0,0).y),Math.round(preview.mapToItem(page,0,0).y))
      }
-     if(size.width===1080)capture("fit-"+({"Layout":"layout","Appearance":"look","Behaviour":"behaviour"})[mode])
+     if(size.width===1080)capture("fit-unified")
     }
    }
    console.log("Phase12D presentation PASS")

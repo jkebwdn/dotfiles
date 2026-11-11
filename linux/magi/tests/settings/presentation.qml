@@ -21,7 +21,6 @@ ShellRoot {
         when: Services.Settings.ready
         function page(title) { return findChild(window.contentItem, "settingsPage-" + title) }
         function reveal(p, item) {
-            p = findChild(p, "controlCentreEditor") || p
             p.contentY = Math.max(0, Math.min(p.contentHeight - p.height, item.mapToItem(p.contentItem, 0, 0).y - 50))
             wait(30)
         }
@@ -68,7 +67,7 @@ ShellRoot {
                         if(name === "Control Centre") {
                             const canvas=findChild(current,"controlCentrePreview")
                             verify(canvas.width>150 && canvas.width<=current.width,"bounded editor canvas")
-                            current.mode="Appearance";current.selection.select("controls");wait(20)
+                            current.selection.select("controls");wait(20)
                             verify(current.body.width>200 && current.body.width<=current.width,"bounded inspector")
                         } else if(name === "Hub") verify(current.body.width > 160 && current.body.width <= current.width, "bounded Hub inspector"); else verify(current.body.width > 400 && current.body.width <= current.width, "bounded page width")
                         compare(current.boundsBehavior, Flickable.StopAtBounds)
@@ -96,7 +95,7 @@ ShellRoot {
             slider.forceActiveFocus(Qt.TabFocusReason); keyClick(Qt.Key_Up)
             compare(Services.Settings.data.appearance.visual.statusIconSize, iconSize + 1, "production slider writes existing visual setting")
             Services.SettingsWindowState.page = "Control Centre"; wait(50)
-            page("Control Centre").mode="Appearance";page("Control Centre").selection.select("controls");wait(40)
+            page("Control Centre").selection.select("controls");wait(40)
             const primary = findChild(page("Control Centre"), "primaryColumns")
             const secondaryBefore = Services.Settings.data.controlCentre.actionColumns
             const primaryBefore = Services.Settings.data.controlCentre.columns

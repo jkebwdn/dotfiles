@@ -17,8 +17,13 @@ ShellRoot {
    for(const lane of ['left','center','right','hidden']){
     const handle=item('barOrder-handle-tray'),target=board.geometry.find(l=>l.id===lane)
     mousePress(handle,14,14,Qt.LeftButton)
-    mouseMove(board,target.x+15,target.y+50,40);wait(30);verify(board.dragging)
-    mouseRelease(board,target.x+15,target.y+50,Qt.LeftButton);wait(180)
+    // Available is now a compact 40px row; target its real bounds, not y+50.
+    mouseMove(board,target.x+target.width/2,target.y+target.height/2,40)
+    tryCompare(board,'dragging',true);wait(150)
+    const destination=board.geometry.find(l=>l.id===lane)
+    mouseMove(board,destination.x+destination.width/2,destination.y+destination.height/2,30)
+    tryCompare(board,'targetLane',lane)
+    mouseRelease(board,destination.x+destination.width/2,destination.y+destination.height/2,Qt.LeftButton);wait(180)
     if(lane==='hidden')verify(!canvas.placed.includes('tray'))
     else {verify(Services.Settings.data.bar[lane].includes('tray'));compare(canvas.placed.filter(x=>x==='tray').length,1)}
    }

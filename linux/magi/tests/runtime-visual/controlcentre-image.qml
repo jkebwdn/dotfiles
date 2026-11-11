@@ -143,7 +143,7 @@ ShellRoot {
                 verify(d.y >= 0 && d.y+d.height <= bar.height)
                 Services.Settings.setValue("bar","position","top")
                 // Real Settings input and immediate static preview / saved preferences.
-                page.mode = "Appearance"; wait(100)
+                 wait(100)
                 const slider = findChild(page,"decorationSlider-height")
                 const stepper = findChild(page,"decoration-height")
                 const preview = findChild(page,"decorationPreview")

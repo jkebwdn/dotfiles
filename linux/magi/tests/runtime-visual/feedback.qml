@@ -109,7 +109,6 @@ ShellRoot {
                     const nav=findChild(content,"settingsNav-Control Centre");verify(nav.checked)
                     const page=findChild(content,"settingsPage-Control Centre")
                     const runtime=JSON.stringify(Services.Settings.data)
-                    page.mode="Appearance"
                     for(const family of ["profile","controls","sliders","actions","media"]) {
                         page.selection.select(family);wait(0)
                         const sections=collect(page, item => item.visible && item.collapsible === true && item.expanded !== undefined)
@@ -117,7 +116,7 @@ ShellRoot {
                         for (const section of sections) {
                             const button=collect(section, item => item.text !== undefined && item.clicked !== undefined && item.text.startsWith(section.title+"  "))[0]
                             verify(button !== undefined, "Keyboard disclosure exists")
-                            const editor=findChild(page,"controlCentreEditor")
+                            const editor=page
                             editor.contentY=Math.max(0,button.mapToItem(editor.contentItem,0,0).y-30)
                             const expanded=section.expanded
                             button.forceActiveFocus();keyClick(Qt.Key_Space);wait(0)
