@@ -12,6 +12,7 @@ ColumnLayout {
     property string accessibleLabel: label
     property string description: ""
     property bool editingAllowed: true
+    property bool authoritative: false
     property real reference: 10
     objectName: "roundnessValue-" + fieldKey
     Layout.fillWidth: true
@@ -35,7 +36,8 @@ ColumnLayout {
     SettingsHelp { visible: text.length > 0; text: root.description }
     SettingsToggle {
         objectName: "roundnessInherit-" + root.fieldKey
-        text: root.fieldKey === "workspace" ? "Use Bar pill roundness" : "Use saved base value"
+        visible: !root.authoritative
+        text: root.fieldKey === "workspace" ? "Use Bar pill roundness" : "Use base roundness (" + root.inheritedValue.toFixed(2) + "×)"
         Accessible.name: root.accessibleLabel + ": " + text
         Accessible.description: "Inherited when checked; a custom override when unchecked. Disabling inheritance starts at the parent's current value."
         enabled: root.editingAllowed
@@ -47,7 +49,7 @@ ColumnLayout {
         SettingsSlider {
             objectName: "roundness-" + root.fieldKey
             Accessible.name: root.accessibleLabel + " multiplier"
-            enabled: root.editingAllowed && root.storedValue != null
+            enabled: root.editingAllowed && (root.authoritative || root.storedValue != null)
             Layout.fillWidth: true
             Layout.minimumWidth: 40
             from: 0; to: 2; stepSize: .05
@@ -64,7 +66,14 @@ ColumnLayout {
             Label { anchors.centerIn: parent; text: root.displayedValue.toFixed(2) + "×" }
         }
     }
+    SettingsButton {
+        visible: root.authoritative
+        text: "Reset roundness"
+        actionKind: "reset"
+        onClicked: root.setValue(null)
+    }
     SettingsHelp {
+        visible: !root.authoritative
         text: root.storedValue == null ? "Inherited · " + root.displayedValue.toFixed(2) + "×" : "Custom override"
     }
 }

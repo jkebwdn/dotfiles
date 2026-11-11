@@ -19,7 +19,6 @@ ShellRoot {
         function visit(name,key){
             Services.SettingsWindowState.page=name;wait(60)
             const p=page(name)
-            if(name==="Bar")p.mode="Appearance"
             if(name==="Hub"){p.mode="Appearance";p.selection.select("selector")}
             if(name==="Control Centre"){
                 p.mode="Appearance";item("ccRoundness").expanded=true
@@ -66,7 +65,7 @@ ShellRoot {
             for(const key of Object.keys(owners)){
                 visit(owners[key],key);const control=item("roundness-"+key),old=current(key)
                 compare(control.from,0);compare(control.to,key==="header"?75:2);compare(control.stepSize,key==="header"?1:.05)
-                if(key!=="header"){
+                if(key!=="header" && key!=="surface"){
                     const inherit=item("roundnessInherit-"+key),value=item("roundnessValue-"+key)
                     compare(inherit.checked,old==null);compare(control.enabled,old!=null)
                     if(!inherit.checked){reveal(inherit);inherit.forceActiveFocus();keyClick(Qt.Key_Space)}
@@ -75,6 +74,7 @@ ShellRoot {
                     keyClick(Qt.Key_Tab);verify(control.activeFocus,"Tab enters enabled override")
                     keyClick(Qt.Key_Backtab);verify(inherit.activeFocus,"Reverse tab to inheritance")
                 }
+                if(key==="surface"){verify(!item("roundnessInherit-surface").visible);verify(control.enabled)}
                 reveal(control);control.forceActiveFocus();const before=control.value;keyClick(key==="header"?Qt.Key_Up:Qt.Key_Right);wait(20)
                 const expected=Math.min(control.to,before+control.stepSize);verify(Math.abs(current(key)-expected)<.000001,key)
                 if(key!=="header"){
@@ -83,7 +83,7 @@ ShellRoot {
                 }else compare(item("roundnessPreview-header").radius,current(key)/2)
                 if(key==="barPill"){compare(Services.Settings.data.bar.visual.workspacePills.roundness,null);compare(Theme.Theme.workspacePillRadius,Theme.Theme.barPillRadius)}
                 tryCompare(Services.Settings,"saveState","saved");reload();verify(Math.abs(current(key)-expected)<.000001,"Disk reload "+key)
-                if(key!=="header"){
+                if(key!=="header" && key!=="surface"){
                     const inherit=item("roundnessInherit-"+key);reveal(inherit);inherit.forceActiveFocus();keyClick(Qt.Key_Space);compare(current(key),null)
                     keyClick(Qt.Key_Space);compare(current(key),item("roundnessValue-"+key).inheritedValue,"No stale custom cache")
                 }
