@@ -186,7 +186,13 @@ class PolicyTests(unittest.TestCase):
         self.assertIn('enabled: Services.Caffeine.requested && !!root.mainBar',fleet)
         for path in ['services/Caffeine.qml','services/system_actions.py']:
             baseline=subprocess.check_output(['git','show','HEAD:linux/magi/.config/quickshell/magi/'+path],cwd=ROOT)
-            self.assertEqual((CONFIG/path).read_bytes(),baseline)
+            current=(CONFIG/path).read_bytes()
+            if path.endswith('system_actions.py'):
+                # Suspend is the sole catalogue/backend extension; preserve every
+                # existing manual-action and Caffeine byte around those entries.
+                current=b'\n'.join(line for line in current.splitlines() if b'"suspend":' not in line)
+                baseline=b'\n'.join(line for line in baseline.splitlines() if b'"suspend":' not in line)
+            self.assertEqual(current,baseline)
         canonical=(ROOT.parent/'t15g/hypr/.config/hypr/hypridle.conf').read_text()
         self.assertIn('inhibit_sleep = 3',canonical);self.assertIn('magi-lock-request sleep-coordinated',canonical)
         self.assertIn('before_sleep_cmd = loginctl lock-session',canonical)

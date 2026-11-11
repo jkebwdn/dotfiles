@@ -67,13 +67,12 @@ and preserves inherited Workspace behavior. Independent Workspace overrides bloc
 unified editing/deployment until reviewed; they are never discarded. The cross-MAGI
 action role still needs a permanent UI-ownership decision; it remains temporarily
 under CC with a focused consumer report. The unused radiusLarge token is untouched.
-The operator accepted the revised UI and authorized its focused commit. The helper
-did not save a completed native receipt; acceptance is operator-reported. Push
-requires separate approval. See
+The operator accepted the revised UI, committed and pushed it at `5e00c38`. The
+helper did not save a completed native receipt; acceptance is operator-reported. See
 [feature ownership](review/roundness-feature-ownership.md).
 
-Appearance is accepted/pushed at `fa40a70`. Earlier worktree cleanup still requires
-a host process-reference check because `/proc/1395/cwd` was unreadable; sandbox
-invisibility is not proof of inactivity. Existing Qt Wayland text-input warnings
-remain runtime debt despite the accepted Appearance review. No unrelated cleanup
-or renderer change is included here.
+Appearance is accepted/pushed at `fa40a70`. The subsequent guarded host cleanup
+removed 141 obsolete temporary entries, including the three completed worktrees;
+Settings and 701 protected entries were preserved. The unique AE86 PNG remains
+retained. Existing Qt Wayland text-input warnings remain runtime debt. The new
+Settings refinement phase does not change their renderer or begin more cleanup.

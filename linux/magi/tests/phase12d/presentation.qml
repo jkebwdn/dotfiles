@@ -19,14 +19,14 @@ ShellRoot {
    capture("layout");capture("available-controls")
    const handle=item("ccModuleBoard-handle-wifi"),target=board.geometry.find(l=>l.id==="actions")
    const revision=Services.Settings.revision
-   mousePress(handle,12,12,Qt.LeftButton);mouseMove(board,target.x+15,target.y+40,40);wait(40)
+   mousePress(handle,12,12,Qt.LeftButton);mouseMove(board,target.x+15,target.y+Math.min(20,target.height/2),40);wait(40)
    verify(board.dragging);compare(JSON.stringify(Services.Settings.data.controlCentre),original);capture("control-drag")
-   mouseRelease(board,target.x+15,target.y+40,Qt.LeftButton);wait(180)
+   mouseRelease(board,target.x+15,target.y+Math.min(20,target.height/2),Qt.LeftButton);wait(180)
    verify(Services.Settings.data.controlCentre.actions.some(e=>e.module==="wifi"&&e.enabled));compare(Services.Settings.revision,revision+1)
    for(const destination of ["controls","available"]){
     const h=item("ccModuleBoard-handle-battery"),lane=board.geometry.find(l=>l.id===destination)
-    mousePress(h,12,12,Qt.LeftButton);mouseMove(board,lane.x+15,lane.y+40,40);verify(board.dragging)
-    mouseRelease(board,lane.x+15,lane.y+40,Qt.LeftButton);wait(180)
+    mousePress(h,12,12,Qt.LeftButton);mouseMove(board,lane.x+15,lane.y+Math.min(20,lane.height/2),40);verify(board.dragging)
+    mouseRelease(board,lane.x+15,lane.y+Math.min(20,lane.height/2),Qt.LeftButton);wait(180)
     compare(board.entryFor("battery").lane,destination)
    }
    for(const id of ["wifi","bluetooth","lock"]){
@@ -41,9 +41,9 @@ ShellRoot {
    Services.Settings.placeCCModule("volume","available");Services.Settings.placeCCModule("volume","sliders",0)
    Services.Settings.placeCCModule("wifi","controls",0);wait(160)
    const stale=item("ccModuleBoard-handle-wifi")
-   mousePress(stale,12,12,Qt.LeftButton);mouseMove(board,target.x+20,target.y+40,40);verify(board.dragging)
+   mousePress(stale,12,12,Qt.LeftButton);mouseMove(board,target.x+20,target.y+Math.min(20,target.height/2),40);verify(board.dragging)
    Services.Settings.placeCCModule("bluetooth","actions",0);wait(30);verify(!board.dragging)
-   mouseRelease(board,target.x+20,target.y+40,Qt.LeftButton)
+   mouseRelease(board,target.x+20,target.y+Math.min(20,target.height/2),Qt.LeftButton)
    const grip=item("ccModuleBoard-handle-wifi");grip.forceActiveFocus();keyClick(Qt.Key_Right,Qt.AltModifier);wait(150)
    verify(Services.Settings.data.controlCentre.actions.some(e=>e.module==="wifi"))
    Services.Settings.placeCCModule("wifi","controls",0);Services.Settings.placeCCModule("bluetooth","controls",1)
@@ -73,12 +73,12 @@ ShellRoot {
    page.mode="Layout";capture("structure")
    const structure=preview.structureBoard,mediaHandle=item("ccStructureBoard-handle-media")
    const saved=JSON.stringify(Services.Settings.data.controlCentre.layout)
-   mousePress(mediaHandle,12,12,Qt.LeftButton);mouseMove(structure,30,25,40);verify(structure.dragging)
+   mousePress(mediaHandle,12,12,Qt.LeftButton);mouseMove(structure,preview.paletteX+30,35,40);verify(structure.dragging)
    compare(JSON.stringify(Services.Settings.data.controlCentre.layout),saved);capture("structural-drag")
-   mouseRelease(structure,30,25,Qt.LeftButton);wait(180);compare(Services.Settings.data.controlCentre.layout[0],"media");capture("media-first")
+   mouseRelease(structure,preview.paletteX+30,35,Qt.LeftButton);wait(180);compare(Services.Settings.data.controlCentre.layout[0],"media");capture("media-first")
    const staleStructure=item("ccStructureBoard-handle-media")
-   mousePress(staleStructure,12,12,Qt.LeftButton);mouseMove(structure,45,90,40);verify(structure.dragging)
-   Services.Settings.placeCCSection("profile",0);wait(20);verify(!structure.dragging);mouseRelease(structure,45,90,Qt.LeftButton)
+   mousePress(staleStructure,12,12,Qt.LeftButton);mouseMove(structure,preview.paletteX+45,90,40);verify(structure.dragging)
+   Services.Settings.placeCCSection("profile",0);wait(20);verify(!structure.dragging);mouseRelease(structure,preview.paletteX+45,90,Qt.LeftButton)
    for(const id of ["profile","media","sliders"]){const style=JSON.stringify(Services.Settings.data.appearance);Services.Settings.placeCCSection(id,-1);verify(!Services.Settings.data.controlCentre.layout.includes(id));Services.Settings.placeCCSection(id,0);compare(JSON.stringify(Services.Settings.data.appearance),style)}
 
    for(const entry of Services.Settings.data.controlCentre.controls.slice())Services.Settings.placeCCModule(entry.module,"available")

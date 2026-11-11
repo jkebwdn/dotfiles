@@ -1,8 +1,9 @@
 # Current status and next decisions
 
-Schema 22. Current synchronized production is `eb19df4` after the accepted
-Hub focus, image-picker and grouped Settings-card work. Appearance simplification
-and a roundness audit are under review; consolidation requires operator direction.
+Schema 22. The synchronized baseline is `5e00c38` after accepted Appearance and
+feature-owned Roundness work. The separate [Settings refinement](review/settings-refinement.md)
+is natively accepted and approved for four commits; pushing requires separate approval.
+No further roundness consolidation is authorized.
 
 Production includes the Bar/multi-output policy, Hub utilities, Control Centre and
 Settings ownership, shared tray/audio services, generic Bluetooth pairing/Agent1,
@@ -63,7 +64,7 @@ rolled back safely; the revised candidate distributes nine multiplier sliders an
 one pixel stepper across their features, retaining all twelve fields and the hidden
 base fallback. Buttons/switches ownership remains under focused review, with a
 temporary CC editor. [Revised phase](review/roundness-feature-ownership.md).
-The operator accepted the revised UI and authorized the focused commit. Push
-requires separate approval. Native acceptance is operator-reported; the helper did
-not save a completed case receipt. No schema/migration,
+The operator accepted the revised UI, committed and pushed it at `5e00c38`.
+Native acceptance is operator-reported; the helper did not save a completed case
+receipt. No schema/migration,
 field merge/removal or Options B/C work is authorized.

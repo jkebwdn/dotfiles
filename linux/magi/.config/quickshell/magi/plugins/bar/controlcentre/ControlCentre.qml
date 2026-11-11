@@ -36,29 +36,32 @@ MagiBar.ExpandableModule {
     readonly property bool showMedia: sections.includes("media")
     readonly property real tileGap: 12
     readonly property real availableWidth: barWindow ? Math.max(88, barWindow.width - 28) : 1200
-    readonly property int columns: Math.max(1, Math.min(layout.columns,
-        Math.floor((availableWidth - 2 * viewPadding + tileGap) / (Theme.RenderTokens.tileSize + tileGap))))
-    readonly property int rows: Math.ceil(controls.length / columns)
-    readonly property real gridHeight: rows ? rows * Theme.RenderTokens.tileSize + (rows - 1) * tileGap : 0
-    readonly property int actionColumns: Math.max(1, Math.min(layout.actionColumns, actions.length,
-        Math.max(1, Math.floor((expandedWidth - 2 * viewPadding + actionGap) / (Theme.RenderTokens.actionSize + actionGap)))))
-    readonly property int actionRows: Math.ceil(actions.length / actionColumns)
+    readonly property int columns: geometry.columns
+    readonly property int rows: geometry.rows
+    readonly property real gridHeight: geometry.gridHeight
+    readonly property int actionColumns: geometry.actionColumns
+    readonly property int actionRows: geometry.actionRows
     readonly property real actionGap: 8
-    readonly property real actionHeight: actionRows ? actionRows * Theme.RenderTokens.actionSize + (actionRows - 1) * actionGap : 0
+    readonly property real actionHeight: geometry.actionHeight
     readonly property int visibleSections: (showProfile ? 1 : 0) + (showControls ? 1 : 0)
         + (showSliders ? 1 : 0) + (showActions ? 1 : 0) + (showMedia ? 1 : 0)
     property real measuredMediaHeight: Theme.RenderTokens.mediaHeight
     property real measuredProfileHeight: Theme.RenderTokens.profileHeight
-    readonly property var sectionLayout: SectionLayout.compose(layout.layout,
-        [showProfile, showControls, showSliders, showActions, showMedia],
-        [measuredProfileHeight, gridHeight, Theme.RenderTokens.sliderHeight, actionHeight, measuredMediaHeight],
-        [Theme.Theme.visual.profileControlsGap, Theme.Theme.visual.controlsSlidersGap,
-         Theme.Theme.visual.slidersActionsGap, Theme.Theme.visual.actionsMediaGap, Theme.Theme.visual.mediaSectionGap])
-    readonly property real naturalHeight: sectionLayout.height
     readonly property real availableHeight: barWindow && hostMode === "combined" ? Math.max(80, barWindow.height - 90) : 700
-    expandedWidth: Math.min(availableWidth, Math.max(300,
-        columns * Theme.RenderTokens.tileSize + (columns - 1) * tileGap + 2 * viewPadding))
-    menuHeight: Math.min(availableHeight, Math.max(42, naturalHeight + viewTopPadding + viewBottomPadding))
+    readonly property var geometry: SectionLayout.geometry(layout, {
+        availableWidth: availableWidth, availableHeight: availableHeight,
+        padding: viewPadding, topPadding: viewTopPadding,
+        tileSize: Theme.RenderTokens.tileSize, actionSize: Theme.RenderTokens.actionSize,
+        sliderHeight: Theme.RenderTokens.sliderHeight,
+        controls: controls.length, actions: actions.length, sliders: sliders.length,
+        profile: profileAvailable, profileHeight: measuredProfileHeight, mediaHeight: measuredMediaHeight,
+        gaps: [Theme.Theme.visual.profileControlsGap, Theme.Theme.visual.controlsSlidersGap,
+            Theme.Theme.visual.slidersActionsGap, Theme.Theme.visual.actionsMediaGap, Theme.Theme.visual.mediaSectionGap]
+    })
+    readonly property var sectionLayout: geometry.sections
+    readonly property real naturalHeight: sectionLayout.height
+    expandedWidth: geometry.width
+    menuHeight: geometry.height
     viewPadding: Theme.RenderTokens.padding
     viewTopPadding: 12
     viewBottomPadding: Theme.RenderTokens.padding

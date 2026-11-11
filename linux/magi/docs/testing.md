@@ -274,3 +274,23 @@ lock socket/private-bus limits remain explicitly classified. Revised native oper
 acceptance was subsequently confirmed by the operator. The deployment source
 hashes match, but the helper did not save a completed six-case result; automated
 case-by-case native completion is not claimed.
+
+## Settings refinement
+
+`settings/refinement` runs real Settings pages in private XDG directories, checks
+passive byte preservation, 720/1000/1400 widths in Nord/One Light, contextual Bar
+selection/empty clicks and checked colour inheritance. It compares actual live CC
+presenter coordinates with editor slots across empty/two/four/six-control layouts,
+media and output widths, and adds/removes Suspend without executing it. Defaults
+and migrations are compared to synchronized `5e00c38`. `wallpaper/presentation`
+adds a private PNG and verifies discovery on page revisit. Roundness equivalence
+uses the actual CC body, so the intentional preview correction does not masquerade
+as a runtime redesign. `tests/settings/native-refinement.qml` is host-review only;
+it is not automatically discovered as compositor acceptance. Final counts and the
+native gate are recorded in [the refinement review](review/settings-refinement.md).
+
+The full refinement matrix before the last Bar presentation follow-ups has
+**110 PASS, 4 ENVIRONMENT, 0 FAIL, 0 UNKNOWN**. Six affected suites passed after
+those follow-ups; no completed second full matrix is claimed. The operator accepted
+the revised live UI on 2026-11-11. This is operator-reported acceptance, not inferred
+from disconnected tests or a completed six-case helper receipt.

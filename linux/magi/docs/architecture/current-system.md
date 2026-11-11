@@ -2,10 +2,11 @@
 
 > Post-0.57 source/ownership review; native evidence and remaining limits are explicit.
 
-Canonical overview; synchronized production baseline `fa40a70` verified 2026-11-10.
-Appearance simplification is accepted and pushed. Roundness is a separate
-feature-owned UI revision accepted by the operator, with one focused commit authorized.
-Push remains a separate gate; the synchronized remote baseline is still `fa40a70`.
+Canonical overview; synchronized production baseline `5e00c38` verified 2026-11-11.
+Appearance and feature-owned Roundness are accepted and pushed. The separate
+[Settings refinement candidate](../review/settings-refinement.md) keeps persisted
+semantics while refining Bar/Wallpaper workflows and sharing CC preview geometry.
+Its native acceptance and commit/push gates remain pending.
 Settings schema **22**. Source, tests and documentation live in `~/dotfiles/linux/magi`.
 The chronological [architecture journal](../architecture.md) and phase records are
 historical evidence, not instructions to deploy old candidates.
@@ -268,3 +269,21 @@ relationship with checked inheritance switches and disables inherited sliders.
 No custom-value cache, automatic normalization or new derived runtime geometry.
 Non-numeric shape selectors and whole-feature resets stay local. See
 [review, consumers and native gate](../review/roundness-feature-ownership.md).
+
+## Accepted Settings refinement (2026-11-11)
+
+Bar uses one contextual page, with separate Layout/Available cards, the selected
+item inspector immediately below Available items, Behaviour, Roundness and persistent
+Global options. Global Bar background and Status items use collapsed disclosures,
+in that order. Nullable item backgrounds
+use explicit inheritance toggles; accent foregrounds retain their non-null role
+semantics. Appearance's shared surface slider has no inheritance UI; its existing
+null fallback remains untouched until deliberate editing. Wallpaper scans on page
+revisit and keeps historical preference/state compatibility behind its quieter UI.
+
+Control Centre and its editor use `SectionLayout.geometry()` for columns, widths,
+section positions and measured profile/media heights. Editing labels/drop palettes
+are outside panel geometry. Preview presenters read live metadata but cannot dispatch
+actions. Suspend extends the existing confirmed system-action catalogue, with no
+default placement or independent backend. See the linked review for boundaries and
+pending native acceptance; schema remains 22.

@@ -76,7 +76,8 @@ for line in sys.stdin:
         checked = "\n".join(line for line in output.splitlines() if "Failed to start IPC server" not in line and "This plugin does not support setting window masks" not in line and "Unable to find hyprland socket" not in line
             and "Could not connect to DBus. NetworkManager backend will not work." not in line
             and "Network will not work. Could not find an available backend." not in line
-            and "Could not connect to DBus. Bluetooth integration is not available." not in line)
+            and "Could not connect to DBus. Bluetooth integration is not available." not in line
+            and "WARN quickshell.service.mpris.watcher: Could not connect to DBus. Mpris service will not work." not in line)
         assert result.returncode == 0 and marker in output and "ERROR" not in checked and "WARN" not in checked and "FAIL!" not in checked
     assert (stage / "copy").read_bytes() == "👩🏽‍💻".encode()
     assert (stage / "restore").read_text() == "hub-test"

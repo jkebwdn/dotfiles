@@ -21,5 +21,5 @@ const section=vm.createContext({});vm.runInContext(fs.readFileSync(root+'/plugin
 assert.deepEqual(plain(section.compose(['media','profile','actions'],[true,true,false,true,true],[10,20,30,40,50],[1,2,3,4,5])),{positions:[55,0,0,66,0],height:106});
 const parts=['ControlCentrePreview.qml','CCControlPreview.qml','CCSectionPreview.qml'].map(n=>fs.readFileSync(root+'/components/settings/'+n,'utf8')).join('\n');
 for(const token of ['ControlCatalog','Process {','onPrimaryTriggered:','onSecondaryTriggered:','onValueMoved:'])assert(!parts.includes(token));
-assert(parts.includes('SectionLayout.compose'));for(const presenter of ['CC.ProfileHeader','CC.MediaSection','CC.ControlTile','CC.ActionButton','Controls.IconSlider'])assert(parts.includes(presenter));
+assert(parts.includes('SectionLayout.geometry'));for(const presenter of ['CC.ProfileHeader','CC.MediaSection','CC.ControlTile','CC.ActionButton','Controls.IconSlider'])assert(parts.includes(presenter));
 console.log('Phase12D migration/composition/registry/presenter-boundary PASS: '+fixtures.length+' fixtures');

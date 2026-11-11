@@ -96,6 +96,7 @@ def can_login_action(method):
 
 def action_status():
     return {"available": True, "lock": bool(shutil.which("loginctl")),
+            "suspend": bool(shutil.which("systemctl")) and can_login_action("CanSuspend"),
             "hibernate": bool(shutil.which("systemctl")) and can_login_action("CanHibernate"),
             "shutdown": bool(shutil.which("systemctl")) and can_login_action("CanPowerOff"),
             "reboot": bool(shutil.which("systemctl")) and can_login_action("CanReboot")}
@@ -103,6 +104,7 @@ def action_status():
 
 def execute_action(name):
     commands = {"lock": ["loginctl", "lock-session"],
+                "suspend": ["systemctl", "--no-ask-password", "--check-inhibitors=yes", "suspend"],
                 "hibernate": ["systemctl", "hibernate"], "shutdown": ["systemctl", "poweroff"],
                 "reboot": ["systemctl", "reboot"]}
     if name not in commands: raise ValueError("Unknown system action")

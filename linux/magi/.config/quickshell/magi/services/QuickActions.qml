@@ -17,6 +17,7 @@ Scope {
     readonly property bool dndAvailable: Notifications.serverActivated
     readonly property bool dndActive: Settings.data.notifications.dnd
     property bool lockAvailable: false
+    property bool suspendAvailable: false
     property bool hibernateAvailable: false
     property bool shutdownAvailable: false
     property bool rebootAvailable: false
@@ -56,7 +57,7 @@ Scope {
             ? Settings.setValue("notifications", "dnd", !!enabled) : false
     }
     function actionAvailable(name) {
-        return name === "lock" ? lockAvailable : name === "hibernate" ? hibernateAvailable
+        return name === "lock" ? lockAvailable : name === "suspend" ? suspendAvailable : name === "hibernate" ? hibernateAvailable
             : name === "shutdown" ? shutdownAvailable : name === "reboot" ? rebootAvailable : false
     }
     function execute(name) {
@@ -73,6 +74,7 @@ Scope {
             vpnName = result.name || ""; vpnUuid = result.uuid || ""
         } else if (request.op === "action-status") {
             lockAvailable = !!result.lock; hibernateAvailable = !!result.hibernate
+            suspendAvailable = !!result.suspend
             shutdownAvailable = !!result.shutdown
             rebootAvailable = !!result.reboot
         }

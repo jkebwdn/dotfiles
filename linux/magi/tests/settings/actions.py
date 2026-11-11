@@ -45,15 +45,17 @@ with tempfile.TemporaryDirectory(prefix='magi-actions-') as temporary:
 
     actions.shutil.which = lambda name: None
     os.environ['MAGI_ACTION_DRY_RUN'] = '1'
-    for name in ('lock', 'hibernate', 'shutdown', 'reboot'):
+    for name in ('lock', 'suspend', 'hibernate', 'shutdown', 'reboot'):
         checked = actions.execute_action(name)
         assert checked['ok'] and checked['dryRun']
     del os.environ['MAGI_ACTION_DRY_RUN']
     assert not actions.execute_action('reboot')['ok']
-    assert not any(actions.action_status()[name] for name in ('lock', 'hibernate', 'shutdown', 'reboot'))
+    assert not any(actions.action_status()[name] for name in ('lock', 'suspend', 'hibernate', 'shutdown', 'reboot'))
     actions.shutil.which = lambda name: '/mock/' + name
     actions.run = lambda command: Completed('s "yes"')
     assert actions.action_status()['reboot']
+    assert actions.action_status()['suspend']
     actions.run = lambda command: Completed('s "no"')
     assert not actions.action_status()['reboot']
+    assert not actions.action_status()['suspend']
     print('Power, VPN and dry-run destructive action boundaries PASS')

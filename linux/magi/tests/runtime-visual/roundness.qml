@@ -14,11 +14,17 @@ import "../../.config/quickshell/magi/components/lockPresentation" as Lock
 import "../../.config/quickshell/magi/services" as Services
 import "../../.config/quickshell/magi/theme" as Theme
 ShellRoot {
+    CC.ControlCentre { id: liveCC }
     FloatingWindow {
         visible:true;implicitWidth:1100;implicitHeight:700;color:Theme.Theme.background
         Rectangle {
             id: scene;anchors.fill:parent;color:Theme.Theme.background
-            UI.ControlCentrePreview { id:cc; x:16;y:16;width:380;height:640;playing:false }
+            Rectangle {
+                id:cc; x:16;y:16;width:liveCC.expandedWidth;height:liveCC.menuHeight
+                color:liveCC.viewSurfaceColor;radius:liveCC.viewRadius
+                Loader { x:liveCC.viewPadding;y:liveCC.viewTopPadding;width:parent.width-2*liveCC.viewPadding;sourceComponent:liveCC.menuContent;enabled:false }
+                Controls.SurfaceBorder { surfaceId:"controlcentre";radius:parent.radius }
+            }
             Column {
                 x:420;y:20;spacing:20
                 Rectangle {

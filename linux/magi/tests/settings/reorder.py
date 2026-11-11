@@ -39,7 +39,8 @@ with tempfile.TemporaryDirectory(prefix='magi-settings-reorder-') as tmp:
                             text=True, capture_output=True, timeout=90)
     output = result.stdout + result.stderr
     print(output)
-    known = ('ERROR quickshell.ipc: Failed to start IPC server',
+    known = ('WARN quickshell.service.mpris.watcher: Could not connect to DBus. Mpris service will not work.',
+             'ERROR quickshell.ipc: Failed to start IPC server',
              'ERROR quickshell.network: Network will not work. Could not find an available backend.',
              'WARN: This plugin does not support setting window masks',
              'WARN quickshell.network.networkmanager: Could not connect to DBus. NetworkManager backend will not work.',

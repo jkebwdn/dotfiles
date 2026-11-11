@@ -1006,3 +1006,13 @@ state. Current Workspace null preserves one visible Bar value without normalizat
 Action remains a cross-MAGI field temporarily reviewed under CC, not merged with its
 primary/secondary roles. No renderer, mask, schema or migration change. The original
 Option A results remain historical evidence. [Revision](review/roundness-feature-ownership.md).
+
+## 2026-11-11 — Settings refinement geometry and ownership (accepted)
+
+The separate [Settings refinement review](review/settings-refinement.md) records the
+contextual Bar page, refresh-on-visit Wallpaper library, authoritative shared-surface
+editor and shared Control Centre layout geometry. Suspend uses the existing confirmed
+action route. Schema/defaults/migrations and saved operator values are unchanged.
+The operator accepted the revised live UI and approved committing on 2026-11-11.
+Acceptance is operator-reported; no complete six-case helper receipt or real Suspend
+execution is claimed. Push remains subject to separate approval.

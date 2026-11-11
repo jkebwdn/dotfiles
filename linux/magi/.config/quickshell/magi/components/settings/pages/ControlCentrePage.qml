@@ -10,7 +10,8 @@ Item {
     id: root
     objectName: "settingsPage-Control Centre"
     property string mode: "Layout"
-    property int outputWidth: 1920
+    property int outputWidth: Services.SurfaceOrigin.hubTarget()?.width || 1920
+    property int outputHeight: Services.SurfaceOrigin.hubTarget()?.height || 1080
     property alias selection: selection
     property alias body: inspector.body
     property alias contentItem: inspector.contentItem
@@ -87,6 +88,8 @@ Item {
             SettingsUI.ControlCentrePreview {
                 id: preview
                 objectName: "controlCentrePreview"
+                outputWidth: root.outputWidth
+                outputHeight: root.outputHeight
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.minimumWidth: 0

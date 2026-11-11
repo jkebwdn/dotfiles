@@ -6,7 +6,7 @@ for (const name of ['settings/SettingsSchema.js', 'settings/SettingsMigrations.j
 const plain = value => JSON.parse(JSON.stringify(value));
 const definitions = plain(ctx.controlDefinitions());
 assert.equal(new Set(definitions.map(d => d.id)).size, definitions.length);
-assert.deepEqual(definitions.map(d => d.id), ['wifi','bluetooth','power-saver','airplane-mode','battery','settings','volume','brightness','vpn','dnd','caffeine','lock','hibernate','shutdown','reboot','apps','notifications','emoji','clipboard']);
+assert.deepEqual(definitions.map(d => d.id), ['wifi','bluetooth','power-saver','airplane-mode','battery','settings','volume','brightness','vpn','dnd','caffeine','lock','suspend','hibernate','shutdown','reboot','apps','notifications','emoji','clipboard']);
 for (const mode of ['apps','notifications','emoji','clipboard']) {
     const d = definitions.find(d => d.id === mode);
     assert.equal(d.route, 'hub'); assert.equal(d.mode, mode);

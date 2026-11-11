@@ -9,6 +9,7 @@ Item {
     required property string section
     property bool renderControls: true
     property bool playing: true
+    property bool liveData: false
     property var entries: []
     property int columns: 4
     property real cellSize: 68
@@ -45,9 +46,9 @@ Item {
                 width: parent.width
                 visible: root.section === "profile"
                 preview: true
-                localHour: 19
-                weatherSummary: "12°C · Cloudy"
-                profile: ({
+                localHour: root.liveData ? new Date().getHours() : 19
+                weatherSummary: root.liveData ? Services.Weather.summary : "12°C · Cloudy"
+                profile: root.liveData ? Services.Settings.data.profile : ({
                         displayName: "Alex Morgan",
                         greetingStyle: Services.Settings.data.profile.greetingStyle,
                         subtitleMode: "custom",
@@ -67,7 +68,7 @@ Item {
                 objectName: root.section === "media" ? "previewMedia" : ""
                 width: parent.width
                 visible: root.section === "media"
-                service: media
+                service: root.liveData ? Services.Media : media
                 interactive: false
                 enabled: false
             }

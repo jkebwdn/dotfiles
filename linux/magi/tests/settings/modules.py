@@ -37,9 +37,9 @@ with tempfile.TemporaryDirectory(prefix='magi-modules-') as tmp:
       'QuickActions': '''property bool powerAvailable: false; property bool powerSaver: false; property string powerProfile: ""
         property bool vpnAvailable: false; property bool vpnActive: false; property string vpnName: ""
         property bool dndAvailable: true; property bool dndActive: false; property bool lockAvailable: true
-        property bool hibernateAvailable: false; property bool shutdownAvailable: true
+        property bool suspendAvailable: true; property bool hibernateAvailable: false; property bool shutdownAvailable: true
         property bool rebootAvailable: true; property var executed: []
-        function actionAvailable(v) {return v === "lock" ? lockAvailable : v === "shutdown" ? shutdownAvailable : v === "reboot" ? rebootAvailable : v === "hibernate" ? hibernateAvailable : false}
+        function actionAvailable(v) {return v === "suspend" ? suspendAvailable : v === "lock" ? lockAvailable : v === "shutdown" ? shutdownAvailable : v === "reboot" ? rebootAvailable : v === "hibernate" ? hibernateAvailable : false}
         function setPowerSaver(v) {root.powerSaver=v} function toggleVpn() {root.vpnActive=!root.vpnActive} function setDnd(v) { root.dndActive=v } function execute(v) {root.executed=root.executed.concat([v])}''',
       'AirplaneMode': '''property bool active: false; property bool priorWifi: false; property bool priorBluetooth: false
         function begin(w,b){root.priorWifi=w;root.priorBluetooth=b;root.active=true}

@@ -41,16 +41,16 @@ ShellRoot {
     compare(item("mediaTitle").font.pixelSize,20);compare(item("mediaTitle").font.weight,700)
     compare(item("mediaArtist").font.pixelSize,16);compare(item("mediaArtist").font.weight,400)
     const playback=item("mediaPlaybackControls")
-    preview.playing=false;Services.Settings.setValue("media","controlsVisibility","always");verify(playback.visible)
+    Services.Media.playing=false;Services.Settings.setValue("media","controlsVisibility","always");verify(playback.visible)
     Services.Settings.setValue("media","controlsVisibility","playing");verify(!playback.visible)
-    preview.playing=true;verify(playback.visible)
-    preview.playing=false;Services.Settings.setValue("media","controlsVisibility","active");verify(playback.visible)
+    Services.Media.playing=true;verify(playback.visible)
+    Services.Media.playing=false;Services.Settings.setValue("media","controlsVisibility","active");verify(playback.visible)
     Services.Settings.setValue("media","controlsVisibility","hidden");verify(!playback.visible)
-    Services.Settings.setValue("media","controlsVisibility","always");preview.playing=true
+    Services.Settings.setValue("media","controlsVisibility","always");Services.Media.playing=true
     page.selection.select("media");reveal(editor,item("mediaPlayerSettings"));capture("media")
     // Every renderer is inert, including programmatic media activation.
     verify(!item("previewMedia").interactive);verify(!item("mediaToggle").enabled)
-    item("mediaToggle").triggered();compare(preview.playing,true)
+    item("mediaToggle").triggered();compare(Services.Media.playing,true);compare(Services.Media.calls,0)
     // Composition pointer/race coverage moved to phase12d; retained presenters remain under test here.
     capture("reorder",preview)
     tryCompare(Services.Settings,"saveState","saved")

@@ -7,6 +7,7 @@ for test in ['schema.cjs','boundary.cjs']:
 with tempfile.TemporaryDirectory(prefix='magi-phase12a-ui-') as tmp:
  stage=Path(tmp);config=stage/'shell';shutil.copytree(root/'.config/quickshell/magi',config)
  (config/'settings.json').write_text('{"schemaVersion":15}')
+ (config/'services/Media.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject {\n property bool available: true\n property bool playing: false\n property bool canPrevious: true\n property bool canNext: true\n property bool canToggle: true\n property string title: "Preview track"\n property string artist: "Preview artist"\n property string identity: "Private fixture"\n property string artworkUrl: ""\n property real progress: .42\n property int calls: 0\n function previous() { calls++ }\n function next() { calls++ }\n function togglePlaying() { calls++ }\n}\n')
  (config/'test.qml').write_text(Path(__file__).with_name('presentation.qml').read_text().replace('../../.config/quickshell/magi/',''))
  runtime=stage/'runtime';runtime.mkdir(mode=0o700)
  previews=Path(os.environ.get('MAGI_PHASE12A_PREVIEWS',str(stage/'previews')));previews.mkdir(parents=True,exist_ok=True)
@@ -14,7 +15,7 @@ with tempfile.TemporaryDirectory(prefix='magi-phase12a-ui-') as tmp:
  env.pop('WAYLAND_DISPLAY',None);env.pop('DISPLAY',None);env.pop('HYPRLAND_INSTANCE_SIGNATURE',None)
  result=subprocess.run(['quickshell','-p',str(config/'test.qml'),'--no-color'],env=env,text=True,capture_output=True,timeout=90)
  output=result.stdout+result.stderr;print(output)
- known=['Failed to start IPC server','This plugin does not support setting window masks','Unable to find hyprland socket','Could not connect to DBus','Could not find an available backend']
+ known=['$HYPRLAND_INSTANCE_SIGNATURE is unset. Cannot connect to hyprland.','Failed to start IPC server','This plugin does not support setting window masks','Unable to find hyprland socket','Could not connect to DBus','Could not find an available backend']
  checked='\n'.join(l for l in output.splitlines() if not any(k in l for k in known))
  assert result.returncode==0 and 'Phase12A presentation PASS' in output and not any(k in checked for k in ['FAIL','WARN','ERROR'])
  assert all((previews/(name+'.png')).stat().st_size>1000 for name in ['overall','default','profile','media','reorder','hub','compact','frappe','everforest'])

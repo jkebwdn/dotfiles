@@ -7,6 +7,8 @@ Bluetooth pairing support, the curated lock themes and internal designer, and th
 
 ## Current canonical documents
 
+- [Settings refinement — Bar, Wallpaper, roundness wording and Control Centre — accepted](review/settings-refinement.md)
+
 - [Roundness by feature — accepted ownership](review/roundness-feature-ownership.md)
 - [Buttons and switches — focused consumer audit](review/buttons-switches-roundness.md)
 - [Roundness Option A — superseded UI, retained evidence](review/roundness-centralization.md)

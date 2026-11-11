@@ -14,6 +14,7 @@ function controlDefinitions() {
         {id:"dnd", label:"Do Not Disturb", icon:"dnd", accent:"lavender", detail:"", presentations:["tile","action"]},
         {id:"caffeine", label:"Caffeine", icon:"caffeine", accent:"yellow", detail:"", presentations:["tile","action"]},
         {id:"lock", route:"system", label:"Lock", icon:"lock", accent:"blue", detail:"", presentations:["action"]},
+        {id:"suspend", route:"system", label:"Suspend", icon:"hibernate", accent:"blue", detail:"", presentations:["action"], confirmation:true},
         {id:"hibernate", route:"system", label:"Hibernate", icon:"hibernate", accent:"peach", detail:"", presentations:["action"], danger:true, confirmation:true},
         {id:"shutdown", route:"system", label:"Shutdown", icon:"shutdown", accent:"red", detail:"", presentations:["action"], danger:true, confirmation:true},
         {id:"reboot", label:"Reboot", icon:"reboot", accent:"red", presentations:["action"], route:"system", danger:true, confirmation:true},
