@@ -33,6 +33,7 @@ def suites():
                  'appearance/run', 'appearance/roundness-audit', 'settings/reorder', 'settings/assets', 'settings/image-picker', 'settings/cards', 'settings/actions',
                  'settings/media', 'settings/refinement', 'settings/controlcentre-workflow'):
         py(path + '.py')
+    py('settings/controlcentre-workflow.py', '--fit')
     py('appearance/run.py', '--roundness')
     py('appearance/roundness-equivalence.py')
     py('settings/reorder.py', '--hub')

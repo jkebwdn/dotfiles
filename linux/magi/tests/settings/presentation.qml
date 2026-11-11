@@ -21,6 +21,7 @@ ShellRoot {
         when: Services.Settings.ready
         function page(title) { return findChild(window.contentItem, "settingsPage-" + title) }
         function reveal(p, item) {
+            if(p.inspectorViewport)p=p.inspectorViewport;
             p.contentY = Math.max(0, Math.min(p.contentHeight - p.height, item.mapToItem(p.contentItem, 0, 0).y - 50))
             wait(30)
         }
@@ -68,12 +69,12 @@ ShellRoot {
                             const canvas=findChild(current,"controlCentrePreview")
                             verify(canvas.width>150 && canvas.width<=current.width,"bounded editor canvas")
                             current.selection.select("controls");wait(20)
-                            verify(current.body.width>200 && current.body.width<=current.width,"bounded inspector")
+                            verify(current.inspectorViewport.width>200 && current.inspectorViewport.width<=current.width,"bounded inspector")
                         } else if(name === "Hub") verify(current.body.width > 160 && current.body.width <= current.width, "bounded Hub inspector"); else verify(current.body.width > 400 && current.body.width <= current.width, "bounded page width")
-                        compare(current.boundsBehavior, Flickable.StopAtBounds)
+                        compare((current.inspectorViewport || current).boundsBehavior, Flickable.StopAtBounds)
                         verify(nav.checked, "selection remains distinct from focus")
                         if (!nav.hovered) compare(nav.background.color, sub ? Theme.Theme.elevated : "#00000000", "navigation levels have distinct selection")
-                        checkControls(current.body, current)
+                        checkControls(current.body || current, current)
                         if (Quickshell.env("MAGI_SETTINGS_CAPTURES")
                                 && ["Control Centre", "Launcher", "Appearance"].indexOf(name) >= 0) {
                             if (name === "Appearance") tryCompare(Services.ThemeOrchestrator, "busy", false)

@@ -23,7 +23,7 @@ ShellRoot {
         name: "SettingsRefinement"; when: Services.Settings.ready
         function item(name) {const value=findChild(window.contentItem,name);verify(value!==null,name);return value}
         function page(name) {Services.SettingsWindowState.page=name;wait(80);return item("settingsPage-"+name)}
-        function reveal(control,p) {p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,control.mapToItem(p,0,0).y+p.contentY-20));wait(30)}
+        function reveal(control,p) {if(p.inspectorViewport)p=p.inspectorViewport;p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,control.mapToItem(p,0,0).y+p.contentY-20));wait(30)}
         function capture(name) {const dir=Quickshell.env("MAGI_REFINEMENT_CAPTURES");if(dir){wait(100);grabImage(window.contentItem).save(dir+"/"+name+".png")}}
         function checkGeometry() {
             wait(80)
@@ -86,7 +86,7 @@ ShellRoot {
                 for(const size of [[720,600],[1000,760],[1400,900]]){
                     window.contentItem.Window.window.width=size[0];window.contentItem.Window.window.height=size[1]
                     for(const name of ["Bar","Wallpaper","Appearance","Control Centre"]){
-                        const p=page(name);p.contentY=0
+                        const p=page(name);if(p.inspectorViewport)p.inspectorViewport.contentY=0;else p.contentY=0
                         if(name==="Bar"){
                             p.selection.select("");capture(theme+"-"+size[0]+"-bar-global")
                             const board=item("barOrder"),host=item("barPreviewHost"),layout=item("barLayoutCard"),available=item("barAvailableItems")

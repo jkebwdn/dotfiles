@@ -23,6 +23,7 @@ ShellRoot {
   name:"Phase12F";when:Services.Settings.ready
   function item(n){const x=findChild(win.contentItem,n);verify(x!==null,n);return x}
   function page(name){Services.SettingsWindowState.page=name;wait(180);return item("settingsPage-"+({Launcher:"Application Launcher",Emoji:"Emoji Picker"}[name]||name))}
+  function scroll(p){return p.inspectorViewport || p}
   function checkBarComposition(){
    const p=item("settingsPage-Bar"),canvas=item("barCanvas")
    verify(Math.abs(canvas.width-p.body.width)<1)
@@ -39,7 +40,7 @@ ShellRoot {
    grabImage(win.contentItem).save(Quickshell.env("MAGI_PHASE12F_PREVIEWS")+"/"+n+".png")
   }
   function checkScopes(){
-   let p=page("Control Centre");p.contentY=0;wait(60)
+   let p=page("Control Centre");scroll(p).contentY=0;wait(60)
    p.selection.select("");wait(50)
    item("ccGlobalControls").expanded=true;wait(30)
    const statusPicker=item("ccStatusRowColour");verify(statusPicker.visible)
@@ -71,10 +72,10 @@ ShellRoot {
      family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
      verify(family.expanded);verify(item("ccRoundnessLocation").visible);compare(p.selection.instance,module)
      // Collapsing must clamp a scrolled inspector instead of leaving a blank viewport.
-     p.contentY=1000;family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
-     verify(!family.expanded);verify(p.contentY<=Math.max(0,p.contentHeight-p.height)+1)
+     scroll(p).contentY=1000;family.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(40)
+     verify(!family.expanded);verify(scroll(p).contentY<=Math.max(0,scroll(p).contentHeight-scroll(p).height)+1)
     }
-    p.contentY=0
+    scroll(p).contentY=0
     region.forceActiveFocus();keyClick(Qt.Key_Return);wait(30);compare(p.selection.scope,"family")
     item("ccModuleBoard-row-"+module).forceActiveFocus();keyClick(Qt.Key_Space);wait(30);compare(p.selection.scope,"module");verify(!family.expanded)
    }
@@ -128,14 +129,14 @@ ShellRoot {
    compare(p.selection.instance,"","Global controls do not select an item")
    p.selection.select("wifi");Services.Settings.placeBar("wifi","hidden");wait(30);compare(p.selection.instance,"")
    Services.Settings.resetSection("bar");Services.Settings.setVisual("statusIconSize",oldSize)
-   p=page("Control Centre");p.contentY=0
+   p=page("Control Centre");scroll(p).contentY=0
   }
   function test_refinement(){try{
    const initial=JSON.stringify(Services.Settings.data)
    for(const name of ["Appearance","Bar","Control Centre","Hub","Profile","Date & time","Notifications","Clipboard","Launcher","Emoji","Wallpaper","Power & Idle","Displays","Security"]){
     const p=page(name);capture(name.toLowerCase().replace(/[^a-z]+/g,"-"));compare(JSON.stringify(Services.Settings.data),initial,"Opening a page must not edit settings")
     verify(p.width>300);verify(p.height>500)
-    if (p.title !== undefined) { const title=p.body.children[0].mapToItem(win.contentItem,0,0);compare(title.x,250);compare(title.y,24) }
+    if (p.title !== undefined) { const title=(p.inspectorViewport ? p.children.find(c=>c.text===p.title) : p.body.children[0]).mapToItem(win.contentItem,0,0);compare(title.x,p.inspectorViewport ? 238 : 250);compare(title.y,p.inspectorViewport ? 12 : 24) }
    }
    let p=page("Appearance"),advanced=item("advancedShellStyling")
    const themes=item("themeGallery"),packs=item("iconPackGallery")
@@ -152,7 +153,7 @@ ShellRoot {
    compare(Services.Settings.data.appearance.theme,Theme.ThemeRegistry.ids[1])
    Services.Settings.setTheme("catppuccin-mocha");wait(40);capture("appearance-theme-gallery")
    const appIcons=JSON.stringify(Services.LauncherIcons.resolve({name:"Sample",icon:""})),originalPack=Services.Settings.data.icons.pack
-   p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,packs.mapToItem(p,0,0).y+p.contentY));waitForPolish(win.contentItem.Window.window)
+   scroll(p).contentY=Math.max(0,Math.min(scroll(p).contentHeight-scroll(p).height,packs.mapToItem(p,0,0).y+scroll(p).contentY));waitForPolish(win.contentItem.Window.window)
    for(let i=0;i<packs.count;++i){packs.reveal(i);wait(20);mouseClick(packs.itemAt(i));compare(Services.Settings.data.icons.pack,packs.model[i].id);verify(packs.itemAt(i).selected)}
    packs.focusIndex(0);keyClick(Qt.Key_Right);keyClick(Qt.Key_Return);compare(Services.Settings.data.icons.pack,packs.model[1].id)
    compare(JSON.stringify(Services.LauncherIcons.resolve({name:"Sample",icon:""})),appIcons)
@@ -166,19 +167,19 @@ ShellRoot {
    Services.Settings.setIconPack(originalPack);wait(20);capture("appearance-icon-gallery")
    const previousSurface=Services.Settings.data.appearance.roundness.roles.surface,compatibilityBase=Services.Settings.data.appearance.roundness.master
    verify(findChild(p,"roundnessChoice-0")===null);verify(findChild(p,"masterRoundnessPrecision")===null)
-   const inherit=item("roundnessInherit-surface");p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,inherit.mapToItem(p,0,0).y+p.contentY));waitForPolish(win.contentItem.Window.window)
+   const inherit=item("roundnessInherit-surface");scroll(p).contentY=Math.max(0,Math.min(scroll(p).contentHeight-scroll(p).height,inherit.mapToItem(p,0,0).y+scroll(p).contentY));waitForPolish(win.contentItem.Window.window)
    if(inherit.checked){inherit.forceActiveFocus();keyClick(Qt.Key_Space)}
    const fine=item("roundness-surface"),previousValue=fine.value;fine.forceActiveFocus();keyClick(Qt.Key_Right);verify(fine.value>previousValue)
    compare(Services.Settings.data.appearance.roundness.master,compatibilityBase)
    capture("roundness-slider");Services.Settings.setRoundness("surface",previousSurface)
    // Immediate fractional, normal and continuous wheel input; no waiting for animation.
-   win.contentItem.Window.window.height=560;wait(80);p.contentY=0
-   mouseWheel(p,10,200,0,-1);verify(p.contentY>0&&p.contentY<2)
-   p.contentY=0;mouseWheel(p,10,200,0,-120);compare(p.contentY,48)
+   win.contentItem.Window.window.height=560;wait(80);scroll(p).contentY=0
+   mouseWheel(p,10,200,0,-1);verify(scroll(p).contentY>0&&scroll(p).contentY<2)
+   scroll(p).contentY=0;mouseWheel(p,10,200,0,-120);compare(scroll(p).contentY,48)
    for(let i=0;i<12;++i)mouseWheel(p,10,200,0,-120)
-   verify(p.contentY<=p.contentHeight-p.height+.1)
-   p.contentY=0
-   mouseWheel(themes,80,40,0,-120);compare(p.contentY,48)
+   verify(scroll(p).contentY<=scroll(p).contentHeight-scroll(p).height+.1)
+   scroll(p).contentY=0
+   mouseWheel(themes,80,40,0,-120);compare(scroll(p).contentY,48)
    verify(themes.contentX===undefined,"Theme gallery has no horizontal viewport")
    // Shared horizontal galleries (icon packs etc.) retain Shift-wheel and
    // trackpad behaviour; the theme grid intentionally uses page scrolling.
@@ -194,7 +195,7 @@ ShellRoot {
    nestedLayer.visible=false
    // Pixel deltas retain fractional precision; physical touchpad phases need native review.
    compare(Scroll.delta(.25,120),.25);compare(Scroll.delta(0,120),48)
-   win.contentItem.Window.window.height=780;p.contentY=0;themes.reveal(themes.currentIndex);wait(60)
+   win.contentItem.Window.window.height=780;scroll(p).contentY=0;themes.reveal(themes.currentIndex);wait(60)
 
    verify(!advanced.expanded);advanced.expanded=true;wait(30);verify(advanced.expanded);advanced.expanded=false
    p=page("Profile");verify(!item("weatherLocation").visible)
@@ -214,8 +215,8 @@ ShellRoot {
    clearRecent.down=true;compare(clearRecent.contentItem.color,Theme.Theme.accentText);clearRecent.down=false
    p=page("Clipboard");const privacy=item("clipboardHistoryPrivacy"),unchanged=JSON.stringify(Services.Settings.data)
    verify(!privacy.expanded);privacy.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);verify(privacy.expanded)
-   compare(JSON.stringify(Services.Settings.data),unchanged,"Privacy disclosure is presentation-only");p.contentY=0;capture("clipboard-history-details")
-   privacy.expanded=false;p.contentY=0;item("clipboardAppearance").expanded=true;wait(30);verify(item("settingsToggle-Clipboard card borders").visible);capture("clipboard-appearance")
+   compare(JSON.stringify(Services.Settings.data),unchanged,"Privacy disclosure is presentation-only");scroll(p).contentY=0;capture("clipboard-history-details")
+   privacy.expanded=false;scroll(p).contentY=0;item("clipboardAppearance").expanded=true;wait(30);verify(item("settingsToggle-Clipboard card borders").visible);capture("clipboard-appearance")
    p=page("Control Centre");const preview=item("controlCentrePreview")
    verify(preview.moduleBoard.visible&&preview.structureBoard.visible,"One Layout supports both drag operations")
    verify(!findChild(win.contentItem,"expandControlCentrePreview"))
@@ -238,7 +239,7 @@ ShellRoot {
    Services.Settings.resetSection("controlCentre");wait(100)
    checkScopes();p=page("Control Centre")
    for(const [id,section,key] of [["controls","ccPrimaryFineTune","primaryIconSize"],["dnd","ccSecondaryFineTune","secondaryIconSize"],["profile","ccProfileFineTune","avatarSize"],["media","ccMediaFineTune","mediaArtworkSize"]]){
-    p.selection.select(id);p.contentY=0;wait(50)
+    p.selection.select(id);scroll(p).contentY=0;wait(50)
     if(item("ccFamilyInspector").collapsible){item("ccFamilyInspector").expanded=true;wait(30)}
     const disclosure=item(section),precision=item("visualSetting-"+key),saved=JSON.stringify(Services.Settings.data)
     verify(!disclosure.expanded);verify(!precision.visible)
@@ -247,8 +248,8 @@ ShellRoot {
     verify(disclosure.expanded);verify(precision.visible);compare(JSON.stringify(Services.Settings.data),saved)
     disclosure.expanded=false
    }
-   for(const id of ["wifi","profile","volume","media",""]){p.selection.select(id);p.contentY=0;capture("cc-"+(id||"host"))}
-   p.selection.select("controls");wait(30);item("ccFamilyInspector").expanded=true;item("ccPrimaryFineTune").expanded=true;p.contentY=200;capture("cc-fine-tune");item("ccPrimaryFineTune").expanded=false;item("ccFamilyInspector").expanded=false;p.contentY=0
+   for(const id of ["wifi","profile","volume","media",""]){p.selection.select(id);scroll(p).contentY=0;capture("cc-"+(id||"host"))}
+   p.selection.select("controls");wait(30);item("ccFamilyInspector").expanded=true;item("ccPrimaryFineTune").expanded=true;scroll(p).contentY=200;capture("cc-fine-tune");item("ccPrimaryFineTune").expanded=false;item("ccFamilyInspector").expanded=false;scroll(p).contentY=0
    p=page("Bar")
    for(const id of ["","wifi","bluetooth"]){p.selection.select(id);wait(50);capture("bar-"+(id||"global"))}
    p=page("Hub");const hub=item("hubEditorPreview")
@@ -263,21 +264,21 @@ ShellRoot {
    for(const mode of ["apps","clipboard","notifications","emoji","settings"]){hub.mode=mode;wait(30);capture("hub-"+mode)}
    for(const key of ["","selector","toggles"]){p.mode="Appearance";p.selection.select(key);hub.mode=key==="toggles"?"settings":"apps";capture("hub-"+(key||"host"))}
    win.contentItem.Window.window.width=720;win.contentItem.Window.window.height=650
-   for(const name of ["Appearance","Control Centre","Hub","Profile"]){p=page(name);if(["Control Centre","Hub"].includes(name)){if(name==="Hub")p.mode="Appearance";p.selection.select(name==="Control Centre"?"wifi":"selector");p.contentY=0}capture("compact-"+name.toLowerCase().replace(/ /g,"-"))}
+   for(const name of ["Appearance","Control Centre","Hub","Profile"]){p=page(name);if(["Control Centre","Hub"].includes(name)){if(name==="Hub")p.mode="Appearance";p.selection.select(name==="Control Centre"?"wifi":"selector");scroll(p).contentY=0}capture("compact-"+name.toLowerCase().replace(/ /g,"-"))}
    p=page("Control Centre");p.selection.select("controls");wait(40)
    verify(item("ccFamilyHighlight-controls").visible);verify(item("ccFamilyInspector").expanded);capture("compact-cc-family-primary")
-   p=page("Bar");p.contentY=0
+   p=page("Bar");scroll(p).contentY=0
    const compactBefore=JSON.stringify(Services.Settings.data)
    for(const id of ["","wifi","bluetooth"]){p.selection.select(id);wait(40);checkBarComposition()}
    compare(JSON.stringify(Services.Settings.data),compactBefore)
-   p.contentY=0;mouseClick(item("barOrder-row-wifi"),10,10);wait(40);compare(item("barOrder-row-wifi").border.width,1);capture("compact-bar-item-wifi")
+   scroll(p).contentY=0;mouseClick(item("barOrder-row-wifi"),10,10);wait(40);compare(item("barOrder-row-wifi").border.width,1);capture("compact-bar-item-wifi")
    win.contentItem.Window.window.width=1400;win.contentItem.Window.window.height=900
    p=page("Control Centre");capture("large-control-centre")
    win.contentItem.Window.window.width=1080;win.contentItem.Window.window.height=780
    p=page("Appearance")
    for(const theme of ["catppuccin-mocha","everforest-dark-hard","rose-pine","nord","tokyo-night-moon","rose-pine-dawn"]){Services.Settings.setTheme(theme);wait(50);capture("palette-"+theme)}
    Services.Settings.setTheme("rose-pine-dawn")
-   for(const name of ["Appearance","Control Centre","Hub","Profile","Notifications"]){p=page(name);if(["Control Centre","Hub"].includes(name)){if(name==="Hub")p.mode="Appearance";p.selection.select(name==="Control Centre"?"wifi":"selector");p.contentY=0}capture("light-"+name.toLowerCase().replace(/ /g,"-"))}
+   for(const name of ["Appearance","Control Centre","Hub","Profile","Notifications"]){p=page(name);if(["Control Centre","Hub"].includes(name)){if(name==="Hub")p.mode="Appearance";p.selection.select(name==="Control Centre"?"wifi":"selector");scroll(p).contentY=0}capture("light-"+name.toLowerCase().replace(/ /g,"-"))}
    tryCompare(Services.Settings,"saveState","saved");wait(150)
    const saved=JSON.stringify(Services.Settings.data)
    Services.Settings.setTheme("nord");verify(Services.Settings.discardAndReload());tryCompare(Services.Settings,"ready",true)

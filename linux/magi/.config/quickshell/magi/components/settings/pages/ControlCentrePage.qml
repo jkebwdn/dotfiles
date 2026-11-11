@@ -6,10 +6,11 @@ import ".." as SettingsUI
 import "../../../services" as Services
 import "../../../settings/SettingsSchema.js" as Schema
 
-SettingsUI.SettingsPage {
+Item {
     id: root
-    title: "Control Centre"
-    maximumBodyWidth: 1400
+    objectName: "settingsPage-Control Centre"
+    readonly property string title: "Control Centre"
+    property alias inspectorViewport: inspectorScroll
     property int outputWidth: Services.SurfaceOrigin.hubTarget()?.width || 1920
     property int outputHeight: Services.SurfaceOrigin.hubTarget()?.height || 1080
     property alias selection: selection
@@ -50,30 +51,60 @@ SettingsUI.SettingsPage {
         familyKeys: ["controls", "actions", "sliders"]
         familyForInstance: id => root.family(id)
     }
+    function revealSelection() {
+        if (!selection.instance || preview.moduleBoard.candidate || preview.moduleBoard.dragging
+                || preview.structureBoard.candidate || preview.structureBoard.dragging) return
+        const top = contextual.y
+        if (top < inspectorScroll.contentY || top + Math.min(contextual.height, inspectorScroll.height) > inspectorScroll.contentY + inspectorScroll.height)
+            inspectorScroll.contentY = Math.max(0, Math.min(top, inspectorScroll.contentHeight-inspectorScroll.height))
+    }
+    Label {
+        id: heading
+        objectName: "ccPageTitle"
+        x: SettingsUI.SettingsMetrics.fieldPadding
+        y: SettingsUI.SettingsMetrics.fieldPadding
+        text: root.title
+        font.pixelSize: SettingsUI.SettingsMetrics.titleSize
+        font.bold: true
+        Accessible.role: Accessible.Heading
+    }
     Item {
         id: editor
         objectName: "ccUnifiedEditor"
-        Layout.fillWidth: true
+        anchors { left: parent.left; right: parent.right; top: heading.bottom; bottom: parent.bottom; margins: SettingsUI.SettingsMetrics.fieldPadding }
         readonly property bool sideBySide: width >= 680
-        readonly property real previewWidth: sideBySide ? Math.min(400, width * .44) : width
-        implicitHeight: sideBySide ? Math.max(previewColumn.height, inspector.height) : previewColumn.height + 18 + inspector.height
+        readonly property real previewWidth: sideBySide ? Math.max(300, width - Math.min(440, width * .49) - SettingsUI.SettingsMetrics.gap) : width
+        // Coordinate space shared by both drag boards. Only the inspector scrolls.
+        Flickable {
+            id: dragViewport
+            anchors.fill: parent
+            contentWidth: width; contentHeight: height
+            interactive: false
+        }
         ColumnLayout {
             id: previewColumn
             width: editor.previewWidth
-            height: implicitHeight
+            height: editor.sideBySide ? editor.height : Math.min(editor.height * .62, 340)
             z: 1
+            spacing: SettingsUI.SettingsMetrics.compactGap
             SettingsUI.ControlCentrePreview {
                 id: preview
                 objectName: "controlCentrePreview"
                 outputWidth: root.outputWidth
                 outputHeight: root.outputHeight
                 Layout.fillWidth: true
-                Layout.preferredHeight: implicitHeight
+                Layout.fillHeight: true
                 editing: true
-                editorViewport: root
+                editorViewport: dragViewport
+                inspectorViewport: inspectorScroll
                 availableCard: available
                 selectedKey: selection.instance
-                onSelected: key => selection.select(key)
+                onSelected: key => {
+                    selection.select(key)
+                    // Do not move the palette during a pointer grab. Reveal on click/release.
+                    Qt.callLater(root.revealSelection)
+                }
+                onEditingFinished: root.revealSelection()
             }
             SettingsUI.SettingsButton {
                 actionKind: "reset"
@@ -82,14 +113,28 @@ SettingsUI.SettingsPage {
                 onClicked: root.resetComposition()
             }
         }
-        ColumnLayout {
-            id: inspector
-            objectName: "controlCentreEditor"
-            x: editor.sideBySide ? previewColumn.width + 18 : 0
-            y: editor.sideBySide ? 0 : previewColumn.height + 18
-            width: editor.sideBySide ? editor.width - x : editor.width
-            height: implicitHeight
-            spacing: SettingsUI.SettingsMetrics.gap
+        Flickable {
+            id: inspectorScroll
+            objectName: "ccInspectorScroll"
+            x: editor.sideBySide ? previewColumn.width + SettingsUI.SettingsMetrics.gap : 0
+            y: editor.sideBySide ? 0 : previewColumn.height + SettingsUI.SettingsMetrics.gap
+            width: editor.width - x
+            height: editor.height - y
+            contentWidth: width
+            contentHeight: inspector.implicitHeight
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            flickableDirection: Flickable.VerticalFlick
+            function clampPosition() { contentY = Math.max(0, Math.min(contentY, Math.max(0, contentHeight-height))) }
+            onContentHeightChanged: clampPosition()
+            onHeightChanged: clampPosition()
+            SettingsUI.ScrollInput { view: inspectorScroll }
+            ScrollBar.vertical: ScrollBar {}
+            ColumnLayout {
+                id: inspector
+                objectName: "controlCentreEditor"
+                width: inspectorScroll.width - SettingsUI.SettingsMetrics.compactGap
+                spacing: SettingsUI.SettingsMetrics.gap
             SettingsUI.CCAvailableControls { id: available; preview: preview }
             SettingsUI.CCInspector { id: contextual; selection: root.selection }
             SettingsUI.CCGlobalSettings {
@@ -103,17 +148,17 @@ SettingsUI.SettingsPage {
                 objectName: "ccRoundness"
                 title: "Roundness"
                 collapsible: false
-                SettingsUI.SettingsSection {
+                SettingsUI.SettingsSubheading {
                     objectName: "ccRoundness-controls"; collapsible: true
-                    carded: false; title: "Controls"
+                    title: "Controls"
                     description: "Shapes Control Centre tiles, actions and slider tracks."
                     SettingsUI.RoundnessValue { fieldKey: "controlTile"; label: "Primary controls"; description: "Also shapes profile and media backgrounds." }
                     SettingsUI.RoundnessValue { fieldKey: "secondaryControl"; label: "Secondary controls" }
                     SettingsUI.RoundnessValue { fieldKey: "slider"; label: "Sliders"; description: "Control Centre slider tracks." }
                 }
-                SettingsUI.SettingsSection {
+                SettingsUI.SettingsSubheading {
                     objectName: "ccRoundness-artwork"; collapsible: true
-                    carded: false; title: "Artwork & identity"
+                    title: "Artwork & identity"
                     SettingsUI.RoundnessValue { fieldKey: "albumArt"; label: "Media artwork"; description: "Shapes media crops and artwork borders." }
                     SettingsUI.RoundnessValue { fieldKey: "avatar"; label: "Avatar / identity"; description: "Shapes profile and avatar masks, including the lock screen." }
                 }
@@ -121,5 +166,6 @@ SettingsUI.SettingsPage {
             }
             SettingsUI.DecorationSettings { }
         }
+    }
     }
 }

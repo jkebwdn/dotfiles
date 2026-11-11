@@ -64,9 +64,9 @@ Option A proved relocation without geometry changes, but its central UI was
 reconsidered and rolled back after native product review. The revised candidate
 retains twelve fields with nine sliders/one stepper, hides the active base fallback
 and preserves inherited Workspace behavior. Independent Workspace overrides block
-unified editing/deployment until reviewed; they are never discarded. The cross-MAGI
-action role still needs a permanent UI-ownership decision; it remains temporarily
-under CC with a focused consumer report. The unused radiusLarge token is untouched.
+unified editing/deployment until reviewed; they are never discarded. Pass 2 resolves the cross-MAGI action ownership: generic consumers follow surface
+and the editor is removed. The stored action field remains compatibility-only;
+removing it later would require a separately reviewed schema/deprecation decision. The unused radiusLarge token is untouched.
 The operator accepted the revised UI, committed and pushed it at `5e00c38`. The
 helper did not save a completed native receipt; acceptance is operator-reported. See
 [feature ownership](review/roundness-feature-ownership.md).
@@ -83,3 +83,11 @@ accepted the live workflow and follow-up disclosures/scope refinements; this is
 operator-reported acceptance, not an inferred completed native-helper receipt.
 Existing Wayland text-input warnings and hardware acceptance limitations remain;
 this phase introduces no runtime rendering or power-backend change.
+
+## Control Centre pass 2 review gate
+
+The independent inspector/preview and shared default roundness retain schema 22.
+Native visual acceptance is operator-reported on 2026-11-11; no completed six-case
+helper receipt was supplied. Software captures do not certify a real lock session. Wide/tall decorations use the
+existing shrink/hide fallback in constrained preview space, never shrink the
+panel. Track native feedback in [Pass 2](review/controlcentre-settings-pass2.md).

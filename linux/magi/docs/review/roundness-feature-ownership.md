@@ -1,5 +1,10 @@
 # Roundness settings by feature — accepted review
 
+Historical audit retained. The operator subsequently approved the
+[Pass 2 default UI roundness model](controlcentre-settings-pass2.md): generic action
+consumers follow Appearance/surface; the old field stays compatibility-only and
+its normal editor is removed. The findings below describe the prior review.
+
 2026-11-10. Baseline `fa40a70a6e38a6faaaf145ff141c851ea4e31bb4` (accepted Appearance).
 The operator reconsidered the all-in-Appearance UI after native product review.
 The prior [Option A evidence](roundness-centralization.md), original

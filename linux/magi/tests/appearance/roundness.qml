@@ -27,7 +27,7 @@ ShellRoot {
             if(name==="Launcher")item("launcherArtwork").expanded=true
             wait(30);return p
         }
-        function viewport(){const n=Services.SettingsWindowState.page;return n==="Hub"?item("hubEditorInspector"):page(n)}
+        function viewport(){const n=Services.SettingsWindowState.page;return n==="Hub"?item("hubEditorInspector"):n==="Control Centre"?item("ccInspectorScroll"):page(n)}
         function reveal(value){const p=viewport(),y=value.mapToItem(p,0,0).y+p.contentY;p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,y-20));waitForPolish(window.contentItem.Window.window)}
         function current(key){return key==="header"?Services.Settings.data.launcher.headerRadius:Services.Settings.data.appearance.roundness.roles[key]}
         function set(key,value){if(key==="header")Services.Settings.setValue("launcher","headerRadius",value);else Services.Settings.setRoundness(key,value)}

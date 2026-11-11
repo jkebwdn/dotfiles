@@ -9,6 +9,8 @@ import "../../theme" as Theme
 Item {
     id: root
     required property Flickable viewport
+    property Flickable scrollViewport: viewport
+    property Item paletteHost: null
     required property var entries // [{key, label, lane, position, data?}]; data stays canonical
     property var lanes: [{id: "items", label: ""}]
     required property Component rowContent
@@ -129,7 +131,7 @@ Item {
         return {lane:{id:""}, index:-1, x:0, y:0, width:0}
     }
     function rowFor(key) {
-        for (let i = 0; i < rows.count; ++i) if (rows.itemAt(i).entryKey === key) return rows.itemAt(i)
+        for (let i = 0; i < rows.count; ++i) if (rows.itemAt(i).row.entryKey === key) return rows.itemAt(i).row
         return null
     }
     function begin(key, handle, px, py) {
@@ -230,7 +232,8 @@ Item {
         onTriggered: {
             const row = root.rowFor(key)
             if (!row || !root.visible) return
-            const view = root.viewport
+            const view = root.scrollViewport
+            if (view !== root.viewport && row.slot.lane.id !== root.removeLane) return
             const y = row.mapToItem(view.contentItem, 0, 0).y
             if (y < view.contentY + 8) view.contentY = Math.max(0, y - 8)
             else if (y + row.height > view.contentY + view.height - 8)
@@ -240,7 +243,8 @@ Item {
     Timer {
         interval: 16; repeat: true; running: root.dragging
         onTriggered: {
-            const p = root.pointerPosition, view = root.viewport
+            const view = root.scrollViewport
+            const p = root.viewport.mapToItem(view, root.pointerPosition.x, root.pointerPosition.y)
             if (p.x >= 0 && p.x <= view.width && p.y >= 0 && p.y <= view.height) {
                 const direction = p.y < 32 ? -1 : p.y > view.height - 32 ? 1 : 0
                 if (direction) view.contentY = Math.max(0, Math.min(view.contentHeight - view.height, view.contentY + direction * 8))
@@ -252,6 +256,7 @@ Item {
         model: root.geometry
         Rectangle {
             required property var modelData
+            visible: !root.paletteHost || modelData.id !== root.removeLane
             objectName: root.objectName + "-lane-" + modelData.id
             x: modelData.x; y: modelData.y; width: modelData.width; height: modelData.height
             radius: Theme.Theme.radius("surface", 10, width, height)
@@ -279,13 +284,17 @@ Item {
     Repeater {
         id: rows
         model: root.stableKeys
+        Item {
+            id: delegateRoot
+            required property string modelData
+            property alias row: row
         Rectangle {
             id: row
-            required property string modelData
-            readonly property string entryKey: modelData
+            readonly property string entryKey: delegateRoot.modelData
             readonly property var entry: root.entryFor(entryKey)
             readonly property var slot: root.location(entryKey)
             readonly property bool moving: root.dragKey === entryKey
+            parent: root.paletteHost && slot.lane.id === root.removeLane && !moving ? root.paletteHost : root
             readonly property bool familyHighlighted: !root.editing && root.familySelection(entryKey)
             visible: !root.canvasMode || (slot.index >= 0 && !slot.hidden)
             activeFocusOnTab: root.canvasMode && (!root.editing || row.activeFocus)
@@ -366,6 +375,7 @@ Item {
                 onLaneRequested: delta => root.moveLane(row.entryKey, delta)
             }
         }
+    }
     }
     Rectangle {
         objectName: root.objectName + "-insertion"

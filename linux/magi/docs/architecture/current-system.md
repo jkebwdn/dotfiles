@@ -256,21 +256,29 @@ The operator accepted the revised GIF artwork and tests on 2026-11-09. Physical
 multi-output acceptance and sandbox-inaccessible native CPU measurement remain
 separate limitations.
 
-## Appearance and feature-owned roundness (2026-11-10)
+## Default and feature roundness (2026-11-11 Pass 2 accepted)
 
-Production `fa40a70` includes the accepted responsive theme row, primary slider
-without presets and compact application disclosures. After native product review,
-the uncommitted all-in-Appearance Option A was rolled back and revised. Appearance
-now owns only the surface role; Hub owns hubSelector; Bar owns barPill while current
-workspace=null follows it; CC owns controlTile/secondaryControl/slider/albumArt/avatar
-and temporarily action for shared-controls review; Launcher owns headerRadius pixels.
-There are nine multiplier sliders and one stepper, no duplicates. The twelve fields,
-defaults, schema and runtime consumers remain unchanged. Master has no numeric UI
-but remains the compatibility/fallback parent. RoundnessValue displays that true
-relationship with checked inheritance switches and disables inherited sliders.
-No custom-value cache, automatic normalization or new derived runtime geometry.
-Non-numeric shape selectors and whole-feature resets stay local. See
-[review, consumers and native gate](../review/roundness-feature-ownership.md).
+Appearance edits `roles.surface`, the default multiplier for shared surfaces AND
+ordinary buttons, inputs, switches, results and hover/focus controls. Generic
+`radiusSmall` and ValueSlider also follow it. Bar pills/joins remain barPill with
+inherited Workspace; Hub's selector remains hubSelector; CC keeps controlTile,
+secondaryControl, slider (IconSlider only), albumArt and avatar; Launcher keeps
+headerRadius pixels. Eight multiplier sliders and one pixel stepper; no duplicates.
+All twelve persisted fields/defaults and schema 22 migrations remain. Hidden master
+still supplies nullable fallback, including native lock avatar masks. Hidden action
+is compatibility-only with no active production QML consumer. Historical migration
+copies remain valid. No saved values or shape selectors change.
+
+CC Settings has a persistent preview sibling of an independent inspector Flickable.
+The common drag coordinate space and the scrolling palette are separate; the same
+placement writers and SectionLayout geometry remain authoritative. Panel-only fit
+keeps decoration dimensions from reducing panel scale; artwork uses its existing
+compact fallback. Shared SettingsSubheading establishes the subheading/disclosure
+hierarchy without migrating unrelated pages. See the complete
+[Pass 2 ownership, evidence and native gate](../review/controlcentre-settings-pass2.md).
+The previous [feature ownership](../review/roundness-feature-ownership.md) records
+why the all-in-Appearance editor was rejected; its temporary shared-action editor
+is superseded by the explicitly approved default model, not silently renamed.
 
 ## Accepted Settings refinement (2026-11-11)
 

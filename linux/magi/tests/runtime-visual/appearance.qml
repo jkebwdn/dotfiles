@@ -19,6 +19,7 @@ ShellRoot {
             return found
         }
         function reveal(page, item) {
+            if(page.inspectorViewport)page=page.inspectorViewport;
             page.contentY = Math.max(0, Math.min(page.contentHeight - page.height, item.mapToItem(page.contentItem, 0, 0).y - 40))
             wait(30)
         }

@@ -114,13 +114,18 @@ ShellRoot {
                         const sections=collect(page, item => item.visible && item.collapsible === true && item.expanded !== undefined)
                         verify(sections.length > 0, family+" disclosures")
                         for (const section of sections) {
-                            const button=collect(section, item => item.text !== undefined && item.clicked !== undefined && item.text.startsWith(section.title+"  "))[0]
+                            const button=section.disclosureButton || collect(section, item => item.text !== undefined && item.clicked !== undefined && item.text.startsWith(section.title+"  "))[0]
                             verify(button !== undefined, "Keyboard disclosure exists")
                             const editor=page
-                            editor.contentY=Math.max(0,button.mapToItem(editor.contentItem,0,0).y-30)
+                            const viewport=editor.inspectorViewport || editor;viewport.contentY=Math.max(0,button.mapToItem(viewport.contentItem,0,0).y-30)
                             const expanded=section.expanded
                             button.forceActiveFocus();keyClick(Qt.Key_Space);wait(0)
                             compare(section.expanded,!expanded)
+                            if(section.objectName.startsWith("ccRoundness-")){
+                                const heading=collect(section,item=>item.text===section.title && item.font!==undefined)[0]
+                                verify(heading!==undefined && heading.visible,"Subheading persists when options collapse")
+                                compare(heading.font.pixelSize,SettingsUI.SettingsMetrics.subheadingSize)
+                            }
                             compare(JSON.stringify(Services.Settings.data),runtime)
                             keyClick(Qt.Key_Space);compare(section.expanded,expanded)
                         }

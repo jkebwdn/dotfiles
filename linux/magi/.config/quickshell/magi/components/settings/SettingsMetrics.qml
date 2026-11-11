@@ -15,6 +15,7 @@ QtObject {
     readonly property int controlHeight: 34
     readonly property int titleSize: 26
     readonly property int sectionSize: 16
+    readonly property int subheadingSize: 15
     readonly property int bodySize: 14
     readonly property int helperSize: 12
     readonly property int navigationIconSize: 22

@@ -1027,3 +1027,12 @@ preview section bounds and the catalogue card; existing placement writers remain
 authoritative. Runtime Control Centre is not editable. Schema22 and values are
 unchanged. The operator accepted the live refinements and authorized one focused
 commit; push is separate. [Ownership and acceptance](review/controlcentre-settings-workflow.md).
+
+## 2026-11-11 — Control Centre pass 2 and the approved roundness default
+
+Candidate from synchronized `93ef0da`. Appearance surface now owns generic shared
+UI; the action editor is removed and its field is compatibility-only. Feature
+geometry, native lock masks, artwork and schema 22 remain unchanged. CC Settings
+uses a fixed preview, separate inspector scroll owner and panel-first fit, plus a
+semantic shared subheading. See [review and complete consumer map](review/controlcentre-settings-pass2.md).
+Native acceptance/commit approval remain pending; no Pass 3.

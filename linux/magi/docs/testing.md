@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 115-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 116-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -308,3 +308,22 @@ The operator accepted the live refinements. The full matrix before these small
 presentation follow-ups passed 111 checks with four established ENVIRONMENT limits;
 all seven affected suites and the refreshed capture fixture pass afterward. No
 second full rerun is claimed. See [ownership, evidence and acceptance](review/controlcentre-settings-workflow.md).
+
+## Control Centre pass 2 and default roundness
+
+`settings/controlcentre-workflow:--fit` adds private transparent PNG wide/tall/disabled
+stress fixtures, panel-only scaling and sticky-preview checks across six sizes/themes.
+The ordinary workflow suite retains pointer/keyboard module editing, palette clipping,
+selection while scrolled and exact passive Settings preservation. Legacy presentation
+fixtures now address the inspector scroll owner explicitly. `appearance/roundness-audit`
+enforces nine unique numeric editors (eight sliders/one stepper), twelve retained
+fields and no production action binding/editor. `roundness-features.qml` checks
+Appearance min/current/max, retired-field invariance and independent feature tokens.
+`appearance/roundness-equivalence` compares 46 captures against `93ef0da`, recording
+approved generic differences while requiring feature images to match. It rejects
+other runtime/schema/native changes; Settings composition is tested separately.
+The guarded native helper uses a fresh invocation snapshot and private interaction
+values. Native acceptance remains pending in the [Pass 2 review](review/controlcentre-settings-pass2.md).
+
+Pass 2 offline result: 112 PASS / 4 established ENVIRONMENT / 0 FAIL / 0 UNKNOWN;
+four final affected preview/reorder checks also pass. Native review remains pending.

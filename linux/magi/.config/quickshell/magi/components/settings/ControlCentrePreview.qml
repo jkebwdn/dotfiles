@@ -19,6 +19,8 @@ Item {
     property alias structureBoard: structureBoard
     property alias viewport: view
     property Flickable editorViewport: null
+    property Flickable inspectorViewport: null
+    signal editingFinished()
     property Item availableCard: null
     readonly property var palette: availableCard || fallbackPalette
     readonly property var availableSections: structureBoard.order("availableStructure")
@@ -53,11 +55,14 @@ Item {
         ? Math.min(340, layout.decoration.height * layout.decoration.asset.bounds[2] / layout.decoration.asset.bounds[3]) + 8 : 0
     readonly property real sceneWidth: canvasWidth + decorationSpace + (editing && !availableCard ? 324 : 0)
     readonly property real sceneHeight: composition.height
-    readonly property real fitScale: Math.min(1, width / sceneWidth, editorViewport ? 1 : height / Math.max(1, sceneHeight))
+    readonly property real maximumScale: availableCard && width >= 500 ? 1.25 : 1
+    readonly property real fitScale: Math.min(maximumScale, width / (editing && !availableCard ? sceneWidth : canvasWidth), height / Math.max(1, sceneHeight))
+    // Panel-first fit: artwork uses spare transparent space; it never sets scale.
+    readonly property real panelX: availableCard ? 0 : decorationSpace * fitScale
     readonly property var order: structureBoard.preview ? structureBoard.order("structure") : layout.layout
     readonly property var composition: compose()
     readonly property string fingerprint: JSON.stringify([layout.layout, layout.controls, layout.actions, layout.sliders])
-    implicitHeight: composition.height * Math.min(1, width / sceneWidth)
+    implicitHeight: composition.height * Math.min(1, width / (editing && !availableCard ? sceneWidth : canvasWidth))
     function entries(group) {
         return layout[group].filter(e => e.enabled);
     }
@@ -120,7 +125,7 @@ Item {
                 });
         }
         if (editing) {
-            const box = paletteRect(palette), cells = paletteRect(palette.controlsArea)
+            const box = paletteTargetRect(), cells = paletteRect(palette.controlsArea)
             const cols = palette.columns
             result.push({id:"available",label:"",emptyLabel:"",x:box.x,y:box.y,width:box.width,height:box.height,
                 contentX:cells.x,contentY:cells.y,keys:moduleBoard.order("available"),columns:cols,
@@ -179,8 +184,16 @@ Item {
         const end = item.mapToItem(fittedScene,item.width,item.height)
         return {x:point.x,y:point.y,width:end.x-point.x,height:end.y-point.y,revision:revision}
     }
-    function structureGeometry() {
+    function paletteTargetRect() {
         const box = paletteRect(palette)
+        if (!inspectorViewport) return box
+        const viewport = paletteRect(inspectorViewport)
+        const x = Math.max(box.x, viewport.x), y = Math.max(box.y, viewport.y)
+        return {x:x,y:y,width:Math.max(0,Math.min(box.x+box.width,viewport.x+viewport.width)-x),
+            height:Math.max(0,Math.min(box.y+box.height,viewport.y+viewport.height)-y)}
+    }
+    function structureGeometry() {
+        const box = paletteTargetRect()
         return [
             {id:"structure",label:"",emptyLabel:"",x:0,y:0,width:canvasWidth,
                 height:composition.height,keys:structureBoard.order("structure")},
@@ -206,13 +219,41 @@ Item {
         x: (root.canvasWidth + root.decorationSpace + 24) * root.fitScale
         width: 300 * root.fitScale
     }
+    // Empty editor space belongs to selection too; controls above retain their grabs.
+    MouseArea {
+        anchors.fill: parent
+        enabled: root.editing
+        onClicked: { root.forceActiveFocus(Qt.MouseFocusReason); root.selected("") }
+    }
+    Item {
+        id: paletteLayer
+        parent: root.inspectorViewport ? root.inspectorViewport.contentItem : root
+        readonly property var origin: root.paletteRect(parent)
+        x: -origin.x * root.fitScale
+        y: -origin.y * root.fitScale
+        width: Math.max(moduleBoard.width, structureBoard.width)
+        height: Math.max(moduleBoard.implicitHeight, structureBoard.implicitHeight)
+        scale: root.fitScale
+        transformOrigin: Item.TopLeft
+        z: 2
+    }
+    Connections {
+        target: moduleBoard
+        function onCandidateChanged() { if (!moduleBoard.candidate && !moduleBoard.dragging) Qt.callLater(root.editingFinished) }
+        function onDraggingChanged() { if (!moduleBoard.dragging) Qt.callLater(root.editingFinished) }
+    }
+    Connections {
+        target: structureBoard
+        function onCandidateChanged() { if (!structureBoard.candidate && !structureBoard.dragging) Qt.callLater(root.editingFinished) }
+        function onDraggingChanged() { if (!structureBoard.dragging) Qt.callLater(root.editingFinished) }
+    }
     Flickable {
         id: view
         // The editor's shared board also owns palette handles outside the panel.
         // Its viewport must contain those handles for pointer delivery, while the
         // painted preview and its layout allocation remain panel-sized.
-        width: root.editorViewport ? Math.max(root.width, root.palette.mapToItem(root,root.palette.width,0).x) : root.width
-        height: root.editorViewport ? Math.max(root.height, root.palette.mapToItem(root,0,root.palette.height).y) : root.height
+        width: root.editorViewport ? Math.max(root.width, root.editorViewport.mapToItem(root,root.editorViewport.width,0).x) : root.width
+        height: root.editorViewport ? Math.max(root.height, root.editorViewport.mapToItem(root,0,root.editorViewport.height).y) : root.height
         clip: !root.editorViewport
         contentWidth: width
         contentHeight: height
@@ -221,7 +262,7 @@ Item {
 
         Item {
             id: fittedScene
-            x: root.decorationSpace * root.fitScale
+            x: root.panelX
             width: root.sceneWidth - root.decorationSpace
             height: root.sceneHeight
             scale: root.fitScale
@@ -300,6 +341,8 @@ Item {
                 visible: true
                 removeLane: "available"
                 viewport: root.editorViewport || view
+                scrollViewport: root.inspectorViewport || viewport
+                paletteHost: root.inspectorViewport ? paletteLayer : null
                 canvasMode: true
                 editing: root.editing
                 selectedKey: root.selectedKey
@@ -367,6 +410,8 @@ Item {
                 visible: root.editing
                 removeLane: "availableStructure"
                 viewport: root.editorViewport || view
+                scrollViewport: root.inspectorViewport || viewport
+                paletteHost: root.inspectorViewport ? paletteLayer : null
                 canvasMode: true
                 editing: visible
                 selectedKey: root.selectedKey
@@ -416,7 +461,7 @@ Item {
                 playbackEnabled: false
                 panelPresent: true
                 panelReady: panelPresent
-                panelRect: Qt.rect(root.decorationSpace, 0, root.canvasWidth, root.composition.height)
+                panelRect: Qt.rect(root.panelX / root.fitScale, 0, root.canvasWidth, root.composition.height)
             }
         }
     }

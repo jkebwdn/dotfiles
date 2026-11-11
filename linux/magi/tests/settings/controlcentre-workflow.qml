@@ -15,6 +15,8 @@ ShellRoot {
         when: Services.Settings.ready
         function item(name) { const found=findChild(window.contentItem,name);verify(found!==null,name);return found }
         function reveal(control,p) {
+            if(p.inspectorViewport) p=p.inspectorViewport
+            if(p.objectName!=="ccInspectorScroll") return
             p.contentY=Math.max(0,Math.min(p.contentHeight-p.height,control.mapToItem(p.contentItem,0,0).y-40));wait(150)
         }
         function capture(name) {
@@ -23,7 +25,7 @@ ShellRoot {
         }
         function drag(board,key,laneId,targetKey,after) {
             const p=board.viewport,handle=item(board.objectName+"-handle-"+key)
-            reveal(handle,p)
+            reveal(handle,board.scrollViewport)
             const point=handle.mapToItem(window.contentItem,handle.width/2,Math.min(handle.height/2,16))
             const revision=Services.Settings.revision
             console.log("DRAG",key,laneId,point.x,point.y,handle.width,handle.height,handle.visible)
@@ -54,7 +56,7 @@ ShellRoot {
         function hierarchy(p) {
             const names=["ccAvailableControls","ccSelectedInspector","ccGlobalControls","ccRoundness","decorationSettings"]
             let bottom=-1
-            for(const name of names){const c=item(name);if(!c.visible)continue;const top=c.mapToItem(p.contentItem,0,0).y;verify(top>=bottom,name+" order");bottom=top+c.height}
+            for(const name of names){const c=item(name);if(!c.visible)continue;const top=c.mapToItem(p.inspectorViewport.contentItem,0,0).y;verify(top>=bottom,name+" order");bottom=top+c.height}
         }
         function paletteGeometry(preview) {
             const card=item("ccAvailableControls"), board=preview.moduleBoard
@@ -93,7 +95,7 @@ ShellRoot {
                 heading.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);verify(heading.expanded)
                 keyClick(Qt.Key_Space);verify(!heading.expanded);verify(heading.disclosureButton.visible)
             }
-            p.contentY=0;wait(150)
+            p.inspectorViewport.contentY=0;wait(150)
             const primary=item("ccAppearanceRegion-controls")
             // The gap between tiles selects the module; a tile selects only itself.
             mouseClick(primary,preview.size("controls")+6,10);wait(100)
@@ -110,9 +112,12 @@ ShellRoot {
                 compare(p.selection.instance,id);verify(item("ccSelectedInspector").visible);hierarchy(p)
                 compare(Services.Settings.revision,before)
             }
-            p.contentY=0;wait(120)
-            mouseClick(preview,preview.decorationSpace*preview.fitScale+preview.canvasWidth*preview.fitScale/2,3)
+            p.inspectorViewport.contentY=0;wait(120)
+            mouseClick(preview,preview.panelX+preview.canvasWidth*preview.fitScale/2,3)
             compare(p.selection.instance,"");verify(!item("ccSelectedInspector").visible)
+            const fixedPreview=preview.mapToItem(window.contentItem,0,0)
+            p.inspectorViewport.contentY=p.inspectorViewport.contentHeight-p.inspectorViewport.height
+            wait(80)
             const order=Services.Settings.data.controlCentre.layout.slice()
             for(const key of ["media","sliders","actions","controls","profile"]){
                 const target=Services.Settings.data.controlCentre.layout.find(id=>id!==key && preview.composition.positions[id]!==undefined)
@@ -121,6 +126,7 @@ ShellRoot {
                 compare(Services.Settings.data.controlCentre.layout[0],key)
                 compare(new Set(Services.Settings.data.controlCentre.layout).size,order.length)
                 compare(preview.order,Services.Settings.data.controlCentre.layout)
+                compare(preview.mapToItem(window.contentItem,0,0),fixedPreview,"Drag while inspector scrolls leaves preview fixed")
             }
             const moduleHandle=item("ccStructureBoard-handle-media")
             reveal(moduleHandle,p);moduleHandle.forceActiveFocus();keyClick(Qt.Key_Home,Qt.AltModifier);wait(160)
@@ -133,7 +139,7 @@ ShellRoot {
             verify(board.entryFor("suspend").lane==="available")
             drag(board,"suspend","actions",board.order("actions")[0],false)
             compare(board.entryFor("suspend").lane,"actions")
-            available.expanded=false;wait(160)
+            available.expanded=false;p.inspectorViewport.contentY=p.inspectorViewport.contentHeight-p.inspectorViewport.height;wait(160)
             drag(board,"suspend","available",null,false)
             verify(available.expanded,"Collapsed removal card opens on valid drag")
             compare(board.entryFor("suspend").lane,"available")
@@ -161,17 +167,36 @@ ShellRoot {
                 Services.Settings.setTheme(theme)
                 for(const size of [[720,600],[1000,760],[1400,900]]){
                     window.contentItem.Window.window.width=size[0];window.contentItem.Window.window.height=size[1];wait(180)
-                    verify(preview.fitScale*preview.sceneWidth<=preview.width+1)
+                    compare(preview.mapToItem(p,preview.panelX,0).x, item("ccPageTitle").x)
+                    verify(preview.fitScale*preview.canvasWidth<=preview.width+1)
                     verify(preview.fitScale*preview.composition.height<=preview.height+1)
                     for(const id of ["","profile","controls","wifi","media"]){
-                        p.selection.select(id);wait(100);hierarchy(p);p.contentY=0
+                        p.selection.select(id);wait(100);hierarchy(p);p.inspectorViewport.contentY=0
                         capture(theme+"-"+size[0]+"-"+(id||"none"))
                     }
                     for(const card of ["ccGlobalControls","ccRoundness","decorationSettings"]){
                         item(card).expanded=true;reveal(item(card),p);capture(theme+"-"+size[0]+"-"+card)
                     }
+                    // Scrolling lower controls never moves or rescales the preview.
+                    const scroll=p.inspectorViewport, fixed=preview.mapToItem(window.contentItem,0,0), scale=preview.fitScale
+                    scroll.contentY=Math.max(0,scroll.contentHeight-scroll.height);wait(120)
+                    compare(preview.mapToItem(window.contentItem,0,0),fixed);compare(preview.fitScale,scale)
+                    verify(preview.paletteTargetRect().height===0,"Offscreen catalogue has no invisible drop target")
+                    const selectionRevision=Services.Settings.revision
+                    mouseClick(item("ccAppearanceRegion-controls"),preview.size("controls")+6,10);wait(160)
+                    compare(p.selection.instance,"controls");verify(item("ccSelectedInspector").mapToItem(scroll,0,0).y>=-1)
+                    compare(Services.Settings.revision,selectionRevision)
+                    const selectedScroll=scroll.contentY
+                    mouseClick(preview,preview.panelX+preview.canvasWidth*preview.fitScale/2,3);wait(60)
+                    compare(p.selection.instance,"");verify(scroll.contentY<=selectedScroll)
+                    compare(preview.mapToItem(window.contentItem,0,0),fixed)
+                    p.selection.select("controls");wait(30)
+                    mouseClick(preview,2,preview.height-3);wait(30)
+                    compare(p.selection.instance,"","Empty viewport outside the panel clears selection")
+                    compare(Services.Settings.revision,selectionRevision)
+                    console.log("PANEL_DIMENSIONS",theme,size[0],preview.canvasWidth*scale,preview.composition.height*scale,preview.width,preview.height)
                     paletteGeometry(preview)
-                    const available=item("ccAvailableControls"),rect=preview.paletteRect(available)
+                    const available=item("ccAvailableControls"),rect=preview.paletteTargetRect()
                     const lane=board.geometry.find(l=>l.id==="available")
                     for(const axis of ["x","y","width","height"]) verify(Math.abs(lane[axis]-rect[axis])<.01,"Available card "+axis+": "+lane[axis]+" vs "+rect[axis])
                     for(const key of board.order("available")){

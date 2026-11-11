@@ -1,5 +1,10 @@
 # Buttons and switches: focused roundness audit
 
+Historical audit retained. The operator subsequently approved the
+[Pass 2 default UI roundness model](controlcentre-settings-pass2.md): generic action
+consumers follow Appearance/surface; the old field stays compatibility-only and
+its normal editor is removed. The findings below describe the prior review.
+
 2026-11-10; runtime reference `fa40a70`, with only uncommitted editor redistribution.
 Classification: **INVESTIGATE FURTHER** for permanent UI ownership. Keep the field
 and editor for this review, temporarily under Control Centre → Roundness →

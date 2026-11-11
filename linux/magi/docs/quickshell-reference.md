@@ -877,3 +877,18 @@ inheritance switch seeds a custom override from the current base; checking write
 null. QtTest verifies checked/disabled state, keyboard transitions and completed
 SettingsStore disk reads. Native protocols/renderers and the three shape enums do
 not change. [Consumer audit and evidence](review/roundness-feature-ownership.md).
+
+## 2026-11-11 — fixed Settings preview and inspector coordinate spaces
+
+Verified locally with Quickshell 0.3.2 (Arch) and QtQuick 6.12.0 (`pkg-config`). No
+new Quickshell/Hyprland API. Qt 6.12 documentation inspected 2026-11-11:
+[Item](https://doc.qt.io/qt-6/qml-qtquick-item.html),
+[Flickable](https://doc.qt.io/qt-6/qml-qtquick-flickable.html),
+[Repeater](https://doc.qt.io/qt-6/qml-qtquick-repeater.html).
+Item visual parent and mapToItem provide transformed coordinate mapping;
+Flickable's contentItem owns scrolling children. Repeater inserts/owns its delegate
+items in its parent's stacking order. SettingsReorderBoard therefore retains stable
+wrapper delegates and moves their child visuals between a clipped palette host
+and common drag space, not the Repeater-owned items themselves. Tests verify
+pointer/keyboard add/remove/reorder and no stacking warnings. CC preview remains
+outside inspector scrolling. Native pointer/clip quality remains a separate gate.

@@ -54,7 +54,7 @@ ShellRoot {
    compare(item("ccPreview-wifi").presenter.accentRole,"red");compare(item("ccPreview-bluetooth").presenter.accentRole,"lavender")
 
    for(const id of ["","profile","controls","wifi","sliders","volume","actions","dnd","media"]){page.selection.select(id);capture(id||"host")}
-   page.selection.select("wifi");capture("wifi-identity");page.contentY=0
+   page.selection.select("wifi");capture("wifi-identity");page.inspectorViewport.contentY=0
    Services.Settings.setVisual("tileBorderWidth",2);wait(20)
    compare(item("ccPreview-wifi").presenter.border.width,2);compare(item("ccPreview-bluetooth").presenter.border.width,2)
    Services.Settings.setVisual("sliderTrack","blue");Services.Settings.setRoundness("slider",.7);wait(20)
@@ -98,9 +98,9 @@ ShellRoot {
    for(const size of [Qt.size(1080,780),Qt.size(720,500)]) {
     win.contentItem.Window.window.width=size.width;win.contentItem.Window.window.height=size.height
     {
-     wait(180)
+     page.inspectorViewport.contentY=0;wait(180)
      verify(preview.composition.height*preview.fitScale<=preview.height+1,"entire composition fits vertically")
-     verify(preview.sceneWidth*preview.fitScale<=preview.width+1,"canvas and palette fit horizontally")
+     verify(preview.canvasWidth*preview.fitScale<=preview.width+1,"canvas and palette fit horizontally")
      const inspector=item("controlCentreEditor")
      if(item("ccUnifiedEditor").sideBySide) {
       verify(inspector.visible)

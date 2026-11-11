@@ -1,11 +1,10 @@
 # Current status and next decisions
 
-Schema 22. The synchronized baseline is `87b21fd` after the accepted and pushed
-[Settings refinement](review/settings-refinement.md). The separate
-[Control Centre workflow pass 1](review/controlcentre-settings-workflow.md)
-is operator-accepted and approved for one focused commit; push
-requires separate approval. No second pass or additional
-roundness consolidation is authorized.
+Schema 22. The accepted [Pass 2](review/controlcentre-settings-pass2.md), based on
+synchronized `93ef0da`, adds a persistent/larger preview and final shared-default
+roundness ownership. Native acceptance and final alignment are operator-confirmed;
+two focused commits and normal push are authorized. Host synchronization is recorded
+in the durable push receipt. Do not begin Pass 3.
 
 Production includes the Bar/multi-output policy, Hub utilities, Control Centre and
 Settings ownership, shared tray/audio services, generic Bluetooth pairing/Agent1,
@@ -64,8 +63,8 @@ Appearance is native-accepted, committed and synchronized at `fa40a70`. Native p
 review superseded the uncommitted central Option A editor. Its review deployment was
 rolled back safely; the revised candidate distributes nine multiplier sliders and
 one pixel stepper across their features, retaining all twelve fields and the hidden
-base fallback. Buttons/switches ownership remains under focused review, with a
-temporary CC editor. [Revised phase](review/roundness-feature-ownership.md).
+base fallback. That historical temporary Buttons/switches editor is now superseded by the
+approved Pass 2 default-UI ownership model. [Revised phase](review/roundness-feature-ownership.md).
 The operator accepted the revised UI, committed and pushed it at `5e00c38`.
 Native acceptance is operator-reported; the helper did not save a completed case
 receipt. No schema/migration,
