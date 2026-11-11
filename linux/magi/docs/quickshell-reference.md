@@ -892,3 +892,15 @@ wrapper delegates and moves their child visuals between a clipped palette host
 and common drag space, not the Repeater-owned items themselves. Tests verify
 pointer/keyboard add/remove/reorder and no stacking warnings. CC preview remains
 outside inspector scrolling. Native pointer/clip quality remains a separate gate.
+
+## Settings contextual help (2026-11-11, CC Pass 3)
+
+Inspected Qt Quick 6.12.0 (pkg-config), Quickshell 0.3.2 (Arch). Official Qt
+[ToolTip documentation](https://doc.qt.io/qt-6/qml-qtquick-controls-tooltip.html)
+and [Popup documentation](https://doc.qt.io/qt-6/qml-qtquick-controls-popup.html),
+accessed 2026-11-11, document local styled tooltips, delay/timeout and in-window
+Popup.Item composition. SettingsInfo uses those existing Qt APIs and ordinary
+ToolButton hover/focus/click handling. Its nonmodal, non-focusing tooltip stays
+out of the inspector layout; accessible description provides equivalent help.
+No Quickshell/Hyprland API or Wayland surface is added. QtTest covers hover, leave,
+keyboard/tap fallback and sizing; native glyph/contrast acceptance remains separate.

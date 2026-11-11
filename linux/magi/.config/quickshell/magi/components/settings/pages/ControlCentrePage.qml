@@ -137,13 +137,14 @@ Item {
                 spacing: SettingsUI.SettingsMetrics.gap
             SettingsUI.CCAvailableControls { id: available; preview: preview }
             SettingsUI.CCInspector { id: contextual; selection: root.selection }
-            SettingsUI.CCGlobalSettings {
+            SettingsUI.CCColourSettings {
                 SettingsUI.SettingsButton {
                     actionKind: "reset"
                     text: "Reset Control Centre appearance"
                     onClicked: root.resetAppearance()
                 }
             }
+            SettingsUI.CCStatusSettings { }
             SettingsUI.SettingsSection {
                 objectName: "ccRoundness"
                 title: "Roundness"
@@ -151,16 +152,15 @@ Item {
                 SettingsUI.SettingsSubheading {
                     objectName: "ccRoundness-controls"; collapsible: true
                     title: "Controls"
-                    description: "Shapes Control Centre tiles, actions and slider tracks."
-                    SettingsUI.RoundnessValue { fieldKey: "controlTile"; label: "Primary controls"; description: "Also shapes profile and media backgrounds." }
-                    SettingsUI.RoundnessValue { fieldKey: "secondaryControl"; label: "Secondary controls" }
-                    SettingsUI.RoundnessValue { fieldKey: "slider"; label: "Sliders"; description: "Control Centre slider tracks." }
+                    SettingsUI.RoundnessValue { fieldKey: "controlTile"; label: "Primary Controls"; infoText: "Shapes primary tiles and the profile and media container backgrounds." }
+                    SettingsUI.RoundnessValue { fieldKey: "secondaryControl"; label: "Secondary Controls"; infoText: "Shapes secondary action buttons and their glyph treatment." }
+                    SettingsUI.RoundnessValue { fieldKey: "slider"; label: "Sliders"; infoText: "Shapes Control Centre slider tracks and fills." }
                 }
                 SettingsUI.SettingsSubheading {
                     objectName: "ccRoundness-artwork"; collapsible: true
-                    title: "Artwork & identity"
-                    SettingsUI.RoundnessValue { fieldKey: "albumArt"; label: "Media artwork"; description: "Shapes media crops and artwork borders." }
-                    SettingsUI.RoundnessValue { fieldKey: "avatar"; label: "Avatar / identity"; description: "Shapes profile and avatar masks, including the lock screen." }
+                    title: "Artwork & Identity"
+                    SettingsUI.RoundnessValue { fieldKey: "albumArt"; label: "Media Artwork"; infoText: "Shapes artwork crops, borders and progress outlines." }
+                    SettingsUI.RoundnessValue { fieldKey: "avatar"; label: "Avatar / Identity"; infoText: "Shapes profile and avatar masks, including native lock artwork." }
                 }
 
             }

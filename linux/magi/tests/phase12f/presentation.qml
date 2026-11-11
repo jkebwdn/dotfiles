@@ -42,7 +42,7 @@ ShellRoot {
   function checkScopes(){
    let p=page("Control Centre");scroll(p).contentY=0;wait(60)
    p.selection.select("");wait(50)
-   item("ccGlobalControls").expanded=true;wait(30)
+   item("ccColours").expanded=true;wait(30)
    const statusPicker=item("ccStatusRowColour");verify(statusPicker.visible)
    statusPicker.roleSelected("teal");compare(Services.Settings.data.appearance.statusRowRole,"teal")
    for(const channel of ["r","g","b","a"]) verify(Math.abs(item("ccStatusRowSample").color[channel]-Theme.Theme.expandedStatusForeground[channel])<1/255)

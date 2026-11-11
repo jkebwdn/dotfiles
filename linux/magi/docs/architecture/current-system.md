@@ -298,3 +298,15 @@ actions. Suspend extends the existing confirmed system-action catalogue, with no
 default placement or independent backend. The operator accepted this refinement
 and synchronized it at `87b21fd`; schema remains 22. The separate workflow pass 1
 is also operator-accepted; its push gate remains separate.
+
+## Control Centre Settings hierarchy — Pass 3 candidate (2026-11-11)
+
+The inspector now orders Available controls, conditional selected inspector,
+Colours (Background/Border subheadings), Status Items, Roundness and Decorative
+image. The Global controls wrapper is removed. Shared SettingsInfo provides
+semantic hover/focus/click help without persistence; optional infoText is supported
+by existing cards, subheadings and roundness labels. Short labels plus contextual
+help are the preferred future Settings pattern, without a cross-page migration.
+Existing status fields still style the expanded shared status header; border
+colour/width still apply across menus. No runtime, geometry, field or schema change.
+See [Pass 3 ownership, evidence and review gate](../review/controlcentre-settings-pass3.md).

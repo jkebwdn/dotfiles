@@ -5,30 +5,14 @@ import QtQuick.Layouts
 import "." as SettingsUI
 import "../../services" as Services
 import "../../theme" as Theme
-import "../../settings/SettingsSchema.js" as Schema
 import "../controls" as Controls
 
 SettingsUI.SettingsSection {
-    id: root
-    objectName: "ccGlobalControls"
-    title: "Global controls"
-    collapsible: true
-    SettingsUI.SettingsHelp {
-        text: "Border styling is shared with other menus."
-    }
+    objectName: "ccStatusItems"
+    title: "Status Items"
+    infoText: "Shared icon and battery-text appearance in the expanded Control Centre status header and other expanded status menus. Collapsed Bar pills keep their Bar styling."
     SettingsUI.SettingsRow {
-        Label {
-            text: "Surface background"
-            Layout.fillWidth: true
-        }
-        SettingsUI.SemanticPaletteSelector {
-            model: ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "border", "accent"].concat(Theme.ThemeRegistry.accentRoles)
-            role: Services.Settings.data.appearance.controlCentreBackgroundRole
-            onRoleSelected: value => Services.Settings.setValue("appearance", "controlCentreBackgroundRole", value)
-        }
-    }
-    SettingsUI.SettingsRow {
-        Label { text: "Status row colour"; Layout.fillWidth: true }
+        Label { text: "Icon colour"; Layout.fillWidth: true }
         SettingsUI.SemanticPaletteSelector {
             objectName: "ccStatusRowColour"
             Accessible.name: "Expanded status row colour"
@@ -36,9 +20,6 @@ SettingsUI.SettingsSection {
             role: Services.Settings.data.appearance.statusRowRole || "text"
             onRoleSelected: value => Services.Settings.setValue("appearance", "statusRowRole", value)
         }
-    }
-    SettingsUI.SettingsHelp {
-        text: "Icons and Battery percentage in the expanded status header. Bar colours return when the panel closes. Also applies when switching to another status menu."
     }
     Rectangle {
         Layout.fillWidth: true
@@ -71,8 +52,9 @@ SettingsUI.SettingsSection {
         title: "Fine tune"
         collapsible: true
         expanded: false
+        infoText: "Negative lightens; zero keeps the palette colour; positive darkens."
         SettingsUI.SettingsRow {
-            Label { text: "Status row shade"; Layout.fillWidth: true }
+            Label { text: "Shade"; Layout.fillWidth: true }
             SettingsUI.SettingsSlider {
                 objectName: "ccStatusRowShade"
                 Accessible.name: "Expanded status row shade"
@@ -82,23 +64,9 @@ SettingsUI.SettingsSection {
                 onMoved: Services.Settings.setValue("appearance", "statusRowShade", value)
             }
         }
-        SettingsUI.SettingsHelp { text: "Negative lightens · 0 keeps the palette colour · positive darkens." }
         SettingsUI.SettingsButton {
             text: "Reset status row"
             onClicked: { Services.Settings.setValue("appearance", "statusRowRole", null); Services.Settings.setValue("appearance", "statusRowShade", null) }
         }
-    }
-    SettingsUI.SurfaceStyleSettings {
-        carded: false
-        objectName: "ccGlobalBorder"
-        title: "Border"
-        collapsible: true
-        group: "surfaceBorders"
-        targets: [
-            {
-                id: "controlcentre",
-                label: "Show border"
-            }
-        ]
     }
 }

@@ -54,7 +54,7 @@ ShellRoot {
             verify(!board.dragging);compare(Services.Settings.revision,revision+1,"One deliberate drop writes once")
         }
         function hierarchy(p) {
-            const names=["ccAvailableControls","ccSelectedInspector","ccGlobalControls","ccRoundness","decorationSettings"]
+            const names=["ccAvailableControls","ccSelectedInspector","ccColours","ccStatusItems","ccRoundness","decorationSettings"]
             let bottom=-1
             for(const name of names){const c=item(name);if(!c.visible)continue;const top=c.mapToItem(p.inspectorViewport.contentItem,0,0).y;verify(top>=bottom,name+" order");bottom=top+c.height}
         }
@@ -75,10 +75,10 @@ ShellRoot {
             paletteGeometry(preview)
             verify(p.mode===undefined);verify(!item("ccSelectedInspector").visible);hierarchy(p)
             for(const id of ["profile","controls","sliders","actions","media","wifi",""]){p.selection.select(id);wait(30)}
-            item("ccGlobalControls").expanded=true;item("ccRoundness").expanded=true;wait(30)
+            item("ccColours").expanded=true;item("ccRoundness").expanded=true;wait(30)
             compare(JSON.stringify(Services.Settings.data),original);compare(Services.Settings.revision,revision)
             saved.reload();compare(saved.text(),raw,"Passive page visits and selection preserve exact file bytes")
-            const available=item("ccAvailableControls"), roundness=item("ccRoundness"), border=item("ccGlobalBorder")
+            const available=item("ccAvailableControls"), roundness=item("ccRoundness"), border=item("ccBorder")
             verify(available.collapsible);verify(available.expanded)
             available.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);wait(160)
             verify(!available.expanded);capture("available-collapsed")
@@ -174,7 +174,7 @@ ShellRoot {
                         p.selection.select(id);wait(100);hierarchy(p);p.inspectorViewport.contentY=0
                         capture(theme+"-"+size[0]+"-"+(id||"none"))
                     }
-                    for(const card of ["ccGlobalControls","ccRoundness","decorationSettings"]){
+                    for(const card of ["ccColours","ccBorder","ccStatusItems","ccRoundness","decorationSettings"]){
                         item(card).expanded=true;reveal(item(card),p);capture(theme+"-"+size[0]+"-"+card)
                     }
                     // Scrolling lower controls never moves or rescales the preview.

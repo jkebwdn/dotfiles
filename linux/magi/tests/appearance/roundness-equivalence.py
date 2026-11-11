@@ -18,7 +18,9 @@ BASELINE = '93ef0da1b29908e4908bb9923b26772835d9872b'
 parser = argparse.ArgumentParser()
 parser.add_argument('--settings', type=Path)
 parser.add_argument('--output', type=Path)
+parser.add_argument('--baseline', default=BASELINE)
 args = parser.parse_args()
+BASELINE = args.baseline
 raw = json.loads(args.settings.read_bytes()) if args.settings else {
     'appearance': {'roundness': {'master': 1, 'roles': {'surface': None,
         'barPill': 1, 'action': 1.2, 'controlTile': 1.25, 'secondaryControl': 1.2,
@@ -38,6 +40,7 @@ with tempfile.TemporaryDirectory(prefix='magi-roundness-equivalence-') as tempor
     checked = 0
     unchanged = 0
     rebound = []
+    settings_resources = []
     for area in ['.config/quickshell/magi', 'native']:
         for before in (baseline/area).rglob('*'):
             if not before.is_file() and not before.is_symlink(): continue
@@ -51,6 +54,15 @@ with tempfile.TemporaryDirectory(prefix='magi-roundness-equivalence-') as tempor
                 unchanged += 1
             else:
                 expected=before.read_bytes()
+                if str(rel) == prefix+'icons/packs/magi-default/manifest.json':
+                    old_pack=json.loads(expected);new_pack=json.loads(after.read_bytes())
+                    info=new_pack['roles'].pop('info', None)
+                    assert info == {'asset':'info.svg','colorMode':'semantic'}
+                    assert new_pack == old_pack, 'Existing icon roles changed'
+                    assert (after.parent/'info.svg').is_file()
+                    # A new Settings help glyph has no effect on existing runtime roles.
+                    checked += 1; settings_resources.append(str(rel))
+                    continue
                 if str(rel).startswith(prefix) and before.suffix=='.qml':
                     expected=expected.replace(b'radius("action",',b'radius("surface",')
                     if before.name=='ValueSlider.qml':expected=expected.replace(b'radius("slider",',b'radius("surface",')
@@ -84,7 +96,7 @@ with tempfile.TemporaryDirectory(prefix='magi-roundness-equivalence-') as tempor
             if not generic: assert a == b, f'Feature geometry changed: {theme}/{name}'
             results.append({'theme': theme, 'consumer': name, 'pixel_identical': a==b,
                 'scope':'generic Appearance ownership (intentional)' if generic else 'preserved feature geometry'})
-    result = {'baseline': BASELINE, 'checked_source_files': checked, 'unchanged_source_files': unchanged, 'approved_runtime_rebindings': rebound, 'comparisons': results,
+    result = {'baseline': BASELINE, 'checked_source_files': checked, 'unchanged_source_files': unchanged, 'approved_runtime_rebindings': rebound, 'approved_settings_resources': settings_resources, 'comparisons': results,
               'settings_writes': 0, 'renderer': 'Qt software; native GPU/lock acceptance separate'}
     (output/'result.json').write_text(json.dumps(result, indent=2)+'\n')
-    print(f'Roundness equivalence PASS: {checked} checked runtime/schema/native files ({unchanged} unchanged, {len(rebound)} approved role rebindings); 46 comparisons (generic differences recorded; feature pairs identical); no Settings writes')
+    print(f'Roundness equivalence PASS: {checked} checked runtime/schema/native files ({unchanged} unchanged, {len(rebound)} approved role rebindings, {len(settings_resources)} help-icon manifests); 46 comparisons (generic differences recorded; feature pairs identical); no Settings writes')

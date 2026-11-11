@@ -91,3 +91,12 @@ Native visual acceptance is operator-reported on 2026-11-11; no completed six-ca
 helper receipt was supplied. Software captures do not certify a real lock session. Wide/tall decorations use the
 existing shrink/hide fallback in constrained preview space, never shrink the
 panel. Track native feedback in [Pass 2](review/controlcentre-settings-pass2.md).
+
+## Control Centre Pass 3 review gate
+
+Contextual Settings info and Colours/Status Items hierarchy are private-tested.
+Runtime/geometry equivalence is unchanged. Native glyph/help contrast and operator
+workflow passed all six width/palette cases and the live page on 2026-11-11.
+Commit/push approval remains pending. Existing software MultiEffect limitations
+remain documented, with native review providing the required acceptance evidence.
+See [Pass 3](review/controlcentre-settings-pass3.md).

@@ -34,6 +34,7 @@ def suites():
                  'settings/media', 'settings/refinement', 'settings/controlcentre-workflow'):
         py(path + '.py')
     py('settings/controlcentre-workflow.py', '--fit')
+    py('settings/controlcentre-workflow.py', '--hierarchy')
     py('appearance/run.py', '--roundness')
     py('appearance/roundness-equivalence.py')
     py('settings/reorder.py', '--hub')

@@ -9,6 +9,7 @@ ColumnLayout {
     default property alias options: content.data
     property string title: ""
     property string description: ""
+    property string infoText: ""
     property bool collapsible: false
     property bool expanded: !collapsible
     property alias disclosureButton: disclosure
@@ -28,6 +29,7 @@ ColumnLayout {
             Accessible.role: Accessible.Heading
             MouseArea { anchors.fill: parent; enabled: root.collapsible; onClicked: root.expanded = !root.expanded }
         }
+        SettingsInfo { visible: root.infoText.length > 0; label: root.title; helpText: root.infoText }
         ToolButton {
             id: disclosure
             visible: root.collapsible

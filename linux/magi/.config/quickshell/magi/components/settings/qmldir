@@ -57,6 +57,8 @@ singleton SettingsImagePicker 1.0 SettingsImagePicker.qml
 BarGlobalSettings 1.0 BarGlobalSettings.qml
 
 CCAvailableControls 1.0 CCAvailableControls.qml
-CCGlobalSettings 1.0 CCGlobalSettings.qml
+CCColourSettings 1.0 CCColourSettings.qml
+CCStatusSettings 1.0 CCStatusSettings.qml
 
 SettingsSubheading 1.0 SettingsSubheading.qml
+SettingsInfo 1.0 SettingsInfo.qml

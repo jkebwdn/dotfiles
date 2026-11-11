@@ -148,7 +148,10 @@ ShellRoot {
                 const stepper = findChild(page,"decoration-height")
                 const preview = findChild(page,"decorationPreview")
                 verify(slider && stepper && preview)
-                tryVerify(() => preview.visible)
+                // Title-aligned panel fit may leave insufficient left space for art.
+                // Decode still succeeds; the accepted preview fallback must follow fits.
+                tryVerify(() => preview.ready)
+                compare(preview.visible, preview.fits)
                 page.Window.window.requestActivate(); slider.forceActiveFocus(); tryVerify(() => slider.activeFocus)
                 keyClick(Qt.Key_Right); tryCompare(stepper,"value",181)
                 tryCompare(d,"height",181)

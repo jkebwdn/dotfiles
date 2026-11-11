@@ -1249,3 +1249,15 @@ geometry, native lock masks, artwork and schema 22 remain unchanged. CC Settings
 uses a fixed preview, separate inspector scroll owner and panel-first fit, plus a
 semantic shared subheading. See [review and complete consumer map](review/controlcentre-settings-pass2.md).
 Native acceptance/commit approval remain pending; no Pass 3.
+
+## Control Centre Settings hierarchy — Pass 3 candidate (2026-11-11)
+
+The inspector now orders Available controls, conditional selected inspector,
+Colours (Background/Border subheadings), Status Items, Roundness and Decorative
+image. The Global controls wrapper is removed. Shared SettingsInfo provides
+semantic hover/focus/click help without persistence; optional infoText is supported
+by existing cards, subheadings and roundness labels. Short labels plus contextual
+help are the preferred future Settings pattern, without a cross-page migration.
+Existing status fields still style the expanded shared status header; border
+colour/width still apply across menus. No runtime, geometry, field or schema change.
+See [Pass 3 ownership, evidence and review gate](review/controlcentre-settings-pass3.md).

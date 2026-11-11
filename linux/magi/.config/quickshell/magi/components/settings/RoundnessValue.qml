@@ -11,6 +11,7 @@ ColumnLayout {
     required property string label
     property string accessibleLabel: label
     property string description: ""
+    property string infoText: ""
     property bool editingAllowed: true
     property bool authoritative: false
     property real reference: 10
@@ -32,7 +33,12 @@ ColumnLayout {
             Services.Settings.setValue("bar", "visual", visual)
         } else Services.Settings.setRoundness(fieldKey, value)
     }
-    Label { visible: text.length > 0; text: root.label; Layout.fillWidth: true; wrapMode: Text.Wrap }
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: SettingsMetrics.compactGap
+        Label { visible: text.length > 0; text: root.label; Layout.fillWidth: true; Layout.minimumWidth: 0; wrapMode: Text.Wrap }
+        SettingsInfo { visible: root.infoText.length > 0; label: root.label; helpText: root.infoText }
+    }
     SettingsHelp { visible: text.length > 0; text: root.description }
     SettingsToggle {
         objectName: "roundnessInherit-" + root.fieldKey

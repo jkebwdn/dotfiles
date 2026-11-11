@@ -361,6 +361,10 @@
     "hub": {
       "asset": "hub-apps.svg",
       "colorMode": "semantic"
+    },
+    "info": {
+      "asset": "info.svg",
+      "colorMode": "semantic"
     }
   }
 }

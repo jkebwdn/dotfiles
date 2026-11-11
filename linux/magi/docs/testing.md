@@ -25,7 +25,7 @@ migration inputs; current-output assertions use current defaults and the indepen
 python3 linux/magi/tests/run-all.py
 ```
 
-The explicit 116-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
+The explicit 117-command allowlist excludes live helpers. FAIL begins classified as UNKNOWN until evidence supports a narrower triage classification. Each existing harness owns
 its fixtures. The runner uses offscreen software rendering, nonexistent compositor
 and D-Bus endpoints, removes live display variables and capture overrides, and
 records each command, exit, duration, log and classification in `results.json`.
@@ -327,3 +327,12 @@ values. Native acceptance remains pending in the [Pass 2 review](review/controlc
 
 Pass 2 offline result: 112 PASS / 4 established ENVIRONMENT / 0 FAIL / 0 UNKNOWN;
 four final affected preview/reorder checks also pass. Native review remains pending.
+
+`settings/controlcentre-workflow:--hierarchy` exercises Settings info help,
+Colours/Status Items ownership, concise roundness labels, responsive card order,
+accessibility and passive Settings preservation. Existing workflow/fit suites
+retain Pass 1/2 interaction and geometry coverage. Pass 3 runtime equivalence can
+be reproduced with `tests/appearance/roundness-equivalence.py --baseline
+677ae1273139978d17d89ce9b831a9c76dfdf292`; default mode retains the historical
+Pass 2 ownership comparison. Only the additive canonical info-role manifest is
+allowed beyond the original generic-role rebindings.

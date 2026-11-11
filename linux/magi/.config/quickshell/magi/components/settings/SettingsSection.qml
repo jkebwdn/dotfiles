@@ -7,6 +7,7 @@ Item {
     default property alias sectionData: content.data
     property string title: ""
     property string description: ""
+    property string infoText: ""
     property alias disclosureButton: disclosure
     property bool collapsible: false
     property bool expanded: !collapsible
@@ -31,43 +32,47 @@ Item {
         id: sectionLayout
         width: root.width
         spacing: SettingsMetrics.compactGap
-        Label {
-            Layout.leftMargin: root.padding; Layout.rightMargin: root.padding
-            Layout.topMargin: root.padding
-            visible: !root.collapsible && root.title.length > 0
-            text: root.title
+        RowLayout {
             Layout.fillWidth: true
-            wrapMode: Text.Wrap
-            font.pixelSize: SettingsMetrics.sectionSize
-            font.bold: true
-            color: Theme.Theme.text
-            Accessible.role: Accessible.Heading
-        }
-        SettingsButton {
-            id: disclosure
             Layout.leftMargin: root.padding; Layout.rightMargin: root.padding
             Layout.topMargin: root.padding
             Layout.bottomMargin: root.expanded ? 0 : root.padding
-            flat: true
-            leftPadding: 0
-            rightPadding: 0
-            contentItem: Text {
-                text: disclosure.text
+            visible: root.collapsible || root.title.length > 0
+            spacing: SettingsMetrics.compactGap
+            Label {
+                visible: !root.collapsible && root.title.length > 0
+                text: root.title
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
                 font.pixelSize: SettingsMetrics.sectionSize
                 font.bold: true
                 color: Theme.Theme.text
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.Wrap
+                Accessible.role: Accessible.Heading
             }
-            background: Rectangle {
-                radius: Theme.Theme.radius("surface", 8, width, height)
-                color: disclosure.hovered || disclosure.down ? Theme.Theme.surface : "transparent"
+            SettingsButton {
+                id: disclosure
+                flat: true
+                leftPadding: 0
+                rightPadding: 0
+                contentItem: Text {
+                    text: disclosure.text
+                    font.pixelSize: SettingsMetrics.sectionSize
+                    font.bold: true
+                    color: Theme.Theme.text
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.Wrap
+                }
+                background: Rectangle {
+                    radius: Theme.Theme.radius("surface", 8, width, height)
+                    color: disclosure.hovered || disclosure.down ? Theme.Theme.surface : "transparent"
+                }
+                visible: root.collapsible
+                Layout.fillWidth: true
+                text: root.title + (root.expanded ? "  ▾" : "  ▸")
+                checked: root.expanded
+                onClicked: root.expanded = !root.expanded
             }
-            visible: root.collapsible
-            Layout.fillWidth: true
-            text: root.title + (root.expanded ? "  ▾" : "  ▸")
-            checked: root.expanded
-            onClicked: root.expanded = !root.expanded
+            SettingsInfo { visible: root.infoText.length > 0; label: root.title; helpText: root.infoText }
         }
         SettingsHelp {
             Layout.leftMargin: root.padding; Layout.rightMargin: root.padding

@@ -1,10 +1,11 @@
 # Current status and next decisions
 
-Schema 22. The accepted [Pass 2](review/controlcentre-settings-pass2.md), based on
-synchronized `93ef0da`, adds a persistent/larger preview and final shared-default
-roundness ownership. Native acceptance and final alignment are operator-confirmed;
-two focused commits and normal push are authorized. Host synchronization is recorded
-in the durable push receipt. Do not begin Pass 3.
+Schema 22. Production is synchronized at `677ae12` after accepted Control Centre
+Pass 2. The authorized [Pass 3 candidate](review/controlcentre-settings-pass3.md)
+refines contextual help and inspector hierarchy only; runtime and preview geometry
+remain unchanged. Native review passed all six width/palette cases and the live
+page; review source is reversibly deployed. Commit and push gates remain pending.
+Do not begin Pass 4.
 
 Production includes the Bar/multi-output policy, Hub utilities, Control Centre and
 Settings ownership, shared tray/audio services, generic Bluetooth pairing/Agent1,

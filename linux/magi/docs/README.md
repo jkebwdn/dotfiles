@@ -7,6 +7,8 @@ Bluetooth pairing support, the curated lock themes and internal designer, and th
 
 ## Current canonical documents
 
+- [Control Centre Settings hierarchy — Pass 3 candidate](review/controlcentre-settings-pass3.md)
+
 - [Control Centre pass 2 and the shared UI roundness default — accepted](review/controlcentre-settings-pass2.md)
 
 - [Control Centre Settings workflow — pass 1 accepted](review/controlcentre-settings-workflow.md)

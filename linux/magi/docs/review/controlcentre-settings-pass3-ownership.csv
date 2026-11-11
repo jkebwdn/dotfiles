@@ -1,0 +1,9 @@
+visible_label,persisted_field,runtime_consumer,preview_consumer,new_card,new_subheading,scope,disposition,reason
+Background colour,appearance.controlCentreBackgroundRole,ControlCentre.qml:viewSurfaceColor,ControlCentrePreview.qml:panel colour; CCStatusSettings sample,Colours,Background,shared CC panel,moved,Same semantic palette and writer
+Border colour,appearance.surfaceBorders.role,SurfaceBorder.qml across menu surfaces,ControlCentrePreview SurfaceBorder,Colours,Border,shared menus,moved,Keep shared scope explicit in Colours help
+Border width,appearance.surfaceBorders.width,SurfaceBorder.qml across menu surfaces,ControlCentrePreview SurfaceBorder,Colours,Border,shared menus,moved,Existing 0–5 numeric semantics retained
+Show border,appearance.surfaceBorders.controlcentre,SurfaceBorder.qml with surfaceId controlcentre,ControlCentrePreview SurfaceBorder,Colours,Border,CC only toggle,moved,Other surface enable flags untouched
+Icon colour,appearance.statusRowRole,Theme.expandedStatusForeground → MorphingPillContent and BatteryPillContent while expanded,CCStatusSettings icons and percentage sample,Status Items,none,expanded shared status header,moved,Does not replace collapsed Bar style or primary-tile accent
+Shade,appearance.statusRowShade,Theme.shadeAccent → expandedStatusForeground,CCStatusSettings sample,Status Items,Fine tune,expanded shared status header,moved,Range −1 to 1; step .05; null→0
+Reset status row,appearance.statusRowRole; appearance.statusRowShade,same header consumers,same sample,Status Items,Fine tune,shared reset action,retained,Writes null to both original fields
+Reset Control Centre appearance,"appearance.visual (except statusIconSize); appearance.roundness.roles.{avatar,albumArt,controlTile,secondaryControl,slider}",CC runtime presenters and feature roundness tokens,CC preview presenters,Colours,footer action,existing whole-CC reset action,retained,Same explicit broad reset label/writer; not a colour-field editor

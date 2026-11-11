@@ -38,7 +38,7 @@ with tempfile.TemporaryDirectory(prefix='magi-controlcentre-workflow-test-') as 
             target=stage/'fixture.png';image.save(str(target));name=hashlib.sha256(target.read_bytes()).hexdigest()+'.png'
             folder=stage/'data/magi/images';folder.mkdir(parents=True,exist_ok=True);shutil.copyfile(target,folder/name)
             fixtures.append(dict(id='decoration-image:'+name,width=width,height=height,bounds=[10,10,width-20,height-20]))
-    fixture=Path(__file__).with_name('controlcentre-fit.qml') if '--fit' in sys.argv else Path(__file__).with_suffix('.qml')
+    fixture=Path(__file__).with_name('controlcentre-hierarchy.qml') if '--hierarchy' in sys.argv else Path(__file__).with_name('controlcentre-fit.qml') if '--fit' in sys.argv else Path(__file__).with_suffix('.qml')
     (config/'test.qml').write_text(fixture.read_text().replace('../../.config/quickshell/magi/', ''))
     runtime = stage/'runtime'; runtime.mkdir(mode=0o700)
     env = dict(os.environ, HOME=str(stage), XDG_CONFIG_HOME=str(stage/'config'),
@@ -65,5 +65,5 @@ with tempfile.TemporaryDirectory(prefix='magi-controlcentre-workflow-test-') as 
              'WARN quickshell.bluetooth: Could not connect to DBus. Bluetooth integration is not available.',
              'WARN: Unable to find hyprland socket. Cannot connect to hyprland.')
     checked = '\n'.join(line for line in output.splitlines() if not any(k in line for k in known))
-    assert result.returncode == 0 and ('Control Centre fit PASS' if '--fit' in sys.argv else 'Control Centre workflow PASS') in output
+    assert result.returncode == 0 and ('Control Centre hierarchy PASS' if '--hierarchy' in sys.argv else 'Control Centre fit PASS' if '--fit' in sys.argv else 'Control Centre workflow PASS') in output
     assert not any(k in checked for k in ('FAIL!', 'FAIL:', 'ERROR', 'WARN'))
