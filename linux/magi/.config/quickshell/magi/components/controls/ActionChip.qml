@@ -16,7 +16,7 @@ Rectangle {
 
     implicitWidth: Math.max(50, chipContent.implicitWidth + 20)
     implicitHeight: 26
-    radius: MagiTheme.Theme.radius("action", 13, width, height)
+    radius: MagiTheme.Theme.radius("surface", 13, width, height)
     color: root.active
         ? root.activeColor
         : chipMouse.containsMouse

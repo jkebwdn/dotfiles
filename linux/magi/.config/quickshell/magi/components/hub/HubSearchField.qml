@@ -13,7 +13,7 @@ TextField {
     leftPadding: 42; rightPadding: 40
     background: Rectangle {
         color: Theme.Theme.elevated
-        radius: Theme.Theme.radius("action", 10, width, height)
+        radius: Theme.Theme.radius("surface", 10, width, height)
         border.width: 1
         border.color: root.activeFocus ? Theme.Theme.focus : Theme.Theme.border
     }

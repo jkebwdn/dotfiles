@@ -23,7 +23,7 @@ Switch {
             anchors.centerIn: parent
             width: parent.width
             height: root.toggleStyle === "minimal" ? 6 : parent.height
-            radius: Theme.Theme.radius("action", height / 2, width, height)
+            radius: Theme.Theme.radius("surface", height / 2, width, height)
             color: root.checked ? root.activeColor
                 : root.hovered ? Theme.Theme.overlay : Theme.Theme.elevated
             border.width: root.checked ? 0 : 1
@@ -34,14 +34,14 @@ Switch {
             width: root.toggleStyle === "filled" ? 8 : 12; height: width
             x: root.checked ? parent.width - width - 3 : 3
             y: (parent.height - height) / 2
-            radius: Theme.Theme.radius("action", width / 2, width, height)
+            radius: Theme.Theme.radius("surface", width / 2, width, height)
             color: root.checked ? (root.toggleStyle === "minimal" ? root.activeColor : Theme.Theme.legibleInk(root.activeColor, Theme.Theme.accentText)) : Theme.Theme.text
             Behavior on x { NumberAnimation { duration: Theme.Motion.control } }
         }
         Rectangle {
             objectName: "toggleFocus"
             anchors.fill: parent; anchors.margins: -3
-            radius: Theme.Theme.radius("action", 11, width, height)
+            radius: Theme.Theme.radius("surface", 11, width, height)
             color: "transparent"; border.width: root.visualFocus ? 1 : 0; border.color: Theme.Theme.focus
         }
         opacity: root.down ? 0.8 : 1

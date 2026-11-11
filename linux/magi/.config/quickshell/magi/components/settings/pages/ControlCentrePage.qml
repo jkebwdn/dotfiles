@@ -106,10 +106,10 @@ SettingsUI.SettingsPage {
                 SettingsUI.SettingsSection {
                     objectName: "ccRoundness-controls"; collapsible: true
                     carded: false; title: "Controls"
-                    description: "Shapes tiles, actions and shared control surfaces."
+                    description: "Shapes Control Centre tiles, actions and slider tracks."
                     SettingsUI.RoundnessValue { fieldKey: "controlTile"; label: "Primary controls"; description: "Also shapes profile and media backgrounds." }
                     SettingsUI.RoundnessValue { fieldKey: "secondaryControl"; label: "Secondary controls" }
-                    SettingsUI.RoundnessValue { fieldKey: "slider"; label: "Sliders"; description: "Control Centre tracks and shared value sliders." }
+                    SettingsUI.RoundnessValue { fieldKey: "slider"; label: "Sliders"; description: "Control Centre slider tracks." }
                 }
                 SettingsUI.SettingsSection {
                     objectName: "ccRoundness-artwork"; collapsible: true
@@ -117,12 +117,7 @@ SettingsUI.SettingsPage {
                     SettingsUI.RoundnessValue { fieldKey: "albumArt"; label: "Media artwork"; description: "Shapes media crops and artwork borders." }
                     SettingsUI.RoundnessValue { fieldKey: "avatar"; label: "Avatar / identity"; description: "Shapes profile and avatar masks, including the lock screen." }
                 }
-                SettingsUI.SettingsSection {
-                    objectName: "ccRoundness-action"; collapsible: true
-                    carded: false; title: "Shared buttons & switches · review"
-                    description: "Affects controls across MAGI, including Settings, Hub and Bar menus."
-                    SettingsUI.RoundnessValue { fieldKey: "action"; label: "Buttons and switches"; reference: 8 }
-                }
+
             }
             SettingsUI.DecorationSettings { }
         }

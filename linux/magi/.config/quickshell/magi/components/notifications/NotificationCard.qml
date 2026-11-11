@@ -41,7 +41,7 @@ Rectangle {
             source: root.entry.image && /^(file:|image:\/\/)/.test(root.entry.image) ? root.entry.image : ""
             sourceSize: Qt.size(128,128)
             asynchronous: true; borderWidth: 0
-            radius: Theme.Theme.radius("action", 8, width, height)
+            radius: Theme.Theme.radius("surface", 8, width, height)
             visible: status === Image.Ready
         }
         Image {
@@ -107,7 +107,7 @@ Rectangle {
                     objectName: "notificationAction-" + modelData.identifier
                     width: Math.min(content.width, Math.max(60, actionText.implicitWidth + 20)); height: 28
                     background: Rectangle {
-                        radius: Theme.Theme.radius("action", 6, width, height)
+                        radius: Theme.Theme.radius("surface", 6, width, height)
                         color: action.hovered ? Theme.Theme.overlay : Theme.Theme.surface
                         border.width: action.activeFocus ? 1 : 0; border.color: Theme.Theme.focus
                     }

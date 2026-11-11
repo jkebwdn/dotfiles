@@ -12,7 +12,7 @@ ShellRoot {
     Timer { id:finish;interval:100;onTriggered:Qt.quit() }
     TestCase {
         name:"FeatureRoundness";when:Services.Settings.ready
-        readonly property var owners:({surface:"Appearance",hubSelector:"Hub",barPill:"Bar",controlTile:"Control Centre",secondaryControl:"Control Centre",slider:"Control Centre",albumArt:"Control Centre",avatar:"Control Centre",action:"Control Centre",header:"Launcher"})
+        readonly property var owners:({surface:"Appearance",hubSelector:"Hub",barPill:"Bar",controlTile:"Control Centre",secondaryControl:"Control Centre",slider:"Control Centre",albumArt:"Control Centre",avatar:"Control Centre",header:"Launcher"})
         readonly property var pages:["Appearance","Hub","Bar","Control Centre","Launcher"]
         function item(name){const value=findChild(window.contentItem,name);verify(value!==null,name);return value}
         function page(name){return item("settingsPage-"+(name==="Launcher"?"Application Launcher":name))}
@@ -22,7 +22,7 @@ ShellRoot {
             if(name==="Hub"){p.mode="Appearance";p.selection.select("selector")}
             if(name==="Control Centre"){
                 item("ccRoundness").expanded=true
-                for(const group of ["controls","artwork","action"])item("ccRoundness-"+group).expanded=group===(key==="action"?"action":["avatar","albumArt"].includes(key)?"artwork":"controls")
+                for(const group of ["controls","artwork"])item("ccRoundness-"+group).expanded=group===(["avatar","albumArt"].includes(key)?"artwork":"controls")
             }
             if(name==="Launcher")item("launcherArtwork").expanded=true
             wait(30);return p
@@ -43,8 +43,8 @@ ShellRoot {
                 compare(editors(p).sort(),expected,"Unique feature ownership "+name)
                 verify(findChild(p,"masterRoundnessPrecision")===null);verify(findChild(p,"roundnessChoice-0")===null)
             }
-            compare(editors(window.contentItem).length,10)
-            compare(item("roundnessPicker").title,"Roundness");compare(item("roundnessPicker").description,"Cards, Menus, Notifications & Pop Ups.")
+            compare(editors(window.contentItem).length,9)
+            compare(item("roundnessPicker").title,"Roundness");compare(item("roundnessPicker").description,"Default roundness for MAGI controls and shared UI.")
             compare(Services.Settings.revision,revision);compare(Services.Settings.data,original)
             savedFile.reload();compare(savedFile.text(),raw,"Passive visits preserve bytes, nulls and absent values")
             for(const theme of ["nord","one-light"]){

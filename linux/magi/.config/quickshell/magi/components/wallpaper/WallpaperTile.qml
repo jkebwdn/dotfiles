@@ -15,7 +15,7 @@ Item {
     Rectangle {
         anchors.fill: parent; anchors.margins: 5
         color: root.current ? Theme.Theme.overlay : Theme.Theme.elevated
-        radius: Theme.Theme.radius("action", 8, width, height)
+        radius: Theme.Theme.radius("surface", 8, width, height)
         border.width: root.current ? 3 : 1
         border.color: root.current ? Theme.Theme.accent : mouse.containsMouse ? Theme.Theme.subtext : Theme.Theme.border
         Rectangle { anchors.fill: parent; anchors.margins: 5; radius: Math.max(0,parent.radius-3); color:"transparent"; border.width: root.keyboardFocused ? 1 : 0; border.color: Theme.Theme.focus; z: 2 }
@@ -28,7 +28,7 @@ Item {
             sourceSize: Qt.size(320, 200)
             asynchronous: true; cache: false
             borderWidth: 0
-            radius: Theme.Theme.radius("action", 6, width, height)
+            radius: Theme.Theme.radius("surface", 6, width, height)
             placeholder: "image"
         }
         MouseArea {

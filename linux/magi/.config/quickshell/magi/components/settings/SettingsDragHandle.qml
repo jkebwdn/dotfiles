@@ -22,7 +22,7 @@ SettingsButton {
     onClicked: selectionRequested()
     background: Rectangle {
         color: "transparent"
-        radius: Theme.Theme.radius("action", 8, width, height)
+        radius: Theme.Theme.radius("surface", 8, width, height)
         border.width: pointer.containsMouse || root.activeFocus ? 1 : 0
         border.color: Theme.Theme.focus
     }
@@ -56,7 +56,7 @@ SettingsButton {
         z: 100
         width: 300; height: hintText.implicitHeight + 24
         color: Theme.Theme.surface
-        radius: Theme.Theme.radius("action", 8, width, height)
+        radius: Theme.Theme.radius("surface", 8, width, height)
         border.width: 1; border.color: Theme.Theme.border
         Text {
             id: hintText

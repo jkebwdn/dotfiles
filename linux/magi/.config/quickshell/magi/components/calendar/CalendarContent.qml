@@ -98,7 +98,7 @@ Item {
                         objectName: "calendarDay-" + modelData.day + (modelData.inMonth ? "" : "-adjacent")
                         required property var modelData
                         width: (root.width - root.weekWidth) / 7; height: root.cellHeight
-                        radius: Theme.Theme.radius("action", 8, width, height)
+                        radius: Theme.Theme.radius("surface", 8, width, height)
                         color: !modelData.shown ? "transparent" : modelData.selected ? Theme.Theme.overlay
                             : pointer.containsMouse ? Theme.Theme.overlay : "transparent"
                         border.width: modelData.shown && (modelData.today || (modelData.selected && root.activeFocus)) ? 1 : 0

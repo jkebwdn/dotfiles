@@ -46,7 +46,7 @@ FocusScope {
     }
     Rectangle {
         anchors.fill: parent
-        radius: Theme.Theme.radius("action", 7, width, height)
+        radius: Theme.Theme.radius("surface", 7, width, height)
         objectName: "trayInteractionBackground"
         color: root.interactionState === "menu" ? Qt.alpha(Theme.Theme.accent, .20)
             : root.interactionState === "pressed" ? Qt.alpha(Theme.Theme.accent, .12)

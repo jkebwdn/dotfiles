@@ -108,7 +108,7 @@ QtObject {
 
     // Internal design tokens retain their accepted geometry.
     readonly property string fontFamily: "JetBrainsMono Nerd Font"
-    readonly property real radiusSmall: radius("action", 6, 1000, 1000)
+    readonly property real radiusSmall: radius("surface", 6, 1000, 1000)
     readonly property real radiusMedium: radius("surface", 10, 1000, 1000)
     readonly property real radiusLarge: radius("surface", 14, 1000, 1000)
     readonly property int barPillHeight: 28

@@ -7,6 +7,8 @@ import "../../.config/quickshell/magi/components/settings" as UI
 import "../../.config/quickshell/magi/components/controls" as Controls
 import "../../.config/quickshell/magi/components/bar" as Bar
 import "../../.config/quickshell/magi/components/hub" as Hub
+import "../../.config/quickshell/magi/components/launcher" as Launcher
+import "../../.config/quickshell/magi/components/tray" as Tray
 import "../../.config/quickshell/magi/components/notifications" as Notifications
 import "../../.config/quickshell/magi/plugins/bar/workspaces" as Workspaces
 import "../../.config/quickshell/magi/plugins/bar/controlcentre" as CC
@@ -60,6 +62,27 @@ ShellRoot {
             Notifications.NotificationCard { id:notification;x:750;y:605;width:280;record:({notification:false,data:{appName:"MAGI",summary:"Roundness review",body:"Fixed notification"}});service:({}) }
         }
     }
+    FloatingWindow {
+        visible:true;implicitWidth:700;implicitHeight:540;color:Theme.Theme.background
+        Rectangle {
+            id:genericScene;anchors.fill:parent;color:Theme.Theme.background
+            Column {
+                x:20;y:20;width:310;spacing:18
+                UI.SettingsButton {id:genericButton;width:300;text:"Settings button"}
+                UI.SettingsTextField {id:genericInput;width:300;text:"Settings input";cursorVisible:false}
+                Hub.HubSearchField {id:genericSearch;width:300;text:"Hub search";cursorVisible:false}
+                Launcher.LauncherItem {id:genericResult;width:300;height:64;app:({name:"Hub result",genericName:"Generic result card"});preferences:Services.Settings.data.launcher;selected:true;iconPresentation:({source:"",fallbackText:"L"})}
+                UI.SettingsSection {id:genericCard;width:300;title:"Settings card";UI.SettingsHelp{text:"Shared surface"}}
+            }
+            Column {
+                x:360;y:20;width:310;spacing:24
+                Controls.ActionChip {id:genericMenu;label:"Bar popup action";icon:"wifi";active:true}
+                Tray.TrayItem {id:genericTray;width:56;height:40;nativeMenus:false}
+                Controls.IconButton {id:genericPopup;width:44;height:40;label:"Popup control"}
+                Controls.ValueSlider {id:genericSlider;width:300;value:.5}
+            }
+        }
+    }
     QtObject {
         id:surfaceModule
         property int expandedWidth:320
@@ -91,7 +114,8 @@ ShellRoot {
             if(Quickshell.env("MAGI_ROUNDNESS_EQUIVALENCE")) {
                 const revision=Services.Settings.revision
                 wait(250);secondary.forceActiveFocus();wait(50)
-                const targets=({controlCentre:cc,statusWorkspacePills:barSample,settingsCard:card,controls:actionSample,hubSelector:hub,hubSurface:hubSurface,notification:notification,slider:slider,launcherHeader:header,avatar:avatar,media:album,lockProfile:lockSample})
+                const targets=({genericButton:genericButton,genericInput:genericInput,genericSearch:genericSearch,genericResult:genericResult,genericCard:genericCard,genericMenu:genericMenu,genericTray:genericTray,genericPopup:genericPopup,genericSlider:genericSlider,controlCentre:cc,statusWorkspacePills:barSample,settingsCard:card,controls:actionSample,hubSelector:hub,hubSurface:hubSurface,notification:notification,slider:slider,launcherHeader:header,avatar:avatar,media:album,lockProfile:lockSample})
+                genericTray.forceActiveFocus();wait(30)
                 for(const name in targets)capture(targets[name],Quickshell.env("MAGI_ROUNDNESS_CAPTURES")+"/"+name+".png")
                 capture(joined,Quickshell.env("MAGI_ROUNDNESS_CAPTURES")+"/connected-collapsed.png")
                 joined.requestedModule=surfaceModule;tryCompare(joined,"phase",3);wait(50)

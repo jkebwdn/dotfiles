@@ -301,7 +301,7 @@ Item {
             z: moving ? 10 : 1
             opacity: moving ? 0.92 : 1
             color: row.familyHighlighted ? Qt.alpha(Theme.Theme.accent, 0.04) : root.canvasMode ? "transparent" : root.multiLane ? Theme.Theme.background : Theme.Theme.surface
-            radius: Theme.Theme.radius("action", 8, width, height)
+            radius: Theme.Theme.radius("surface", 8, width, height)
             border.width: root.editing ? (moving || (root.canvasMode && root.selectedKey === entryKey) ? 1 : 0) : row.familyHighlighted ? (row.activeFocus ? 2 : 1) : row.activeFocus || (root.canvasMode && root.selectedKey === entryKey) ? 2 : 0
             border.color: row.familyHighlighted && !row.activeFocus ? Qt.alpha(Theme.Theme.accent, 0.4) : Theme.Theme.accent
             Behavior on x { enabled: !row.moving; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }

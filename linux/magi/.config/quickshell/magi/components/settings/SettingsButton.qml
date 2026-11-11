@@ -28,7 +28,7 @@ Button {
         wrapMode: Text.Wrap
     }
     background: Rectangle {
-        radius: Theme.Theme.radius("action", 8, width, height)
+        radius: Theme.Theme.radius("surface", 8, width, height)
         border.width: root.utility ? 1 : 0
         border.color: Theme.Theme.border
         color: root.utility ? (root.down ? Theme.Theme.overlay : root.hovered ? Theme.Theme.elevated : Theme.Theme.surface) : root.down || root.checked || root.primary ? Theme.Theme.accent : root.hovered ? Theme.Theme.overlay : root.flat ? "transparent" : Theme.Theme.elevated

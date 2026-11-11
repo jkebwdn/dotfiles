@@ -12,7 +12,7 @@ Rectangle {
     property var iconPresentation: Services.LauncherIcons.resolve(app)
     signal chosen()
     signal contextRequested(real pointerX, real pointerY)
-    radius: Theme.Theme.radius("action", 12, width, height)
+    radius: Theme.Theme.radius("surface", 12, width, height)
     color: selected ? Theme.Theme.elevated : mouse.containsMouse ? Theme.Theme.surface : "transparent"
     border.width: selected ? 1 : 0
     border.color: Theme.Theme.accent

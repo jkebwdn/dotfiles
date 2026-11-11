@@ -28,7 +28,7 @@ SettingsButton {
         }
     }
     background: Rectangle {
-        radius: Theme.Theme.radius("action", 7, width, height)
+        radius: Theme.Theme.radius("surface", 7, width, height)
         color: root.subsection && root.checked ? Theme.Theme.elevated
             : root.down || root.hovered ? Theme.Theme.overlay : "transparent"
     }

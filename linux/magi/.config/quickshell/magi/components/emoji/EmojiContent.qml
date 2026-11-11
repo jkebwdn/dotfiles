@@ -106,7 +106,7 @@ Rectangle {
             required property var modelData
             required property int index
             width: grid.cellWidth - 4; height: grid.cellHeight - 4
-            radius: Theme.Theme.radius("action", 10, width, height)
+            radius: Theme.Theme.radius("surface", 10, width, height)
             color: index === root.service.selected ? Theme.Theme.elevated : pointer.containsMouse ? Theme.Theme.surface : "transparent"
             border.width: index === root.service.selected ? 1 : 0
             border.color: Theme.Theme.accent

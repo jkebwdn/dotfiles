@@ -6,7 +6,7 @@ Rectangle {
     anchors.margins: 1
     z: 10
     color: "transparent"
-    radius: Theme.Theme.radius("action", 8, width, height)
+    radius: Theme.Theme.radius("surface", 8, width, height)
     border.width: SettingsMetrics.focusWidth
     border.color: Theme.Theme.accent
     visible: parent.activeFocus && parent.focusReason !== Qt.MouseFocusReason

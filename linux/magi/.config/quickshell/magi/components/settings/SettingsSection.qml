@@ -60,7 +60,7 @@ Item {
                 wrapMode: Text.Wrap
             }
             background: Rectangle {
-                radius: Theme.Theme.radius("action", 8, width, height)
+                radius: Theme.Theme.radius("surface", 8, width, height)
                 color: disclosure.hovered || disclosure.down ? Theme.Theme.surface : "transparent"
             }
             visible: root.collapsible

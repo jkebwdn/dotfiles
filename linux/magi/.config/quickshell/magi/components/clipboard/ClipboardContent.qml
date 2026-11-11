@@ -173,7 +173,7 @@ Pane {
                         visible: card.modelData.category === "image"
                         Layout.preferredWidth: 106; Layout.preferredHeight: 106
                         source: card.modelData.thumbnail
-                        radius: Theme.Theme.radius("action", 9, width, height)
+                        radius: Theme.Theme.radius("surface", 9, width, height)
                         borderWidth: 0; placeholder: "image"
                     }
                     ColumnLayout {

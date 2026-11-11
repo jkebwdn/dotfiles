@@ -21,7 +21,7 @@ AbstractButton {
     Keys.onLeftPressed: navigate(-1)
     Keys.onRightPressed: navigate(1)
     background: Rectangle {
-        radius: Theme.Theme.radius("action", 12, width, height)
+        radius: Theme.Theme.radius("surface", 12, width, height)
         color: root.down ? Theme.Theme.overlay : root.hovered ? Theme.Theme.elevated : Theme.Theme.surface
         border.width: root.selected || root.visualFocus ? 2 : 1
         border.color: root.visualFocus ? Theme.Theme.focus : root.selected ? Theme.Theme.accent : Theme.Theme.border

@@ -142,7 +142,7 @@ FocusScope {
                         objectName: "settingsSavePanel"
                         Layout.fillWidth: true
                         implicitHeight: statusColumn.implicitHeight + 16
-                        radius: Theme.Theme.radius("action", 8, width, height)
+                        radius: Theme.Theme.radius("surface", 8, width, height)
                         color: "transparent"
                         ColumnLayout {
                             id: statusColumn

@@ -283,7 +283,7 @@ Item {
                         color: Qt.alpha(Theme.Theme.accent, 0.04)
                         border.width: region.activeFocus && !region.pointerFocus ? 2 : 1
                         border.color: Qt.alpha(Theme.Theme.accent, region.activeFocus && !region.pointerFocus ? 1 : 0.4)
-                        radius: Theme.Theme.radius("action", 8, width, height)
+                        radius: Theme.Theme.radius("surface", 8, width, height)
                     }
                     MouseArea {
                         anchors.fill: parent

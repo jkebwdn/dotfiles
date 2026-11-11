@@ -14,7 +14,7 @@ import tempfile
 from PyQt6.QtGui import QImage
 
 ROOT = Path(__file__).resolve().parents[2]
-BASELINE = '87b21fd9525221c142e0c23364fcbc3e231718a3'
+BASELINE = '93ef0da1b29908e4908bb9923b26772835d9872b'
 parser = argparse.ArgumentParser()
 parser.add_argument('--settings', type=Path)
 parser.add_argument('--output', type=Path)
@@ -28,27 +28,35 @@ seed = {'roundness': raw['appearance']['roundness'],
         'workspace': raw['bar']['visual']['workspacePills']['roundness'],
         'header_present': 'headerRadius' in raw['launcher'],
         'header': raw['launcher'].get('headerRadius', 12)}
-# Pass 1 changes Settings presentation only. All runtime, schema, migration and
-# native files must match the synchronized production baseline byte-for-byte.
-allowed = {'components/settings/' + name for name in [
-    'CCInspector.qml', 'ControlCentrePreview.qml', 'SettingsReorderBoard.qml',
-    'qmldir', 'pages/ControlCentrePage.qml']}
+# Settings composition is reviewed separately. Outside Settings, only the audited
+# generic-role rebinding is allowed; native/schema/feature geometry stays exact.
 with tempfile.TemporaryDirectory(prefix='magi-roundness-equivalence-') as temporary:
     stage = Path(temporary)
     archive = subprocess.check_output(['git', 'archive', BASELINE, 'linux/magi'], cwd=ROOT.parents[1])
     subprocess.run(['tar', '-xf', '-', '-C', str(stage)], input=archive, check=True)
     baseline = stage/'linux/magi'
     checked = 0
+    unchanged = 0
+    rebound = []
     for area in ['.config/quickshell/magi', 'native']:
         for before in (baseline/area).rglob('*'):
             if not before.is_file() and not before.is_symlink(): continue
             rel = before.relative_to(baseline)
             prefix = '.config/quickshell/magi/'
-            if str(rel).startswith(prefix) and str(rel)[len(prefix):] in allowed: continue
+            if str(rel).startswith(prefix+'components/settings/'): continue
             after = ROOT/rel
             assert after.exists(), f'Missing preserved source: {rel}'
-            if before.is_symlink(): assert os.readlink(before) == os.readlink(after), rel
-            else: assert before.read_bytes() == after.read_bytes(), f'Runtime/schema changed: {rel}'
+            if before.is_symlink():
+                assert os.readlink(before) == os.readlink(after), rel
+                unchanged += 1
+            else:
+                expected=before.read_bytes()
+                if str(rel).startswith(prefix) and before.suffix=='.qml':
+                    expected=expected.replace(b'radius("action",',b'radius("surface",')
+                    if before.name=='ValueSlider.qml':expected=expected.replace(b'radius("slider",',b'radius("surface",')
+                assert expected == after.read_bytes(), f'Unexpected runtime/schema change: {rel}'
+                if before.read_bytes() == after.read_bytes(): unchanged += 1
+                else: rebound.append(str(rel))
             checked += 1
     # Use the identical capture harness on both production revisions.
     for name in ['run.py', 'roundness.qml']:
@@ -68,12 +76,15 @@ with tempfile.TemporaryDirectory(prefix='magi-roundness-equivalence-') as tempor
             (folder/'run.log').write_text(run.stdout+run.stderr)
             assert run.returncode == 0, run.stdout+run.stderr
         names = sorted(p.name for p in folders[0].glob('*.png'))
-        assert len(names) == 14, names
+        assert len(names) == 23, names
         for name in names:
             a, b = (QImage(str(folder/name)) for folder in folders)
-            assert not a.isNull() and not b.isNull() and a == b, f'Pixel difference: {theme}/{name}'
-            results.append({'theme': theme, 'consumer': name, 'pixel_identical': True})
-    result = {'baseline': BASELINE, 'unchanged_source_files': checked, 'comparisons': results,
+            assert not a.isNull() and not b.isNull()
+            generic=name.startswith('generic') or name in ['controls.png','slider.png']
+            if not generic: assert a == b, f'Feature geometry changed: {theme}/{name}'
+            results.append({'theme': theme, 'consumer': name, 'pixel_identical': a==b,
+                'scope':'generic Appearance ownership (intentional)' if generic else 'preserved feature geometry'})
+    result = {'baseline': BASELINE, 'checked_source_files': checked, 'unchanged_source_files': unchanged, 'approved_runtime_rebindings': rebound, 'comparisons': results,
               'settings_writes': 0, 'renderer': 'Qt software; native GPU/lock acceptance separate'}
     (output/'result.json').write_text(json.dumps(result, indent=2)+'\n')
-    print(f'Roundness equivalence PASS: {checked} unchanged runtime/schema/native files; 28 pixel-identical pairs; no Settings writes')
+    print(f'Roundness equivalence PASS: {checked} checked runtime/schema/native files ({unchanged} unchanged, {len(rebound)} approved role rebindings); 46 comparisons (generic differences recorded; feature pairs identical); no Settings writes')

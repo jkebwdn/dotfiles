@@ -140,7 +140,7 @@ ShellRoot {
             item("barInstanceAccent").currentIndex=item("barInstanceAccent").model.indexOf("green");item("barInstanceAccent").activated(item("barInstanceAccent").currentIndex)
             accent.forceActiveFocus();keyClick(Qt.Key_Space);compare(Services.Settings.data.bar.modules.bluetooth.accentRole,"accent")
             page("Appearance");verify(!item("roundnessInherit-surface").visible);verify(item("roundness-surface").enabled)
-            compare(item("roundnessPicker").description,"Cards, Menus, Notifications & Pop Ups.")
+            compare(item("roundnessPicker").description,"Default roundness for MAGI controls and shared UI.")
             comparison.visible=true
             const defaults=Schema.defaults().controlCentre
             Services.Settings.setValue("profile","displayName","Review profile")

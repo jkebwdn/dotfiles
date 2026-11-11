@@ -182,11 +182,11 @@ ColumnLayout {
                         Rectangle {
                             anchors.fill: parent
                             color: card.modelData.roles.background
-                            radius: Theme.Theme.radius("action", 6, width, height)
+                            radius: Theme.Theme.radius("surface", 6, width, height)
                             Rectangle {
                                 anchors.fill: parent; anchors.margins: 7
                                 color: card.modelData.roles.surface
-                                radius: Theme.Theme.radius("action", 5, width, height)
+                                radius: Theme.Theme.radius("surface", 5, width, height)
                                 Text { x: 8; y: 4; text: "Aa"; color: card.modelData.roles.text; font.pixelSize: 20; font.weight: Font.DemiBold }
                                 Text { x: 40; y: 10; text: "Text"; color: card.modelData.roles.subtext; font.pixelSize: 11 }
                                 Rectangle {

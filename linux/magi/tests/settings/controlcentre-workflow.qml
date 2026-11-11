@@ -87,7 +87,7 @@ ShellRoot {
             border.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);verify(border.expanded)
             border.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);verify(!border.expanded)
             verify(!roundness.collapsible);verify(roundness.expanded)
-            for(const group of ["controls","artwork","action"]){
+            for(const group of ["controls","artwork"]){
                 const heading=item("ccRoundness-"+group)
                 verify(heading.disclosureButton.visible);heading.expanded=false
                 heading.disclosureButton.forceActiveFocus();keyClick(Qt.Key_Space);verify(heading.expanded)
@@ -149,7 +149,7 @@ ShellRoot {
             for(const name of ["controls","actions","sliders"]){
                 p.selection.select(name);wait(80);verify(item("ccSelectedInspector").visible)
             }
-            for(const role of ["controlTile","secondaryControl","slider","action","albumArt","avatar"]){
+            for(const role of ["controlTile","secondaryControl","slider","albumArt","avatar"]){
                 const control=item("roundness-"+role)
                 compare(control.from,0);compare(control.to,2);compare(control.stepSize,.05)
             }

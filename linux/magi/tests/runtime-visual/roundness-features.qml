@@ -20,13 +20,13 @@ ShellRoot {
             id:scene;anchors.fill:parent;color:Theme.Theme.background
             Column {
                 x:20;y:20;width:330;spacing:12
-                Label {text:"Shared action role · affected";color:Theme.Theme.text}
+                Label {text:"Appearance · generic shared UI";color:Theme.Theme.text}
                 UI.SettingsButton {id:button;text:"Settings button";width:300}
                 UI.SettingsTextField {width:300;text:"Settings input"}
                 UI.SettingsNumber {from:0;to:75;value:12}
                 UI.SettingsSelector {width:300;model:["Settings selector"];currentIndex:0}
                 Hub.HubSearchField {width:300;text:"Hub search";cursorVisible:false}
-                Launcher.LauncherItem {width:300;height:56;app:({name:"Launcher result",genericName:"Shared action corners"});preferences:Services.Settings.data.launcher;selected:true;iconPresentation:({source:"",fallbackText:"L"})}
+                Launcher.LauncherItem {width:300;height:56;app:({name:"Launcher result",genericName:"Appearance corners"});preferences:Services.Settings.data.launcher;selected:true;iconPresentation:({source:"",fallbackText:"L"})}
                 Controls.ActionChip {id:chip;label:"Bar/menu action chip";icon:"wifi";active:true}
                 Row {spacing:12;Controls.IconButton{id:icon;label:"Icon button"} Controls.MediaButton{id:media;icon:"media-play"}}
             }
@@ -45,7 +45,7 @@ ShellRoot {
                 CC.ControlTile {id:tile;width:64;height:64;icon:"wifi";title:"Primary";active:true}
                 CC.ActionButton {id:secondary;width:280;height:38;moduleId:"inhibit";icon:"inhibit";label:"Secondary controls";toggle:true;active:true}
                 Controls.RoundedArtwork {id:avatar;width:96;height:96;radius:Theme.Theme.radius("avatar",10,width,height);borderWidth:2;placeholder:"profile"}
-                Label{text:"Native lock uses avatar, not action.";color:Theme.Theme.text;wrapMode:Text.Wrap;width:300}
+                Label{text:"Native lock uses avatar, not Appearance.";color:Theme.Theme.text;wrapMode:Text.Wrap;width:300}
             }
         }
     }
@@ -58,14 +58,27 @@ ShellRoot {
             const original=JSON.parse(JSON.stringify(Services.Settings.data))
             Services.Settings.setRoundness("controlTile",1.25);Services.Settings.setRoundness("secondaryControl",1.2);Services.Settings.setRoundness("avatar",1.2)
             const tileRadius=tile.radius,secondaryRadius=secondary.children[0].radius,avatarRadius=avatar.radius
+            // Deprecated action values still round-trip, but no longer style generic UI.
+            const oldButton=button.background.radius,oldAlias=Theme.Theme.radiusSmall
+            for(const value of [0,null,2]){
+                Services.Settings.setRoundness("action",value);wait(20)
+                compare(button.background.radius,oldButton);compare(Theme.Theme.radiusSmall,oldAlias)
+            }
+            Services.Settings.setRoundness("action",original.appearance.roundness.roles.action)
+            const features=()=>[Theme.Theme.barPillRadius,Theme.Theme.workspacePillRadius,
+                Theme.Theme.radius("hubSelector",22,200,44),Theme.RenderTokens.tileRadius,
+                Theme.RenderTokens.sliderRadius,Theme.Theme.radius("secondaryControl",10,100,40),
+                Theme.Theme.radius("avatar",10,100,100),Theme.Theme.radius("albumArt",10,100,100),
+                Services.Settings.data.launcher.headerRadius]
+            const stable=features()
             for(const theme of ["nord","one-light"]){
                 Services.Settings.setTheme(theme)
-                for(const pair of [["min",0],["current",1.2000000000000002],["max",2]]){
-                    Services.Settings.setRoundness("action",pair[1]);wait(80)
-                    compare(button.background.radius,Theme.Theme.radius("action",8,button.width,button.height))
+                for(const pair of [["min",0],["current",1],["max",2]]){
+                    Services.Settings.setRoundness("surface",pair[1]);wait(80)
+                    compare(button.background.radius,Theme.Theme.radius("surface",8,button.width,button.height))
                     compare(chip.radius,Math.min(13*pair[1],chip.width/2,chip.height/2))
-                    compare(tile.radius,tileRadius);compare(secondary.children[0].radius,secondaryRadius);compare(avatar.radius,avatarRadius)
-                    icon.forceActiveFocus();capture(scene,theme+"-action-"+pair[0])
+                    compare(features(),stable,"Feature overrides ignore Appearance changes");compare(tile.radius,tileRadius);compare(secondary.children[0].radius,secondaryRadius);compare(avatar.radius,avatarRadius)
+                    icon.forceActiveFocus();capture(scene,theme+"-appearance-"+pair[0])
                     media.forceActiveFocus();capture(media,theme+"-media-button-"+pair[0])
                 }
             }

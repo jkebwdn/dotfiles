@@ -13,7 +13,7 @@ Button {
     ToolTip.delay: 500
     ToolTip.text: label
     background: Rectangle {
-        radius: Theme.Theme.radius("action", 7, width, height)
+        radius: Theme.Theme.radius("surface", 7, width, height)
         color: root.hovered || root.activeFocus ? Theme.Theme.overlay : "transparent"
         border.width: root.activeFocus ? 1 : 0
         border.color: Theme.Theme.focus

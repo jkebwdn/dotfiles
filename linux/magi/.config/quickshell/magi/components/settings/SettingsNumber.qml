@@ -27,19 +27,19 @@ SpinBox {
     down.indicator: Rectangle {
         x: root.mirrored ? root.width - width - 3 : 3
         y: 3; implicitWidth: 28; height: root.height - 6
-        radius: Theme.Theme.radius("action", 5, width, height)
+        radius: Theme.Theme.radius("surface", 5, width, height)
         color: root.down.pressed ? Theme.Theme.accent : root.down.hovered ? Theme.Theme.elevated : "transparent"
         Text { anchors.centerIn: parent; text: "−"; font.pixelSize: 16; color: root.down.pressed ? Theme.Theme.accentText : Theme.Theme.text; opacity: root.down.enabled ? 1 : 0.5 }
     }
     up.indicator: Rectangle {
         x: root.mirrored ? 3 : root.width - width - 3
         y: 3; implicitWidth: 28; height: root.height - 6
-        radius: Theme.Theme.radius("action", 5, width, height)
+        radius: Theme.Theme.radius("surface", 5, width, height)
         color: root.up.pressed ? Theme.Theme.accent : root.up.hovered ? Theme.Theme.elevated : "transparent"
         Text { anchors.centerIn: parent; text: "+"; font.pixelSize: 16; color: root.up.pressed ? Theme.Theme.accentText : Theme.Theme.text; opacity: root.up.enabled ? 1 : 0.5 }
     }
     background: Rectangle {
-        radius: Theme.Theme.radius("action", 8, width, height)
+        radius: Theme.Theme.radius("surface", 8, width, height)
         color: root.hovered ? Theme.Theme.overlay : Theme.Theme.elevated
         border.width: 1; border.color: root.activeFocus ? Theme.Theme.focus : Theme.Theme.border
     }

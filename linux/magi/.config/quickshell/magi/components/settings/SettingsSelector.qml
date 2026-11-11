@@ -56,7 +56,7 @@ ComboBox {
         color: Theme.Theme.text
     }
     background: Rectangle {
-        radius: Theme.Theme.radius("action", 8, width, height)
+        radius: Theme.Theme.radius("surface", 8, width, height)
         color: root.down || root.hovered ? Theme.Theme.overlay : Theme.Theme.elevated
         border.width: 1; border.color: root.activeFocus ? Theme.Theme.focus : Theme.Theme.border
     }
@@ -74,7 +74,7 @@ ComboBox {
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
-            radius: Theme.Theme.radius("action", 6, width, height)
+            radius: Theme.Theme.radius("surface", 6, width, height)
             color: parent.highlighted ? Theme.Theme.accent : "transparent"
         }
     }

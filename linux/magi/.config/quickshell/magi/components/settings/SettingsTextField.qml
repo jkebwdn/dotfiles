@@ -12,7 +12,7 @@ TextField {
     selectionColor: Theme.Theme.accent
     selectedTextColor: Theme.Theme.accentText
     background: Rectangle {
-        radius: Theme.Theme.radius("action", 8, width, height)
+        radius: Theme.Theme.radius("surface", 8, width, height)
         color: root.hovered ? Theme.Theme.overlay : Theme.Theme.elevated
         border.width: root.activeFocus ? SettingsMetrics.focusWidth : 0
         border.color: Theme.Theme.focus

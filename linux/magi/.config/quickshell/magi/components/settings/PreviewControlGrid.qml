@@ -113,7 +113,7 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 color: "transparent"
-                radius: Theme.Theme.radius("action", 8, width, height)
+                radius: Theme.Theme.radius("surface", 8, width, height)
                 border.width: cell.moving ? 2 : 0
                 border.color: Theme.Theme.accent
             }
