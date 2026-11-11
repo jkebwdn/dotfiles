@@ -19,7 +19,10 @@ Item {
     property string canonicalRevision: ""
     onCanonicalRevisionChanged: if (dragging || candidate) cancel()
     property bool canvasMode: false
+    property real canvasContentMargin: 2
     property string removeLane: ""
+    property real paletteY: 110
+    property bool paletteHeadingVisible: true
     property bool editing: true
     property string selectedKey: ""
     property var familySelection: function(key) { return false }
@@ -76,16 +79,20 @@ Item {
         if (geometryProvider) return geometryProvider()
         if (canvasMode) {
             const placed = lanes.filter(l => !l.palette)
-            const total = placed.reduce((sum,l) => sum + Math.max(180, order(l.id).reduce((n,k) => n + itemWidth(k) + gap, 0) + 20), 0)
+            const naturalWidth = lane => Math.max(180, order(lane.id).reduce((n,k) => n + itemWidth(k) + gap, 0) + 20)
+            // Keep the centre lane at the actual Bar midpoint even with unequal sides.
+            const centred = placed.length === 3 && placed[1].alignment === "center"
+            const side = centred ? Math.max(naturalWidth(placed[0]), naturalWidth(placed[2])) : 0
+            const total = centred ? 2 * side + naturalWidth(placed[1]) : placed.reduce((sum,l) => sum + naturalWidth(l), 0)
             const result = []; let x = 0
             for (const lane of placed) {
-                const natural = Math.max(180, order(lane.id).reduce((n,k) => n + itemWidth(k) + gap, 0) + 20)
+                const natural = centred && lane !== placed[1] ? side : naturalWidth(lane)
                 const w = width * natural / total
                 result.push({id:lane.id,label:lane.label,alignment:lane.alignment || "left",x:x,y:0,width:w,height:80,keys:order(lane.id)})
                 x += w
             }
             const palette = lanes.find(l => l.palette)
-            if (editing && palette) result.push({id:palette.id,label:palette.label,x:0,y:110,width:width,height:80,keys:order(palette.id)})
+            if (editing && palette) result.push({id:palette.id,label:paletteHeadingVisible ? palette.label : "",x:0,y:paletteY,width:width,height:paletteHeadingVisible ? 80 : rowHeight + 8,keys:order(palette.id)})
             return result
         }
         const result = []
@@ -113,7 +120,7 @@ Item {
             const index = lane.keys.indexOf(key)
             if (index >= 0 && canvasMode) return {lane:lane,index:index,
                 x:lane.x + (lane.alignment === "center" ? (lane.width - lane.keys.reduce((n,k) => n + itemWidth(k) + gap, -gap))/2 : lane.alignment === "right" ? lane.width - 10 - lane.keys.reduce((n,k) => n + itemWidth(k) + gap, -gap) : 10) + lane.keys.slice(0,index).reduce((n,k) => n + itemWidth(k) + gap,0),
-                y:lane.y + 34,width:itemWidth(key)}
+                y:lane.y + (lane.id === removeLane && !paletteHeadingVisible ? 0 : 34),width:itemWidth(key)}
             if (index >= 0) return {lane:lane, index:index, x:lane.x + inset,
                 y:lane.y + inset + headingHeight + index * (rowHeight + gap), width:lane.width - inset * 2}
         }
@@ -250,6 +257,8 @@ Item {
             border.color: Theme.Theme.accent
             Label {
                 x: 10; y: 8; width: parent.width - 20
+                objectName: root.objectName + "-heading-" + modelData.id
+                horizontalAlignment: modelData.alignment === "center" ? Text.AlignHCenter : modelData.alignment === "right" ? Text.AlignRight : Text.AlignLeft
                 text: modelData.label; visible: root.multiLane && (!root.canvasMode || root.editing || modelData.keys.length > 0)
                 font.pixelSize: 11; font.bold: true; color: Theme.Theme.text
                 elide: Text.ElideRight
@@ -297,7 +306,7 @@ Item {
             Loader {
                 readonly property var entry: row.entry
                 readonly property string previewLane: row.slot.lane.id
-                anchors { left: parent.left; top: parent.top; bottom: parent.bottom; right: root.canvasMode ? parent.right : handle.left; margins: root.canvasMode ? 2 : 8 }
+                anchors { left: parent.left; top: parent.top; bottom: parent.bottom; right: root.canvasMode ? parent.right : handle.left; margins: root.canvasMode ? root.canvasContentMargin : 8 }
                 sourceComponent: root.rowContent
             }
             MouseArea {

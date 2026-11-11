@@ -8,26 +8,15 @@ import "../../theme" as Theme
 ColumnLayout {
     id: root
     required property var selection
-    property alias familySection: familySection
     readonly property bool individual: selection.scope === "module"
-    function resetDisclosure() { familySection.expanded = !root.individual }
-    Connections {
-        target: root.selection
-        function onInstanceChanged() { Qt.callLater(root.resetDisclosure) }
-        function onFamilyChanged() { Qt.callLater(root.resetDisclosure) }
-    }
+    property bool editThemeAccent: false
+    Connections { target: root.selection; function onInstanceChanged() { root.editThemeAccent = false } }
     readonly property string family: selection.family
     readonly property string instance: selection.instance
     readonly property string foregroundKey: ["wifi", "bluetooth"].includes(instance) ? "accentRole" : "foregroundRole"
     readonly property string defaultForeground: foregroundKey === "accentRole" ? "accent" : "text"
     readonly property var itemStyle: Services.Settings.data.bar.modules[instance] || ({})
-    readonly property var style: Services.Settings.data.bar.visual[family] || ({})
     readonly property var roles: ["background", "surface", "elevated", "overlay", "text", "subtext", "muted", "accent", "blue", "lavender", "green", "yellow", "peach", "red", "teal", "border"]
-    function setStyle(key, value) {
-        const visual = JSON.parse(JSON.stringify(Services.Settings.data.bar.visual));
-        visual[family][key] = value;
-        Services.Settings.setValue("bar", "visual", visual);
-    }
     function setItems(values) {
         const modules = JSON.parse(JSON.stringify(Services.Settings.data.bar.modules));
         modules[instance] = Object.assign({}, modules[instance] || {}, values);
@@ -51,17 +40,10 @@ ColumnLayout {
         for (const entry of refinements) values[entry.key] = entry.key === "percentageBackgroundShade" ? null : 0
         setItems(values)
     }
-    function setAccent(role) { setItem("accentRole", role) }
     Layout.fillWidth: true
-    SettingsHelp {
-        objectName: "barSelectionContext"
-        text: root.individual ? "Selected item · identity and options"
-            : root.family === "host" ? "Bar background · select an item or group in the preview"
-            : "Shared style · changes affect the whole group"
-    }
     SettingsSection {
         objectName: "barIdentityInspector"
-        visible: root.individual && root.instance !== "customImage"
+        visible: root.individual && !["customImage", "workspaces"].includes(root.instance)
         collapsible: false
         title: ({
                 wifi: "Wi-Fi",
@@ -75,50 +57,78 @@ ColumnLayout {
                 controlcentre: "Control Centre",
                 tray: "System Tray"
             })[root.instance] || ""
+        SettingsToggle {
+            objectName: "barForegroundInherited"
+            visible: root.instance !== "tray"
+            text: root.foregroundKey === "accentRole" ? "Use theme accent colour" : "Use default foreground colour"
+            checked: root.foregroundKey === "accentRole" ? !root.editThemeAccent && root.itemStyle.accentRole === "accent" : root.itemStyle.foregroundRole == null
+            onClicked: {
+                if (root.foregroundKey === "accentRole") { const follow = checked; root.editThemeAccent = !follow; if (follow) root.setItem("accentRole", "accent") }
+                else root.setItem("foregroundRole", checked ? null : "text")
+            }
+        }
         SettingsRow {
             visible: root.instance !== "tray" && root.instance !== "workspaces"
             Label { text: ["clock", "date"].includes(root.instance) ? "Text colour" : "Icon colour"; Layout.fillWidth: true }
             SettingsSelector {
                 objectName: "barInstanceAccent"
+                enabled: root.foregroundKey === "accentRole" ? root.editThemeAccent || root.itemStyle.accentRole !== "accent" : root.itemStyle.foregroundRole != null
                 Accessible.name: root.instance + " foreground colour"
                 model: root.roles
                 currentIndex: model.indexOf(root.itemStyle[root.foregroundKey] || root.defaultForeground)
                 onActivated: root.setItem(root.foregroundKey, currentText)
             }
         }
+        SettingsToggle {
+            objectName: "barBackgroundInherited"
+            visible: root.family === "statusPills"
+            text: "Use global background colour"
+            checked: root.itemStyle.backgroundRole == null
+            onClicked: root.setItem("backgroundRole", checked ? null : Services.Settings.data.bar.visual.statusPills.role)
+        }
         SettingsRow {
             visible: root.family === "statusPills"
             Label { text: root.instance === "battery" ? "Icon background" : "Background colour"; Layout.fillWidth: true }
             SettingsSelector {
                 objectName: "barItemBackground"
+                enabled: root.itemStyle.backgroundRole != null
                 Accessible.name: root.instance + " background colour"
                 model: root.roles
                 currentIndex: model.indexOf(Services.Settings.data.bar.modules[root.instance]?.backgroundRole || Services.Settings.data.bar.visual.statusPills.role)
                 onActivated: root.setItem("backgroundRole", currentText)
             }
         }
-        SettingsButton {
-            visible: root.family === "statusPills"
-            text: root.instance === "battery" ? "Use shared icon background" : "Use shared background"
-            onClicked: root.setItems({backgroundRole:null, backgroundShade:0})
+        SettingsToggle {
+            objectName: "batteryBackgroundInherited"
+            visible: root.instance === "battery"
+            text: "Use icon background colour"
+            checked: root.itemStyle.percentageBackgroundRole == null
+            onClicked: root.setItem("percentageBackgroundRole", checked ? null : root.itemStyle.backgroundRole || Services.Settings.data.bar.visual.statusPills.role)
         }
         SettingsRow {
             visible: root.instance === "battery"
             Label { text: "Percentage background"; Layout.fillWidth: true }
             SettingsSelector {
                 objectName: "batteryPercentageBackground"
+                enabled: root.itemStyle.percentageBackgroundRole != null
                 Accessible.name: "Battery percentage background"
                 model: root.roles
                 currentIndex: model.indexOf(Services.Settings.data.bar.modules.battery?.percentageBackgroundRole || Services.Settings.data.bar.modules.battery?.backgroundRole || Services.Settings.data.bar.visual.statusPills.role)
                 onActivated: root.setItem("percentageBackgroundRole", currentText)
             }
         }
-        SettingsButton { visible: root.instance === "battery"; text: "Follow icon background"; onClicked: root.setItems({percentageBackgroundRole:null, percentageBackgroundShade:null}) }
+        SettingsToggle {
+            visible: root.instance === "battery"
+            text: "Use default percentage colour"
+            checked: root.itemStyle.percentageForegroundRole == null
+            onClicked: root.setItem("percentageForegroundRole", checked ? null : "text")
+        }
         SettingsRow {
             visible: root.instance === "battery"
             Label { text: "Percentage colour"; Layout.fillWidth: true }
             SettingsSelector {
                 Accessible.name: "Battery percentage colour"
+                enabled: root.itemStyle.percentageForegroundRole != null
                 model: root.roles
                 currentIndex: model.indexOf(Services.Settings.data.bar.modules.battery?.percentageForegroundRole || "text")
                 onActivated: root.setItem("percentageForegroundRole", currentText)
@@ -134,123 +144,53 @@ ColumnLayout {
             visible: root.instance === "tray"
             text: "Application icons keep their own colours. Background colour styles the shared Tray pill."
         }
+        SettingsSection {
+            objectName: "barColourRefinement"
+            carded: false
+            visible: root.individual && root.family === "statusPills"
+            title: "Fine tune"
+            description: "Lighten or darken individual colours."
+            collapsible: true
+            expanded: false
+            SettingsHelp { text: "Negative lightens · 0 keeps the palette colour · positive darkens." + (["wifi", "bluetooth", "volume"].includes(root.instance) ? " Off shade applies to disconnected or muted icons." : "") }
+            Repeater {
+                model: root.refinements
+                SettingsRow {
+                    id: shadeRow
+                    required property var modelData
+                    Layout.fillWidth: true
+                    columns: 2
+                    rowSpacing: 2
+                    Label { text: shadeRow.modelData.label; Layout.fillWidth: true; wrapMode: Text.Wrap }
+                    Label {
+                        readonly property real setting: root.refinementValue(shadeRow.modelData.key)
+                        text: (setting > 0 ? "+" : "") + Math.round(setting * 100) + "%"
+                        horizontalAlignment: Text.AlignRight
+                        color: Theme.Theme.subtext
+                        Layout.preferredWidth: 56
+                    }
+                    SettingsSlider {
+                        objectName: "barItemShade-" + shadeRow.modelData.key
+                        Accessible.name: shadeRow.modelData.label
+                        Layout.row: 1; Layout.columnSpan: 2
+                        Layout.fillWidth: true
+                        from: -1; to: 1; stepSize: .05
+                        value: root.refinementValue(shadeRow.modelData.key)
+                        onMoved: root.setItem(shadeRow.modelData.key, value)
+                    }
+                }
+            }
+            SettingsButton { text: "Reset colour refinement"; onClicked: root.resetRefinements() }
+        }
+        SettingsHelp {
+            visible: root.instance === "controlcentre" || ["date", "clock"].includes(root.instance)
+            text: root.instance === "controlcentre" ? "Configure contents in Control Centre Settings." : "Formatting and calendar options are in Date & time."
+        }
     }
     CustomImageSettings { visible: root.individual && root.instance === "customImage" }
     SettingsSection {
-        objectName: "barColourRefinement"
-        visible: root.individual && root.family === "statusPills"
-        title: "Fine tune"
-        description: "Lighten or darken individual colours."
-        collapsible: true
-        expanded: false
-        SettingsHelp { text: "Negative lightens · 0 keeps the palette colour · positive darkens." + (["wifi", "bluetooth", "volume"].includes(root.instance) ? " Off shade applies to disconnected or muted icons." : "") }
-        Repeater {
-            model: root.refinements
-            SettingsRow {
-                id: shadeRow
-                required property var modelData
-                Layout.fillWidth: true
-                columns: 2
-                rowSpacing: 2
-                Label { text: shadeRow.modelData.label; Layout.fillWidth: true; wrapMode: Text.Wrap }
-                Label {
-                    readonly property real setting: root.refinementValue(shadeRow.modelData.key)
-                    text: (setting > 0 ? "+" : "") + Math.round(setting * 100) + "%"
-                    horizontalAlignment: Text.AlignRight
-                    color: Theme.Theme.subtext
-                    Layout.preferredWidth: 56
-                }
-                SettingsSlider {
-                    objectName: "barItemShade-" + shadeRow.modelData.key
-                    Accessible.name: shadeRow.modelData.label
-                    Layout.row: 1; Layout.columnSpan: 2
-                    Layout.fillWidth: true
-                    from: -1; to: 1; stepSize: .05
-                    value: root.refinementValue(shadeRow.modelData.key)
-                    onMoved: root.setItem(shadeRow.modelData.key, value)
-                }
-            }
-        }
-        SettingsButton { text: "Reset colour refinement"; onClicked: root.resetRefinements() }
-    }
-
-    SettingsSection {
-        id: familySection
-        visible: root.family !== "artwork"
-        objectName: "barFamilyInspector"
-        collapsible: root.individual
-        expanded: !root.individual
-        title: root.family === "host" ? "Bar background" : root.family === "workspacePills" ? "Workspace pills" : "Status pills"
-        description: root.individual ? "Shared with other items in this group." : ""
-        SettingsToggle {
-            visible: root.family !== "workspacePills"
-            text: root.family === "host" ? "Show Bar background" : "Pill background enabled"
-            checked: root.style.enabled === true
-            onClicked: root.setStyle("enabled", checked)
-        }
-        SettingsRow {
-            visible: root.family !== "workspacePills"
-            Label {
-                text: "Background colour"
-                Layout.fillWidth: true
-            }
-            SettingsSelector {
-                model: root.roles
-                currentIndex: model.indexOf(root.style.role)
-                onActivated: root.setStyle("role", currentText)
-            }
-        }
-        SettingsRow {
-            visible: root.family !== "workspacePills"
-            Label {
-                text: "Background opacity"
-                Layout.fillWidth: true
-            }
-            SettingsSlider {
-                Layout.fillWidth: true
-                Layout.minimumWidth: 100
-                from: 0
-                to: 1
-                stepSize: 0.05
-                value: root.style.opacity === undefined ? 1 : root.style.opacity
-                onMoved: root.setStyle("opacity", value)
-            }
-        }
-        SettingsRow {
-            visible: root.family === "statusPills"
-            Label {
-                text: "Status icon size"
-                Layout.fillWidth: true
-            }
-            SettingsNumber {
-                objectName: "visualSetting-statusIconSize"
-                from: 16
-                to: 28
-                value: Services.Settings.data.appearance.visual.statusIconSize
-                onValueModified: Services.Settings.setVisual("statusIconSize", value)
-            }
-        }
-        SettingsHelp {
-            visible: root.family === "statusPills"
-            text: root.instance === "tray" ? "System Tray shares Status pill styling. Application icons retain their own artwork and colours." : "Connected items use their accent. Unavailable items are muted; muted audio uses the warning colour."
-        }
-    }
-    SurfaceStyleSettings {
-        objectName: "barMenuInspector"
-        visible: ["wifi", "bluetooth", "volume"].includes(root.instance)
-        collapsible: true
-        title: root.instance === "volume" ? "Audio menu" : root.instance === "wifi" ? "Wi-Fi menu" : "Bluetooth menu"
-        description: "Colour and width are shared with other menus."
-        group: "surfaceBorders"
-        targets: [
-            {
-                id: ["wifi", "bluetooth", "volume"].includes(root.instance) ? root.instance : "wifi",
-                label: "Menu border enabled"
-            }
-        ]
-    }
-    SettingsHelp {
-        visible: root.instance === "controlcentre" || root.instance === "date" || root.instance === "clock"
-        text: root.instance === "controlcentre" ? "Control Centre contents and appearance remain in the Control Centre section." : "Calendar appearance and formatting remain in Date & time."
+        visible: root.individual && root.instance === "workspaces"
+        title: "Workspaces"
+        description: "Workspace pills use the Bar Roundness card. Drag this item to choose its Bar region."
     }
 }

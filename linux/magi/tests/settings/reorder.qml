@@ -58,6 +58,7 @@ ShellRoot {
                 const slot = targetKey ? board.location(targetKey) : null
                 const x = board.canvasMode && slot ? slot.x + slot.width * (after ? .8 : .2) : lane.x + lane.width / 2
                 const y = slot ? slot.y + board.rowHeight * (after ? 0.8 : 0.2)
+                    : board.canvasMode && !board.locationProvider ? lane.y + lane.height / 2
                     : lane.y + board.inset + board.headingHeight + board.rowHeight / 2
                 const point = board.mapToItem(page, x, y)
                 const cy = Math.max(10, Math.min(page.height - 10, point.y))

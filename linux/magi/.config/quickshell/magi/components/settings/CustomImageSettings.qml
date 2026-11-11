@@ -19,7 +19,7 @@ SettingsSection {
         modules.customImage[key] = value
         Services.Settings.setValue("bar", "modules", modules)
     }
-    SettingsHelp { text: "Static images and animated GIFs keep their own colours and transparency. Place this item beside Time or Date in Layout." }
+    SettingsHelp { text: "Static images and animated GIFs keep their own colours and transparency. Drag this item beside Time or Date in the Bar layout." }
     SettingsRow {
         Label { text: "Size (height in px)"; Layout.fillWidth: true }
         SettingsNumber {

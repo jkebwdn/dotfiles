@@ -60,13 +60,13 @@ ShellRoot {
      verify(gallery.columns>=1&&gallery.columns<=4)
      verify(findChild(lock,"lockElementInspector")===null,"No freeform controls in normal Settings")
      capture(theme+"-"+size.width+"-lock")
-     const bar=page("Bar");bar.mode="Appearance";bar.contentY=0
-     bar.selection.select("statusPills");waitForPolish(win.contentItem.Window.window)
-     verify(item("barSelectionContext").text.includes("Shared style"));verify(!item("barIdentityInspector").visible)
+     const bar=page("Bar");bar.contentY=0
+     bar.selection.select("");waitForPolish(win.contentItem.Window.window)
+     verify(item("barGlobalOptions").visible);verify(!item("barIdentityInspector").visible)
      capture(theme+"-"+size.width+"-bar-group")
      bar.selection.select("wifi");waitForPolish(win.contentItem.Window.window)
-     verify(item("barSelectionContext").text.includes("Selected item"));verify(item("barIdentityInspector").visible)
-     compare(item("barFamilyInspector").expanded,false)
+     verify(item("barGlobalOptions").visible);verify(item("barIdentityInspector").visible)
+     verify(findChild(content,"barFamilyInspector")===null)
      capture(theme+"-"+size.width+"-bar-item")
     }
     compare(Services.Settings.revision,revision,"Navigation, disclosures and selection do not save")

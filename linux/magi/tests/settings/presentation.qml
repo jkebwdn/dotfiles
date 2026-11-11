@@ -88,9 +88,8 @@ ShellRoot {
                 }
             }
             Services.SettingsWindowState.page = "Bar"; wait(50)
-            page("Bar").mode="Appearance";wait(30)
-            mouseClick(findChild(page("Bar"), "barFamilyTarget-statusPills"));wait(30)
-            compare(page("Bar").selection.scope,"family")
+            compare(page("Bar").selection.instance, "")
+            findChild(page("Bar"), "barGlobal-statusPills").expanded = true; wait(30)
             const slider = findChild(page("Bar"), "visualSetting-statusIconSize")
             verify(slider.visible, "surface controls remain reachable")
             const iconSize = Services.Settings.data.appearance.visual.statusIconSize

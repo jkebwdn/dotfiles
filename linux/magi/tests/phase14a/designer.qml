@@ -23,9 +23,9 @@ ShellRoot {
     else {verify(Services.Settings.data.bar[lane].includes('tray'));compare(canvas.placed.filter(x=>x==='tray').length,1)}
    }
    Services.Settings.placeBar('tray','right',0);wait(100)
-   page.mode='Appearance';page.selection.select('tray');wait(100)
+   page.selection.select('tray');wait(100)
    compare(page.selection.family,'statusPills');verify(!item('barInstanceAccent').visible)
-   page.selection.select('statusPills');wait(100);verify(item('barFamilyInspector').expanded)
+   page.selection.select('');wait(100);verify(item('barGlobalOptions').visible)
    grabImage(win.contentItem).save(Quickshell.env('MAGI_PHASE14A_PREVIEWS')+'/designer.png')
    console.log('Phase14A designer PASS')
   }catch(e){console.error('FAIL',e,e.stack)}finally{finish.start()}}

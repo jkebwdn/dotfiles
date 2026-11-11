@@ -87,9 +87,9 @@ ShellRoot {
                 Services.Settings.discardAndReload(); wait(150)
                 tryVerify(() => Services.Settings.data.bar.modules.customImage.asset !== null)
                 compare(Services.Settings.data.bar.left, ["clock", "date", "customImage"])
-                page.selection.select("customImage"); page.mode = "Appearance"; wait(80)
+                page.selection.select("customImage"); wait(80)
                 compare(page.selection.family, "artwork")
-                verify(!findChild(page, "barFamilyInspector").visible)
+                verify(findChild(page, "barFamilyInspector") === null)
                 verify(!findChild(page, "barIdentityInspector").visible)
                 const preview = visual(page, "barPreview-customImage")
                 verify(preview !== null)
@@ -114,13 +114,12 @@ ShellRoot {
                 tryCompare(Services.Settings, "saveState", "saved")
                 Services.Settings.discardAndReload(); wait(150)
                 compare(Services.Settings.data.bar.modules.customImage.height, 17)
-                page.mode = "Layout"; wait(80)
-                // Both inspectors consume the same persisted per-item setting.
+                page.selection.select(""); wait(40); page.selection.select("customImage"); wait(80)
+                // Reopening the sole contextual inspector retains the setting.
                 const layoutSlider = visual(page, "barImageSizeSlider", true)
                 verify(layoutSlider !== null)
                 compare(layoutSlider.value, 17)
                 compare(image.bounds[3] * image.imageScale, 17)
-                page.mode = "Appearance"
                 configure(root.imported, 36, false); wait(80)
                 compare(image.width, 36)
                 // A static source after an animation, then animation again.

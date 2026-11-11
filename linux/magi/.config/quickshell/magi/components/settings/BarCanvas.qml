@@ -9,7 +9,6 @@ import "../../settings/SettingsSchema.js" as Schema
 Item {
     id: root
     property bool editing: false
-    property bool styling: false
     property string selectedKey: ""
     property alias board: board
     required property Flickable viewport
@@ -42,6 +41,9 @@ Item {
             };
         });
     }
+    function laneWidth(lane) {
+        return Math.max(180, entries().filter(e => e.lane === lane).reduce((sum, e) => sum + e.width + 6, 20))
+    }
     readonly property real imageWidth: {
         const config = bar.modules.customImage || {}, asset = config.asset
         if (!asset) return 100
@@ -51,25 +53,42 @@ Item {
     implicitWidth: 680
     Layout.preferredWidth: 680
     Layout.fillWidth: true
-    implicitHeight: (editing ? 210 : 150) * stage.scale
+    implicitHeight: layoutCard.height + (editing ? 12 + availableCard.height : 0)
+    SettingsSection {
+        id: layoutCard
+        objectName: "barLayoutCard"
+        width: root.width
+        height: stage.y + Math.max(board.y + 80, previewHost.y + previewHost.height) * stage.scale + 12
+        title: "Layout"
+        description: "Click a Bar item for more options."
+    }
+    SettingsSection {
+        id: availableCard
+        objectName: "barAvailableItems"
+        visible: root.editing
+        y: layoutCard.height + 12
+        width: root.width
+        height: 40 + board.rowHeight * stage.scale + 12
+        title: "Available items"
+    }
     Item {
         id: stage
-        width: Math.max(900, root.width, 2 * root.bar.horizontalInset + ["left", "center", "right"].reduce((sum, l) => sum + Math.max(180, root.entries().filter(e => e.lane === l).reduce((n, e) => n + e.width + 6, 20)), 0))
-        height: root.editing ? 210 : 150
-        scale: Math.min(1, root.width / width)
+        x: 12; y: 72
+        width: Math.max(900, root.width - 24, 2 * root.bar.horizontalInset + 2 * Math.max(root.laneWidth("left"), root.laneWidth("right")) + root.laneWidth("center"))
+        height: (root.implicitHeight - y) / scale
+        scale: Math.min(1, Math.max(1, root.width - 24) / width)
         transformOrigin: Item.TopLeft
         Rectangle {
             anchors.fill: parent
             radius: Theme.Theme.radius("surface", 10, width, height)
-            color: Theme.Theme.background
-            border.width: 1
-            border.color: Theme.Theme.border
+            color: "transparent"
             MouseArea {
                 anchors.fill: parent
                 onClicked: { root.forceActiveFocus(Qt.MouseFocusReason); root.selected("") }
             }
         }
         Rectangle {
+            id: previewHost
             objectName: "barPreviewHost"
             x: root.bar.horizontalInset
             width: stage.width - 2 * x
@@ -77,35 +96,15 @@ Item {
             y: root.bar.position === "bottom" ? 94 - root.bar.edgeOffset : 28 + root.bar.edgeOffset
             color: Theme.Theme.barBackground
         }
-        Repeater {
-            model: root.styling ? ["statusPills", "workspaces"] : []
-            SettingsButton {
-                required property string modelData
-                objectName: "barFamilyTarget-" + modelData
-                visible: modelData !== "workspaces" || root.placed.includes("workspaces")
-                x: modelData === "statusPills" ? root.bar.horizontalInset + 10 : stage.width / 2 - width / 2
-                y: board.y
-                z: 2
-                text: modelData === "statusPills" ? "Status pills" : "Workspace pills"
-                Accessible.name: text + " appearance"
-                flat: true
-                font.pixelSize: 11
-                font.bold: true
-                implicitHeight: 28
-                topPadding: 2
-                bottomPadding: 2
-                checked: root.selectedKey === modelData
-                onClicked: root.selected(modelData)
-            }
-        }
         SettingsReorderBoard {
             id: board
             objectName: "barOrder"
             x: root.bar.horizontalInset
             width: stage.width - 2 * x
             y: root.bar.position === "bottom" ? 60 - root.bar.edgeOffset : root.bar.edgeOffset
-            familySelection: key => root.styling && ((root.selectedKey === "statusPills" && !["workspaces", "customImage"].includes(key)) || (root.selectedKey === "workspaces" && key === "workspaces"))
             removeLane: "hidden"
+            paletteY: (availableCard.y + 40 - stage.y) / stage.scale - y
+            paletteHeadingVisible: false
             canvasMode: true
             editing: root.editing
             selectedKey: root.selectedKey

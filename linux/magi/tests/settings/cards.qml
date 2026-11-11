@@ -44,7 +44,7 @@ ShellRoot {
                         wait(100)
                         const page = findChild(window.contentItem, "settingsPage-" + name)
                         verify(page !== null)
-                        if (name === "Bar" || name === "Control Centre") page.mode = "Appearance"
+                        if (name === "Control Centre") page.mode = "Appearance"
                         if (name === "Control Centre") findChild(page, "decorationSettings").expanded = true
                         wait(100)
                         verify(inspect(page, null) > 0, "Page has grouped options: " + name)

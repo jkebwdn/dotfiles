@@ -33,14 +33,14 @@ ShellRoot {
                         const p=findChild(content,"settingsPage-"+title)
                         verify(p!==null,"page exists: "+title);tryCompare(p,"visible",true)
                         p.contentY=0
-                        if(name==="Bar")p.mode="Layout"
+                        if(name==="Bar")p.selection.select("")
                         waitForPolish(content.Window.window)
                         verify(p.width>0 && p.width<=content.width)
                         if(p.body.visible)verify(p.body.width>0 && p.body.width<=p.width,"visible body bounded: "+name)
                         if(geometry.width===1000) {
                             console.log("PRODUCT METRIC",theme,name,"viewport",Math.round(p.height),"content",Math.round(p.contentHeight),"scroll",p.contentY,"origin",p.originY,"bodyY",p.body.y)
                             capture(theme+"-"+name.toLowerCase().replace(/ /g,"-"))
-                            if(name==="Bar") {p.mode="Appearance";waitForPolish(content.Window.window);capture(theme+"-bar-appearance")}
+                            if(name==="Bar") {p.selection.select("wifi");waitForPolish(content.Window.window);capture(theme+"-bar-appearance")}
                         } else if(["Appearance","Lock Screen","Profile"].includes(name))capture(theme+"-"+geometry.width+"-"+name.toLowerCase().replace(/ /g,"-"))
                     }
                 }
