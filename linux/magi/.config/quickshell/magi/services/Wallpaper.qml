@@ -64,7 +64,8 @@ Scope {
     }
     function prepare() {
         if (!Settings.ready || !preferences.enabled) return
-        if (!libraryLoaded) scanPending = true
+        // Refresh on page creation/revisit and known source edits; no polling.
+        scanPending = true
         if (!busy) start({op:"status"})
     }
     function close() { if (opened) Hub.closeMode("settings") }

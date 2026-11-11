@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Window
 import QtTest
 import Quickshell
+import Quickshell.Io
 import "../../.config/quickshell/magi/services" as Services
 import "../../.config/quickshell/magi/components/hub" as UI
 import "../../.config/quickshell/magi/theme" as Theme
@@ -13,6 +14,7 @@ ShellRoot {
         for (const child of item.children || []) { const result = find(child, name); if (result) return result }
         return null
     }
+    Process { id: addImage }
     Timer { id: finish; interval: 100; onTriggered: Qt.quit() }
     TestCase {
         name: "WallpaperReload"
@@ -40,6 +42,7 @@ ShellRoot {
             verify(find(thumbnail, "artworkSource").clip)
             verify(find(thumbnail, "artworkEffect").maskEnabled)
             tryVerify(() => Services.Wallpaper.libraryLoaded && Services.Wallpaper.entries.length > 0)
+            tryCompare(Services.Wallpaper, "busy", false)
             const originalEntries = Services.Wallpaper.entries
             for (const palette of ["catppuccin-mocha", "catppuccin-frappe", "everforest-dark-hard", "everforest-light-hard"]) {
                 Services.Settings.setTheme(palette)
@@ -61,6 +64,7 @@ ShellRoot {
             }
             window.content.Window.window.width = 1200
             window.content.Window.window.height = 900
+            tryCompare(Services.Wallpaper, "busy", false)
             Services.Wallpaper.filter = "All"
             Services.Wallpaper.entries = Array.from({length:60}, (_,i) => Object.assign({}, originalEntries[0], {name:"Image " + i}))
             wait(80)
@@ -95,6 +99,15 @@ ShellRoot {
             tryCompare(Services.Wallpaper, "busy", false)
             compare(Services.Wallpaper.state.monitors["TEST-1"].path, path)
             Services.Wallpaper.scope = ""
+            // New library content appears on a page revisit, without polling or
+            // a Refresh button. This copies only a disposable harness fixture.
+            Services.SettingsWindowState.page = "Profile"; wait(30)
+            addImage.command = ["cp", path, path + ".added.png"]
+            addImage.running = true; tryCompare(addImage, "running", false)
+            Services.SettingsWindowState.page = "Wallpaper"
+            tryVerify(() => Services.Wallpaper.entries.some(e => e.path === path + ".added.png"))
+            compare(content.grid.count, 2)
+            verify(Services.Wallpaper.state.favourites.includes(path), "Historical favourites preserved")
             Services.Settings.setValue("wallpaper", "enabled", false)
             verify(Services.Hub.opened, "disabling wallpaper leaves Settings usable")
             Services.Settings.setValue("wallpaper", "enabled", true)

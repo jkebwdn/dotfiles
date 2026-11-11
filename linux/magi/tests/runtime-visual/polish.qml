@@ -93,7 +93,7 @@ ShellRoot {
                     const outer=tile.children[0]; compare(outer.border.width,3);compare(outer.border.color,Theme.Theme.accent)
                     tile.keyboardFocused=true;wait(20);compare(outer.border.width,3)
                     verify(collect(outer,i=>i.border!==undefined&&i.border.width===1&&i.z===2).length===1)
-                    tile.favourite=true;compare(findChild(tile,"wallpaperFavourite").Accessible.name,"Remove favourite")
+                    verify(findChild(tile,"wallpaperFavourite")===null,"Wallpaper cards omit removed favourite action")
                     if(Quickshell.env("MAGI_POLISH_CAPTURES")) grabImage(samples.contentItem).save(Quickshell.env("MAGI_POLISH_CAPTURES")+"/polish-"+palette+".png")
                 }
                 console.log("Phase 2E polish PASS")
