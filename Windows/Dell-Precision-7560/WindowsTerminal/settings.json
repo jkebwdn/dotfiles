@@ -1,0 +1,96 @@
+{
+  "$help": "https://aka.ms/terminal-documentation",
+  "$schema": "https://aka.ms/terminal-profiles-schema",
+  "actions": [],
+  "copyFormatting": "none",
+  "copyOnSelect": false,
+  "defaultProfile": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+  "keybindings": [
+    {
+      "id": "Terminal.CopyToClipboard",
+      "keys": "ctrl+c"
+    },
+    {
+      "id": "Terminal.PasteFromClipboard",
+      "keys": "ctrl+v"
+    },
+    {
+      "id": "Terminal.DuplicatePaneAuto",
+      "keys": "alt+shift+d"
+    }
+  ],
+  "newTabMenu": [
+    {
+      "type": "remainingProfiles"
+    }
+  ],
+  "profiles": {
+    "defaults": {
+      "colorScheme": "Black Metal Khold",
+      "font": {
+        "cellHeight": "1.2",
+        "face": "JetBrainsMono Nerd Font Mono",
+        "size": 9
+      }
+    },
+    "list": [
+      {
+        "commandline": "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+        "hidden": false,
+        "name": "Windows PowerShell"
+      },
+      {
+        "commandline": "%SystemRoot%\\System32\\cmd.exe",
+        "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+        "hidden": false,
+        "name": "Command Prompt"
+      },
+      {
+        "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
+        "hidden": false,
+        "name": "Azure Cloud Shell",
+        "source": "Windows.Terminal.Azure"
+      },
+      {
+        "commandline": "pwsh.exe -NoLogo",
+        "font": {
+          "cellHeight": "1.2",
+          "cellWidth": "0.6",
+          "face": "JetBrainsMono Nerd Font Mono",
+          "size": 9
+        },
+        "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+        "hidden": false,
+        "name": "PowerShell",
+        "source": "Windows.Terminal.PowershellCore"
+      }
+    ]
+  },
+  "schemes": [
+    {
+      "background": "#101010",
+      "black": "#101010",
+      "blue": "#7F9CA8",
+      "brightBlack": "#555555",
+      "brightBlue": "#9EB7C1",
+      "brightCyan": "#A7C4BD",
+      "brightGreen": "#98B69A",
+      "brightPurple": "#BDA6C6",
+      "brightRed": "#C1847E",
+      "brightWhite": "#F0F0F0",
+      "brightYellow": "#D8BD94",
+      "cursorColor": "#A26862",
+      "cyan": "#89A8A2",
+      "foreground": "#D8D8D8",
+      "green": "#78997A",
+      "name": "Black Metal Khold",
+      "purple": "#A18AAB",
+      "red": "#A26862",
+      "selectionBackground": "#374145",
+      "white": "#D8D8D8",
+      "yellow": "#C4A77D"
+    }
+  ],
+  "themes": []
+}

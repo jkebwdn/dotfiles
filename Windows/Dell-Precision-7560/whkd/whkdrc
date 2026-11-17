@@ -1,11 +1,10 @@
-.shell powershell
-
+.shell cmd
 # =========================
 # RELOAD / RESTART
 # =========================
 
 lwin + shift + r : komorebic reload-configuration
-lwin + shift + e : komorebic stop; komorebic start --whkd --bar
+lwin + shift + e : komorebic stop
 
 # =========================
 # APPS
@@ -54,7 +53,7 @@ lwin + f : komorebic toggle-float
 # =========================
 
 lwin + b : komorebic flip-layout horizontal
-lwin + v : komorebic flip-layout vertical
+lwin + shift + v : komorebic flip-layout vertical
 
 # =========================
 # WORKSPACES

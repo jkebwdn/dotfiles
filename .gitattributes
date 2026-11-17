@@ -1,0 +1,2 @@
+# Dell Precision 7560 — preserve LF line endings
+/Windows/Dell-Precision-7560/** text eol=lf

@@ -1,23 +1,18 @@
 {
-  "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
-
+  "app_specific_configuration_path": "$Env:USERPROFILE/.config/komorebi/applications.json",
   "window_hiding_behaviour": "Cloak",
   "cross_monitor_move_behaviour": "Insert",
-
   "default_workspace_padding": 6,
   "default_container_padding": 6,
-
   "border": true,
   "border_width": 4,
   "border_offset": -1,
-
   "border_colours": {
     "single": "#A26862",
     "stack": "#A26862",
     "monocle": "#A26862",
     "unfocused": "#262220"
   },
-
   "monitors": [
     {
       "workspaces": [
@@ -40,8 +35,7 @@
       ]
     }
   ],
-
-  "float_rules": [
+  "ignore_rules": [
     {
       "kind": "Title",
       "id": "Microsoft Teams",

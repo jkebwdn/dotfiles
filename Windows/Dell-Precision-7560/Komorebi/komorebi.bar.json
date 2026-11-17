@@ -3,12 +3,10 @@
   "font_size": 12.5,
   "height": 36,
   "widget_spacing": 10,
-
   "theme": {
     "palette": "Base16",
     "name": "BlackMetalKhold"
   },
-
   "left_widgets": [
     {
       "Date": {
@@ -25,7 +23,6 @@
       }
     }
   ],
-
   "center_widgets": [
     {
       "Komorebi": {
@@ -44,7 +41,6 @@
       }
     }
   ],
-
   "right_widgets": [
     {
       "Network": {
@@ -63,7 +59,6 @@
       }
     }
   ],
-
   "mouse": {
     "on_middle_click": "start ms-settings:network-wifi",
     "on_secondary_click": "start ms-settings:bluetooth",
